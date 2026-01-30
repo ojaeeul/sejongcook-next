@@ -1,0 +1,10 @@
+[
+    {
+        "id": "1",
+        "title": "관련사이트",
+        "author": "관리자",
+        "date": "2024-01-01",
+        "hit": "0",
+        "content": ": 381228  --------------- -->\n\n\n<!-- ---------------    이미지 : 381558 --------------- -->\n<!-- 이미지 -->\r\n\r\n\r\n\r\n\r\n<div class=\"img_381558_\">\r\n\t\t\t<img src=\"/img_up/shop_pds/sejongcook/farm/ready01158399459521.jpg\" alt=\"이미지명\">\r\n\t</div>\n</div>\r\n</div>\r\n\r\n<script type=\"text/javascript\" defer=\"defer\">\r\n\tjQuery(function($){\r\n\r\n\t\tcontHeight();\r\n\r\n\t\t$(window).on('resize', function(){\r\n\t\t\tcontHeight();\r\n\t\t});\r\n\r\n\t\tfunction contHeight(){\r\n\t\t\tvar\r\n\t\t\t\t$cont1 = $('.layout_381226_ > .container_1'),\r\n\t\t\t\t$cont2 = $('.layout_381226_ > .container_2')\r\n\t\t\t\t$cont2H = $cont2.outerHeight();\r\n\t\t\t;\r\n\r\n\t\t\tif ($(window).width() >= 1024) {\r\n\t\t\t\tif($cont1.outerHeight() < $cont2.outerHeight()){\r\n\t\t\t\t\t$cont2H += 15;\r\n\t\t\t\t\t$cont1.height($cont2H);\r\n\t\t\t\t}\r\n\t\t\t} else {\r\n\t\t\t\t$cont1.removeAttr('style');\r\n\t\t\t}\r\n\t\t}\r\n\t});\r\n</script>"
+    }
+]

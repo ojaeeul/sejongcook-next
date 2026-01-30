@@ -1,0 +1,14 @@
+.agreementBody {text-align:left;}
+.agreementBody .infBox {margin:0; text-align:right; font-size:12px; font-style:italic;}
+.agreementBody h5 {margin:2em 0 0;}
+.agreementBody h3 {margin:.2em 0 1.2em; padding:.8em; border:1px solid #aaa; font-size:18px; text-align:center; background:#f1f1f1;}
+.agreementBody h4 {margin:0 0 .5em;}
+.agreementBody p {font-size:13px; line-height:1.5em;}
+.agreementBody .sc_ptop {text-align:right; margin:1em 0; line-height:normal;}
+.agreementBody .sc_ptop a {
+	display:inline-block; padding:5px 8px; background:#999; border-radius:3px; margin-right:8px;
+	text-decoration:none; font-size:13px; color:#fff;
+}
+.agreementBody ol {padding-left:22px; margin:0 0 1em; font-size:13px;}
+.agreementBody ol li {margin:0 0 .5em; line-height:1.4em;}
+.agreementBody .acon div {font-size:13px; line-height:1.4em;}

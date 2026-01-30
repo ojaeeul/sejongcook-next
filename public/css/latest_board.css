@@ -1,0 +1,29 @@
+
+/* Extracted Styles for Latest Updates (Exact Replica) */
+.layout_381238_ { clear: both; min-width: 320px; max-width: 1200px; margin: 0px auto; }
+.layout_381238_ > div { margin-left: -10px; }
+.layout_381238_ > div::after { content: ""; display: block; clear: both; }
+.layout_381238_ > div > [class^="container_"] { float: left; position: relative; width: 100%; padding-left: 10px; box-sizing: border-box; }
+.layout_381238_ > div > .container_1 { width: 33.3333%; }
+.layout_381238_ > div > .container_2 { width: 33.3333%; }
+.layout_381238_ > div > .container_3 { width: 33.3333%; }
+
+.pm-board_list__381239_wrap, .pm-board_list__381240_wrap, .pm-board_list__381241_wrap { height: 200px; padding: 0px 20px; box-sizing: border-box; }
+.pm-board_list__381239_wrap h3, .pm-board_list__381240_wrap h3, .pm-board_list__381241_wrap h3 { position: relative; width: 100%; margin: 0px; color: rgb(231, 0, 18); padding: 15px 0px; font-family: NanumBarunGothic; font-size: 1.17em; font-weight: bold; }
+.pm-board_list__381239_wrap h3 span, .pm-board_list__381240_wrap h3 span, .pm-board_list__381241_wrap h3 span { position: absolute; right: 0px; top: 14px; }
+.pm-board_list__381239_wrap h3 span a, .pm-board_list__381240_wrap h3 span a, .pm-board_list__381241_wrap h3 span a { text-decoration: none; color: #999; font-size: 12px; }
+
+.pm-board_list__381239_ li, .pm-board_list__381240_ li, .pm-board_list__381241_ li { border-bottom: 1px solid rgb(221, 221, 221); font-size: 13px; line-height: 1.8em; list-style: none; }
+.pm-board_list__381239_ li:first-child, .pm-board_list__381240_ li:first-child, .pm-board_list__381241_ li:first-child { border-top: 1px solid rgb(51, 51, 51); }
+.pm-board_list__381239_ a, .pm-board_list__381240_ a, .pm-board_list__381241_ a { display: block; text-decoration: none; color: rgb(51, 51, 51); padding: 11px 0px; font-family: NanumBarunGothic; }
+.pm-board_list__381239_ dl, .pm-board_list__381240_ dl, .pm-board_list__381241_ dl { position: relative; margin: 0px; padding-right: 80px; }
+.pm-board_list__381239_ dl dt, .pm-board_list__381240_ dl dt, .pm-board_list__381241_ dl dt { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: normal; }
+.pm-board_list__381239_ dl dd, .pm-board_list__381240_ dl dd, .pm-board_list__381241_ dl dd { position: absolute; right: 0px; top: 0px; margin: 0px; font-size: 12px; font-family: Arial; color: rgb(153, 153, 153); }
+
+/* Responsive adjustments for mobile */
+@media screen and (max-width: 768px) {
+    .layout_381238_ > div > .container_1,
+    .layout_381238_ > div > .container_2,
+    .layout_381238_ > div > .container_3 { width: 100%; margin-bottom: 20px; }
+    .pm-board_list__381239_wrap, .pm-board_list__381240_wrap, .pm-board_list__381241_wrap { height: auto; padding: 0 10px; }
+}

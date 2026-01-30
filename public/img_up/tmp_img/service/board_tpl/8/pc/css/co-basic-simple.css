@@ -1,0 +1,158 @@
+@charset "utf-8";
+
+.scbd,
+.scbd a {color:#555;}
+
+
+/* tag */
+.scbd select {border-color:#aaa; background:white; color:#555;}
+
+
+/* input */
+.ui-input {border:1px solid #c2c2c2; box-shadow: inset 2px 2px 3px 0px rgba(0,0,0,0.1);}
+.ui-input input {color:#666;}
+.ipt-dis {background:#eee;}
+
+
+/* button */
+.scbd .ui-btn {background:#ddd; text-shadow:0 1px 0 rgba(255,255,255,.5); color:#555;}
+.scbd .btn-co1 {background:#83878a; text-shadow:0 -1px 0 rgba(0,0,0,.5); color:white;}
+.scbd .btn-co2 {background:#999; text-shadow:0 -1px 0 rgba(0,0,0,.5); color:white;}
+
+
+/* UI-TOGGLE */
+.scbd .ui-toggle .hd {border-top:1px solid #ccc; border-bottom:1px solid #ccc;}
+.scbd .ui-toggle .hd h1 {color:#777; text-shadow:0 -1px 0 rgba(0,0,0,0);}
+.scbd .ui-toggle .hd p span {color:#777;}
+.scbd .ui-toggle .hd p span.open i {background-position:-103px -20px;}
+.scbd .ui-toggle .hd p span.close i {background-position:-123px -20px;}
+
+
+/* qnabox */
+.scbd .qnabox .box {border-color:#aaa;}
+.scbd .qnabox strong {border-color:#bbb; color:#333;}
+.scbd .qnabox .question {border-color:#ccc;}
+
+
+/* empty */
+.scbd .empty {border-bottom-color:#ccc; color:#666;}
+
+
+/* hd select */
+.scbd .hd_select {background:#f4f3f1;}
+.scbd .hd_select label {color:#333;}
+
+
+/* head title */
+.scbd .lay_hd {border-top:1px solid #aaa; border-bottom:1px solid #aaa; background:white;}
+.scbd .lay_hd .hgroup {}
+.scbd .lay_hd .hgroup h1 a {color:#777; text-shadow:0 1px 0 rgba(0,0,0,0);}
+.scbd .lay_hd .hgroup ul li {border-left:1px solid white;}
+.scbd .lay_hd .hgroup ul li a i.search {background-position:0 -20px;}
+.scbd .lay_hd .hgroup ul li a i.write {background-position:-38px -20px;}
+.scbd .lay_hd .hgroup ul li.active a i.search {background-position:0 -40px;}
+.scbd .lay_hd .hgroup ul li.active a i.write {background-position:-38px -40px;}
+
+.scbd .hd_list .bd ul li a {color:#666; border-bottom-color:#ddd;}
+.scbd .hd_list .bd ul li a:hover {background:#f5f5f5;}
+
+
+/* toggle search content */
+.scbd .toggleSearch {border-top:1px solid #ccc; background:white;}
+.scbd .toggleSearch div {border-color:#bbb;}
+.scbd .toggleSearch div input {color:#555;}
+
+
+/* list(board) */
+.scbd .lst-board.lst-head {background:#f4f3f1; border-bottom:1px solid #aaa;}
+.scbd .lst-board.lst-head li div {color:#333;}
+.scbd .lst-board.lst-body li {border-bottom:1px solid #ccc;}
+.scbd .lst-board.lst-body li .col_subject a {color:#444;}
+.scbd .lst-board.lst-body li .inf {color:#666; border-right:1px solid #ccc;}
+.scbd .lst-board.lst-body.lay-notice li {background:#eef1f6;}
+
+
+/* list(photo) */
+.scbd .lst-photo li .thum span {background:#f5f5f5; color:#888; border:1px solid #ccc;}
+.scbd .lst-photo li .title {color:#333;}
+.scbd .lst-photo li .category {color:#999;}
+.scbd .lst-photo li .sm {color:#aaa;}
+
+
+/* list(web) */
+.scbd .lst-web .conbody {color:#888;}
+
+
+/* list(tab) */
+.scbd .lst-tab li .body {color:#666;}
+.scbd .lst-tab li.active .tab {background:#f1f1f1; border-bottom-color:#ccc;}
+
+
+/* list(cal) */
+.scbd .lst-cal .nav {
+	background:#999;
+	background:-webkit-linear-gradient(#a2a2a2 0%, #8e8e8e 100%);
+	background:-moz-linear-gradient(#a2a2a2 0%, #8e8e8e 100%);
+	background:-o-linear-gradient(#a2a2a2 0%, #8e8e8e 100%);
+	background:-ms-linear-gradient(#a2a2a2 0%, #8e8e8e 100%);
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#a2a2a2', endColorstr='#8e8e8e');
+}
+.scbd .lst-cal .nav strong {color:white; text-shadow:0 -1px 0 rgba(0,0,0,.5);}
+.scbd .lst-cal table td {border:1px solid #bbb;}
+.scbd .lst-cal table .today {background:#edf7f9;}
+.scbd .lst-cal table .sat .day {color:#3a7ddb;}
+.scbd .lst-cal table .sun .day {color:#dd291e;}
+
+
+/* list(blog) */
+.scbd .list_blog .det {border-color:#bbb;}
+
+
+/* write */
+.scbd .write dl dt {color:#333;}
+.scbd .write dl dd {color:#666;}
+.scbd .write dl,
+.scbd .write ul {border-bottom:1px solid #ddd;}
+.scbd .write .etc {color:#555;}
+.scbd .write .attachFileList div a {background:#ddd;}
+.scbd .write .editor {border:1px solid #aaa;}
+
+
+/* detail */
+.scbd .det .hgroup {background:#f6f6f6; border-bottom-color:#bbb;}
+.scbd .det .hgroup strong {color:#333;}
+.scbd .det .hgroup dl {color:#555;}
+.scbd .det .hgroup dl dt span {border-right:1px solid #ccc;}
+.scbd .det .copyurl a {color:#666;}
+.scbd .det .copyurl .btn {background:#bbb; color:white;}
+.scbd .det .attachFiles ul li {border-bottom:1px solid #ddd;}
+.scbd .det .attachFiles ul li a {color:#666;}
+.scbd .det .sbtns a {border-left:1px solid #ccc; color:#555;}
+
+.scbd .det .poll {border-color:#ccc;}
+.scbd .det .poll strong {border-bottom-color:#aaa;}
+.scbd .det .poll ul li {color:#000;}
+.scbd .det .poll .result li .graph {background:#e6620a;}
+.scbd .det .poll .result li .txt {color:#666;}
+
+.scbd .det .snsShare {border:1px solid #bbb;}
+
+.scbd .det .btngroup {border-color:#ccc;}
+
+
+/* pagenate */
+.scbd .paginate strong {border:1px solid #aaa; background:white; color:#83878a;}
+
+
+/* comment frame */
+.scbd .cmtList li {border-bottom-color:#b7b7b7;}
+.scbd .cmtList .cmtbody {color:#555;}
+.scbd .cmtList dl dt span {color:#888;}
+.scbd .cmtList dl dd a {border-left:1px solid #ccc; color:#333;}
+.scbd .cmtList dl dd a:first-child {border-left:none;}
+.scbd .cmtList dl dd a:hover {text-decoration:underline;}
+
+.scbd .cmtWrite label {color:#666;}
+.scbd .cmtWrite dl dd a {background:#aaa; color:white; text-shadow:0 -1px 0 rgba(0,0,0,.5);}
+
+

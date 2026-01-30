@@ -1,0 +1,29 @@
+[
+    {
+        "id": "1",
+        "category": "수업뉴스",
+        "title": "2024년 크리스마스 케이크 만들기 특강 안내",
+        "author": "관리자",
+        "date": "2024-12-01",
+        "hit": "300",
+        "content": "<p>올해도 크리스마스를 맞이하여 특별한 케이크 만들기 수업을 진행합니다.</p><p><img src=\"/img_up/shop_pds/sejongcook/farm/hero_action_dessert.png\" alt=\"크리스마스 케이크\" style=\"max-width:100%;\" /></p>"
+    },
+    {
+        "id": "2",
+        "category": "갤러리",
+        "title": "케익디자인반 12월 수강생 작품 전시",
+        "author": "강사 김영희",
+        "date": "2024-12-28",
+        "hit": "450",
+        "content": "<p>2개월 과정을 마친 수강생들의 창의적인 작품들입니다. 모두 수고하셨습니다.</p><p><img src=\"/img_up/shop_pds/sejongcook/farm/patisserie_1_1767974864769.png\" alt=\"수강생 작품\" style=\"max-width:100%;\" /></p>"
+    },
+    {
+        "id": "3",
+        "category": "공지사항",
+        "title": "케익디자인 자격증 시험 일정 변경 안내",
+        "author": "관리자",
+        "date": "2024-11-15",
+        "hit": "120",
+        "content": "<p>협회 사정으로 인해 실기 시험 일정이 변경되었습니다. 확인 부탁드립니다.</p><p><img src=\"/img_up/shop_pds/sejongcook/farm/hero_action_plating.png\" alt=\"시험 일정\" style=\"max-width:100%;\" /></p>"
+    }
+]

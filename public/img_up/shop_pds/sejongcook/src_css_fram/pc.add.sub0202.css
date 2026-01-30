@@ -1,0 +1,83 @@
+
+/* ****************** 1칸 레이아웃  ****************** */
+
+.layout_381293_ {clear:both; min-width:320px; max-width:1000px; margin:0 auto;}
+.layout_381293_ > div:after {content:''; display:block; clear:both;}
+.layout_381293_ > div > [class^=container_] {float:left; position:relative; width:100%; box-sizing:border-box;}
+
+@media \0screen{
+	.layout_381293_ {min-width:1000px;}
+}
+
+/* ****************** 타이틀 텍스트  ****************** */
+
+.title_381294_ {font-size:0;}
+.title_381294_ p {
+	display:inline-block; position:relative; margin:0; padding:0;
+	font-size:24px; letter-spacing:-1px; font-weight:bold; color:#000000; line-height:1.4em;
+}
+.title_381294_ p:before {content:''; position:absolute; background:#e66d1e; font-size:0;}
+
+.title_381294_.style_top p {padding-top:10px;}
+.title_381294_.style_top p:before {left:0; top:0; width:24px; height:4px;}
+
+.title_381294_.style_right p {padding-right:14px;}
+.title_381294_.style_right p:before {right:0; top:5px; width:4px; height:24px;}
+
+.title_381294_.style_bottom p {padding-bottom:12px;}
+.title_381294_.style_bottom p:before {left:0; bottom:0; width:24px; height:4px;}
+
+.title_381294_.style_left p {padding-left:14px;}
+.title_381294_.style_left p:before {left:0; top:5px; width:4px; height:24px;}
+
+.title_381294_.style_circle1 p {padding-left:20px;}
+.title_381294_.style_circle1 p:before {
+	left:0; top:11px; width:12px; height:12px;
+	border-radius:12px;
+}
+
+.title_381294_.style_circle2 p {padding-left:20px;}
+.title_381294_.style_circle2 p:before {
+	left:0; top:11px; width:12px; height:12px;
+	border:2px solid #e66d1e; border-radius:12px; background:none; box-sizing:border-box;
+}
+
+/* ****************** 장문 텍스트  ****************** */
+
+.textarea_381299_ p {
+	display:block; margin:0; padding:0;
+	font-size:16px; letter-spacing:0px; font-weight:normal; color:#000000; line-height:1.6em;
+}
+
+/* ****************** 타이틀 텍스트  ****************** */
+
+.title_381295_ {font-size:0;}
+.title_381295_ p {
+	display:inline-block; position:relative; margin:0; padding:0;
+	font-size:24px; letter-spacing:-1px; font-weight:bold; color:#000000; line-height:1.4em;
+}
+.title_381295_ p:before {content:''; position:absolute; background:#e66d1e; font-size:0;}
+
+.title_381295_.style_top p {padding-top:10px;}
+.title_381295_.style_top p:before {left:0; top:0; width:24px; height:4px;}
+
+.title_381295_.style_right p {padding-right:14px;}
+.title_381295_.style_right p:before {right:0; top:5px; width:4px; height:24px;}
+
+.title_381295_.style_bottom p {padding-bottom:12px;}
+.title_381295_.style_bottom p:before {left:0; bottom:0; width:24px; height:4px;}
+
+.title_381295_.style_left p {padding-left:14px;}
+.title_381295_.style_left p:before {left:0; top:5px; width:4px; height:24px;}
+
+.title_381295_.style_circle1 p {padding-left:20px;}
+.title_381295_.style_circle1 p:before {
+	left:0; top:11px; width:12px; height:12px;
+	border-radius:12px;
+}
+
+.title_381295_.style_circle2 p {padding-left:20px;}
+.title_381295_.style_circle2 p:before {
+	left:0; top:11px; width:12px; height:12px;
+	border:2px solid #e66d1e; border-radius:12px; background:none; box-sizing:border-box;
+}

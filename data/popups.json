@@ -1,0 +1,104 @@
+[
+  {
+    "id": 1,
+    "type": "template",
+    "templateId": "course_recruit_v1",
+    "title": "일식조리기능사 개강",
+    "isActive": false,
+    "position": {
+      "top": 140,
+      "left": 140
+    },
+    "size": {
+      "width": 360,
+      "height": 460
+    },
+    "content": {
+      "textVisible": true,
+      "badgeText": "자격증 취득과정",
+      "title": "일식조리기능사",
+      "subText": "19가지 품목",
+      "scheduleA": {
+        "label": "오전반",
+        "period": "1.28 ~ 2.23 (10회)",
+        "time": "월,수,금 9:30 ~ 13:30"
+      },
+      "scheduleB": {
+        "label": "저녁반",
+        "period": "2.9 ~ 4.1 (13회)",
+        "time": "월,수 19:00 ~ 22:00"
+      },
+      "mainImage": "/img_up/shop_pds/sejongcook/farm/sushi_8pieces_high_res.png",
+      "footerContact": ""
+    },
+    "link": "/course/cooking/license"
+  },
+  {
+    "id": 2,
+    "type": "template",
+    "templateId": "course_recruit_v1",
+    "title": "한식/양식 조리기능사",
+    "isActive": false,
+    "position": {
+      "top": 140,
+      "left": 540
+    },
+    "size": {
+      "width": 360,
+      "height": 460
+    },
+    "content": {
+      "textVisible": true,
+      "badgeText": "자격증 취득과정",
+      "title": "한식/양식기능사",
+      "subText": "상시 개강",
+      "scheduleA": {
+        "label": "오전반",
+        "period": "상시 모집 중",
+        "time": "월~금 10:00 ~ 13:00"
+      },
+      "scheduleB": {
+        "label": "저녁반",
+        "period": "상시 모집 중",
+        "time": "월,수,금 19:00 ~ 22:00"
+      },
+      "mainImage": "/img_up/shop_pds/sejongcook/farm/bibimbap_final_high_res.png",
+      "footerContact": ""
+    },
+    "link": "/course/cooking/license"
+  },
+  {
+    "id": 3,
+    "type": "template",
+    "templateId": "course_recruit_v1",
+    "title": "제과제빵/바리스타",
+    "isActive": false,
+    "position": {
+      "top": 140,
+      "left": 940
+    },
+    "size": {
+      "width": 360,
+      "height": 460
+    },
+    "content": {
+      "textVisible": true,
+      "badgeText": "자격증 취득과정",
+      "title": "제과제빵/바리스타",
+      "subText": "소수정예 수업",
+      "scheduleA": {
+        "label": "제과반",
+        "period": "선착순 모집",
+        "time": "화,목 14:00 ~ 17:00"
+      },
+      "scheduleB": {
+        "label": "바리스타",
+        "period": "2급 자격증반",
+        "time": "토요일 10:00 ~ 13:00"
+      },
+      "mainImage": "/img_up/shop_pds/sejongcook/farm/patisserie_1_1767974864769.png",
+      "footerContact": ""
+    },
+    "link": "/course/baking"
+  }
+]

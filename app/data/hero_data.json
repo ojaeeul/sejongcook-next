@@ -1,0 +1,57 @@
+{
+  "badge": "프리미엄 요리 제과 아카데미",
+  "title": "세종요리제과기술학원",
+  "desc": "꿈을 향한 맛있는 도전",
+  "longDesc": "최고의 강사진이 여러분의 꿈을 현실로 만들어드립니다.\n자격증 취득부터 창업까지, 전문가가 함께합니다.",
+  "photos": [
+    [
+      "/img/cards/intro_lobby.png",
+      "/img/cards/intro_classroom.png",
+      "/img/cards/intro_demo.png",
+      "/img/cards/intro_exterior.png"
+    ],
+    [
+      "/img/cards/baking_bread.png",
+      "/img/cards/baking_cake.png",
+      "/img/cards/baking_croissants.png",
+      "/img/cards/baking_chocolate.png"
+    ],
+    [
+      "/img/cards/culinary_korean.png",
+      "/img/cards/culinary_western.png",
+      "/img/cards/culinary_chinese.png",
+      "/img/cards/culinary_japanese.png"
+    ],
+    [
+      "/img/cards/cert_skill.png",
+      "/img/cards/cert_dish.png",
+      "/img/cards/cert_diploma.png",
+      "/img/cards/cert_judge.png"
+    ],
+    [
+      "/img/cards/brunch_1.png",
+      "/img/cards/brunch_2.png",
+      "/img/cards/brunch_3.png",
+      "/img/cards/brunch_4.png"
+    ],
+    [
+      "/img/cards/community_1.png",
+      "/img/cards/community_2.png",
+      "/img/cards/community_3.png",
+      "/img/cards/community_4.png"
+    ]
+  ],
+  "btn1Text": "과정리뷰하기",
+  "btn1Link": "/course/baking",
+  "btn2Text": "상담문의",
+  "btn2Link": "/inquiry",
+  "phoneVisible": true,
+  "phoneNumber": "031-986-1933",
+  "phoneSize": "24px",
+  "phoneIcon": "📞",
+  "phoneBorderColor": "#f5a623",
+  "phoneAlignment": "center",
+  "phoneBackgroundColor": "rgba(0, 0, 0, 0)",
+  "phoneTextColor": "#ffffff",
+  "phoneBold": true
+}

@@ -1,26 +1,193 @@
 @import "tailwindcss";
 
+
+
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #1a1a1a;
+
+  /* Brand Colors */
+  --brand-primary: #f5a623;
+  /* Warm Orange */
+  --brand-secondary: #333333;
+  /* Dark Grey */
+  --brand-accent: #007aff;
+  /* Vivid Blue */
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Typography */
+  --font-sans: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+  --font-mono: "D2Coding", "JetBrains Mono", monospace;
+
+  /* Extended Colors */
+  --color-brand-primary: var(--brand-primary);
+  --color-brand-secondary: var(--brand-secondary);
+  --color-brand-accent: var(--brand-accent);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Glassmorphism Utility */
+.glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Hover Lift Effect */
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Action Wild - More dynamic interaction */
+.action-wild {
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  /* Bouncy transition */
+}
+
+.action-wild:hover {
+  transform: scale(1.05) translateY(-5px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  z-index: 10;
+}
+
+/* Global Table Styles (tg) for Course Content & Posts */
+.tg {
+  border-collapse: collapse;
+  border-spacing: 0;
+  width: 100%;
+  margin-bottom: 30px;
+}
+
+.tg td,
+.tg th {
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  padding: 15px 5px;
+  border-style: solid;
+  border-width: 1px;
+  overflow: hidden;
+  word-break: keep-all;
+  border-color: black;
+}
+
+.tg th {
+  font-weight: normal;
+  background-color: #f0f0f0;
+}
+
+.tg .tg-header,
+.tg-header-main {
+  font-weight: bold;
+  font-size: 16px;
+  background-color: #ffffc7;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.tg .tg-title,
+.tg-note {
+  font-weight: bold;
+  font-size: 16px;
+  background-color: #ffce93;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.tg .tg-content,
+.tg-menu {
+  text-align: left;
+  vertical-align: middle;
+  padding: 15px;
+}
+
+/* Additional Table Utilities */
+.tg-label {
+  font-size: 16px;
+  background-color: #ffffc7;
+  font-weight: bold;
+  text-align: center;
+  vertical-align: middle;
+  min-width: 100px;
+}
+
+.tg-week {
+  background-color: #FCE5CD;
+  font-weight: bold;
+  text-align: center;
+  vertical-align: middle;
+  width: 80px;
+}
+
+/* Menu Section Styles */
+.menu-section {
+  margin-bottom: 40px;
+}
+
+.menu-title,
+.page-title-custom {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  border-left: 5px solid #ff8c00;
+  padding-left: 10px;
+  color: #333;
+}
+
+.page-title-custom {
+  font-size: 24px;
+  margin: 30px 0 20px;
+  border-bottom: 2px solid #333;
+  border-left: none;
+  padding-bottom: 10px;
+}
+
+.menu-grid {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+  align-items: flex-start;
+}
+
+.menu-img {
+  flex: 0 0 300px;
+  max-width: 100%;
+}
+
+.menu-img img {
+  width: 100%;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.menu-desc {
+  flex: 1;
+  min-width: 250px;
+  background: #f9f9f9;
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.menu-desc p {
+  margin: 0;
+  line-height: 1.8;
+  color: #444;
+  word-break: keep-all;
 }

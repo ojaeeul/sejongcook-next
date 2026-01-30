@@ -1,0 +1,43 @@
+
+/* ****************** 1칸 레이아웃  ****************** */
+
+.layout_381355_ {clear:both; min-width:320px; max-width:1000px; margin:0 auto;}
+.layout_381355_ > div:after {content:''; display:block; clear:both;}
+.layout_381355_ > div > [class^=container_] {float:left; position:relative; width:100%; box-sizing:border-box;}
+
+@media \0screen{
+	.layout_381355_ {min-width:1000px;}
+}
+
+/* ****************** 타이틀 텍스트  ****************** */
+
+.title_381356_ {font-size:0;}
+.title_381356_ p {
+	display:inline-block; position:relative; margin:0; padding:0;
+	font-size:24px; letter-spacing:-1px; font-weight:bold; color:#000000; line-height:1.4em;
+}
+.title_381356_ p:before {content:''; position:absolute; background:#d00000; font-size:0;}
+
+.title_381356_.style_top p {padding-top:10px;}
+.title_381356_.style_top p:before {left:0; top:0; width:24px; height:4px;}
+
+.title_381356_.style_right p {padding-right:14px;}
+.title_381356_.style_right p:before {right:0; top:5px; width:4px; height:24px;}
+
+.title_381356_.style_bottom p {padding-bottom:12px;}
+.title_381356_.style_bottom p:before {left:0; bottom:0; width:24px; height:4px;}
+
+.title_381356_.style_left p {padding-left:14px;}
+.title_381356_.style_left p:before {left:0; top:5px; width:4px; height:24px;}
+
+.title_381356_.style_circle1 p {padding-left:20px;}
+.title_381356_.style_circle1 p:before {
+	left:0; top:11px; width:12px; height:12px;
+	border-radius:12px;
+}
+
+.title_381356_.style_circle2 p {padding-left:20px;}
+.title_381356_.style_circle2 p:before {
+	left:0; top:11px; width:12px; height:12px;
+	border:2px solid #d00000; border-radius:12px; background:none; box-sizing:border-box;
+}
