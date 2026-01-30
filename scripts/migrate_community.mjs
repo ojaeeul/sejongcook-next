@@ -1,15 +1,9 @@
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
 // Config
 const legacyBase = '/Users/ojaeeul/Downloads/세종요리제과학원/구버전/무제 폴더/sejongcook_호스팅';
 const outputDir = '/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_1/sejongcook-next/data';
-
-// Helper to clean extracted text
-function clean(str) {
-    if (!str) return '';
-    return str.trim();
-}
 
 // 1. Q&A (sub0602)
 function migrateQnA() {
