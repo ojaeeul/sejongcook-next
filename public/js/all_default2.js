@@ -1,7 +1,7 @@
 
 // 네비게이션 위치번호 가져오기
 var
-	nowLocation = new Array()
+	nowLocation = []
 	,dp1 = null
 	,dp2 = null
 ;
@@ -9,8 +9,8 @@ var
 function scNaviToNumber(code)
 {
 	var
-		codeArray = new Array()
-		,numArray = new Array()
+		codeArray = []
+		,numArray = []
 	;
 
 	for (var i=0; i<4; i++) {

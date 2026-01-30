@@ -1,2 +1,2 @@
 
-var site_path_arr = new Array();
+var site_path_arr = [];

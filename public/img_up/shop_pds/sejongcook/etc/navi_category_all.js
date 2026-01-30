@@ -1,54 +1,54 @@
-var navi_cate_00000000_code = new Array ("sub1","sub2","sub3","sub4")
-var navi_cate_00000000_menu_subject = new Array ("회사소개","포트폴리오","온라인 견적","커뮤니티")
-var navi_cate_00000000_link_url = new Array ("/page/sub1_1","/bbs/sub2_1","/myreg/sub3","/bbs/sub4_1")
-var navi_cate_00000000_link_target = new Array ("_self","_self","_self","_self")
-var navi_cate_00000000_bt1 = new Array ("","","","")
-var navi_cate_00000000_bt2 = new Array ("","","","")
+var navi_cate_00000000_code = ["sub1","sub2","sub3","sub4"]
+var navi_cate_00000000_menu_subject = ["회사소개","포트폴리오","온라인 견적","커뮤니티"]
+var navi_cate_00000000_link_url = ["/page/sub1_1","/bbs/sub2_1","/myreg/sub3","/bbs/sub4_1"]
+var navi_cate_00000000_link_target = ["_self","_self","_self","_self"]
+var navi_cate_00000000_bt1 = ["","","",""]
+var navi_cate_00000000_bt2 = ["","","",""]
 
-var navi_cate_4d29d2dc_code = new Array ("021eb6c8","4da2f6d4")
-var navi_cate_4d29d2dc_menu_subject = new Array ("로그인","회원가입")
-var navi_cate_4d29d2dc_link_url = new Array ("/login","/join")
-var navi_cate_4d29d2dc_link_target = new Array ("_self","_self")
-var navi_cate_4d29d2dc_bt1 = new Array ("","")
-var navi_cate_4d29d2dc_bt2 = new Array ("","")
+var navi_cate_4d29d2dc_code = ["021eb6c8","4da2f6d4"]
+var navi_cate_4d29d2dc_menu_subject = ["로그인","회원가입"]
+var navi_cate_4d29d2dc_link_url = ["/login","/join"]
+var navi_cate_4d29d2dc_link_target = ["_self","_self"]
+var navi_cate_4d29d2dc_bt1 = ["",""]
+var navi_cate_4d29d2dc_bt2 = ["",""]
 
-var navi_cate_7a94e91b_code = new Array ("ffcc1ecb","f190f7e0")
-var navi_cate_7a94e91b_menu_subject = new Array ("이용약관","개인정보 취급방침")
-var navi_cate_7a94e91b_link_url = new Array ("/shop_info/agree.htm","/shop_info/privacy.htm")
-var navi_cate_7a94e91b_link_target = new Array ("_self","_self")
-var navi_cate_7a94e91b_bt1 = new Array ("","")
-var navi_cate_7a94e91b_bt2 = new Array ("","")
+var navi_cate_7a94e91b_code = ["ffcc1ecb","f190f7e0"]
+var navi_cate_7a94e91b_menu_subject = ["이용약관","개인정보 취급방침"]
+var navi_cate_7a94e91b_link_url = ["/shop_info/agree.htm","/shop_info/privacy.htm"]
+var navi_cate_7a94e91b_link_target = ["_self","_self"]
+var navi_cate_7a94e91b_bt1 = ["",""]
+var navi_cate_7a94e91b_bt2 = ["",""]
 
-var navi_cate_mypage_code = new Array ("fe8780c6","34096bd8","abd0e3f6","90fdaffe")
-var navi_cate_mypage_menu_subject = new Array ("회원정보수정","비밀번호변경","문의하기","회원탈퇴")
-var navi_cate_mypage_link_url = new Array ("/shop_login/mem_form.htm?mode=edit","javascript:pwd_ch()","/shop_mypage/my_qna_list.htm","/shop_mypage/tal_form.htm")
-var navi_cate_mypage_link_target = new Array ("_self","_self","_self","_self")
-var navi_cate_mypage_bt1 = new Array ("","","","")
-var navi_cate_mypage_bt2 = new Array ("","","","")
+var navi_cate_mypage_code = ["fe8780c6","34096bd8","abd0e3f6","90fdaffe"]
+var navi_cate_mypage_menu_subject = ["회원정보수정","비밀번호변경","문의하기","회원탈퇴"]
+var navi_cate_mypage_link_url = ["/shop_login/mem_form.htm?mode=edit","javascript:pwd_ch()","/shop_mypage/my_qna_list.htm","/shop_mypage/tal_form.htm"]
+var navi_cate_mypage_link_target = ["_self","_self","_self","_self"]
+var navi_cate_mypage_bt1 = ["","","",""]
+var navi_cate_mypage_bt2 = ["","","",""]
 
-var navi_cate_sub1_code = new Array ("sub1_1","sub1_2")
-var navi_cate_sub1_menu_subject = new Array ("인사말","오시는길")
-var navi_cate_sub1_link_url = new Array ("/page/sub1_1","/page/sub1_2")
-var navi_cate_sub1_link_target = new Array ("_self","_self")
-var navi_cate_sub1_bt1 = new Array ("","")
-var navi_cate_sub1_bt2 = new Array ("","")
+var navi_cate_sub1_code = ["sub1_1","sub1_2"]
+var navi_cate_sub1_menu_subject = ["인사말","오시는길"]
+var navi_cate_sub1_link_url = ["/page/sub1_1","/page/sub1_2"]
+var navi_cate_sub1_link_target = ["_self","_self"]
+var navi_cate_sub1_bt1 = ["",""]
+var navi_cate_sub1_bt2 = ["",""]
 
-var navi_cate_sub2_code = new Array ("sub2_1","sub2_2","sub2_3","sub2_4","sub2_5")
-var navi_cate_sub2_menu_subject = new Array ("간판","현수막","인쇄물","아크릴문자","기타")
-var navi_cate_sub2_link_url = new Array ("/bbs/sub2_1","/bbs/sub2_2","/bbs/sub2_3","/bbs/sub2_4","/bbs/sub2_5")
-var navi_cate_sub2_link_target = new Array ("_self","_self","_self","_self","_self")
-var navi_cate_sub2_bt1 = new Array ("","","","","")
-var navi_cate_sub2_bt2 = new Array ("","","","","")
+var navi_cate_sub2_code = ["sub2_1","sub2_2","sub2_3","sub2_4","sub2_5"]
+var navi_cate_sub2_menu_subject = ["간판","현수막","인쇄물","아크릴문자","기타"]
+var navi_cate_sub2_link_url = ["/bbs/sub2_1","/bbs/sub2_2","/bbs/sub2_3","/bbs/sub2_4","/bbs/sub2_5"]
+var navi_cate_sub2_link_target = ["_self","_self","_self","_self","_self"]
+var navi_cate_sub2_bt1 = ["","","","",""]
+var navi_cate_sub2_bt2 = ["","","","",""]
 
-var navi_cate_sub4_code = new Array ("sub4_1","sub4_2")
-var navi_cate_sub4_menu_subject = new Array ("공지사항","문의게시판")
-var navi_cate_sub4_link_url = new Array ("/bbs/sub4_1","/bbs/sub4_2")
-var navi_cate_sub4_link_target = new Array ("_self","_self")
-var navi_cate_sub4_bt1 = new Array ("","")
-var navi_cate_sub4_bt2 = new Array ("","")
+var navi_cate_sub4_code = ["sub4_1","sub4_2"]
+var navi_cate_sub4_menu_subject = ["공지사항","문의게시판"]
+var navi_cate_sub4_link_url = ["/bbs/sub4_1","/bbs/sub4_2"]
+var navi_cate_sub4_link_target = ["_self","_self"]
+var navi_cate_sub4_bt1 = ["",""]
+var navi_cate_sub4_bt2 = ["",""]
 
 
-var navi_path_arr = new Array();
+var navi_path_arr = [];
 navi_path_arr['021eb6c8'] = '&gt;&gt;&gt;로그인'; 
 navi_path_arr['34096bd8'] = '&gt;&gt;&gt;비밀번호변경'; 
 navi_path_arr['4d29d2dc'] = '&gt;&gt;&gt;MEMBER'; 

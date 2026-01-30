@@ -1,2 +1,2 @@
 
-var movie_path_arr = new Array();
+var movie_path_arr = [];

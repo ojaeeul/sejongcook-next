@@ -1,2 +1,2 @@
 
-var goods_path_arr = new Array();
+var goods_path_arr = [];

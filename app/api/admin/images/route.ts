@@ -16,7 +16,7 @@ async function getGalleryData() {
         // File doesn't exist, migrate from existing folders
         console.log('Migrating gallery data from files...');
         const directories = ['uploads', 'img_up', 'img/cards'];
-        let allImages: any[] = [];
+        const allImages: any[] = [];
         let idCounter = 1;
 
         async function scan(dirPath: string, relativePath: string) {
