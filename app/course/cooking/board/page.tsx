@@ -1,37 +1,28 @@
-import BoardList from "@/components/BoardList";
+'use client';
+
+import BoardList, { Post } from "@/components/BoardList";
 import CookingSubNav from "@/components/CookingSubNav";
-import { promises as fs } from 'fs';
-import path from 'path';
-import { Suspense } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 
-interface Post {
-    id: string;
-    category: string;
-    title: string;
-    author: string;
-    date: string;
-    hit: string;
-    content?: string;
-}
+export default function CookingBoardPage() {
+    const [posts, setPosts] = useState<Post[]>([]);
 
-async function getCookingPosts() {
-    const filePath = path.join(process.cwd(), 'data', 'cooking_posts.json');
-    try {
-        const fileContents = await fs.readFile(filePath, 'utf8');
-        const data: Post[] = JSON.parse(fileContents);
-        return data.reverse(); // Newest first
-    } catch (e) {
-        console.error("Failed to load cooking posts:", e);
-        return [];
-    }
-}
-
-export default async function CookingBoardPage() {
-    const posts = await getCookingPosts();
+    useEffect(() => {
+        const fetchPosts = async () => {
+            try {
+                const res = await fetch('/data/cooking_posts.json');
+                const data = await res.json();
+                setPosts(data.reverse());
+            } catch (e) {
+                console.error("Failed to load cooking posts:", e);
+            }
+        };
+        fetchPosts();
+    }, []);
 
     return (
         <div className="modern-container" style={{ padding: '40px 0' }}>
-            <div style={{ flexGrow: 1, minWidth: 0 }}>
+            <div style={{ flexGrow: 1, minWidth: 1 }}>
                 <div className="mb-6">
                     <h2 className="text-2xl font-bold text-gray-800 border-b-2 border-[#3e2723] pb-2 inline-block">조리교육 소식 & 갤러리</h2>
                 </div>
@@ -47,6 +38,7 @@ export default async function CookingBoardPage() {
                     boardName="조리 게시판"
                     posts={posts}
                     basePath=""
+                    showWriteButton={false}
                 />
             </div>
         </div>

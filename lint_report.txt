@@ -1,0 +1,365 @@
+
+> sejongcook-next@0.1.0 lint
+> eslint .
+
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/admin/components/AdminTable.tsx
+  11:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  11:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  16:11  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/admin/components/DataEditor.tsx
+  19:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  36:89  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  86:50  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/admin/footer/page.tsx
+  5:8  warning  'Link' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/admin/gallery/page.tsx
+    9:42  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+   20:18  warning  'error' is defined but never used                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+   63:18  warning  'error' is defined but never used                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+   80:18  warning  'e' is defined but never used                                                                                                                                                                                                                                                            @typescript-eslint/no-unused-vars
+  103:18  warning  'error' is defined but never used                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+  143:33  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  194:64  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+  194:70  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/admin/hero/page.tsx
+  326:53  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/admin/inquiry/page.tsx
+  29:9   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/admin/inquiry/page.tsx:29:9
+  27 |
+  28 |     useEffect(() => {
+> 29 |         fetchData();
+     |         ^^^^^^^^^ Avoid calling setState() directly within an effect
+  30 |     }, []);
+  31 |
+  32 |     const handleDelete = async (id: string) => {  react-hooks/set-state-in-effect
+  42:22  warning  'error' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               @typescript-eslint/no-unused-vars
+  53:21  error    Do not use an `<a>` element to navigate to `/`. Use `<Link />` from `next/link` instead. See: https://nextjs.org/docs/messages/no-html-link-for-pages                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           @next/next/no-html-link-for-pages
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/admin/job-openings/edit/[id]/page.tsx
+  18:44  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/admin/job-openings/page.tsx
+  29:48  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  36:18  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/admin/links/edit/[id]/page.tsx
+  17:44  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/admin/links/page.tsx
+   32:18  warning  'error' is defined but never used                                @typescript-eslint/no-unused-vars
+   45:18  warning  'error' is defined but never used                                @typescript-eslint/no-unused-vars
+   57:48  error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   64:18  warning  'error' is defined but never used                                @typescript-eslint/no-unused-vars
+  115:55  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  115:59  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  115:62  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  115:67  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/admin/login/page.tsx
+  36:18  warning  'err' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/admin/member/page.tsx
+   40:18   warning  'error' is defined but never used                                @typescript-eslint/no-unused-vars
+   72:18   warning  'error' is defined but never used                                @typescript-eslint/no-unused-vars
+  137:89   error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  137:93   error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  137:96   error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  137:101  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/admin/notice/edit/[id]/page.tsx
+  17:44  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/admin/notice/page.tsx
+  29:48  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  36:18  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/admin/popups/page.tsx
+    4:8   warning  'Link' is defined but never used                                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+  141:53  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  390:84  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  558:49  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  558:49  warning  img elements must have an alt prop, either with meaningful text, or an empty string for decorative images                                                                                                                                                                                jsx-a11y/alt-text
+  581:49  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  581:49  warning  img elements must have an alt prop, either with meaningful text, or an empty string for decorative images                                                                                                                                                                                jsx-a11y/alt-text
+  588:45  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  588:45  warning  img elements must have an alt prop, either with meaningful text, or an empty string for decorative images                                                                                                                                                                                jsx-a11y/alt-text
+  629:47  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+  629:56  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/admin/qna/edit/[id]/page.tsx
+  17:44  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/admin/qna/page.tsx
+  29:48  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  36:18  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/admin/review/edit/[id]/page.tsx
+  17:44  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/admin/review/page.tsx
+  29:48  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  36:18  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/admin/teachers/page.tsx
+  172:41  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  264:37  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/api/admin/auth/login/route.ts
+  30:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/api/admin/data/[key]/route.ts
+  23:18  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  28:21  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  58:21  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/api/admin/data/members/route.ts
+  35:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  49:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/api/admin/data/settings/route.ts
+  28:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  47:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/api/admin/footer/route.ts
+  27:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  44:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/api/admin/images/route.ts
+   19:26  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   37:22  warning  'e' is defined but never used             @typescript-eslint/no-unused-vars
+   57:14  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+   81:14  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+   94:14  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  107:57  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  116:50  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  128:14  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/api/admin/popups/route.ts
+  25:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/api/settings/route.ts
+  23:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  42:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/api/teachers/route.ts
+  15:14  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  24:19  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  24:27  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/community/honor/[idx]/page.tsx
+  21:14  warning  'e' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/community/honor/page.tsx
+  20:14  warning  'e' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/community/honor/write/page.tsx
+  22:13  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/community/honor/write/page.tsx:22:13
+  20 |     useEffect(() => {
+  21 |         if (isEdit) {
+> 22 |             setSubject("명예의 전당 (수정)");
+     |             ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  23 |             setAuthor("관리자");
+  24 |             setContent("<p>합격을 축하합니다!</p>");
+  25 |         }  react-hooks/set-state-in-effect
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/community/notice/page.tsx
+  21:14  warning  'e' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/community/notice/write/page.tsx
+  25:13  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/community/notice/write/page.tsx:25:13
+  23 |             // In real app: fetch(`/api/index.php?mode=view&idx=${idx}`)
+  24 |             // Using mock data matching BoardView for demo
+> 25 |             setSubject("2024년도 1기 브런치반 모집");
+     |             ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  26 |             setAuthor("관리자");
+  27 |             // Mock Content from BoardView
+  28 |             setContent(`  react-hooks/set-state-in-effect
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/community/qna/[idx]/page.tsx
+  21:14  warning  'e' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/community/qna/page.tsx
+  23:14  warning  'e' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/community/qna/write/page.tsx
+  22:13  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/community/qna/write/page.tsx:22:13
+  20 |     useEffect(() => {
+  21 |         if (isEdit) {
+> 22 |             setSubject("질문있습니다 (수정)");
+     |             ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  23 |             setAuthor("학생");
+  24 |             setContent("<p>질문 내용...</p>");
+  25 |         }  react-hooks/set-state-in-effect
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/community/review/[idx]/page.tsx
+  21:14  warning  'e' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/community/sites/[idx]/page.tsx
+  21:14  warning  'e' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/community/sites/page.tsx
+  21:14  warning  'e' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/community/sites/write/page.tsx
+  22:13  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/community/sites/write/page.tsx:22:13
+  20 |     useEffect(() => {
+  21 |         if (isEdit) {
+> 22 |             setSubject("관련사이트 안내 (수정)");
+     |             ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  23 |             setAuthor("관리자");
+  24 |             setContent("<p>http://example.com - 예시 사이트</p>");
+  25 |         }  react-hooks/set-state-in-effect
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/course/baking/board/write/page.tsx
+  11:11  warning  'router' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+  26:13  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/course/baking/board/write/page.tsx:26:13
+  24 |             // In a real app, fetch data by ID
+  25 |             // For demo, we just populate dummy data or try to find in localStorage if implemented
+> 26 |             setSubject("수정할 게시물 제목 (데모)");
+     |             ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  27 |             setAuthor("작성자");
+  28 |             setContent("<p>이전에 작성된 내용입니다.</p>");
+  29 |         }  react-hooks/set-state-in-effect
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/course/baking/gallery/page.tsx
+  71:45  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/course/baking/page.tsx
+  262:33  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/course/dessert/[id]/page.tsx
+  1:8  warning  'ActionButtons' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/course/page.tsx
+   5:10  warning  'Suspense' is defined but never used                                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+  30:29  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/inquiry/page.tsx
+  228:55  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  228:78  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/intro/page.tsx
+  7:20  warning  'useEffect' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/intro/teachers/page.tsx
+    5:10  warning  'useSearchParams' is defined but never used                                                                                                                                                                                                                                              @typescript-eslint/no-unused-vars
+    5:27  warning  'useRouter' is defined but never used                                                                                                                                                                                                                                                    @typescript-eslint/no-unused-vars
+  118:41  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/job/openings/[idx]/page.tsx
+  21:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  46:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/job/openings/page.tsx
+  25:49  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/job/openings/write/page.tsx
+  23:13  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/job/openings/write/page.tsx:23:13
+  21 |         if (isEdit) {
+  22 |             // Mock Data for Demo
+> 23 |             setSubject("구인합니다 (수정)");
+     |             ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  24 |             setAuthor("작성자");
+  25 |             setContent(`
+  26 |                 <p>구인 세부 내용을 입력해주세요.</p>  react-hooks/set-state-in-effect
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/job/seekers/write/page.tsx
+  22:13  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/job/seekers/write/page.tsx:22:13
+  20 |     useEffect(() => {
+  21 |         if (isEdit) {
+> 22 |             setSubject("구직 희망합니다 (수정)");
+     |             ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  23 |             setAuthor("구직자");
+  24 |             setContent(`
+  25 |                 <p>희망 근무 조건:</p>  react-hooks/set-state-in-effect
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/layout.tsx
+  30:9  warning  Custom fonts not added in `pages/_document.js` will only load for a single page. This is discouraged. See: https://nextjs.org/docs/messages/no-page-custom-font  @next/next/no-page-custom-font
+  33:9  warning  Do not include stylesheets manually. See: https://nextjs.org/docs/messages/no-css-tags                                                                           @next/next/no-css-tags
+  34:9  warning  Do not include stylesheets manually. See: https://nextjs.org/docs/messages/no-css-tags                                                                           @next/next/no-css-tags
+  35:9  warning  Do not include stylesheets manually. See: https://nextjs.org/docs/messages/no-css-tags                                                                           @next/next/no-css-tags
+  36:9  warning  Do not include stylesheets manually. See: https://nextjs.org/docs/messages/no-css-tags                                                                           @next/next/no-css-tags
+  37:9  warning  Do not include stylesheets manually. See: https://nextjs.org/docs/messages/no-css-tags                                                                           @next/next/no-css-tags
+  38:9  warning  Do not include stylesheets manually. See: https://nextjs.org/docs/messages/no-css-tags                                                                           @next/next/no-css-tags
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/login/page.tsx
+  3:10  warning  'useState' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/page.tsx
+   19:46  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+   33:16  warning  'e' is defined but never used                                                                                                                                                                                                                                                            @typescript-eslint/no-unused-vars
+   56:6   warning  React Hook useEffect has a missing dependency: 'heroData'. Either include it or remove the dependency array                                                                                                                                                                              react-hooks/exhaustive-deps
+  165:23  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+✖ 126 problems (53 errors, 73 warnings)
+

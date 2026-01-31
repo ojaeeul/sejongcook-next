@@ -12,9 +12,11 @@ import {
     LogOut,
     Menu,
     X,
+    Settings,
     Link as LinkIcon
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import type { SupabaseClient, Session } from '@supabase/supabase-js';
 
 export default function AdminLayout({
     children,
@@ -24,20 +26,64 @@ export default function AdminLayout({
     const pathname = usePathname();
     const router = useRouter();
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [authorized, setAuthorized] = useState(false);
+
+    const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
+
+    useEffect(() => {
+        import('@/lib/supabase').then(mod => {
+            setSupabase(mod.supabase);
+        });
+    }, []);
+
+    useEffect(() => {
+        if (!supabase) return;
+
+        const checkAuth = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                if (pathname !== '/admin/login') {
+                    router.push('/admin/login');
+                }
+            } else {
+                setAuthorized(true);
+            }
+        };
+        checkAuth();
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: string, session: Session | null) => {
+            if (!session) {
+                if (pathname !== '/admin/login') {
+                    router.push('/admin/login');
+                }
+                setAuthorized(false);
+            } else {
+                setAuthorized(true);
+            }
+        });
+
+        return () => subscription.unsubscribe();
+    }, [supabase, router, pathname]);
+
+    const handleLogout = async () => {
+        try {
+            if (supabase) {
+                await supabase.auth.signOut();
+            }
+            router.push('/admin/login');
+        } catch (error) {
+            console.error('Logout failed', error);
+        }
+    };
 
     // If on login page, don't show the admin layout shell
     if (pathname === '/admin/login') {
         return <>{children}</>;
     }
 
-    const handleLogout = async () => {
-        try {
-            await fetch('/api/admin/auth/logout', { method: 'POST' });
-            router.push('/admin/login');
-        } catch (error) {
-            console.error('Logout failed', error);
-        }
-    };
+    if (!authorized) {
+        return <div className="min-h-screen flex items-center justify-center">Loading auth...</div>;
+    }
 
     const menuItems = [
         { name: '대시보드', href: '/admin', icon: LayoutDashboard },
@@ -49,6 +95,7 @@ export default function AdminLayout({
         { name: '갤러리', href: '/admin/gallery', icon: ImageIcon },
         { name: '사이트 링크', href: '/admin/links', icon: LinkIcon },
         { name: '하단 정보 (Footer)', href: '/admin/footer', icon: FileText },
+        { name: '환경 설정', href: '/admin/settings', icon: Settings },
     ];
 
     return (
@@ -57,8 +104,6 @@ export default function AdminLayout({
             <aside
                 className={`bg-white shadow-xl z-20 transition-all duration-300 ease-in-out fixed inset-y-0 left-0 md:relative ${isSidebarOpen ? 'w-64 translate-x-0' : 'w-0 -translate-x-full md:w-0 md:translate-x-0 overflow-hidden'
                     } ${!isSidebarOpen && 'hidden md:block md:w-0'}`}
-            // Note: The logic above for closing sidebar on desktop is a bit tricky with pure CSS classes due to layout shift.
-            // Let's settle for a simpler responsive sidebar.
             >
                 <div className={`h-full flex flex-col ${!isSidebarOpen ? 'hidden' : 'flex'}`}>
                     <div className="p-6 border-b border-gray-100 flex items-center justify-between">

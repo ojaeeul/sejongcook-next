@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { Save } from 'lucide-react';
-import Link from 'next/link';
 
 export default function AdminFooterPage() {
     const [loading, setLoading] = useState(true);

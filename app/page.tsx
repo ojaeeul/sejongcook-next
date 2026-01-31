@@ -1,130 +1,146 @@
 'use client';
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import noticeData from '../data/notice_data.json';
+import Image from "next/image";
+import { useEffect, useState, useMemo } from "react";
+// import noticeData from '../data/notice_data.json'; // Removed static import
 // import qnaData from '../data/qna_data.json'; // Removed static import
-import jobData from '../data/job_openings_data.json';
+// import jobData from '../data/job_openings_data.json'; // Removed static import
 import ActionCardSlider from "../components/ActionCardSlider";
 import MainPopup from "../components/MainPopup";
+import HeroBackground from "../components/HeroBackground";
 
 import { DEFAULT_HERO_DATA } from "./data/defaultHeroData";
+import initialHeroData from "./data/hero_data.json"; // Direct import for immediate render (SSR-like)
 
 export default function Home() {
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [heroData, setHeroData] = useState<typeof DEFAULT_HERO_DATA>(DEFAULT_HERO_DATA);
+  // const [currentSlide, setCurrentSlide] = useState(0); // REMOVED: Managed in HeroBackground
+  // Use imported data as initial state for immediate render
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [heroData, setHeroData] = useState<any>(initialHeroData || DEFAULT_HERO_DATA);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [latestQna, setLatestQna] = useState<any[]>([]); // Dynamic Q&A Data
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [noticeData, setNoticeData] = useState<any[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [jobData, setJobData] = useState<any[]>([]);
 
   useEffect(() => {
-    // Load Hero Data
+    // Optional: Re-fetch to get any admin updates since build
     const fetchHeroData = async () => {
       try {
         const res = await fetch('/api/hero', { cache: 'no-store' });
         if (res.ok) {
           const data = await res.json();
-          setHeroData({ ...DEFAULT_HERO_DATA, ...data });
+          // Only update if different
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          setHeroData((prev: any) => {
+            if (JSON.stringify(data) !== JSON.stringify(prev)) {
+              return data;
+            }
+            return prev;
+          });
         }
-      } catch (e) {
-        console.error("Failed to load hero data", e);
-        const saved = localStorage.getItem('heroData');
-        if (saved) {
-          try {
-            setHeroData({ ...DEFAULT_HERO_DATA, ...JSON.parse(saved) });
-          } catch (err) { }
-        }
-      }
-    };
-
-    // Load Q&A Data dynamically
-    const fetchQnaData = async () => {
-      try {
-        const res = await fetch('/api/admin/data/qna', { cache: 'no-store' });
-        if (res.ok) {
-          const data = await res.json();
-          // Sort or slice if needed, here we just expect the API to return the list
-          // Usually we want the latest, so we might need to sort by date or id if the API returns raw
-          // The admin API returns raw JSON. Let's assume raw order or sort desc.
-          // qna_data.json usually has newest first? Or random?
-          // Let's sort by date desc to be safe, or just take first 5
-          // If the JSON is appended (newest last), we should reverse.
-          // Let's assume newest last for appending, so reverse it.
-          // Wait, file operations usually append.
-          // Let's check typical behavior. Usually push() adds to end.
-          // So newest is at end.
-          if (Array.isArray(data)) {
-            setLatestQna([...data].reverse());
-          }
-        }
-      } catch (e) {
-        console.error("Failed to load Q&A data", e);
+      } catch {
+        // Silent fail is fine, we have initial data
       }
     };
 
     fetchHeroData();
-    fetchQnaData();
+
+    // Load Q&A Data dynamically
+    const fetchDashboardData = async () => {
+      try {
+        // Fetch QnA
+        const qnaRes = await fetch('/data/qna_data.json');
+        if (qnaRes.ok) {
+          const data = await qnaRes.json();
+          if (Array.isArray(data)) setLatestQna([...data].reverse());
+        }
+
+        // Fetch Notice
+        const noticeRes = await fetch('/data/notice_data.json');
+        if (noticeRes.ok) {
+          const data = await noticeRes.json();
+          if (Array.isArray(data)) setNoticeData(data);
+        }
+
+        // Fetch Job
+        const jobRes = await fetch('/data/job_openings_data.json');
+        if (jobRes.ok) {
+          const data = await jobRes.json();
+          if (Array.isArray(data)) setJobData(data);
+        }
+
+      } catch (e) {
+        console.error("Failed to load dashboard data", e);
+      }
+    };
+
+    fetchDashboardData();
   }, []);
 
   // Flatten photos for the hero background slider (taking the first image of each group or all if preferred)
-  // Here we take the first available image from each group to serve as the background cycle
-  const activeImages = (Array.isArray(heroData.photos) ? heroData.photos : [])
-    .map(group => Array.isArray(group) ? group[0] : group) // scalable if group is string (legacy) or array
-    .filter(p => p && typeof p === 'string');
+  // We use useMemo to ensure this array reference is stable and doesn't trigger effect re-runs on every render
+  const activeImages = useMemo(() => {
+    return (Array.isArray(heroData.photos) ? heroData.photos : [])
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .map((group: any) => Array.isArray(group) ? group[0] : group) // scalable if group is string (legacy) or array
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .filter((p: any) => p && typeof p === 'string');
+  }, [heroData.photos]);
 
-  const heroImages = activeImages.length > 0 ? activeImages : DEFAULT_HERO_DATA.photos.map(g => Array.isArray(g) ? g[0] : g as string);
+  const heroImages = useMemo(() => {
+    return activeImages.length > 0 ? activeImages : DEFAULT_HERO_DATA.photos.map(g => Array.isArray(g) ? g[0] : g as string);
+  }, [activeImages]);
 
-  useEffect(() => {
-    if (heroImages.length === 0) return;
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % heroImages.length);
-    }, 5000);
-    return () => clearInterval(timer);
-  }, [heroImages]);
+  // REMOVED: Interval effect moved to HeroBackground component
+  // useEffect(() => {
+  //   if (heroImages.length === 0) return;
+  //   const timer = setInterval(() => {
+  //     setCurrentSlide((prev) => (prev + 1) % heroImages.length);
+  //   }, 5000);
+  //   return () => clearInterval(timer);
+  // }, [heroImages]);
 
-  useEffect(() => {
-    // Simple intersection observer from original code
-    const observerOptions = {
-      root: null,
-      rootMargin: '0px',
-      threshold: 0.1
-    };
-    const observer = new IntersectionObserver((entries, observer) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('animate-visible');
-          observer.unobserve(entry.target);
-        }
-      });
-    }, observerOptions);
-    const animatedElements = document.querySelectorAll('[data-animate]');
-    animatedElements.forEach(el => observer.observe(el));
-    return () => observer.disconnect();
-  }, []);
+
+  // REMOVED: IntersectionObserver for stability
+  // useEffect(() => {
+  //   const observerOptions = {
+  //     root: null,
+  //     rootMargin: '0px',
+  //     threshold: 0.1
+  //   };
+  //   const observer = new IntersectionObserver((entries, observer) => {
+  //     entries.forEach(entry => {
+  //       if (entry.isIntersecting) {
+  //         entry.target.classList.add('animate-visible');
+  //         observer.unobserve(entry.target);
+  //       }
+  //     });
+  //   }, observerOptions);
+  //   const animatedElements = document.querySelectorAll('[data-animate]');
+  //   animatedElements.forEach(el => observer.observe(el));
+  //   return () => observer.disconnect();
+  // }, []); 
+
 
   return (
     <>
       <MainPopup />
       {/* Modern Hero Section */}
       <section className="hero-section" id="main-hero-section">
-        {/* Background Slider */}
-        <div className="absolute inset-0 z-0 overflow-hidden">
-          {heroImages.map((img: string, index: number) => (
-            <div
-              key={index}
-              className={`absolute inset-0 bg-cover bg-center bg-fixed transition-opacity duration-1000 ${index === currentSlide ? 'opacity-100' : 'opacity-0'}`}
-              style={{ backgroundImage: `url('${img}')` }}
-            />
-          ))}
-          <div className="absolute inset-0 bg-black/50 z-10" />
-        </div>
+        {/* Background Slider - Isolated State */}
+        <HeroBackground images={heroImages} />
 
-        <div className="hero-content relative z-20">
-          <span className="hero-badge" data-animate="" style={{
+        <div className="hero-content relative z-20 pointer-events-none">
+          <span className="hero-badge pointer-events-auto" style={{
             fontSize: heroData?.badgeSize || '1rem',
             fontWeight: heroData?.badgeBold ? '700' : '400'
           }}>
             {heroData?.badge || "프리미엄 요리 제과 아카데미"}
           </span>
-          <h1 className="hero-title delay-100" data-animate="" style={{
+          <h1 className="hero-title pointer-events-auto" style={{
             fontSize: heroData?.titleSize || '3.5rem',
             fontWeight: heroData?.titleBold ? '700' : '400'
           }}>
@@ -138,14 +154,14 @@ export default function Home() {
               {heroData?.desc || "꿈을 향한 맛있는 도전"}
             </span>
           </h1>
-          <p className="hero-subtitle delay-200" data-animate="" style={{
+          <p className="hero-subtitle pointer-events-auto" style={{
             whiteSpace: 'pre-line',
             fontSize: heroData?.longDescSize || '1.2rem',
             fontWeight: heroData?.longDescBold ? '900' : '400' // Keeping 900 for longDesc as it was font-black
           }}>
             {heroData?.longDesc || "최고의 강사진이 여러분의 꿈을 현실로 만들어드립니다.\n자격증 취득부터 창업까지, 전문가가 함께합니다."}
           </p>
-          <div className="hero-buttons delay-300" data-animate="">
+          <div className="hero-buttons pointer-events-auto">
             <Link href={heroData?.btn1Link || "/course/baking"} className="btn-hero btn-primary" id="hero-btn-primary">
               {heroData?.btn1Text || "과정리뷰하기"}
             </Link>
@@ -156,8 +172,7 @@ export default function Home() {
           {/* Phone Banner Layout - Moved inside hero-content for correct flow */}
           {heroData?.phoneVisible && (
             <div
-              className={`mt-6 animate-visible delay-500 flex justify-center w-full`}
-              data-animate=""
+              className={`mt-6 flex justify-center w-full pointer-events-auto`}
             >
               <div style={{
                 background: heroData.phoneBackgroundColor || 'rgba(0, 0, 0, 0.4)',
@@ -174,7 +189,14 @@ export default function Home() {
                 <div className="font-bold text-gray-800">
                   {heroData.phoneIcon ? (
                     heroData.phoneIcon.startsWith('http') || heroData.phoneIcon.startsWith('/') || heroData.phoneIcon.startsWith('data:') ? (
-                      <img src={heroData.phoneIcon} alt="icon" className="w-8 h-8 object-cover rounded-full" />
+                      <div className="relative w-8 h-8 rounded-full overflow-hidden">
+                        <Image
+                          src={heroData.phoneIcon}
+                          alt="icon"
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
                     ) : (
                       <span className="text-2xl">{heroData.phoneIcon}</span>
                     )
@@ -200,7 +222,7 @@ export default function Home() {
             </div>
           )}
         </div>
-      </section>
+      </section >
 
       {/* Modern Quick Links Grid */}
       < section className="modern-container" >
@@ -212,7 +234,7 @@ export default function Home() {
 
         <div className="card-grid-3">
           {/* Card 1 */}
-          <Link href="/intro" className="info-card delay-100" data-animate="">
+          <Link href="/intro" className="info-card">
             <div style={{ height: '240px', overflow: 'hidden' }}>
               <ActionCardSlider
                 images={Array.isArray(heroData.photos[0]) ? heroData.photos[0] : []}
@@ -228,7 +250,7 @@ export default function Home() {
           </Link>
 
           {/* Card 2 */}
-          <Link href="/course/baking" className="info-card delay-200" data-animate="">
+          <Link href="/course/baking" className="info-card">
             <div style={{ height: '240px', overflow: 'hidden' }}>
               <ActionCardSlider
                 images={Array.isArray(heroData.photos[1]) ? heroData.photos[1] : []}
@@ -243,7 +265,7 @@ export default function Home() {
           </Link>
 
           {/* Card 3 */}
-          <Link href="/course/cooking/license" className="info-card delay-300" data-animate="">
+          <Link href="/course/cooking/license" className="info-card">
             <div style={{ height: '240px', overflow: 'hidden' }}>
               <ActionCardSlider
                 images={Array.isArray(heroData.photos[2]) ? heroData.photos[2] : []}
@@ -258,7 +280,7 @@ export default function Home() {
           </Link>
 
           {/* Card 4 */}
-          <Link href="/info/schedule" className="info-card delay-100" data-animate="">
+          <Link href="/info/schedule" className="info-card">
             <div style={{ height: '240px', overflow: 'hidden' }}>
               <ActionCardSlider
                 images={Array.isArray(heroData.photos[3]) ? heroData.photos[3] : []}
@@ -273,7 +295,7 @@ export default function Home() {
           </Link>
 
           {/* Card 5 */}
-          <Link href="/course/cooking/license#brunch" className="info-card delay-200" data-animate="">
+          <Link href="/course/cooking/license#brunch" className="info-card">
             <div style={{ height: '240px', overflow: 'hidden' }}>
               <ActionCardSlider
                 images={Array.isArray(heroData.photos[4]) ? heroData.photos[4] : []}
@@ -288,7 +310,7 @@ export default function Home() {
           </Link>
 
           {/* Card 6 */}
-          <Link href="/community/notice" className="info-card delay-300" data-animate="">
+          <Link href="/community/notice" className="info-card">
             <div style={{ height: '240px', overflow: 'hidden' }}>
               <ActionCardSlider
                 images={Array.isArray(heroData.photos[5]) ? heroData.photos[5] : []}
@@ -332,7 +354,7 @@ export default function Home() {
             <p style={{ fontSize: '1.1rem', color: '#666' }}>세종요리제과기술학원의 새로운 소식입니다.</p>
           </div>
 
-          <div className="updates-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '30px' }}>
+          <div className="updates-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '30px', minHeight: '300px' }}>
             {/* Notice */}
             <div className="update-column" style={{ background: '#fff', padding: '30px', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
               <div className="column-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #f5a623', paddingBottom: '15px', marginBottom: '20px' }}>
@@ -342,7 +364,7 @@ export default function Home() {
               <ul className="latest-list space-y-3">
                 {noticeData.slice(0, 5).map(item => (
                   <li key={item.id} className="flex justify-between items-center group cursor-pointer" style={{ borderBottom: '1px solid #f0f0f0', paddingBottom: '10px' }}>
-                    <Link href={`/community/notice/${item.id}`} className="text-gray-700 hover:text-[#f5a623] transition-colors truncate flex-1 text-sm font-medium block">
+                    <Link href={`/community/notice/view?id=${item.id}`} className="text-gray-700 hover:text-[#f5a623] transition-colors truncate flex-1 text-sm font-medium block">
                       {item.title}
                     </Link>
                     <span className="text-xs text-gray-400 ml-2 whitespace-nowrap">{item.date}</span>
@@ -360,7 +382,7 @@ export default function Home() {
               <ul className="latest-list space-y-3">
                 {latestQna.slice(0, 5).map(item => (
                   <li key={item.id} className="flex justify-between items-center group cursor-pointer" style={{ borderBottom: '1px solid #f0f0f0', paddingBottom: '10px' }}>
-                    <Link href={`/community/qna/${item.id}`} className="text-gray-700 hover:text-[#f5a623] transition-colors truncate flex-1 text-sm font-medium block">
+                    <Link href={`/community/qna/view?id=${item.id}`} className="text-gray-700 hover:text-[#f5a623] transition-colors truncate flex-1 text-sm font-medium block">
                       {item.title}
                     </Link>
                     <span className="text-xs text-gray-400 ml-2 whitespace-nowrap">{item.date}</span>
@@ -378,7 +400,7 @@ export default function Home() {
               <ul className="latest-list space-y-3">
                 {jobData.slice(0, 5).map(item => (
                   <li key={item.id} className="flex justify-between items-center group cursor-pointer" style={{ borderBottom: '1px solid #f0f0f0', paddingBottom: '10px' }}>
-                    <Link href={`/job/openings/${item.id}`} className="text-gray-700 hover:text-[#f5a623] transition-colors truncate flex-1 text-sm font-medium block">
+                    <Link href={`/job/openings/view?id=${item.id}`} className="text-gray-700 hover:text-[#f5a623] transition-colors truncate flex-1 text-sm font-medium block">
                       {item.title}
                     </Link>
                     <span className="text-xs text-gray-400 ml-2 whitespace-nowrap">{item.date}</span>

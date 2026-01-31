@@ -4,7 +4,7 @@ import IntroSidebar from "@/components/IntroSidebar";
 import ActionButtons from "@/components/ActionButtons";
 import Editor from "@/components/Editor";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useState, useEffect, Suspense } from "react";
+import { useState, Suspense } from "react";
 import SuccessModal from "@/components/SuccessModal";
 
 function IntroContent() {
@@ -133,35 +133,37 @@ function IntroContent() {
 
     return (
         <div className="container_2" style={{ flexGrow: 1 }}>
-            <div className="sub_title_381227_">
-                <h1 className="text-2xl font-bold mb-4">인사말 {isEdit && <span className="text-sm text-red-500 font-normal ml-2">- 수정 모드</span>}</h1>
-            </div>
-            <div style={{ marginBottom: '20px' }}>
-                <span className="solid_line_381231_"></span>
-            </div>
-
             {/* Content Body */}
-            <div className="layout_381268_">
-                {isEdit ? (
-                    <div className="editor-wrapper min-h-[400px]">
-                        <Editor content={content} onChange={setContent} />
-                        <div className="flex justify-end gap-2 mt-4">
-                            <button onClick={handleSave} className="bg-blue-600 text-white px-6 py-2 rounded font-bold hover:bg-blue-700">저장하기</button>
-                            <button onClick={() => router.push('/intro')} className="bg-gray-500 text-white px-6 py-2 rounded font-bold hover:bg-gray-600">취소</button>
-                        </div>
+            <div className="flex-grow">
+                <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 min-h-[600px]">
+                    <div className="mb-6">
+                        <h1 className="text-3xl font-bold mb-4 text-black">인사말 {isEdit && <span className="text-sm text-red-500 font-normal ml-2">- 수정 모드</span>}</h1>
+                        <div className="border-b-2 border-black pb-2"></div>
                     </div>
-                ) : (
-                    <>
-                        <div dangerouslySetInnerHTML={{ __html: content }} />
 
-                        {/* Action Buttons */}
-                        <ActionButtons
-                            listLink="/intro"
-                            editLink="/intro?mode=edit"
-                            onDelete={() => alert('기본 페이지는 삭제할 수 없습니다.')}
-                        />
-                    </>
-                )}
+                    <div className="layout_381268_">
+                        {isEdit ? (
+                            <div className="editor-wrapper min-h-[400px]">
+                                <Editor content={content} onChange={setContent} />
+                                <div className="flex justify-end gap-2 mt-4">
+                                    <button onClick={handleSave} className="bg-blue-600 text-white px-6 py-2 rounded font-bold hover:bg-blue-700">저장하기</button>
+                                    <button onClick={() => router.push('/intro')} className="bg-gray-500 text-white px-6 py-2 rounded font-bold hover:bg-gray-600">취소</button>
+                                </div>
+                            </div>
+                        ) : (
+                            <>
+                                <div dangerouslySetInnerHTML={{ __html: content }} />
+
+                                {/* Action Buttons */}
+                                <ActionButtons
+                                    listLink="/intro"
+                                    editLink="/intro?mode=edit"
+                                    onDelete={() => alert('기본 페이지는 삭제할 수 없습니다.')}
+                                />
+                            </>
+                        )}
+                    </div>
+                </div>
             </div>
 
             {/* Success Modal */}
@@ -178,9 +180,7 @@ export default function IntroPage() {
         <div className="modern-container" style={{ padding: '40px 0' }}>
             <div className="layout_381226_ grid_left flex flex-col xl:flex-row gap-10">
                 {/* Sidebar */}
-                <div className="w-full xl:w-[250px] flex-shrink-0">
-                    <IntroSidebar />
-                </div>
+                <IntroSidebar />
 
                 <Suspense fallback={<div>Loading content...</div>}>
                     <IntroContent />

@@ -1,6 +1,6 @@
 
 import Link from 'next/link';
-import { MouseEvent } from 'react';
+import Image from 'next/image';
 
 interface Schedule {
     label: string;
@@ -45,7 +45,7 @@ interface Props {
 }
 
 export default function CourseRecruitPopup({ content, onClose, link }: Props) {
-    const handleBackgroundClick = (e: MouseEvent) => {
+    const handleBackgroundClick = () => {
         // Prevent click from propagating
         // e.stopPropagation();
     };
@@ -72,10 +72,12 @@ export default function CourseRecruitPopup({ content, onClose, link }: Props) {
 
             {/* Background Layer */}
             <div className="absolute inset-0 z-0">
-                <img
+                <Image
                     src={content.mainImage}
                     alt="Background"
-                    className="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-110"
+                    fill
+                    className="object-cover transition-transform duration-[2s] group-hover:scale-110"
+                    priority
                 />
                 {/* Cinematic Gradient: Only show if text is visible to improve readability */}
                 {showText && <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 via-30% to-transparent"></div>}

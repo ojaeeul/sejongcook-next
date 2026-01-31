@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import CourseRecruitPopup, { CourseRecruitContent } from './templates/CourseRecruitPopup';
 
@@ -27,6 +28,7 @@ export default function MainPopup() {
     const pathname = usePathname();
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setMounted(true);
         fetch('/api/admin/popups')
             .then(res => res.json())
@@ -112,9 +114,12 @@ export default function MainPopup() {
                         <>
                             <div className="relative">
                                 <Link href={popup.link}>
-                                    <img
+                                    <Image
                                         src={popup.imageUrl || ''}
                                         alt={popup.title}
+                                        width={0}
+                                        height={0}
+                                        sizes="100vw"
                                         style={{
                                             width: '100%',
                                             height: 'auto',

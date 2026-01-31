@@ -1,30 +1,30 @@
+'use client';
 
-import BoardList from "@/components/BoardList";
-import { promises as fs } from 'fs';
-import path from 'path';
+import BoardList, { Post } from "@/components/BoardList";
+import { useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabase';
 
-interface Post {
-    id: string;
-    title: string;
-    author: string;
-    date: string;
-    hit: string;
-    content?: string;
-}
+export default function SitesPage() {
+    const [posts, setPosts] = useState<Post[]>([]);
 
-async function getSites() {
-    const filePath = path.join(process.cwd(), 'data', 'sites_data.json');
-    try {
-        const fileContents = await fs.readFile(filePath, 'utf8');
-        const data: Post[] = JSON.parse(fileContents);
-        return data; // Usually few items
-    } catch (e) {
-        return [];
-    }
-}
+    useEffect(() => {
+        const fetchSites = async () => {
+            try {
+                const { data: items, error } = await supabase
+                    .from('posts')
+                    .select('*')
+                    .eq('board_type', 'sites')
+                    .order('created_at', { ascending: false });
 
-export default async function SitesPage() {
-    const posts = await getSites();
+                if (error) throw error;
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                setPosts(items as any[] || []);
+            } catch (e) {
+                console.error("Failed to load sites:", e);
+            }
+        };
+        fetchSites();
+    }, []);
 
     return (
         <>
@@ -39,6 +39,7 @@ export default async function SitesPage() {
                 boardCode="sites"
                 boardName="관련사이트"
                 posts={posts}
+                showWriteButton={false}
             />
         </>
     );

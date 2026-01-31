@@ -2,7 +2,7 @@
 
 import CourseSidebar from "@/components/CourseSidebar";
 import Link from "next/link";
-import { Suspense } from "react";
+import NextImage from "next/image";
 
 function CourseListContent() {
     const courses = [
@@ -27,10 +27,12 @@ function CourseListContent() {
                     <Link key={course.id} href={`/course/${course.id}`} className="block border rounded-lg overflow-hidden hover:shadow-lg transition-shadow bg-white">
                         <div className="h-40 bg-gray-100 relative overflow-hidden flex items-center justify-center">
                             {/* Simple image handling */}
-                            <img src={course.img} alt={course.title} className="object-cover w-full h-full"
-                                onError={(e) => {
-                                    (e.target as HTMLImageElement).src = 'https://via.placeholder.com/300x200?text=No+Image';
-                                }}
+                            <NextImage
+                                src={course.img}
+                                alt={course.title}
+                                fill
+                                className="object-cover"
+                                sizes="(max-width: 768px) 100vw, 50vw"
                             />
                         </div>
                         <div className="p-4">

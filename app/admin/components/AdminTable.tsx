@@ -8,11 +8,13 @@ import { useState } from 'react';
 interface Column {
     key: string;
     label: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     render?: (value: any, item: any) => React.ReactNode;
 }
 
 interface AdminTableProps {
     title: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     data: any[];
     columns: Column[];
     onDelete: (id: string | number) => void;

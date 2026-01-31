@@ -15,6 +15,8 @@ import { getSettings } from "@/lib/settings";
 
 // ... existing metadata ...
 
+import { AuthProvider } from "@/context/AuthContext";
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -38,11 +40,13 @@ export default async function RootLayout({
         <link rel="stylesheet" href="/css/quick_menu.css" />
       </head>
       <body className="antialiased" suppressHydrationWarning>
-        <Header initialShowAuthLinks={settings.showAuthLinks} />
-        <main style={{ minHeight: '600px' }}>
-          {children}
-        </main>
-        <Footer />
+        <AuthProvider>
+          <Header initialShowAuthLinks={settings.showAuthLinks} />
+          <main style={{ minHeight: '600px' }}>
+            {children}
+          </main>
+          <Footer />
+        </AuthProvider>
       </body>
     </html>
   );

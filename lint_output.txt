@@ -1,0 +1,152 @@
+
+> sejongcook-next@0.1.0 lint
+> eslint
+
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/admin/components/DataEditor.tsx
+  19:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  36:89  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  86:50  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/admin/footer/page.tsx
+  5:8  warning  'Link' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/admin/hero/page.tsx
+  326:53  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/admin/inquiry/page.tsx
+  6:20  error  Parsing error: JSX expressions must have one parent element
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/admin/job-openings/edit/[id]/page.tsx
+  18:44  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/admin/links/edit/[id]/page.tsx
+  17:44  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/admin/login/page.tsx
+  36:18  warning  'err' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/admin/notice/edit/[id]/page.tsx
+  17:44  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/admin/qna/edit/[id]/page.tsx
+  17:44  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/admin/review/edit/[id]/page.tsx
+  17:44  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/admin/teachers/page.tsx
+  172:41  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  264:37  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/api/admin/auth/login/route.ts
+  30:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/api/admin/data/[key]/route.ts
+  23:18  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  28:21  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  58:21  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/api/admin/data/members/route.ts
+  35:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  49:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/api/admin/data/settings/route.ts
+  28:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  47:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/api/admin/footer/route.ts
+  27:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  44:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/api/admin/images/route.ts
+   19:26  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   37:22  warning  'e' is defined but never used             @typescript-eslint/no-unused-vars
+   57:14  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+   81:14  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+   94:14  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  107:57  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  116:50  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  128:14  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/api/admin/popups/route.ts
+  25:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/api/settings/route.ts
+  23:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  42:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/api/teachers/route.ts
+  15:14  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  24:19  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  24:27  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/community/honor/[idx]/page.tsx
+  21:14  warning  'e' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/community/honor/page.tsx
+  20:14  warning  'e' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/community/notice/page.tsx
+  21:14  warning  'e' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/community/qna/[idx]/page.tsx
+  21:14  warning  'e' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/community/qna/page.tsx
+  23:14  warning  'e' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/community/review/[idx]/page.tsx
+  21:14  warning  'e' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/community/sites/[idx]/page.tsx
+  21:14  warning  'e' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/community/sites/page.tsx
+  21:14  warning  'e' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/course/baking/board/write/page.tsx
+  11:11  warning  'router' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/course/baking/gallery/page.tsx
+  71:45  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/course/baking/page.tsx
+  262:33  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/course/dessert/[id]/page.tsx
+  1:8  warning  'ActionButtons' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/course/page.tsx
+   5:10  warning  'Suspense' is defined but never used                                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+  30:29  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/intro/page.tsx
+  7:20  warning  'useEffect' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/intro/teachers/page.tsx
+    5:10  warning  'useSearchParams' is defined but never used                                                                                                                                                                                                                                              @typescript-eslint/no-unused-vars
+    5:27  warning  'useRouter' is defined but never used                                                                                                                                                                                                                                                    @typescript-eslint/no-unused-vars
+  118:41  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/job/openings/[idx]/page.tsx
+  21:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  46:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/job/openings/page.tsx
+  25:49  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/layout.tsx
+  30:9  warning  Custom fonts not added in `pages/_document.js` will only load for a single page. This is discouraged. See: https://nextjs.org/docs/messages/no-page-custom-font  @next/next/no-page-custom-font
+  33:9  warning  Do not include stylesheets manually. See: https://nextjs.org/docs/messages/no-css-tags                                                                           @next/next/no-css-tags
+  34:9  warning  Do not include stylesheets manually. See: https://nextjs.org/docs/messages/no-css-tags                                                                           @next/next/no-css-tags
+  35:9  warning  Do not include stylesheets manually. See: https://nextjs.org/docs/messages/no-css-tags                                                                           @next/next/no-css-tags
+  36:9  warning  Do not include stylesheets manually. See: https://nextjs.org/docs/messages/no-css-tags                                                                           @next/next/no-css-tags
+  37:9  warning  Do not include stylesheets manually. See: https://nextjs.org/docs/messages/no-css-tags                                                                           @next/next/no-css-tags
+  38:9  warning  Do not include stylesheets manually. See: https://nextjs.org/docs/messages/no-css-tags                                                                           @next/next/no-css-tags
+
+/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejongcook_3/sejongcook-next/app/login/page.tsx
+  3:10  warning  'useState' is defined but never used  @typescript-eslint/no-unused-vars
+
+✖ 67 problems (20 errors, 47 warnings)
+

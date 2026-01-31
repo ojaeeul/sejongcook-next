@@ -18,7 +18,7 @@ function Content() {
     // Load data on mount from timetable endpoint
     const fetchData = async () => {
         try {
-            const res = await fetch('/api/admin/data/timetable');
+            const res = await fetch('/api/admin/data/timetable', { cache: 'no-store' });
             if (res.ok) {
                 const data = await res.json();
                 if (data && data.content) {
@@ -70,33 +70,33 @@ function Content() {
     if (loading) return <div className="p-10 text-center">Loading...</div>;
 
     return (
-        <div className="container_2" style={{ flexGrow: 1 }}>
-            <div className="sub_title_381227_">
-                <h1 className="text-2xl font-bold mb-4">시간표 {isEdit && <span className="text-sm text-red-500 font-normal ml-2">- 수정 모드</span>}</h1>
-            </div>
-            <div style={{ marginBottom: '20px' }}>
-                <span className="solid_line_381231_"></span>
-            </div>
+        <div className="flex-grow" id="top">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 min-h-[600px]">
+                <div className="mb-6">
+                    <h1 className="text-3xl font-bold mb-4 text-black">시간표 {isEdit && <span className="text-sm text-red-500 font-normal ml-2">- 수정 모드</span>}</h1>
+                    <div className="border-b-2 border-black pb-2"></div>
+                </div>
 
-            <div className="font-sans">
-                {isEdit ? (
-                    <div className="editor-wrapper min-h-[400px]">
-                        <Editor content={content} onChange={setContent} />
-                        <div className="flex justify-end gap-2 mt-4">
-                            <button onClick={handleSave} className="bg-blue-600 text-white px-6 py-2 rounded font-bold hover:bg-blue-700">저장하기</button>
-                            <button onClick={() => router.push('/info/timetable')} className="bg-gray-500 text-white px-6 py-2 rounded font-bold hover:bg-gray-600">취소</button>
+                <div className="font-sans">
+                    {isEdit ? (
+                        <div className="editor-wrapper min-h-[400px]">
+                            <Editor content={content} onChange={setContent} />
+                            <div className="flex justify-end gap-2 mt-4">
+                                <button onClick={handleSave} className="bg-blue-600 text-white px-6 py-2 rounded font-bold hover:bg-blue-700">저장하기</button>
+                                <button onClick={() => router.push('/info/timetable')} className="bg-gray-500 text-white px-6 py-2 rounded font-bold hover:bg-gray-600">취소</button>
+                            </div>
                         </div>
-                    </div>
-                ) : (
-                    <>
-                        <div dangerouslySetInnerHTML={{ __html: content }} />
-                        <ActionButtons
-                            listLink="/info/timetable"
-                            editLink="/info/timetable?mode=edit"
-                            onDelete={() => alert("삭제 권한이 없습니다.")}
-                        />
-                    </>
-                )}
+                    ) : (
+                        <>
+                            <div className="timetable-content" dangerouslySetInnerHTML={{ __html: content }} />
+                            <ActionButtons
+                                listLink="/info/timetable#top"
+                                editLink="/info/timetable?mode=edit"
+                                onDelete={() => alert("삭제 권한이 없습니다.")}
+                            />
+                        </>
+                    )}
+                </div>
             </div>
 
 

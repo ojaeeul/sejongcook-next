@@ -1,16 +1,45 @@
-import BoardList from "@/components/BoardList";
+'use client';
+
+import BoardList, { Post } from "@/components/BoardList";
+import { useEffect, useState } from "react";
 
 export default function ReviewPage() {
-    const reviews = [
-        { id: '1', title: '한식조리기능사 합격 후기입니다!', author: '김철수', date: '2026-01-15', hit: '45' },
-        { id: '2', title: '제과제빵 창업반 수료했어요~', author: '이영희', date: '2026-01-18', hit: '32' },
-    ];
+    const [posts, setPosts] = useState<Post[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchPosts = async () => {
+            try {
+                const res = await fetch('/data/review_data.json');
+                const data = await res.json();
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const mappedPosts: Post[] = data.map((item: any) => ({
+                    id: item.id,
+                    title: item.title,
+                    author: item.author || '학생',
+                    date: item.date,
+                    hit: item.hit || 0,
+                    content: item.content
+                }));
+                setPosts(mappedPosts);
+            } catch (err) {
+                console.error('Error fetching reviews:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchPosts();
+    }, []);
+
+    if (loading) return <div className="p-10 text-center">Loading...</div>;
 
     return (
         <BoardList
             boardCode="review"
             boardName="수강후기"
-            posts={reviews}
+            posts={posts}
+            showWriteButton={false}
         />
     );
 }

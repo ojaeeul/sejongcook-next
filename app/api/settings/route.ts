@@ -1,9 +1,8 @@
-
 import { NextResponse } from 'next/server';
-import fs from 'fs/promises';
+import { promises as fs } from 'fs';
 import path from 'path';
 
-const SETTINGS_FILE_PATH = path.join(process.cwd(), 'data', 'settings.json');
+const DATA_FILE_PATH = path.join(process.cwd(), 'public', 'data', 'settings.json');
 
 const DEFAULT_SETTINGS = {
     showAuthLinks: true
@@ -11,16 +10,11 @@ const DEFAULT_SETTINGS = {
 
 export async function GET() {
     try {
-        try {
-            await fs.access(SETTINGS_FILE_PATH);
-        } catch {
-            return NextResponse.json(DEFAULT_SETTINGS);
-        }
-
-        const fileContent = await fs.readFile(SETTINGS_FILE_PATH, 'utf-8');
+        const fileContent = await fs.readFile(DATA_FILE_PATH, 'utf-8');
         const data = JSON.parse(fileContent);
-        return NextResponse.json({ ...DEFAULT_SETTINGS, ...data });
+        return NextResponse.json(data);
     } catch (error) {
+        // If file doesn't exist, return default data
         return NextResponse.json(DEFAULT_SETTINGS);
     }
 }
@@ -28,18 +22,10 @@ export async function GET() {
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-
-        // Ensure directory exists
-        const dir = path.dirname(SETTINGS_FILE_PATH);
-        try {
-            await fs.access(dir);
-        } catch {
-            await fs.mkdir(dir, { recursive: true });
-        }
-
-        await fs.writeFile(SETTINGS_FILE_PATH, JSON.stringify(body, null, 2), 'utf-8');
+        await fs.writeFile(DATA_FILE_PATH, JSON.stringify(body, null, 2), 'utf-8');
         return NextResponse.json({ success: true });
     } catch (error) {
+        console.error('Failed to save settings:', error);
         return NextResponse.json({ error: 'Failed to save settings' }, { status: 500 });
     }
 }

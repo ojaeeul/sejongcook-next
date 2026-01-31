@@ -15,8 +15,11 @@ export interface Post {
     content?: string;
 }
 
-export default function BoardList({ boardCode, boardName, posts, basePath = '/community' }: { boardCode: string, boardName: string, posts: Post[], basePath?: string }) {
+import { useAuth } from "@/context/AuthContext";
+
+export default function BoardList({ boardCode, boardName, posts, basePath = '/community', showWriteButton = true }: { boardCode: string, boardName: string, posts: Post[], basePath?: string, showWriteButton?: boolean }) {
     const router = useRouter();
+    const { isAdmin } = useAuth();
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
 
@@ -37,8 +40,33 @@ export default function BoardList({ boardCode, boardName, posts, basePath = '/co
     };
 
     const handleRowClick = (postId: string | number) => {
-        const url = `${basePath ? basePath : ''}/${boardCode}/${postId}`;
+        // Use query param for static export compatibility
+        const url = `${basePath ? basePath : ''}/${boardCode}/view?id=${postId}`;
         router.push(url);
+    };
+
+    const handleAdminEdit = (e: React.MouseEvent, postId: string | number) => {
+        e.stopPropagation(); // Prevent row click
+
+        let adminSection = boardCode;
+        if (boardCode === 'seekers') adminSection = 'job-seekers';
+        if (boardCode === 'cooking') adminSection = 'cooking-board';
+        if (boardCode === 'baking') adminSection = 'baking-board';
+        if (boardCode === 'honor') adminSection = 'honor'; // matches
+
+        // Use query param for admin edit as well
+        router.push(`/admin/${adminSection}/edit?id=${postId}`);
+    };
+
+    // Determine Write Link
+    const getWriteLink = () => {
+        if (showWriteButton) return `${basePath ? basePath + '/' : ''}${boardCode}/write`;
+        // If restricted board (showWriteButton=false) and Admin:
+        let adminSection = boardCode;
+        if (boardCode === 'seekers') adminSection = 'job-seekers';
+        if (boardCode === 'cooking') adminSection = 'cooking-board';
+        if (boardCode === 'baking') adminSection = 'baking-board';
+        return `/admin/${adminSection}/new`;
     };
 
     return (
@@ -69,11 +97,13 @@ export default function BoardList({ boardCode, boardName, posts, basePath = '/co
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                     </button>
-                    <Link href={`${basePath}/${boardCode}/write`} className="hover:text-gray-600 transition-colors" title="글쓰기">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                        </svg>
-                    </Link>
+                    {(showWriteButton || isAdmin) && (
+                        <Link href={getWriteLink()} className={`hover:text-gray-600 transition-colors ${!showWriteButton && isAdmin ? 'text-red-500' : ''}`} title={!showWriteButton && isAdmin ? "관리자 글쓰기" : "글쓰기"}>
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                            </svg>
+                        </Link>
+                    )}
                 </div>
             </div>
 
@@ -87,11 +117,12 @@ export default function BoardList({ boardCode, boardName, posts, basePath = '/co
                             <th className="py-3 w-[100px] hidden md:table-cell">이름</th>
                             <th className="py-3 w-[120px] hidden md:table-cell">날짜</th>
                             <th className="py-3 w-[80px] hidden md:table-cell">조회수</th>
+                            {isAdmin && <th className="py-3 w-[60px]">관리</th>}
                         </tr>
                     </thead>
                     <tbody>
                         {currentPosts.length === 0 ? (
-                            <tr><td colSpan={5} className="py-10 text-gray-500">게시물이 없습니다.</td></tr>
+                            <tr><td colSpan={isAdmin ? 6 : 5} className="py-10 text-gray-500">게시물이 없습니다.</td></tr>
                         ) : (
                             currentPosts.map((post, index) => (
                                 <tr
@@ -125,6 +156,20 @@ export default function BoardList({ boardCode, boardName, posts, basePath = '/co
                                     <td className="py-4 text-gray-500 hidden md:table-cell">{post.author}</td>
                                     <td className="py-4 text-gray-500 font-sans hidden md:table-cell">{post.date}</td>
                                     <td className="py-4 text-gray-500 font-sans hidden md:table-cell">{post.hit}</td>
+                                    {isAdmin && (
+                                        <td className="py-4 text-gray-500">
+                                            <button
+                                                onClick={(e) => handleAdminEdit(e, post.id)}
+                                                className="text-gray-400 hover:text-blue-600 transition-colors p-1"
+                                                title="수정"
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                                </svg>
+                                            </button>
+                                        </td>
+                                    )}
                                 </tr>
                             ))
                         )}

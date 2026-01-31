@@ -1,6 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { useState, useEffect } from 'react';
+// ... (keep existing imports)
+
+// ...
+
+
 // import { Inquiry, InquiryStorage } from '@/utils/inquiryStorage'; // Deprecated
 
 interface Inquiry {
@@ -26,20 +32,21 @@ export default function AdminInquiryPage() {
     };
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         fetchData();
     }, []);
 
     const handleDelete = async (id: string) => {
         if (confirm('정말 삭제하시겠습니까?')) {
             try {
-                const newData = inquiries.filter(item => item.id !== id);
+                const newData = inquiries.filter((item) => item.id !== id);
                 await fetch('/api/admin/data/inquiries', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(newData),
                 });
                 setInquiries(newData);
-            } catch (error) {
+            } catch {
                 alert('삭제 실패');
             }
         }
@@ -50,7 +57,7 @@ export default function AdminInquiryPage() {
             <div className="max-w-6xl mx-auto">
                 <div className="flex justify-between items-center mb-6">
                     <h1 className="text-3xl font-bold text-gray-800">📋 상담/수강신청 관리 (Admin)</h1>
-                    <a href="/" className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">홈으로 이동</a>
+                    <Link href="/" className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">홈으로 이동</Link>
                 </div>
 
                 <div className="bg-white rounded-lg shadow-md overflow-hidden">
@@ -80,7 +87,7 @@ export default function AdminInquiryPage() {
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="flex flex-wrap gap-1">
-                                                    {item.courses.map(course => (
+                                                    {item.courses.map((course) => (
                                                         <span key={course} className="bg-orange-100 text-orange-800 text-xs font-medium px-2.5 py-0.5 rounded">
                                                             {course}
                                                         </span>

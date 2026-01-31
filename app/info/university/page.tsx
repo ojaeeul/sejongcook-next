@@ -5,13 +5,9 @@ import ActionButtons from "@/components/ActionButtons";
 import Editor from "@/components/Editor";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useState, Suspense } from "react";
+import SuccessModal from "@/components/SuccessModal";
 
-function Content() {
-    const searchParams = useSearchParams();
-    const router = useRouter();
-    const isEdit = searchParams.get('mode') === 'edit';
-
-    const [content, setContent] = useState(`
+const INITIAL_CONTENT = `
         <div class="font-sans">
             <!-- Original Content (Restored) -->
             <div style="margin-top: 20px; margin-bottom: 20px;">
@@ -279,12 +275,6 @@ function Content() {
                 </div>
             </div>
 
-                </div>
-            </div>
-
-                </div>
-            </div>
-
             <!-- Detailed Strategy (Academics & Certifications) -->
             <div class="bg-orange-50 p-6 rounded-lg border border-orange-100 mb-8">
                 <h3 class="font-bold text-xl mb-6 text-center text-orange-800">🚀 합격을 위한 필수 준비 전략</h3>
@@ -430,43 +420,64 @@ function Content() {
                 매년 달라지는 입시 요강을 반드시 대학 홈페이지에서 재확인하시기 바랍니다.
             </div>
         </div>
-    `);
+`;
+
+function Content() {
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const isEdit = searchParams.get('mode') === 'edit';
+
+    const [content, setContent] = useState(INITIAL_CONTENT);
 
     const handleSave = () => {
-        if (confirm("저장하시겠습니까?")) {
-            alert("저장되었습니다. (데모)");
-            router.push('/info/university');
-        }
+        // if (confirm("저장하시겠습니까?")) {
+        //     alert("저장되었습니다. (데모)");
+        //     router.push('/info/university');
+        // }
+        setShowSuccessModal(true);
     };
 
-    return (
-        <div className="container_2" style={{ flexGrow: 1 }}>
-            <div className="sub_title_381227_">
-                <h1 className="text-2xl font-bold mb-4">대학진학 {isEdit && <span className="text-sm text-red-500 font-normal ml-2">- 수정 모드</span>}</h1>
-            </div>
-            <div style={{ marginBottom: '20px' }}>
-                <span className="solid_line_381231_"></span>
-            </div>
+    const handleConfirmSuccess = () => {
+        setShowSuccessModal(false);
+        router.push('/info/university');
+    };
 
-            <div className="font-sans">
-                {isEdit ? (
-                    <div className="editor-wrapper min-h-[400px]">
-                        <Editor content={content} onChange={setContent} />
-                        <div className="flex justify-end gap-2 mt-4">
-                            <button onClick={handleSave} className="bg-blue-600 text-white px-6 py-2 rounded font-bold hover:bg-blue-700">저장하기</button>
-                            <button onClick={() => router.push('/info/university')} className="bg-gray-500 text-white px-6 py-2 rounded font-bold hover:bg-gray-600">취소</button>
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+    return (
+        <div className="flex-grow">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 min-h-[600px]">
+                <div className="mb-6">
+                    <h1 className="text-3xl font-bold mb-4 text-black">대학진학 {isEdit && <span className="text-sm text-red-500 font-normal ml-2">- 수정 모드</span>}</h1>
+                    <div className="border-b-2 border-black pb-2"></div>
+                </div>
+
+                <div className="font-sans">
+                    {isEdit ? (
+                        <div className="editor-wrapper min-h-[400px]">
+                            <Editor content={content} onChange={setContent} />
+                            <div className="flex justify-end gap-2 mt-4">
+                                <button onClick={handleSave} className="bg-blue-600 text-white px-6 py-2 rounded font-bold hover:bg-blue-700">저장하기</button>
+                                <button onClick={() => router.push('/info/university')} className="bg-gray-500 text-white px-6 py-2 rounded font-bold hover:bg-gray-600">취소</button>
+                            </div>
                         </div>
-                    </div>
-                ) : (
-                    <>
-                        <div dangerouslySetInnerHTML={{ __html: content }} />
-                        <ActionButtons
-                            listLink="/info/schedule"
-                            editLink="/info/university?mode=edit"
-                            onDelete={() => alert("삭제 권한이 없습니다.")}
-                        />
-                    </>
-                )}
+                    ) : (
+                        <>
+                            <div dangerouslySetInnerHTML={{ __html: content }} />
+                            <ActionButtons
+                                listLink="/info/schedule"
+                                editLink="/info/university?mode=edit"
+                                onDelete={() => alert("삭제 권한이 없습니다.")}
+                            />
+                        </>
+                    )}
+                </div>
+
+                {/* Success Modal */}
+                <SuccessModal
+                    isOpen={showSuccessModal}
+                    onClose={handleConfirmSuccess}
+                />
             </div>
         </div>
     );

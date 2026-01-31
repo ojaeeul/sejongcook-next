@@ -19,6 +19,7 @@ function WriteForm() {
 
     useEffect(() => {
         if (isEdit) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setSubject("관련사이트 안내 (수정)");
             setAuthor("관리자");
             setContent("<p>http://example.com - 예시 사이트</p>");

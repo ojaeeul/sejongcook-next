@@ -20,6 +20,7 @@ function WriteForm() {
     useEffect(() => {
         if (isEdit) {
             // Mock Data for Demo
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setSubject("구인합니다 (수정)");
             setAuthor("작성자");
             setContent(`

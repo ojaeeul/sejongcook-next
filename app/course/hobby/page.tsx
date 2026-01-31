@@ -81,7 +81,7 @@ export default function HobbyPage() {
         <div className="modern-container" style={{ padding: '40px 0' }}>
             <div className="layout_381226_ grid_left" style={{ display: 'flex', gap: '40px' }}>
                 {/* Sidebar */}
-                <div style={{ width: '250px', flexShrink: 0 }}>
+                <div className="w-full xl:w-[250px] flex-shrink-0">
                     <CourseSidebar />
                 </div>
 

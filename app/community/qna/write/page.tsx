@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import SuccessModal from "@/components/SuccessModal";
+import { supabase } from "@/lib/supabase";
 
 import Editor from "@/components/Editor";
 
@@ -16,21 +17,72 @@ function WriteForm() {
     const [author, setAuthor] = useState("");
     const [content, setContent] = useState("");
     const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        if (isEdit) {
-            setSubject("질문있습니다 (수정)");
-            setAuthor("학생");
-            setContent("<p>질문 내용...</p>");
-        }
-    }, [isEdit]);
+        const loadPost = async () => {
+            if (isEdit && idx) {
+                const { data, error } = await supabase
+                    .from('posts')
+                    .select('*')
+                    .eq('id', idx)
+                    .single();
 
-    const handleSubmit = (e: React.FormEvent) => {
+                if (data) {
+                    setSubject(data.title);
+                    setAuthor(data.author || "");
+                    setContent(data.content || "");
+                } else if (error) {
+                    console.error("Error loading post:", error);
+                }
+            } else {
+                // Defaults for new post
+                setAuthor("학생");
+            }
+        }
+        loadPost();
+    }, [isEdit, idx]);
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        // Simulate processing time
-        setTimeout(() => {
+        setLoading(true);
+
+        try {
+            const postData = {
+                board_type: 'qna',
+                title: subject,
+                author: author,
+                content: content,
+                updated_at: new Date().toISOString()
+            };
+
+            let error;
+
+            if (isEdit && idx) {
+                // Update existing post
+                const { error: updateError } = await supabase
+                    .from('posts')
+                    .update(postData)
+                    .eq('id', idx);
+                error = updateError;
+            } else {
+                // Insert new post
+                // created_at is default now(), view_count default 0
+                const { error: insertError } = await supabase
+                    .from('posts')
+                    .insert(postData);
+                error = insertError;
+            }
+
+            if (error) throw error;
+
             setShowSuccessModal(true);
-        }, 500);
+        } catch (error) {
+            console.error(error);
+            alert('저장 중 오류가 발생했습니다.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleConfirmSuccess = () => {
@@ -74,7 +126,13 @@ function WriteForm() {
                 </div>
                 <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 mt-6">
                     <Link href="/community/qna" className="px-6 py-2 border border-gray-300 rounded hover:bg-gray-50 text-gray-700">취소</Link>
-                    <button type="submit" className="px-6 py-2 bg-amber-500 text-white font-bold rounded hover:bg-amber-600 shadow">{isEdit ? "수정하기" : "저장하기"}</button>
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="px-6 py-2 bg-amber-500 text-white font-bold rounded hover:bg-amber-600 shadow disabled:opacity-50"
+                    >
+                        {loading ? "저장 중..." : (isEdit ? "수정하기" : "저장하기")}
+                    </button>
                 </div>
             </form>
 

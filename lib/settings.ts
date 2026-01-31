@@ -19,7 +19,7 @@ export async function getSettings() {
         const fileContent = await fs.readFile(SETTINGS_FILE_PATH, 'utf-8');
         const data = JSON.parse(fileContent);
         return { ...DEFAULT_SETTINGS, ...data };
-    } catch (error) {
+    } catch {
         return DEFAULT_SETTINGS;
     }
 }

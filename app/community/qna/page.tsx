@@ -1,38 +1,49 @@
-import BoardList from "@/components/BoardList";
-import { promises as fs } from 'fs';
-import path from 'path';
+'use client';
 
-interface Post {
-    id: string | number;
-    title: string;
-    author: string;
-    date: string;
-    hit: string | number;
-    content?: string;
-}
+import BoardList, { Post } from "@/components/BoardList";
+import { useEffect, useState } from "react";
 
-async function getQnaPosts() {
-    const filePath = path.join(process.cwd(), 'data', 'qna_data.json');
-    try {
-        const fileContents = await fs.readFile(filePath, 'utf8');
-        const data: Post[] = JSON.parse(fileContents);
-        // Ensure IDs are strings for consistency with BoardList expectations if needed,
-        // but BoardList likely handles what it's given. The main issue was ID mismatch.
-        // Let's reverse to show newest first
-        return data.reverse();
-    } catch (e) {
-        return [];
+export default function QnaPage() {
+    const [posts, setPosts] = useState<Post[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchPosts = async () => {
+            try {
+                const res = await fetch('/data/qna_data.json');
+                const data = await res.json();
+
+                if (Array.isArray(data)) {
+                    const mapped: Post[] = data.map((item: any) => ({
+                        id: item.id || item.idx,
+                        title: item.title,
+                        author: item.author || item.writer || '게스트',
+                        date: item.date || item.created_at,
+                        hit: item.hit || item.view_count || '0',
+                        content: item.content
+                    }));
+                    setPosts(mapped.reverse());
+                }
+            } catch (err) {
+                console.error('Unexpected error:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchPosts();
+    }, []);
+
+    if (loading) {
+        return <div className="p-10 text-center">Loading...</div>;
     }
-}
-
-export default async function QnaPage() {
-    const qna = await getQnaPosts();
 
     return (
         <BoardList
             boardCode="qna"
-            boardName="질문&답변"
-            posts={qna}
+            boardName="질문게시판"
+            posts={posts}
+            showWriteButton={true}
         />
     );
 }

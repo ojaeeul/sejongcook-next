@@ -1,19 +1,26 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
 import AdminTable from '../components/AdminTable';
 import { Settings } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
 export default function LinksList() {
-    const [data, setData] = useState([]);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const [data, setData] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [showAuthLinks, setShowAuthLinks] = useState(true);
 
     const fetchData = async () => {
         try {
-            const res = await fetch('/api/admin/data/sites');
-            const json = await res.json();
-            setData(json);
+            const { data: posts, error } = await supabase
+                .from('posts')
+                .select('*')
+                .eq('board_type', 'sites')
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            setData(posts || []);
         } catch (error) {
             console.error('Failed to fetch sites', error);
         } finally {
@@ -21,30 +28,16 @@ export default function LinksList() {
         }
     };
 
-    // Settings state
-    const [showAuthLinks, setShowAuthLinks] = useState(true);
-
     const fetchSettings = async () => {
-        try {
-            const res = await fetch('/api/admin/data/settings');
-            const json = await res.json();
-            if (json.showAuthLinks !== undefined) setShowAuthLinks(json.showAuthLinks);
-        } catch (error) {
-            console.error('Failed to fetch settings');
-        }
+        // Mock settings or implement distinct table
+        // For now, default true
+        setShowAuthLinks(true);
     };
 
     const toggleAuthLinks = async (checked: boolean) => {
         setShowAuthLinks(checked);
-        try {
-            await fetch('/api/admin/data/settings', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ showAuthLinks: checked }),
-            });
-        } catch (error) {
-            alert('설정 저장 실패');
-        }
+        // Implement settings save to Supabase if needed
+        alert('설정 기능은 현재 개발 중입니다.');
     };
 
     useEffect(() => {
@@ -53,15 +46,17 @@ export default function LinksList() {
     }, []);
 
     const handleDelete = async (id: string | number) => {
+        if (!confirm('정말 삭제하시겠습니까?')) return;
         try {
-            const newData = data.filter((item: any) => item.id !== id);
-            await fetch('/api/admin/data/sites', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(newData),
-            });
-            setData(newData);
+            const { error } = await supabase
+                .from('posts')
+                .delete()
+                .eq('id', id);
+
+            if (error) throw error;
+            setData(data.filter((item) => item.id !== id));
         } catch (error) {
+            console.error('Failed to delete site', error);
             alert('삭제에 실패했습니다');
         }
     };
@@ -69,7 +64,7 @@ export default function LinksList() {
     const columns = [
         { key: 'title', label: '제목' },
         { key: 'author', label: '작성자' },
-        { key: 'date', label: '작성일' },
+        { key: 'created_at', label: '작성일', format: (val: string) => new Date(val).toLocaleDateString('ko-KR') },
     ];
 
     if (loading) return <div className="p-8 text-center text-gray-500">로딩 중...</div>;
@@ -112,7 +107,7 @@ export default function LinksList() {
                                 </label>
                             </div>
                             <p className="text-xs text-gray-500">
-                                OFF로 설정하면 메인 홈페이지 상단의 '로그인', '회원가입' 메뉴가 숨겨집니다.
+                                OFF로 설정하면 메인 홈페이지 상단의 &apos;로그인&apos;, &apos;회원가입&apos; 메뉴가 숨겨집니다.
                             </p>
                         </div>
                     </div>

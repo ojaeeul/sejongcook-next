@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, Save } from 'lucide-react';
 import Link from 'next/link';
 import SuccessModal from '@/components/SuccessModal';
+import { supabase } from '@/lib/supabase';
 
 // Dynamically import SunEditor to avoid SSR issues
 const SunEditor = dynamic(() => import('suneditor-react'), {
@@ -16,6 +17,7 @@ import 'suneditor/dist/css/suneditor.min.css';
 
 interface DataEditorProps {
     title: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     initialData?: any;
     type: string; // 'notice', 'review', etc.
     backLink: string;
@@ -33,75 +35,70 @@ export default function DataEditor({ title, initialData, type, backLink }: DataE
     const [loading, setLoading] = useState(false);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const onImageUploadBefore = (files: File[], info: object, uploadHandler: (response: any) => void) => {
-        // Implement image upload to our API
-        const file = files[0];
-        const formData = new FormData();
-        formData.append('file', file);
-
-        fetch('/api/admin/upload', {
-            method: 'POST',
-            body: formData,
-        })
-            .then(res => res.json())
-            .then(data => {
-                if (data.url) {
-                    const response = {
-                        result: [
-                            {
-                                url: data.url,
-                                name: data.name,
-                                size: file.size,
-                            },
-                        ],
-                    };
-                    uploadHandler(response);
-                } else {
-                    uploadHandler({ errorMessage: 'Upload failed' });
-                }
-            })
-            .catch(err => {
-                console.error(err);
-                uploadHandler({ errorMessage: 'Upload failed' });
-            });
-
-        return undefined; // mandatory return for SunEditor handler
+        // TODO: Implement Supabase Storage Upload
+        // For now, alerting user that image upload requires storage setup
+        alert("Image upload via Supabase Storage is not yet implemented.");
+        uploadHandler({ errorMessage: "Not implemented" });
+        return undefined;
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-
-
-
         setLoading(true);
 
         try {
-            // Fetch current data to append/update
-            const res = await fetch(`/api/admin/data/${type}`);
-            const currentData = await res.json();
+            if (type === 'baking') {
+                // Use JSON API for Baking
+                const res = await fetch('/api/admin/data/baking', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        id: initialData?.id,
+                        title: formData.title,
+                        author: formData.author,
+                        content: formData.content,
+                        category: initialData?.category || '갤러리', // Default to Gallery
+                    })
+                });
 
-            let newData;
-            if (initialData?.id) {
-                // Update
-                newData = currentData.map((item: any) =>
-                    item.id === initialData.id ? { ...item, ...formData } : item
-                );
+                if (!res.ok) throw new Error("Failed to save via API");
             } else {
-                // Create
-                const newId = Date.now().toString(); // Simple ID generation
-                newData = [{ id: newId, hit: '0', ...formData }, ...currentData];
+                // Legacy Supabase for others
+                const postData = {
+                    title: formData.title,
+                    author: formData.author,
+                    content: formData.content,
+                    board_type: type,
+                    updated_at: new Date().toISOString(),
+                };
+
+                let error;
+
+                if (initialData?.id) {
+                    const { error: updateError } = await supabase
+                        .from('posts')
+                        .update(postData)
+                        .eq('id', initialData.id);
+                    error = updateError;
+                } else {
+                    const { error: insertError } = await supabase
+                        .from('posts')
+                        .insert([{
+                            ...postData,
+                            created_at: new Date().toISOString(),
+                            view_count: 0
+                        }]);
+                    error = insertError;
+                }
+
+                if (error) throw error;
             }
 
-            await fetch(`/api/admin/data/${type}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(newData),
-            });
-
-            // Show success modal instead of immediate redirect
             setShowSuccessModal(true);
         } catch (error) {
-            alert('저장에 실패했습니다');
+            alert('저장에 실패했습니다: ' + (error as Error).message);
             console.error(error);
         } finally {
             setLoading(false);

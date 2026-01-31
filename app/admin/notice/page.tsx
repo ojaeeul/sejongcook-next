@@ -4,15 +4,23 @@
 import { useEffect, useState } from 'react';
 import AdminTable from '../components/AdminTable';
 
+import { supabase } from '@/lib/supabase';
+
 export default function NoticeList() {
-    const [data, setData] = useState([]);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const [data, setData] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     const fetchData = async () => {
         try {
-            const res = await fetch('/api/admin/data/notice');
-            const json = await res.json();
-            setData(json);
+            const { data: posts, error } = await supabase
+                .from('posts')
+                .select('*')
+                .eq('board_type', 'notice')
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            setData(posts || []);
         } catch (error) {
             console.error('Failed to fetch notices', error);
         } finally {
@@ -25,15 +33,18 @@ export default function NoticeList() {
     }, []);
 
     const handleDelete = async (id: string | number) => {
+        if (!confirm('정말 삭제하시겠습니까?')) return;
         try {
-            const newData = data.filter((item: any) => item.id !== id);
-            await fetch('/api/admin/data/notice', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(newData),
-            });
-            setData(newData);
-        } catch (error) {
+            const { error } = await supabase
+                .from('posts')
+                .delete()
+                .eq('id', id);
+
+            if (error) throw error;
+
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            setData(prev => prev.filter((item: any) => item.id !== id));
+        } catch {
             alert('삭제에 실패했습니다');
         }
     };

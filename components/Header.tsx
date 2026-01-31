@@ -1,9 +1,12 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState, useEffect } from 'react';
+import { useAuth } from '@/context/AuthContext';
 
 export default function Header({ initialShowAuthLinks = true }: { initialShowAuthLinks?: boolean }) {
+    const { isAdmin, logout } = useAuth();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [hoveredMenu, setHoveredMenu] = useState<number | null>(null);
     const [showAuthLinks, setShowAuthLinks] = useState(initialShowAuthLinks);
@@ -97,7 +100,14 @@ export default function Header({ initialShowAuthLinks = true }: { initialShowAut
                     <div className="flex-shrink-0">
                         <Link href="/">
                             {/* Using standard img tag for compatibility */}
-                            <img src="/img_up/shop_pds/sejongcook/farm/logo1590397857.png" alt="세종요리제과기술학원" className="h-[50px] object-contain" />
+                            <Image
+                                src="/img_up/shop_pds/sejongcook/farm/logo1590397857.png"
+                                alt="세종요리제과기술학원"
+                                width={200}
+                                height={50}
+                                className="h-[50px] w-auto object-contain"
+                                priority
+                            />
                         </Link>
                     </div>
 
@@ -135,10 +145,16 @@ export default function Header({ initialShowAuthLinks = true }: { initialShowAut
 
                         <div className="flex gap-4">
                             <Link href="/" className="hover:text-amber-500 transition-colors">Home</Link>
-                            {showAuthLinks && (
+                            {showAuthLinks && !isAdmin && (
                                 <>
                                     <Link href="/login" className="hover:text-amber-500 transition-colors">로그인</Link>
                                     <Link href="/join" className="hover:text-amber-500 transition-colors">회원가입</Link>
+                                </>
+                            )}
+                            {isAdmin && (
+                                <>
+                                    <Link href="/admin" className="hover:text-amber-500 transition-colors font-bold text-indigo-600">관리자</Link>
+                                    <button onClick={logout} className="hover:text-amber-500 transition-colors">로그아웃</button>
                                 </>
                             )}
                         </div>

@@ -4,9 +4,17 @@
 import { useEffect, useState } from 'react';
 import { Upload, Trash2, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
+
+interface ImageItem {
+    id: string; // Added id property
+    name: string;
+    url: string;
+    path: string;
+}
 
 export default function GalleryPage() {
-    const [images, setImages] = useState<any[]>([]);
+    const [images, setImages] = useState<ImageItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
 
@@ -17,7 +25,7 @@ export default function GalleryPage() {
             // JSON is now the source of truth, no need to reverse if it's already sorted by user preference (or default newest)
             // But my API default logic added new items to BEGINNING. So default is Newest First.
             setImages(json);
-        } catch (error) {
+        } catch {
             console.error('Failed to fetch images');
         } finally {
             setLoading(false);
@@ -60,7 +68,7 @@ export default function GalleryPage() {
             } else {
                 alert('업로드 실패');
             }
-        } catch (error) {
+        } catch {
             alert('업로드 오류');
         } finally {
             setUploading(false);
@@ -77,7 +85,7 @@ export default function GalleryPage() {
             } else {
                 alert('삭제 실패');
             }
-        } catch (e) {
+        } catch {
             alert('삭제 오류');
         }
     };
@@ -100,7 +108,7 @@ export default function GalleryPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(newImages),
             });
-        } catch (error) {
+        } catch {
             console.error('Failed to save order');
             fetchImages(); // Revert on error
         }
@@ -140,10 +148,12 @@ export default function GalleryPage() {
                     ) : (
                         images.map((img, index) => (
                             <div key={img.id || `${img.name}-${index}`} className="group relative bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden aspect-square">
-                                <img
+                                <Image
                                     src={img.url}
                                     alt={img.name}
-                                    className="w-full h-full object-cover"
+                                    fill
+                                    className="object-cover"
+                                    sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw"
                                 />
                                 {/* Overlay Actions */}
                                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
@@ -191,7 +201,7 @@ export default function GalleryPage() {
             )}
 
             <div className="bg-blue-50 p-4 rounded-lg text-blue-800 text-sm">
-                <strong>팁:</strong> 이미지를 클릭하면 이동/삭제 버튼이 나타납니다. "원본 보기"를 눌러 이미지 주소를 복사할 수 있습니다.
+                <strong>팁:</strong> 이미지를 클릭하면 이동/삭제 버튼이 나타납니다. &quot;원본 보기&quot;를 눌러 이미지 주소를 복사할 수 있습니다.
             </div>
         </div>
     );

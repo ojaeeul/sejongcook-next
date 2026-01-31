@@ -1,39 +1,30 @@
-import BoardList from "@/components/BoardList";
+'use client';
+
+import BoardList, { Post } from "@/components/BoardList";
 import BakingSubNav from "@/components/BakingSubNav";
-import { promises as fs } from 'fs';
-import path from 'path';
-import { Suspense } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 
-interface Post {
-    id: string;
-    category: string;
-    title: string;
-    author: string;
-    date: string;
-    hit: string;
-    content?: string;
-}
+export default function BakingBoardPage() {
+    const [posts, setPosts] = useState<Post[]>([]);
 
-async function getBakingPosts() {
-    const filePath = path.join(process.cwd(), 'data', 'baking_posts.json');
-    try {
-        const fileContents = await fs.readFile(filePath, 'utf8');
-        const data: Post[] = JSON.parse(fileContents);
-        return data.reverse(); // Newest first
-    } catch (e) {
-        console.error("Failed to load baking posts:", e);
-        return [];
-    }
-}
-
-export default async function BakingBoardPage() {
-    const posts = await getBakingPosts();
+    useEffect(() => {
+        const fetchPosts = async () => {
+            try {
+                const res = await fetch('/data/baking_posts.json');
+                const data = await res.json();
+                setPosts(data.reverse());
+            } catch (e) {
+                console.error("Failed to load baking posts:", e);
+            }
+        };
+        fetchPosts();
+    }, []);
 
     return (
         <div className="modern-container" style={{ padding: '40px 0' }}>
             <div style={{ flexGrow: 1, minWidth: 0 }}>
                 <div className="mb-6">
-                    <h2 className="text-2xl font-bold text-gray-800 border-b-2 border-[#3e2723] pb-2 inline-block">제과제빵과정 소식 & 갤러리</h2>
+                    <h2 className="text-2xl font-bold text-gray-800 border-b-2 border-[#3e2723] pb-2 inline-block">수업뉴스</h2>
                 </div>
 
                 <Suspense fallback={null}>
@@ -47,6 +38,7 @@ export default async function BakingBoardPage() {
                     boardName="제과제빵 게시판"
                     posts={posts}
                     basePath=""
+                    showWriteButton={false}
                 />
             </div>
         </div>

@@ -37,7 +37,7 @@ export default function MemberPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ showAuthLinks: newState }),
             });
-        } catch (error) {
+        } catch {
             console.error('Failed to save settings');
             setShowAuthLinks(!newState); // Revert on error
         }
@@ -69,7 +69,7 @@ export default function MemberPage() {
                 body: JSON.stringify(newData),
             });
             setMembers(newData);
-        } catch (error) {
+        } catch {
             alert('저장 실패');
         }
     };
@@ -134,7 +134,7 @@ export default function MemberPage() {
                                 {showAuthLinks ? 'ON' : 'OFF'}
                             </span>
                         </h2>
-                        <p className="text-sm text-gray-500 mt-1">OFF로 설정하면 메인 홈페이지 상단의 '로그인', '회원가입' 메뉴가 숨겨집니다.</p>
+                        <p className="text-sm text-gray-500 mt-1">OFF로 설정하면 메인 홈페이지 상단의 &apos;로그인&apos;, &apos;회원가입&apos; 메뉴가 숨겨집니다.</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                         <input

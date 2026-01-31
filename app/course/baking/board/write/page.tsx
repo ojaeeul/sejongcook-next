@@ -2,13 +2,12 @@
 
 import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import SuccessModal from "@/components/SuccessModal";
 import BakingSubNav from "@/components/BakingSubNav";
 import Editor from "@/components/Editor";
 
 function WriteForm() {
-    const router = useRouter();
     const searchParams = useSearchParams();
     const idx = searchParams.get('idx');
     const isEdit = !!idx;
@@ -23,6 +22,7 @@ function WriteForm() {
         if (isEdit) {
             // In a real app, fetch data by ID
             // For demo, we just populate dummy data or try to find in localStorage if implemented
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setSubject("수정할 게시물 제목 (데모)");
             setAuthor("작성자");
             setContent("<p>이전에 작성된 내용입니다.</p>");

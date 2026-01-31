@@ -1,8 +1,8 @@
+'use client';
+
 import BoardList from "@/components/BoardList";
 import BakingSubNav from "@/components/BakingSubNav";
-import { promises as fs } from 'fs';
-import path from 'path';
-import { Suspense } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 
 interface Post {
     id: string;
@@ -14,26 +14,29 @@ interface Post {
     content?: string;
 }
 
-async function getDessertPosts() {
-    const filePath = path.join(process.cwd(), 'data', 'dessert_posts.json');
-    try {
-        const fileContents = await fs.readFile(filePath, 'utf8');
-        const data: Post[] = JSON.parse(fileContents);
-        return data.reverse();
-    } catch (e) {
-        console.error("Failed to load dessert posts:", e);
-        return [];
-    }
-}
+export default function DessertBoardPage() {
+    const [posts, setPosts] = useState<Post[]>([]);
 
-export default async function DessertBoardPage() {
-    const posts = await getDessertPosts();
+    useEffect(() => {
+        const fetchPosts = async () => {
+            try {
+                const res = await fetch('/data/dessert_posts.json');
+                if (res.ok) {
+                    const data: Post[] = await res.json();
+                    setPosts(data.reverse());
+                }
+            } catch (e) {
+                console.error("Failed to load dessert posts:", e);
+            }
+        };
+        fetchPosts();
+    }, []);
 
     return (
         <div className="modern-container" style={{ padding: '40px 0' }}>
             <div style={{ flexGrow: 1, minWidth: 0 }}>
                 <div className="mb-6">
-                    <h2 className="text-2xl font-bold text-gray-800 border-b-2 border-[#3e2723] pb-2 inline-block">디저트 소식 & 레시피</h2>
+                    <h2 className="text-2xl font-bold text-gray-800 border-b-2 border-[#3e2723] pb-2 inline-block">디저트</h2>
                 </div>
 
                 <Suspense fallback={null}>

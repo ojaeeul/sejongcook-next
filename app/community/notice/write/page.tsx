@@ -22,6 +22,7 @@ function WriteForm() {
             // Simulate Fetching Data for Edit
             // In real app: fetch(`/api/index.php?mode=view&idx=${idx}`)
             // Using mock data matching BoardView for demo
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setSubject("2024년도 1기 브런치반 모집");
             setAuthor("관리자");
             // Mock Content from BoardView

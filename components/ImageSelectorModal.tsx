@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { X, Search } from 'lucide-react';
 
 interface ImageSelectorModalProps {
@@ -32,7 +33,7 @@ export default function ImageSelectorModal({ isOpen, onClose, onSelect }: ImageS
             const res = await fetch('/api/admin/images');
             const json = await res.json();
             setImages(json.reverse());
-        } catch (error) {
+        } catch {
             console.error('Failed to fetch images');
         } finally {
             setLoading(false);
@@ -93,10 +94,12 @@ export default function ImageSelectorModal({ isOpen, onClose, onSelect }: ImageS
                                             onClose();
                                         }}
                                     >
-                                        <img
+                                        <Image
                                             src={img.url}
                                             alt={img.name}
-                                            className="w-full h-full object-cover transition-transform group-hover:scale-110"
+                                            fill
+                                            className="object-cover transition-transform group-hover:scale-110"
+                                            sizes="(max-width: 768px) 50vw, 20vw"
                                         />
                                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
                                         <div className="absolute bottom-0 inset-x-0 bg-black/60 p-1 text-xs text-white truncate text-center opacity-0 group-hover:opacity-100 transition-opacity">

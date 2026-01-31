@@ -1,9 +1,20 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 
 export default function LoginPage() {
+    const { login } = useAuth();
+    const router = useRouter();
+
+    const handleLogin = (e: React.FormEvent) => {
+        e.preventDefault();
+        // For now, accept any login as admin for demonstration as per mock auth plan
+        login();
+        router.push('/');
+    };
+
     return (
         <div className="max-w-[1200px] mx-auto py-12 px-4 flex flex-col md:flex-row gap-10">
             {/* Left Sidebar (Reference: login.html submenu) */}
@@ -39,7 +50,7 @@ export default function LoginPage() {
 
                     <h2 className="text-2xl font-bold text-[#333] mb-6 pb-2 border-b border-[#eee]">LOGIN</h2>
 
-                    <form className="space-y-6">
+                    <form className="space-y-6" onSubmit={handleLogin}>
 
                         {/* Options */}
                         <div className="flex gap-4 text-sm text-gray-600 mb-4">

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
+import Image from 'next/image';
 
 // Reuse types or define locally
 interface Schedule {
@@ -138,6 +138,7 @@ export default function AdminPopupsPage() {
         setEditForm(null);
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleEditChange = (field: string, value: any) => {
         if (!editForm) return;
 
@@ -387,7 +388,16 @@ export default function AdminPopupsPage() {
                                                             />
                                                         </label>
                                                     </div>
-                                                    {editForm.content.mainImage && <img src={editForm.content.mainImage} alt="Preview" className="mt-2 h-20 object-cover rounded border" />}
+                                                    {editForm.content.mainImage && (
+                                                        <div className="relative mt-2 h-20 w-32 border rounded overflow-hidden">
+                                                            <Image
+                                                                src={editForm.content.mainImage}
+                                                                alt="Preview"
+                                                                fill
+                                                                className="object-cover"
+                                                            />
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
 
@@ -555,7 +565,14 @@ export default function AdminPopupsPage() {
                                                 </label>
                                             </div>
                                             {editForm.imageUrl ? (
-                                                <img src={editForm.imageUrl} className="max-h-64 mx-auto object-contain bg-gray-200 rounded shadow-sm" />
+                                                <div className="relative h-64 mx-auto w-full">
+                                                    <Image
+                                                        src={editForm.imageUrl}
+                                                        alt="Pop-up Preview"
+                                                        fill
+                                                        className="object-contain bg-gray-200 rounded shadow-sm"
+                                                    />
+                                                </div>
                                             ) : (
                                                 <div className="h-40 bg-gray-200 rounded flex items-center justify-center text-gray-400">이미지 미리보기</div>
                                             )}
@@ -578,14 +595,24 @@ export default function AdminPopupsPage() {
                                         {/* Preview Thumbnail */}
                                         {popup.type === 'template' && popup.content?.mainImage ? (
                                             <>
-                                                <img src={popup.content.mainImage} className="absolute inset-0 w-full h-full object-cover opacity-90" />
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-4 text-white">
+                                                <Image
+                                                    src={popup.content.mainImage}
+                                                    alt={popup.content.title}
+                                                    fill
+                                                    className="object-cover opacity-90"
+                                                />
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-4 text-white z-10">
                                                     <div className="font-bold text-lg leading-tight">{popup.content.title}</div>
                                                     <div className="text-xs opacity-75 mt-1">{popup.content.badgeText}</div>
                                                 </div>
                                             </>
                                         ) : popup.imageUrl ? (
-                                            <img src={popup.imageUrl} className="h-full object-contain" />
+                                            <Image
+                                                src={popup.imageUrl}
+                                                alt={popup.title}
+                                                fill
+                                                className="object-contain"
+                                            />
                                         ) : (
                                             <div className="text-gray-400 font-bold">이미지 없음</div>
                                         )}
@@ -626,7 +653,7 @@ export default function AdminPopupsPage() {
             <div className="fixed bottom-8 right-8 bg-white p-4 rounded-lg shadow-xl border border-gray-200 max-w-sm text-xs text-gray-600 z-50 animate-bounce-slow hidden md:block">
                 <h6 className="font-bold text-gray-800 mb-2">💡 도움말</h6>
                 <p className="mb-1">• 팝업 이미지를 클릭하면 바로 수정할 수 있습니다.</p>
-                <p className="mb-1">• <strong>"텍스트 표시하기"</strong> 체크박스를 끄면, 글자 없이 이미지만 보여줄 수 있습니다.</p>
+                <p className="mb-1">• <strong>&quot;텍스트 표시하기&quot;</strong> 체크박스를 끄면, 글자 없이 이미지만 보여줄 수 있습니다.</p>
                 <p>• 위치 조절 시 슬라이더를 사용하여 마우스로 쉽게 이동하세요.</p>
             </div>
         </div>

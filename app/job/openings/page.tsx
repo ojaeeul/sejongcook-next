@@ -1,68 +1,64 @@
+'use client';
+
+import BoardList, { Post } from "@/components/BoardList";
 import JobSidebar from "@/components/JobSidebar";
-import BoardList from "@/components/BoardList";
-import { promises as fs } from 'fs';
-import path from 'path';
+import { useEffect, useState } from "react";
 
-interface Post {
-    id: string;
-    title: string;
-    author: string;
-    date: string;
-    hit: string; // Changed to string to match BoardList type compatibility if needed, or keeping number if BoardList supports it.
-    // Looking at BoardList from previous turn: Post interface has 'hit: string'.
-    // The JSON has hits as numbers. We need to map or change BoardList.
-    // Let's assume BoardList expects string for now based on 'notice' implementation.
-    content?: string;
-}
 
-async function getJobOpenings() {
-    const filePath = path.join(process.cwd(), 'data', 'job_openings_data.json');
-    try {
-        const fileContents = await fs.readFile(filePath, 'utf8');
-        const rawData = JSON.parse(fileContents);
+export default function JobOpeningsPage() {
+    const [posts, setPosts] = useState<Post[]>([]);
+    const [loading, setLoading] = useState(true);
 
-        // Map raw data to Post interface (ensure types match)
-        const data: Post[] = rawData.map((item: any) => ({
-            id: item.id,
-            title: item.title,
-            author: item.author,
-            date: item.date,
-            hit: String(item.hits), // Convert number to string
-            content: item.content
-        }));
+    useEffect(() => {
+        const fetchPosts = async () => {
+            try {
+                const res = await fetch('/data/job_openings_data.json');
+                const data = await res.json();
 
-        return data;
-    } catch (e) {
-        console.error("Failed to load job openings:", e);
-        return [];
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const mappedPosts: Post[] = data.map((item: any) => ({
+                    id: item.id,
+                    title: item.title,
+                    author: item.author || '관리자',
+                    date: item.date,
+                    hit: item.hits || item.hit || 0,
+                    content: item.content
+                }));
+                // Sort by date descending if possible, or keep as is. JSON usually ordered.
+                // mappedPosts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+                setPosts(mappedPosts);
+
+            } catch (err) {
+                console.error('Error fetching openings:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchPosts();
+    }, []);
+
+    if (loading) {
+        return <div className="p-10 text-center">Loading...</div>;
     }
-}
-
-export default async function JobOpeningsPage() {
-    const posts = await getJobOpenings();
 
     return (
-        <div className="modern-container" style={{ padding: '40px 0' }}>
+        <div className="modern-container py-10">
             <div className="flex flex-col xl:flex-row gap-10">
+                {/* Sidebar */}
                 <div className="w-full xl:w-[250px] flex-shrink-0">
                     <JobSidebar />
                 </div>
-
-                <div style={{ flexGrow: 1, minWidth: 0 }}>
-                    <div className="sub_title_381227_" style={{ marginBottom: '20px' }}>
-                        <h1 className="text-2xl font-bold">구인정보 (채용공고)</h1>
+                <div className="flex-grow">
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 min-h-[600px]">
+                        <BoardList
+                            boardCode="openings"
+                            boardName="구인정보"
+                            posts={posts}
+                            basePath="/job"
+                            showWriteButton={true}
+                        />
                     </div>
-
-                    <div style={{ marginBottom: '20px' }}>
-                        <span className="solid_line_381231_" style={{ display: 'block', width: '100%', height: '2px', background: '#000' }}></span>
-                    </div>
-
-                    <BoardList
-                        boardCode="openings"
-                        boardName="구인정보"
-                        posts={posts}
-                        basePath="/job"
-                    />
                 </div>
             </div>
         </div>

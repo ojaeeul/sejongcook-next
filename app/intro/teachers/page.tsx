@@ -2,8 +2,8 @@
 
 import IntroSidebar from "@/components/IntroSidebar";
 import ActionButtons from "@/components/ActionButtons";
-import { useSearchParams, useRouter } from "next/navigation";
 import { useState, useEffect, Suspense } from "react";
+import NextImage from "next/image";
 
 interface Teacher {
     id: number;
@@ -115,7 +115,15 @@ function TeachersContent() {
                                     }}
                                 >
                                     <div className="instructor-photo-container">
-                                        <img src={teacher.image} alt={teacher.name} />
+                                        {teacher.image ? (
+                                            <NextImage src={teacher.image} alt={teacher.name} fill className="object-cover" sizes="(max-width: 768px) 100vw, 300px" />
+                                        ) : (
+                                            <div className="flex items-center justify-center w-full h-full bg-gray-200 text-gray-400">
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-20 w-20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                                </svg>
+                                            </div>
+                                        )}
                                     </div>
                                     <div className="instructor-info">
                                         <h3 style={{ fontWeight: 'bold', fontSize: '1.25rem', marginBottom: '6px', color: '#1f2937' }}>{teacher.name}</h3>

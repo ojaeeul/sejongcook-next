@@ -1,5 +1,6 @@
 import BakingSubNav from "@/components/BakingSubNav";
 import Link from "next/link";
+import Image from "next/image";
 import { promises as fs } from 'fs';
 import path from 'path';
 import { Suspense } from 'react';
@@ -15,7 +16,7 @@ interface Post {
 }
 
 async function getBakingPosts() {
-    const filePath = path.join(process.cwd(), 'data', 'baking_posts.json');
+    const filePath = path.join(process.cwd(), 'public', 'data', 'baking_posts.json');
     try {
         const fileContents = await fs.readFile(filePath, 'utf8');
         const data: Post[] = JSON.parse(fileContents);
@@ -44,9 +45,6 @@ export default async function BakingGalleryPage() {
             <div style={{ flexGrow: 1, minWidth: 0 }}>
                 <div className="mb-6 flex justify-between items-end">
                     <h2 className="text-2xl font-bold text-gray-800 border-b-2 border-[#3e2723] pb-2 inline-block">제과제빵 갤러리</h2>
-                    <Link href="/course/baking/board/write" className="bg-[#3e2723] text-white px-4 py-2 rounded text-sm font-bold hover:bg-[#5d4037] transition-colors">
-                        글쓰기
-                    </Link>
                 </div>
 
                 <Suspense fallback={null}>
@@ -65,13 +63,15 @@ export default async function BakingGalleryPage() {
                         {posts.map((post) => {
                             const imgSrc = extractImage(post.content);
                             return (
-                                <Link href={`/course/baking/board/${post.id}`} key={post.id} className="group block bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
+                                <Link href={`/course/baking/board/view?id=${post.id}`} key={post.id} className="group block bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
                                     <div className="aspect-[4/3] bg-gray-100 relative overflow-hidden">
                                         {imgSrc ? (
-                                            <img
+                                            <Image
                                                 src={imgSrc}
                                                 alt={post.title}
-                                                className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
+                                                fill
+                                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                                className="object-cover transform group-hover:scale-105 transition-transform duration-300"
                                             />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center text-gray-300 bg-gray-50">

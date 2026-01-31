@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Save, Image as ImageIcon, Phone, Search } from 'lucide-react';
+import Image from 'next/image';
 import { DEFAULT_HERO_DATA } from '../../data/defaultHeroData';
 import ImageSelectorModal from '../../../components/ImageSelectorModal';
 
@@ -321,9 +322,9 @@ export default function AdminHeroPage() {
                                                     </button>
                                                 </div>
                                             </div>
-                                            <div className="w-[120px] h-[80px] bg-gray-200 rounded-md border border-gray-300 overflow-hidden flex-shrink-0">
+                                            <div className="relative w-[120px] h-[80px] bg-gray-200 rounded-md border border-gray-300 overflow-hidden flex-shrink-0">
                                                 {photo ? (
-                                                    <img src={photo} alt={`Preview ${groupIndex + 1}-${photoIndex + 1}`} className="w-full h-full object-cover" />
+                                                    <Image src={photo} alt={`Preview ${groupIndex + 1}-${photoIndex + 1}`} fill className="object-cover" />
                                                 ) : (
                                                     <div className="w-full h-full flex items-center justify-center text-gray-400">
                                                         <ImageIcon className="w-6 h-6" />

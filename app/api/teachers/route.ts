@@ -1,44 +1,25 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
+import fs from 'fs/promises';
 import path from 'path';
 
-const dataPath = path.join(process.cwd(), 'app/data/teachers_data.json');
-
-// Helper to read data
-function getTeachersData() {
-    if (!fs.existsSync(dataPath)) {
-        return [];
-    }
-    const fileContent = fs.readFileSync(dataPath, 'utf-8');
-    try {
-        return JSON.parse(fileContent);
-    } catch (error) {
-        return [];
-    }
-}
-
-// GET handler
 export async function GET() {
-    const data = getTeachersData();
-    // Sort by 'order' property
-    data.sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
-    return NextResponse.json(data);
-}
-
-// POST handler
-export async function POST(request: Request) {
     try {
-        const newData = await request.json();
+        const filePath = path.join(process.cwd(), 'public', 'data', 'teachers.json');
 
-        // Safety check: ensure it's an array
-        if (!Array.isArray(newData)) {
-            return NextResponse.json({ error: 'Invalid data format' }, { status: 400 });
+        // Check if file exists
+        try {
+            await fs.access(filePath);
+        } catch {
+            // If not found, return empty array
+            return NextResponse.json([]);
         }
 
-        fs.writeFileSync(dataPath, JSON.stringify(newData, null, 2), 'utf-8');
-        return NextResponse.json({ success: true, message: 'Data saved successfully' });
+        const fileContent = await fs.readFile(filePath, 'utf8');
+        const data = JSON.parse(fileContent);
+
+        return NextResponse.json(data);
     } catch (error) {
-        console.error('Error saving teachers data:', error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        console.error('Error reading teachers data:', error);
+        return NextResponse.json({ error: 'Failed to fetch data' }, { status: 500 });
     }
 }

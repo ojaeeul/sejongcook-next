@@ -20,20 +20,20 @@ function AdminLoginForm() {
         setError('');
 
         try {
-            const res = await fetch('/api/admin/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password }),
+            // Import supabase dynamically or from lib
+            const { supabase } = await import('@/lib/supabase');
+
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: username, // Assuming username is email for Supabase, or we need to handle mapping if not
+                password: password,
             });
 
-            const data = await res.json();
-
-            if (data.success) {
+            if (error) {
+                setError(error.message || '로그인 실패');
+            } else if (data.session) {
                 router.push(from);
-            } else {
-                setError(data.message || '로그인 실패');
             }
-        } catch (err) {
+        } catch {
             setError('오류가 발생했습니다. 다시 시도해주세요.');
         } finally {
             setLoading(false);
