@@ -1510,6 +1510,7 @@
                             mc.m_Overflow = m_Overflow;
                             mc.manualMakeup = manualMakeup;
                             mc.attendances = attendances;
+                            mc.carryFromPrev = carryOverP;
 
                             // User's Rule: "그 달 출석의 합은 그대로 다음달 재고출석으로 입력"
                             carryOverP = m_P;
@@ -1523,6 +1524,7 @@
                             // Calculate Red Box days for the current month
                             const currentMonthLogs = uniqueLogs.filter(l => l.date.startsWith(currentMC.key));
                             let runningAttendances = 0;
+                            const carryForRedBox = currentMC.carryFromPrev;
 
                             currentMonthLogs.forEach(l => {
                                 const isMakeupMarker = ['[', ']'].includes(l.status);
@@ -1530,13 +1532,13 @@
                                 const isAbsent = l.status === 'absent' || (typeof l.status === 'string' && l.status.startsWith('X'));
                                 const isRegularAttendance = l.status === 'present' || isNumericPresent || isAbsent;
 
-                                const prevTotal = currentMC.m_J + currentMC.m_Overflow + runningAttendances;
+                                const prevTotal = carryForRedBox + runningAttendances;
 
                                 if (isRegularAttendance || isMakeupMarker) {
                                     runningAttendances += attendanceIncrement;
                                 }
 
-                                const currTotal = currentMC.m_J + currentMC.m_Overflow + runningAttendances;
+                                const currTotal = carryForRedBox + runningAttendances;
 
                                 // Exactly crossed a 9-day multiple threshold
                                 if (Math.floor(prevTotal / 9) < Math.floor(currTotal / 9)) {
