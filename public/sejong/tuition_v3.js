@@ -246,14 +246,15 @@ async function loadData() {
         const [mRes, pRes, sRes, aRes] = await Promise.all([
             fetch(`${API_BASE}/members${cacheBuster}`),
             fetch(`${API_BASE}/payments${cacheBuster}`),
-            fetch(`${API_BASE}/settings${cacheBuster}`),
+            fetch(`/api/admin/data/settings${cacheBuster}`),
             fetch(`${API_BASE}/attendance${cacheBuster}`)
         ]);
         const rawMembers = await mRes.json();
         membersData = Array.isArray(rawMembers) ? rawMembers.filter(m => !['delete', 'trash', 'hold', 'completed'].includes(m.status)) : [];
         paymentsData = await pRes.json();
         attendanceData = await aRes.json();
-        const settings = await sRes.json();
+        const rawSettings = await sRes.json();
+        const settings = Array.isArray(rawSettings) ? rawSettings[0] : rawSettings;
 
         if (settings && settings.courseFees) {
             courseFees = { ...courseFees, ...settings.courseFees };
@@ -867,10 +868,15 @@ async function saveTuitionSettings() {
     courseFees['브런치'] = parseInt(document.getElementById('fee_brunch').value.replace(/,/g, '')) || DEFAULT_PRICE;
 
     try {
-        await fetch('/api/sejong/settings', {
+        const currentSettingsRes = await fetch('/api/admin/data/settings');
+        let settingsArr = await currentSettingsRes.json();
+        let settingsObj = Array.isArray(settingsArr) && settingsArr.length > 0 ? settingsArr[0] : { id: Date.now().toString() };
+        settingsObj.courseFees = courseFees;
+
+        await fetch('/api/admin/data/settings', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ courseFees })
+            body: JSON.stringify([settingsObj])
         });
         closeTuitionSettings();
         renderTable();

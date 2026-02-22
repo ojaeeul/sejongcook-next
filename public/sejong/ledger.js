@@ -34,7 +34,7 @@ async function loadData(targetId, targetYear) {
             fetch(`${API_BASE}/members${cacheBuster}`),
             fetch(`${API_BASE}/payments${cacheBuster}`),
             fetch(`${API_BASE}/attendance${cacheBuster}`),
-            fetch(`${API_BASE}/settings${cacheBuster}`)
+            fetch(`/api/admin/data/settings${cacheBuster}`)
         ]);
 
         if (!mRes.ok || !pRes.ok || !aRes.ok || !sRes.ok) {
@@ -46,7 +46,8 @@ async function loadData(targetId, targetYear) {
 
         paymentsData = await pRes.json();
         attendanceData = await aRes.json();
-        const settings = await sRes.json();
+        const rawSettings = await sRes.json();
+        const settings = Array.isArray(rawSettings) ? rawSettings[0] : rawSettings;
         if (!Array.isArray(paymentsData)) paymentsData = [];
         if (!Array.isArray(attendanceData)) attendanceData = [];
 
