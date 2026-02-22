@@ -35,7 +35,7 @@ function TeachersContent() {
     return (
         <div className="container_2" style={{ flexGrow: 1 }}>
             <div className="sub_title_381227_">
-                <h1 className="text-2xl font-bold mb-4">강사 프로필</h1>
+                <h1 className="text-2xl font-bold mb-4">강사소개</h1>
             </div>
             <div style={{ marginBottom: '20px' }}>
                 <span className="solid_line_381231_"></span>

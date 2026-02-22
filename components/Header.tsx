@@ -27,7 +27,7 @@ export default function Header({ initialShowAuthLinks = true }: { initialShowAut
             href: '/intro',
             submenu: [
                 { label: '인사말', href: '/intro' },
-                { label: '강사 프로필', href: '/intro/teachers' },
+                { label: '강사소개', href: '/intro/teachers' },
                 { label: '오시는 길', href: '/intro/location' },
             ]
         },
@@ -37,6 +37,8 @@ export default function Header({ initialShowAuthLinks = true }: { initialShowAut
             submenu: [
                 { label: '제과/제빵기능사반', href: '/course/baking' },
                 { label: '케익디자인반', href: '/course/cake' },
+                { label: '디저트', href: '/course/dessert' },
+                { label: '제과제빵 갤러리', href: '/course/baking/gallery' },
             ]
         },
         {
