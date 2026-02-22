@@ -30,7 +30,7 @@ export default function BakingGalleryPage() {
         const fetchPosts = async () => {
             try {
                 // In production, use api.php to get the latest data. In dev, use the JSON directly.
-                const url = '/api/admin/data/baking' + Date.now();
+                const url = '/api/admin/data/baking?t=' + Date.now();
 
                 const res = await fetch(url);
                 if (!res.ok) throw new Error('Failed to fetch baking posts');

@@ -20,7 +20,7 @@ export default function DessertBoardPage() {
     useEffect(() => {
         const fetchPosts = async () => {
             try {
-                const url = '/api/admin/data/dessert';
+                const url = '/api/admin/data/dessert?t=' + Date.now();
                 const res = await fetch(url);
                 if (res.ok) {
                     const data: Post[] = await res.json();
