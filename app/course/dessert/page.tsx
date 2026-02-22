@@ -14,6 +14,12 @@ interface Post {
     content?: string;
 }
 
+function extractImage(content?: string): string | null {
+    if (!content) return null;
+    const match = content.match(/<img[^>]+src=["']([^"']+)["']/i);
+    return match ? match[1] : null;
+}
+
 export default function DessertBoardPage() {
     const [posts, setPosts] = useState<Post[]>([]);
 
@@ -24,7 +30,14 @@ export default function DessertBoardPage() {
                 const res = await fetch(url);
                 if (res.ok) {
                     const data: Post[] = await res.json();
-                    setPosts(data.reverse());
+
+                    // Add thumbnails to posts
+                    const postsWithThumbs = data.map(post => ({
+                        ...post,
+                        thumbnail: extractImage(post.content) || undefined
+                    }));
+
+                    setPosts(postsWithThumbs.reverse());
                 }
             } catch (e) {
                 console.error("Failed to load dessert posts:", e);
