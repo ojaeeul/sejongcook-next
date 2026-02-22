@@ -1560,7 +1560,7 @@
                                     if (record.date === dateStr) {
                                         // E.g., prev was 8.5, now 9.5 -> crossed 9
                                         // prev was 17, now 18 -> crossed 18
-                                        if (Math.floor((prevMakeup - 0.001) / 9) < Math.floor((cumulativeMakeup - 0.001) / 9)) {
+                                        if (Math.floor(prevMakeup / 9) < Math.floor(cumulativeMakeup / 9)) {
                                             reachedNineOnThisDate = true;
                                         }
                                     }
