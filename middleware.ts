@@ -36,8 +36,16 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-    // Match /admin/* and /sejong/*
     matcher: [
+        /*
+         * Match all request paths under /admin/ and /sejong/ EXCEPT:
+         * - api (API routes)
+         * - _next/static (static files)
+         * - _next/image (image optimization files)
+         * - favicon.ico (favicon file)
+         * - All paths containing a dot (e.g., .css, .js, .html, .png, etc.)
+         */
+        '/((?!api|_next/static|_next/image|favicon.ico|.*\\.).*)',
         '/admin/:path*',
         '/sejong/:path*'
     ],
