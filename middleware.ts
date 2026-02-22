@@ -9,15 +9,13 @@ export function middleware(request: NextRequest) {
     // 1. Existing Admin routes (though app/admin/layout also protects them client-side)
     const isAdminRoute = path.startsWith('/admin');
 
+    // FIX: Redirect `/sejong` entirely to `/sejong/index.html` to avoid Next.js trailing slash fighting and fix relative asset paths.
+    if (path === '/sejong' || path === '/sejong/') {
+        return NextResponse.redirect(new URL('/sejong/index.html', request.url));
+    }
+
     // 2. Sejong Admin routes (ALL /sejong/* EXCEPT /sejong/student/*)
     const isSejongAdminRoute = path.startsWith('/sejong') && !path.startsWith('/sejong/student');
-
-    // FIX: Catch exactly `/sejong` without a trailing slash and redirect BEFORE auth checking
-    if (path === '/sejong') {
-        const url = request.nextUrl.clone();
-        url.pathname = '/sejong/';
-        return NextResponse.redirect(url);
-    }
 
     if (isAdminRoute || isSejongAdminRoute) {
         // Exception for login page
