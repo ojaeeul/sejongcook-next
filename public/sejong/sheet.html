@@ -1661,13 +1661,6 @@
                     let startingMakeup = sumMakeup % 9;
                     let displayMakeup = startingMakeup;
 
-                    // NEW LOGIC: Prioritize filling 재고출석 to 8, then show remainder in 출석
-                    if (displayMakeup + displayP >= 9) {
-                        const spaceTo8 = 8 - displayMakeup;
-                        displayMakeup = 8;
-                        displayP = displayP - spaceTo8;
-                    }
-
                     [displayMakeup, displayP, sumA, sumE].forEach((val, idx) => {
                         const td = document.createElement('td');
                         td.className = 'col-stat-sum ' + (idx === 0 ? 'sum-makeup' : idx === 1 ? 'sum-p' : idx === 2 ? 'sum-a' : 'sum-e');
@@ -1813,21 +1806,7 @@
         let dragSelection = new Set(); // Stores date strings
 
         function handleCellMouseDown(e, memberId, dateStr, td) {
-            return; // Editing disabled
-            if (e.button !== 0) return; // Only left click
-
-            const hasGlobalArrow = !!attendanceData.find(l => l.memberId === memberId && l.date === dateStr && l.status === 'arrow');
-            const canBypass = activeStatusBrush === 'arrow' || (activeStatusBrush === 'unchecked' && hasGlobalArrow);
-
-            if (!canBypass && td.classList.contains('cell-disabled')) return;
-
-            isDragging = true;
-            dragStartMemberId = memberId;
-            dragStartCourse = td.dataset.course || null;
-            dragStartDay = parseInt(dateStr.split('-')[2]);
-            dragSelection.clear();
-            dragSelection.add(dateStr);
-            td.classList.add('cell-drag-selected');
+            return; // Editing disabled for swipe brush until fully supported
         }
 
         function handleCellMouseOver(e, memberId, dateStr, td) {
@@ -1857,7 +1836,9 @@
                     // Eraser Bypass: Only bypass if it has an arrow OR it's not a restricted day
                     const canBypassCell = isArrowBrush || (isEraserBrush && cellHasArrow);
 
-                    if (canBypassCell || !cell.classList.contains('cell-disabled')) {
+                    if (cell.classList.contains('cell-disabled')) {
+                        cell.classList.remove('cell-drag-selected');
+                    } else if (canBypassCell || !cell.classList.contains('cell-disabled')) {
                         dragSelection.add(cDate);
                         cell.classList.add('cell-drag-selected');
                     } else {
@@ -1998,10 +1979,10 @@
 
 
         function toggleCell(td, memberId, dateStr, course) {
+            if (td.classList.contains('cell-disabled')) return;
+
             const hasGlobalArrow = !!attendanceData.find(l => l.memberId === memberId && l.date === dateStr && l.status === 'arrow');
             const canBypass = activeStatusBrush === 'arrow' || (activeStatusBrush === 'unchecked' && hasGlobalArrow);
-
-            if (!canBypass && td.classList.contains('cell-disabled')) return;
 
             // 1. Brush Mode
             if (activeStatusBrush !== null) {
