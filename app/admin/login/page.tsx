@@ -26,7 +26,11 @@ function AdminLoginForm() {
         if (username === 'admin' && password === '1234') {
             document.cookie = "admin_auth=true; path=/; max-age=86400"; // Set cookie for middleware
             login(); // Sets local token
-            router.push(from);
+            if (from.startsWith('/sejong')) {
+                window.location.href = from;
+            } else {
+                router.push(from);
+            }
             return;
         }
 
@@ -44,7 +48,11 @@ function AdminLoginForm() {
             } else if (data.session) {
                 document.cookie = "admin_auth=true; path=/; max-age=86400"; // Set cookie for middleware
                 login(); // Sync with local auth context
-                router.push(from);
+                if (from.startsWith('/sejong')) {
+                    window.location.href = from;
+                } else {
+                    router.push(from);
+                }
             }
         } catch {
             setError('오류가 발생했습니다. 다시 시도해주세요.');
