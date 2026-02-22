@@ -13,10 +13,11 @@ export default function Header({ initialShowAuthLinks = true }: { initialShowAut
 
     useEffect(() => {
         // Fetch global settings on mount to ensure client is in sync if navigation happened
-        fetch('/api/settings', { cache: 'no-store' })
+        fetch('/api/admin/data/settings?_t=' + Date.now(), { cache: 'no-store' })
             .then(res => res.json())
-            .then(data => {
-                if (data.showAuthLinks !== undefined) setShowAuthLinks(data.showAuthLinks);
+            .then(items => {
+                const data = Array.isArray(items) && items.length > 0 ? items[0] : items;
+                if (data && data.showAuthLinks !== undefined) setShowAuthLinks(data.showAuthLinks);
             })
             .catch(err => console.error('Failed to load settings', err));
     }, []);

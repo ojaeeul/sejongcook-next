@@ -13,7 +13,7 @@ export async function handleReplace(request: NextRequest, board: string) {
         await supabase.from('board_posts').delete().eq('board_type', board);
 
         if (body.length > 0) {
-            const isCustom = ['gallery', 'popups', 'honor', 'sites'].includes(board);
+            const isCustom = ['gallery', 'popups', 'honor', 'sites', 'footer', 'settings'].includes(board);
             const preparedData = body.map(item => ({
                 board_type: board,
                 id: String(item.id),
@@ -49,7 +49,7 @@ export async function handleGet(request: NextRequest, board: string) {
 
         if (error) throw error;
 
-        const isCustom = ['gallery', 'popups', 'honor', 'sites'].includes(board);
+        const isCustom = ['gallery', 'popups', 'honor', 'sites', 'footer', 'settings'].includes(board);
         const mappedData = (data || []).map(row => {
             if (isCustom && row.content) {
                 try {
@@ -91,7 +91,7 @@ export async function handlePost(request: NextRequest, board: string) {
             ? String(Math.max(...existingData.map(item => Number(item.id) || 0)) + 1)
             : "1";
 
-        const isCustom = ['gallery', 'popups', 'honor', 'sites'].includes(board);
+        const isCustom = ['gallery', 'popups', 'honor', 'sites', 'footer', 'settings'].includes(board);
         const newItem = {
             board_type: board,
             id: newId,
@@ -122,7 +122,7 @@ export async function handlePut(request: NextRequest, board: string) {
 
         if (!body.id) return NextResponse.json({ error: 'Missing item ID' }, { status: 400 });
 
-        const isCustom = ['gallery', 'popups', 'honor', 'sites'].includes(board);
+        const isCustom = ['gallery', 'popups', 'honor', 'sites', 'footer', 'settings'].includes(board);
         const updateData = {
             title: body.title || '',
             author: body.author || '',
