@@ -22,7 +22,7 @@ export default function NoticeList() {
 
     const fetchData = useCallback(async () => {
         try {
-            const url = '/api/admin/data/notice';
+            const url = '/api/admin/data/notice?_t=' + Date.now();
             const res = await fetch(url);
             if (!res.ok) throw new Error('Failed to fetch');
             const data = await res.json();

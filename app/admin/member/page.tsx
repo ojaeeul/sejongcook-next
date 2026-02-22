@@ -20,10 +20,11 @@ export default function MemberPage() {
 
     const fetchSettings = async () => {
         try {
-            const url = '/api/admin/data/settings';
+            const url = '/api/admin/data/settings?_t=' + Date.now();
             const res = await fetch(url, { cache: 'no-store' });
-            const data = await res.json();
-            if (data.showAuthLinks !== undefined) setShowAuthLinks(data.showAuthLinks);
+            const items = await res.json();
+            const data = Array.isArray(items) && items.length > 0 ? items[0] : items;
+            if (data && data.showAuthLinks !== undefined) setShowAuthLinks(data.showAuthLinks);
         } catch (error) {
             console.error('Failed to load settings', error);
         }
@@ -33,11 +34,11 @@ export default function MemberPage() {
         const newState = checked;
         setShowAuthLinks(newState); // Optimistic update
         try {
-            const url = '/api/admin/data/settings';
+            const url = '/api/admin/data/settings?_t=' + Date.now();
             await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ showAuthLinks: newState }),
+                body: JSON.stringify([{ id: "1", showAuthLinks: newState }]),
             });
         } catch {
             console.error('Failed to save settings');
@@ -48,7 +49,7 @@ export default function MemberPage() {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const url = '/api/admin/data/members';
+            const url = '/api/admin/data/members?_t=' + Date.now();
             const res = await fetch(url);
             const json = await res.json();
             setMembers(json);
@@ -66,7 +67,7 @@ export default function MemberPage() {
 
     const handleSave = async (newData: Member[]) => {
         try {
-            const url = '/api/admin/data/members';
+            const url = '/api/admin/data/members?_t=' + Date.now();
             await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

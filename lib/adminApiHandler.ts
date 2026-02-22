@@ -13,12 +13,13 @@ export async function handleReplace(request: NextRequest, board: string) {
         await supabase.from('board_posts').delete().eq('board_type', board);
 
         if (body.length > 0) {
+            const isCustom = ['gallery', 'popups', 'honor', 'sites'].includes(board);
             const preparedData = body.map(item => ({
                 board_type: board,
                 id: String(item.id),
                 title: item.title || '',
                 author: item.author || '',
-                content: item.content || '',
+                content: isCustom ? JSON.stringify(item) : (item.content || ''),
                 date: item.date || new Date().toISOString().split('T')[0],
                 hit: Number(item.hit) || 0,
                 status: item.status || null,
@@ -39,9 +40,6 @@ export async function handleReplace(request: NextRequest, board: string) {
 }
 
 export async function handleGet(request: NextRequest, board: string) {
-    // In production (static export), PHP bridge was used previously. 
-    // Now we always fetch straight from Supabase.
-
     try {
         const { data, error } = await supabase
             .from('board_posts')
@@ -51,7 +49,20 @@ export async function handleGet(request: NextRequest, board: string) {
 
         if (error) throw error;
 
-        return NextResponse.json(data || []);
+        const isCustom = ['gallery', 'popups', 'honor', 'sites'].includes(board);
+        const mappedData = (data || []).map(row => {
+            if (isCustom && row.content) {
+                try {
+                    const parsed = JSON.parse(row.content);
+                    return { ...row, ...parsed };
+                } catch {
+                    return row;
+                }
+            }
+            return row;
+        });
+
+        return NextResponse.json(mappedData);
     } catch (error: any) {
         console.error('Read error:', error);
         return NextResponse.json({
@@ -71,8 +82,6 @@ export async function handlePost(request: NextRequest, board: string) {
         }
 
         // Generate a new ID based on existing records
-        // Simple approach: Date.now() or query max ID. 
-        // For compatibility with previous string-based numeric IDs:
         const { data: existingData } = await supabase
             .from('board_posts')
             .select('id')
@@ -82,12 +91,19 @@ export async function handlePost(request: NextRequest, board: string) {
             ? String(Math.max(...existingData.map(item => Number(item.id) || 0)) + 1)
             : "1";
 
+        const isCustom = ['gallery', 'popups', 'honor', 'sites'].includes(board);
         const newItem = {
             board_type: board,
             id: newId,
-            ...body,
+            title: body.title || '',
+            author: body.author || '',
+            content: isCustom ? JSON.stringify(body) : (body.content || ''),
             date: body.date || new Date().toISOString().split('T')[0],
-            hit: 0,
+            hit: body.hit || 0,
+            status: body.status || null,
+            link: body.link || null,
+            institution: body.institution || null,
+            file: body.file || null
         };
 
         const { error } = await supabase.from('board_posts').insert(newItem);
@@ -106,11 +122,24 @@ export async function handlePut(request: NextRequest, board: string) {
 
         if (!body.id) return NextResponse.json({ error: 'Missing item ID' }, { status: 400 });
 
+        const isCustom = ['gallery', 'popups', 'honor', 'sites'].includes(board);
+        const updateData = {
+            title: body.title || '',
+            author: body.author || '',
+            content: isCustom ? JSON.stringify(body) : (body.content || ''),
+            date: body.date || new Date().toISOString().split('T')[0],
+            hit: body.hit || 0,
+            status: body.status || null,
+            link: body.link || null,
+            institution: body.institution || null,
+            file: body.file || null
+        };
+
         // Update record in Supabase
         // We ensure we only update the record belonging to this board_type
         const { data, error } = await supabase
             .from('board_posts')
-            .update(body)
+            .update(updateData)
             .eq('board_type', board)
             .eq('id', String(body.id))
             .select()

@@ -27,7 +27,7 @@ export default function AdminTeachersPage() {
     const fetchTeachers = async () => {
         setIsLoading(true);
         try {
-            const url = '/api/admin/data/teachers';
+            const url = '/api/admin/data/teachers?_t=' + Date.now();
             const res = await fetch(url);
             if (res.ok) {
                 const data = await res.json();
@@ -75,7 +75,7 @@ export default function AdminTeachersPage() {
 
     const saveTeachers = async (updatedTeachers: Teacher[]) => {
         try {
-            const url = '/api/admin/data/teachers';
+            const url = '/api/admin/data/teachers?_t=' + Date.now();
             const res = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

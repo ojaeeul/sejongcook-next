@@ -28,7 +28,7 @@ function JobSeekerViewContent() {
             }
 
             try {
-                const url = '/api/admin/data/job-seekers';
+                const url = '/api/admin/data/job-seekers?_t=' + Date.now();
                 const res = await fetch(url);
                 if (res.ok) {
                     const data = await res.json();

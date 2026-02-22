@@ -18,7 +18,7 @@ function Content() {
     // Load data on mount from timetable endpoint
     const fetchData = async () => {
         try {
-            const url = '/api/admin/data/timetable';
+            const url = '/api/admin/data/timetable?_t=' + Date.now();
             const res = await fetch(url, { cache: 'no-store' });
             if (res.ok) {
                 const data = await res.json();
@@ -40,7 +40,7 @@ function Content() {
     const handleSave = async () => {
         // Removed native confirm
         try {
-            const url = '/api/admin/data/timetable';
+            const url = '/api/admin/data/timetable?_t=' + Date.now();
             const res = await fetch(url, {
                 method: 'POST',
                 headers: {

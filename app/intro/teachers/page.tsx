@@ -19,7 +19,7 @@ function TeachersContent() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const url = '/api/admin/data/teachers';
+        const url = '/api/admin/data/teachers?_t=' + Date.now();
         fetch(url)
             .then(res => res.json())
             .then(data => {

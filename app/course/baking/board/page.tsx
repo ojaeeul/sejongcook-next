@@ -10,7 +10,7 @@ export default function BakingBoardPage() {
     useEffect(() => {
         const fetchPosts = async () => {
             try {
-                const url = '/api/admin/data/baking';
+                const url = '/api/admin/data/baking?_t=' + Date.now();
                 const res = await fetch(url);
                 const data = await res.json();
                 setPosts(data.reverse());

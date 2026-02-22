@@ -20,7 +20,7 @@ export default function ReviewList() {
 
     const fetchData = useCallback(async () => {
         try {
-            const url = '/api/admin/data/review';
+            const url = '/api/admin/data/review?_t=' + Date.now();
             const res = await fetch(url);
             if (!res.ok) throw new Error('Failed to fetch reviews');
             const data = await res.json();

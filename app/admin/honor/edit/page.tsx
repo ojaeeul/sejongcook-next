@@ -18,7 +18,7 @@ function EditHonorContent() {
                 return;
             }
             try {
-                const url = '/api/admin/data/honor';
+                const url = '/api/admin/data/honor?_t=' + Date.now();
                 const res = await fetch(url);
                 if (!res.ok) throw new Error('Failed to fetch data');
                 const list = await res.json();

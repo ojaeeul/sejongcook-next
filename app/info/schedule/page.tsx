@@ -18,7 +18,7 @@ function Content() {
     // Load data on mount
     const fetchData = async () => {
         try {
-            const url = '/api/admin/data/schedule';
+            const url = '/api/admin/data/schedule?_t=' + Date.now();
             const res = await fetch(url, { cache: 'no-store' });
             if (res.ok) {
                 const data = await res.json();
@@ -40,7 +40,7 @@ function Content() {
     const handleSave = async () => {
         // if (confirm("저장하시겠습니까?")) { // Removed native confirm
         try {
-            const url = '/api/admin/data/schedule';
+            const url = '/api/admin/data/schedule?_t=' + Date.now();
             const res = await fetch(url, {
                 method: 'POST',
                 headers: {

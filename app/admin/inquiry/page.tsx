@@ -25,7 +25,7 @@ export default function AdminInquiryPage() {
 
     const fetchData = async () => {
         try {
-            const url = '/api/admin/data/inquiry';
+            const url = '/api/admin/data/inquiry?_t=' + Date.now();
             const res = await fetch(url);
             const json = await res.json();
 
@@ -59,7 +59,7 @@ export default function AdminInquiryPage() {
         if (confirm('정말 삭제하시겠습니까?')) {
             try {
                 const newData = inquiries.filter((item) => String(item.id) !== String(id));
-                const url = '/api/admin/data/inquiry';
+                const url = '/api/admin/data/inquiry?_t=' + Date.now();
                 await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },

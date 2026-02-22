@@ -16,7 +16,7 @@ function EditJobSeekerContent() {
         const fetchData = async () => {
             try {
                 // Use Local API or PHP Bridge in Production
-                const url = '/api/admin/data/job-seekers';
+                const url = '/api/admin/data/job-seekers?_t=' + Date.now();
                 const res = await fetch(url);
                 if (!res.ok) throw new Error('Failed to fetch data');
                 const list = await res.json();

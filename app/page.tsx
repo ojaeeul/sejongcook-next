@@ -69,7 +69,7 @@ export default function Home() {
     // Optional: Re-fetch to get any admin updates since build
     const fetchHeroData = async () => {
       try {
-        const url = '/api/admin/data/hero';
+        const url = '/api/admin/data/hero?_t=' + Date.now();
         const res = await fetch(url, { cache: 'no-store' });
         if (res.ok) {
           const data = await res.json();

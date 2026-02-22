@@ -29,7 +29,7 @@ export default function HonorPage() {
     useEffect(() => {
         const fetchHonorData = async () => {
             try {
-                const url = '/api/admin/data/honor';
+                const url = '/api/admin/data/honor?_t=' + Date.now();
                 const res = await fetch(url);
                 if (res.ok) {
                     const data = await res.json();

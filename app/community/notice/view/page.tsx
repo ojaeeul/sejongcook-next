@@ -20,7 +20,7 @@ function NoticeDetailContent() {
             }
 
             try {
-                const url = '/api/admin/data/notice';
+                const url = '/api/admin/data/notice?_t=' + Date.now();
                 const res = await fetch(url);
                 const data = await res.json();
 

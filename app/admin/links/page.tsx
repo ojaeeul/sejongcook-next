@@ -37,10 +37,11 @@ export default function LinksList() {
 
     const fetchSettings = useCallback(async () => {
         try {
-            const url = '/api/admin/data/settings';
+            const url = '/api/admin/data/settings?_t=' + Date.now();
             const res = await fetch(url);
-            const data = await res.json();
-            if (data.showAuthLinks !== undefined) setShowAuthLinks(data.showAuthLinks);
+            const items = await res.json();
+            const data = Array.isArray(items) && items.length > 0 ? items[0] : items;
+            if (data && data.showAuthLinks !== undefined) setShowAuthLinks(data.showAuthLinks);
         } catch {
             // ignore
         }
@@ -49,11 +50,11 @@ export default function LinksList() {
     const toggleAuthLinks = async (checked: boolean) => {
         setShowAuthLinks(checked);
         try {
-            const url = '/api/admin/data/settings';
+            const url = '/api/admin/data/settings?_t=' + Date.now();
             await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ showAuthLinks: checked }),
+                body: JSON.stringify([{ id: "1", showAuthLinks: checked }]),
             });
         } catch {
             alert('설정 저장 실패');

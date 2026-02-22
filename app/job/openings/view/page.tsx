@@ -27,7 +27,7 @@ function JobOpeningViewContent() {
                 return;
             }
             try {
-                const url = '/api/admin/data/job-openings';
+                const url = '/api/admin/data/job-openings?_t=' + Date.now();
                 const res = await fetch(url);
                 if (res.ok) {
                     const data: Post[] = await res.json();

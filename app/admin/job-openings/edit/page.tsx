@@ -16,7 +16,7 @@ function EditJobOpeningContent() {
         if (!id) return;
         const fetchData = async () => {
             try {
-                const url = '/api/admin/data/job-openings';
+                const url = '/api/admin/data/job-openings?_t=' + Date.now();
                 const res = await fetch(url);
                 if (!res.ok) throw new Error('Failed to fetch data');
                 const list = await res.json();

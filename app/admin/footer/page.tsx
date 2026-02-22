@@ -51,7 +51,7 @@ export default function AdminFooterPage() {
                 // Updating entire array with single object as index 0
                 const payload = [{ id: "1", ...data }];
 
-                const url = '/api/admin/data/footer';
+                const url = '/api/admin/data/footer?_t=' + Date.now();
                 await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },

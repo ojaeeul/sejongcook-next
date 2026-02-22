@@ -22,7 +22,7 @@ function WriteForm() {
         const load = async () => {
             if (isEdit && idx) {
                 try {
-                    const url = '/api/admin/data/job-openings';
+                    const url = '/api/admin/data/job-openings?_t=' + Date.now();
                     const res = await fetch(url);
                     const data = await res.json();
 

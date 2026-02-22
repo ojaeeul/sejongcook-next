@@ -10,7 +10,7 @@ export default function QnaPage() {
     useEffect(() => {
         const fetchPosts = async () => {
             try {
-                const url = '/api/admin/data/qna';
+                const url = '/api/admin/data/qna?_t=' + Date.now();
                 const res = await fetch(url);
                 const data = await res.json();
 

@@ -84,7 +84,7 @@ export default function AdminPopupsPage() {
 
     const savePopups = async (data: Popup[]) => {
         try {
-            const url = '/api/admin/data/popups';
+            const url = '/api/admin/data/popups?_t=' + Date.now();
             await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -106,7 +106,7 @@ export default function AdminPopupsPage() {
         formData.append('file', file);
 
         try {
-            const url = '/api/admin/data/upload';
+            const url = '/api/admin/data/upload?_t=' + Date.now();
             const res = await fetch(url, {
                 method: 'POST',
                 body: formData,

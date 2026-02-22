@@ -17,7 +17,7 @@ function EditCookingPostContent() {
                 return;
             }
             try {
-                const url = '/api/admin/data/cooking';
+                const url = '/api/admin/data/cooking?_t=' + Date.now();
                 const res = await fetch(url);
                 if (res.ok) {
                     const posts = await res.json();

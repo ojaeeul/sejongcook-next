@@ -15,7 +15,7 @@ function EditLinkContent() {
         if (!id) return;
         const fetchData = async () => {
             try {
-                const url = '/api/admin/data/links';
+                const url = '/api/admin/data/links?_t=' + Date.now();
                 const res = await fetch(url);
                 if (res.ok) {
                     const links = await res.json();
