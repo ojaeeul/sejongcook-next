@@ -11,10 +11,7 @@ export default function AdminDashboard() {
     useEffect(() => {
         const fetchVisitors = async () => {
             try {
-                let url = '/api/visitors';
-                if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
-                    url = '/api.php?board=visitors';
-                }
+                const url = '/api/visitors?_t=' + Date.now();
                 const res = await fetch(url);
                 if (res.ok) {
                     const data = await res.json();

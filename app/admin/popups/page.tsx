@@ -61,7 +61,7 @@ export default function AdminPopupsPage() {
 
     const fetchPopups = async () => {
         try {
-            const url = process.env.NODE_ENV === 'production' ? '/api.php?board=popups' : `/api/admin/popups?t=${Date.now()}`;
+            const url = `/api/admin/popups?_t=${Date.now()}`;
             const res = await fetch(url, { cache: 'no-store' });
             if (res.ok) {
                 const data = await res.json();

@@ -34,7 +34,7 @@ export default function GalleryPage() {
 
     const fetchImages = async () => {
         try {
-            const url = '/api/admin/data/gallery';
+            const url = '/api/admin/data/gallery?_t=' + Date.now();
             const res = await fetch(url);
             if (!res.ok) throw new Error('Failed to fetch images');
             const json = await res.json();

@@ -18,7 +18,7 @@ export default function AdminFooterPage() {
     });
 
     useEffect(() => {
-        const url = '/api/admin/data/footer';
+        const url = '/api/admin/data/footer?_t=' + Date.now();
         fetch(url)
             .then(res => res.json())
             .then(json => {

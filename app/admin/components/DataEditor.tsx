@@ -95,8 +95,7 @@ export default function DataEditor({ title, initialData, type, backLink }: DataE
         setLoading(true);
 
         try {
-            const isProd = process.env.NODE_ENV === 'production';
-            const endpoint = isProd ? `/api.php?board=${type}` : `/api/admin/data/${type}`;
+            const endpoint = `/api/admin/data/${type}`;
             const method = initialData?.id ? 'PUT' : 'POST';
 
             const payload = {
