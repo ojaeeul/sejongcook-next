@@ -12,6 +12,13 @@ export function middleware(request: NextRequest) {
     // 2. Sejong Admin routes (ALL /sejong/* EXCEPT /sejong/student/*)
     const isSejongAdminRoute = path.startsWith('/sejong') && !path.startsWith('/sejong/student');
 
+    // FIX: Catch exactly `/sejong` without a trailing slash and redirect BEFORE auth checking
+    if (path === '/sejong') {
+        const url = request.nextUrl.clone();
+        url.pathname = '/sejong/';
+        return NextResponse.redirect(url);
+    }
+
     if (isAdminRoute || isSejongAdminRoute) {
         // Exception for login page
         if (path === '/admin/login') {
