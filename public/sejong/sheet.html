@@ -1425,6 +1425,127 @@
                     tdNo.textContent = String(r + 1).padStart(2, '0');
                     tr.appendChild(tdNo);
 
+                    // Stats Sum Cells Preparation
+                    let displayMakeup = 0;
+                    let displayP = 0;
+                    let sumA = 0;
+                    let sumE = 0;
+
+                    const redBoxDates = new Set();
+
+                    if (m) {
+                        const isDualCourse = rowData && rowData.courseName && rowData.courseName.includes('제과제빵');
+                        const attendanceIncrement = isDualCourse ? 0.5 : 1;
+
+                        const rowLogsRaw = attendanceData.filter(l => l.memberId === m.id && (l.course === rowCourseNameScope || !l.course));
+                        const uniqueRowLogsMap = new Map();
+                        rowLogsRaw.forEach(l => uniqueRowLogsMap.set(l.date, l));
+                        const uniqueLogs = Array.from(uniqueRowLogsMap.values()).sort((a, b) => new Date(a.date) - new Date(b.date));
+
+                        // Find earliest month
+                        let earliestYear = currentYear;
+                        let earliestMonth = currentMonth;
+                        if (uniqueLogs.length > 0) {
+                            const d = new Date(uniqueLogs[0].date);
+                            earliestYear = d.getFullYear();
+                            earliestMonth = d.getMonth() + 1;
+                        }
+
+                        // Iterate month by month from earliest up to currentMonth
+                        let iterYear = earliestYear;
+                        let iterMonth = earliestMonth;
+
+                        let carryOverP = 0; // "전달 출석"
+
+                        let monthsToCalc = [];
+                        while (true) {
+                            const key = `${iterYear}-${String(iterMonth).padStart(2, '0')}`;
+                            monthsToCalc.push({ year: iterYear, month: iterMonth, key });
+                            if (iterYear === currentYear && iterMonth === currentMonth) break;
+                            iterMonth++;
+                            if (iterMonth > 12) {
+                                iterMonth = 1;
+                                iterYear++;
+                            }
+                        }
+
+                        monthsToCalc.forEach(mc => {
+                            const mLogs = uniqueLogs.filter(l => l.date.startsWith(mc.key));
+
+                            let manualMakeup = 0; // "그달 재고출석"
+                            let attendances = 0;
+
+                            mLogs.forEach(l => {
+                                const isMakeupMarker = ['[', ']'].includes(l.status);
+                                const isNumericPresent = ['10', '12', '2', '5', '7'].includes(l.status);
+                                const isAbsent = l.status === 'absent' || (typeof l.status === 'string' && l.status.startsWith('X'));
+                                const isRegularAttendance = l.status === 'present' || isNumericPresent || isAbsent;
+
+                                if (isMakeupMarker) manualMakeup += attendanceIncrement;
+                                if (isRegularAttendance) attendances += attendanceIncrement;
+
+                                // Extract specific stats for exactly Current Month
+                                if (mc.year === currentYear && mc.month === currentMonth) {
+                                    if (isAbsent) sumA += attendanceIncrement;
+                                    else if (l.status === 'extension' || (typeof l.status === 'string' && (l.status.startsWith('E') || l.status.includes('연장')))) sumE += attendanceIncrement;
+                                }
+                            });
+
+                            let totalCarry = carryOverP + manualMakeup;
+                            let m_J = 0;
+                            let m_Overflow = 0;
+
+                            if (totalCarry >= 8) {
+                                m_J = 8;
+                                m_Overflow = totalCarry - 8;
+                            } else {
+                                m_J = totalCarry;
+                                m_Overflow = 0;
+                            }
+
+                            let m_P = attendances + m_Overflow;
+
+                            mc.m_J = m_J;
+                            mc.m_P = m_P;
+                            mc.m_Overflow = m_Overflow;
+                            mc.manualMakeup = manualMakeup;
+                            mc.attendances = attendances;
+
+                            // User's Rule: "그 달 출석의 합은 그대로 다음달 재고출석으로 입력"
+                            carryOverP = m_P;
+                        });
+
+                        const currentMC = monthsToCalc[monthsToCalc.length - 1];
+                        if (currentMC) {
+                            displayMakeup = currentMC.m_J;
+                            displayP = currentMC.m_P;
+
+                            // Calculate Red Box days for the current month
+                            const currentMonthLogs = uniqueLogs.filter(l => l.date.startsWith(currentMC.key));
+                            let runningAttendances = 0;
+
+                            currentMonthLogs.forEach(l => {
+                                const isMakeupMarker = ['[', ']'].includes(l.status);
+                                const isNumericPresent = ['10', '12', '2', '5', '7'].includes(l.status);
+                                const isAbsent = l.status === 'absent' || (typeof l.status === 'string' && l.status.startsWith('X'));
+                                const isRegularAttendance = l.status === 'present' || isNumericPresent || isAbsent;
+
+                                const prevTotal = currentMC.m_J + currentMC.m_Overflow + runningAttendances;
+
+                                if (isRegularAttendance || isMakeupMarker) {
+                                    runningAttendances += attendanceIncrement;
+                                }
+
+                                const currTotal = currentMC.m_J + currentMC.m_Overflow + runningAttendances;
+
+                                // Exactly crossed a 9-day multiple threshold
+                                if (Math.floor(prevTotal / 9) < Math.floor(currTotal / 9)) {
+                                    redBoxDates.add(l.date);
+                                }
+                            });
+                        }
+                    }
+
                     // Days (Always 1-31)
                     for (let i = 1; i <= 31; i++) {
                         const td = document.createElement('td');
@@ -1534,57 +1655,8 @@
                                     editCellText(td, m.id, dateStr, rowCourseNameScope);
                                 };
 
-                                // Check if this is the date when 재고출석 reaches 9 (a multiple of 9 completion)
-                                // Calculate cumulative makeup attendance up to this date
-                                const isDualCourse = rowData && rowData.courseName && rowData.courseName.includes('제과제빵');
-                                const attendanceIncrement = isDualCourse ? 0.5 : 1;
-
-                                // Deduplicate records by date to prevent double counting
-                                const uniqueRecordsMap = new Map();
-                                attendanceData.forEach(a => {
-                                    // Match both memberId and the specific course for this row
-                                    const isSameCourse = a.course === rowCourseNameScope || !a.course;
-                                    if (a.memberId === m.id && isSameCourse) {
-                                        uniqueRecordsMap.set(a.date, a);
-                                    }
-                                });
-
-                                const recordsUpToThisDate = Array.from(uniqueRecordsMap.values()).filter(a => {
-                                    const aDate = new Date(a.date);
-                                    const thisDate = new Date(dateStr);
-                                    return aDate <= thisDate;
-                                }).sort((a, b) => new Date(a.date) - new Date(b.date));
-
-                                let cumulativeMakeup = 0;
-                                let reachedNineOnThisDate = false;
-
-                                for (const record of recordsUpToThisDate) {
-                                    const recDate = new Date(record.date);
-                                    const recMonth = recDate.getMonth() + 1;
-
-                                    const isMakeupMarker = ['[', ']'].includes(record.status);
-                                    const isNumericPresent = ['10', '12', '2', '5', '7'].includes(record.status);
-                                    const isAbsent = record.status === 'absent' || (typeof record.status === 'string' && record.status.startsWith('X'));
-                                    const isRegularAttendance = record.status === 'present' || isNumericPresent || isAbsent;
-
-                                    const prevMakeup = cumulativeMakeup;
-
-                                    if (isMakeupMarker || isRegularAttendance) {
-                                        cumulativeMakeup += attendanceIncrement;
-                                    }
-
-                                    // Check if we crossed a multiple of 9 threshold on this exact date
-                                    if (record.date === dateStr) {
-                                        // E.g., prev was 8.5, now 9.5 -> crossed 9
-                                        // prev was 17, now 18 -> crossed 18
-                                        if (Math.floor(prevMakeup / 9) < Math.floor(cumulativeMakeup / 9)) {
-                                            reachedNineOnThisDate = true;
-                                        }
-                                    }
-                                }
-
                                 // Apply red border if this date completes a 9-day payment cycle
-                                if (reachedNineOnThisDate) {
+                                if (redBoxDates.has(dateStr)) {
                                     td.style.border = '3px solid red';
                                     td.style.boxShadow = '0 0 5px rgba(255, 0, 0, 0.5)';
                                 }
@@ -1606,60 +1678,7 @@
                         tr.appendChild(td);
                     }
 
-                    // Stats Sum Cells
-                    let sumP = 0, sumA = 0, sumE = 0, sumMakeup = 0;
-                    if (m) {
-                        // Check if this is a 제과제빵 student (dual-course, counts as 0.5)
-                        const isDualCourse = rowData && rowData.courseName && rowData.courseName.includes('제과제빵');
-                        const attendanceIncrement = isDualCourse ? 0.5 : 1;
-
-                        const rowLogsRaw = attendanceData.filter(l => l.memberId === m.id && (l.course === rowCourseNameScope || !l.course));
-
-                        // Deduplicate row logs by date
-                        const uniqueRowLogsMap = new Map();
-                        rowLogsRaw.forEach(l => uniqueRowLogsMap.set(l.date, l));
-                        const rowLogs = Array.from(uniqueRowLogsMap.values());
-
-                        rowLogs.forEach(l => {
-                            const logDate = new Date(l.date);
-                            const logYear = logDate.getFullYear();
-                            const logMonth = logDate.getMonth() + 1;
-
-                            // For makeup attendance: count makeup markers ([, ]) from all previous months
-                            // PLUS regular attendance from previous months (not current month)
-                            const isMakeupMarker = ['[', ']'].includes(l.status);
-                            const isNumericPresent = ['10', '12', '2', '5', '7'].includes(l.status);
-                            const isAbsent = l.status === 'absent' || (typeof l.status === 'string' && l.status.startsWith('X'));
-                            const isRegularAttendance = l.status === 'present' || isNumericPresent || isAbsent;
-
-                            if (logYear === currentYear && logMonth < currentMonth) {
-                                // Previous months: count both makeup markers AND regular attendance
-                                if (isMakeupMarker || isRegularAttendance) {
-                                    sumMakeup += attendanceIncrement;
-                                }
-                            } else if (logYear === currentYear && logMonth === currentMonth) {
-                                // Current month: Only count makeup markers towards 'base makeup'
-                                // Regular attendance is counted in sumP and then actively moved to makeup if needed
-                                if (isMakeupMarker) {
-                                    sumMakeup += attendanceIncrement;
-                                }
-                            }
-
-                            // Only count for current month for other stats
-                            if (l.date.startsWith(`${currentYear}-${String(currentMonth).padStart(2, '0')}`)) {
-                                if (l.status === 'present' || isNumericPresent) sumP += attendanceIncrement;
-                                else if (l.status === 'absent' || (typeof l.status === 'string' && l.status.startsWith('X'))) sumA += attendanceIncrement;
-                                else if (l.status === 'extension' || (typeof l.status === 'string' && (l.status.startsWith('E') || l.status.includes('연장')))) sumE += attendanceIncrement;
-                            }
-                        });
-                    }
-
-                    // User Request: Combine Absence count with Attendance count
-                    let displayP = sumP + sumA;
-
-                    // Calculate the "carried over" remainder from prior cycles (e.g., if total 12, carryover is 3)
-                    let startingMakeup = sumMakeup % 9;
-                    let displayMakeup = startingMakeup;
+                    // Stats Sum Cells (Calculated beforehand)
 
                     [displayMakeup, displayP, sumA, sumE].forEach((val, idx) => {
                         const td = document.createElement('td');
