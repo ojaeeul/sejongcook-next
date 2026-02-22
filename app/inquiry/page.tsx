@@ -44,7 +44,7 @@ export default function InquiryPage() {
         // Submit to Server API
         try {
             // 1. Get current data
-            const getUrl = process.env.NODE_ENV === 'production' ? '/api.php?board=inquiry' : '/api/admin/data/inquiries';
+            const getUrl = '/api/admin/data/inquiry';
             const res = await fetch(getUrl);
             const currentData = await res.json();
 
@@ -65,7 +65,7 @@ export default function InquiryPage() {
             const newData = [newItem, ...(Array.isArray(currentData) ? currentData : [])];
 
             // 3. Save updated data
-            const url = process.env.NODE_ENV === 'production' ? '/api.php?board=inquiry' : '/api/admin/data/inquiries';
+            const url = '/api/admin/data/inquiry';
             const saveRes = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

@@ -26,7 +26,7 @@ function WriteForm() {
             if (isEdit && idx) {
                 try {
                     // Fetch all data and find the specific post
-                    const url = process.env.NODE_ENV === 'production' ? '/api.php?board=job-seekers' : '/data/job_seekers_data.json';
+                    const url = '/api/admin/data/job-seekers';
                     const res = await fetch(url);
                     const data = await res.json();
 
@@ -65,7 +65,7 @@ function WriteForm() {
 
         try {
             const isProd = process.env.NODE_ENV === 'production';
-            const endpoint = isProd ? '/api.php?board=job-seekers' : '/api/admin/data/job-seekers';
+            const endpoint = '/api/admin/data/job-seekers';
 
             // For PHP bridge, we use POST for new and PUT for edit if ID exists
             // But DataEditor logic suggests: initialData?.id ? 'PUT' : 'POST'

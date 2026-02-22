@@ -10,7 +10,7 @@ export default function ReviewPage() {
     useEffect(() => {
         const fetchPosts = async () => {
             try {
-                const url = process.env.NODE_ENV === 'production' ? '/api.php?board=review' : '/data/review_data.json';
+                const url = '/api/admin/data/review';
                 const res = await fetch(url);
                 const data = await res.json();
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any

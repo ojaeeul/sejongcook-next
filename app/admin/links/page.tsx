@@ -20,7 +20,7 @@ export default function LinksList() {
 
     const fetchData = useCallback(async () => {
         try {
-            const url = process.env.NODE_ENV === 'production' ? '/api.php?board=links' : '/api/admin/data/links?t=' + Date.now();
+            const url = '/api/admin/data/links' + Date.now();
             const res = await fetch(url);
             const json = await res.json();
             if (Array.isArray(json)) {
@@ -37,7 +37,7 @@ export default function LinksList() {
 
     const fetchSettings = useCallback(async () => {
         try {
-            const url = process.env.NODE_ENV === 'production' ? '/api.php?board=settings' : '/api/settings';
+            const url = '/api/admin/data/settings';
             const res = await fetch(url);
             const data = await res.json();
             if (data.showAuthLinks !== undefined) setShowAuthLinks(data.showAuthLinks);
@@ -49,7 +49,7 @@ export default function LinksList() {
     const toggleAuthLinks = async (checked: boolean) => {
         setShowAuthLinks(checked);
         try {
-            const url = process.env.NODE_ENV === 'production' ? '/api.php?board=settings' : '/api/settings';
+            const url = '/api/admin/data/settings';
             await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -77,7 +77,7 @@ export default function LinksList() {
         const id = confirmModal.id;
 
         try {
-            const url = process.env.NODE_ENV === 'production' ? `/api.php?board=links&id=${id}` : `/api/admin/data/links?id=${id}`;
+            const url = `/api/admin/data/links?id=${id}`;
             const res = await fetch(url, {
                 method: 'DELETE',
             });

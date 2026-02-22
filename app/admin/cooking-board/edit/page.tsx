@@ -17,7 +17,7 @@ function EditCookingPostContent() {
                 return;
             }
             try {
-                const url = process.env.NODE_ENV === 'production' ? '/api.php?board=cooking' : '/api/admin/data/cooking';
+                const url = '/api/admin/data/cooking';
                 const res = await fetch(url);
                 if (res.ok) {
                     const posts = await res.json();

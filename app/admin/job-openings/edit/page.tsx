@@ -16,7 +16,7 @@ function EditJobOpeningContent() {
         if (!id) return;
         const fetchData = async () => {
             try {
-                const url = process.env.NODE_ENV === 'production' ? '/api.php?board=job-openings' : '/api/admin/data/job-openings';
+                const url = '/api/admin/data/job-openings';
                 const res = await fetch(url);
                 if (!res.ok) throw new Error('Failed to fetch data');
                 const list = await res.json();

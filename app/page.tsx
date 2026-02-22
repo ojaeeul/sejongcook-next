@@ -69,7 +69,7 @@ export default function Home() {
     // Optional: Re-fetch to get any admin updates since build
     const fetchHeroData = async () => {
       try {
-        const url = process.env.NODE_ENV === 'production' ? '/api.php?board=hero' : '/api/hero';
+        const url = '/api/admin/data/hero';
         const res = await fetch(url, { cache: 'no-store' });
         if (res.ok) {
           const data = await res.json();
@@ -93,7 +93,7 @@ export default function Home() {
         const isProd = process.env.NODE_ENV === 'production';
 
         // Fetch QnA
-        const qnaUrl = isProd ? '/api.php?board=qna' : '/data/qna_data.json';
+        const qnaUrl = '/api/admin/data/qna';
         const qnaRes = await fetch(qnaUrl);
         if (qnaRes.ok) {
           const data = await qnaRes.json();
@@ -101,7 +101,7 @@ export default function Home() {
         }
 
         // Fetch Notice
-        const noticeUrl = isProd ? '/api.php?board=notice' : '/data/notice_data.json';
+        const noticeUrl = '/api/admin/data/notice';
         const noticeRes = await fetch(noticeUrl);
         if (noticeRes.ok) {
           const data = await noticeRes.json();
@@ -109,7 +109,7 @@ export default function Home() {
         }
 
         // Fetch Job
-        const jobUrl = isProd ? '/api.php?board=job-openings' : '/data/job_openings_data.json';
+        const jobUrl = '/api/admin/data/job-openings';
         const jobRes = await fetch(jobUrl);
         if (jobRes.ok) {
           const data = await jobRes.json();

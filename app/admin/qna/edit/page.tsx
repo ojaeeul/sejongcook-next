@@ -17,7 +17,7 @@ function EditQnaContent() {
                 return;
             }
             try {
-                const url = process.env.NODE_ENV === 'production' ? '/api.php?board=qna' : '/api/admin/data/qna';
+                const url = '/api/admin/data/qna';
                 const res = await fetch(url);
                 if (!res.ok) throw new Error('Failed to fetch data');
                 const list = await res.json();

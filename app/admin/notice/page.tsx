@@ -22,7 +22,7 @@ export default function NoticeList() {
 
     const fetchData = useCallback(async () => {
         try {
-            const url = process.env.NODE_ENV === 'production' ? '/api.php?board=notice' : '/api/admin/data/notice';
+            const url = '/api/admin/data/notice';
             const res = await fetch(url);
             if (!res.ok) throw new Error('Failed to fetch');
             const data = await res.json();
@@ -52,7 +52,7 @@ export default function NoticeList() {
         const id = confirmModal.id;
 
         try {
-            const url = process.env.NODE_ENV === 'production' ? `/api.php?board=notice&id=${id}` : `/api/admin/data/notice?id=${id}`;
+            const url = `/api/admin/data/notice?id=${id}`;
             const res = await fetch(url, {
                 method: 'DELETE',
             });

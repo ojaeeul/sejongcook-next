@@ -20,7 +20,7 @@ export default function BakingBoardList() {
     const fetchData = async () => {
         try {
             setLoading(true);
-            const url = process.env.NODE_ENV === 'production' ? '/api.php?board=baking' : '/api/admin/data/baking?t=' + Date.now();
+            const url = '/api/admin/data/baking' + Date.now();
             const res = await fetch(url);
             if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
             const json = await res.json();
@@ -48,7 +48,7 @@ export default function BakingBoardList() {
     const handleDelete = async (id: string | number) => {
         if (!confirm('정말 삭제하시겠습니까?')) return;
         try {
-            const url = process.env.NODE_ENV === 'production' ? `/api.php?board=baking&id=${id}` : `/api/admin/data/baking?id=${id}`;
+            const url = `/api/admin/data/baking?id=${id}`;
             const res = await fetch(url, {
                 method: 'DELETE',
             });

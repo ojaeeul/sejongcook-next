@@ -38,9 +38,7 @@ function BakingPostDetailContent() {
                 return;
             }
             try {
-                const url = process.env.NODE_ENV === 'production'
-                    ? '/api.php?board=baking'
-                    : '/data/baking_posts.json?t=' + Date.now();
+                const url = '/api/admin/data/baking' + Date.now();
                 const res = await fetch(url);
                 if (res.ok) {
                     const data: Post[] = await res.json();

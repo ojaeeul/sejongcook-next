@@ -13,7 +13,7 @@ export default function JobOpeningsList() {
 
     const fetchData = async () => {
         try {
-            const url = process.env.NODE_ENV === 'production' ? '/api.php?board=job-openings' : '/api/admin/data/job-openings?t=' + Date.now();
+            const url = '/api/admin/data/job-openings' + Date.now();
             const res = await fetch(url);
             const json = await res.json();
             if (Array.isArray(json)) {
@@ -44,7 +44,7 @@ export default function JobOpeningsList() {
         const id = confirmModal.id;
 
         try {
-            const url = process.env.NODE_ENV === 'production' ? `/api.php?board=job-openings&id=${id}` : `/api/admin/data/job-openings?id=${id}`;
+            const url = `/api/admin/data/job-openings?id=${id}`;
             const res = await fetch(url, {
                 method: 'DELETE',
             });

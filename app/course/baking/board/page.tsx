@@ -10,7 +10,7 @@ export default function BakingBoardPage() {
     useEffect(() => {
         const fetchPosts = async () => {
             try {
-                const url = process.env.NODE_ENV === 'production' ? '/api.php?board=baking' : '/data/baking_posts.json';
+                const url = '/api/admin/data/baking';
                 const res = await fetch(url);
                 const data = await res.json();
                 setPosts(data.reverse());

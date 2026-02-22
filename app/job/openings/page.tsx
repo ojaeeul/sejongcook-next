@@ -12,7 +12,7 @@ export default function JobOpeningsPage() {
     useEffect(() => {
         const fetchPosts = async () => {
             try {
-                const url = process.env.NODE_ENV === 'production' ? '/api.php?board=job-openings' : '/data/job_openings_data.json';
+                const url = '/api/admin/data/job-openings';
                 const res = await fetch(url);
                 const data = await res.json();
 

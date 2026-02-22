@@ -20,7 +20,7 @@ export default function MemberPage() {
 
     const fetchSettings = async () => {
         try {
-            const url = process.env.NODE_ENV === 'production' ? '/api.php?board=settings' : '/api/settings';
+            const url = '/api/admin/data/settings';
             const res = await fetch(url, { cache: 'no-store' });
             const data = await res.json();
             if (data.showAuthLinks !== undefined) setShowAuthLinks(data.showAuthLinks);
@@ -33,7 +33,7 @@ export default function MemberPage() {
         const newState = checked;
         setShowAuthLinks(newState); // Optimistic update
         try {
-            const url = process.env.NODE_ENV === 'production' ? '/api.php?board=settings' : '/api/settings';
+            const url = '/api/admin/data/settings';
             await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -48,7 +48,7 @@ export default function MemberPage() {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const url = process.env.NODE_ENV === 'production' ? '/api.php?board=members' : '/api/admin/data/members';
+            const url = '/api/admin/data/members';
             const res = await fetch(url);
             const json = await res.json();
             setMembers(json);
@@ -66,7 +66,7 @@ export default function MemberPage() {
 
     const handleSave = async (newData: Member[]) => {
         try {
-            const url = process.env.NODE_ENV === 'production' ? '/api.php?board=members' : '/api/admin/data/members';
+            const url = '/api/admin/data/members';
             await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

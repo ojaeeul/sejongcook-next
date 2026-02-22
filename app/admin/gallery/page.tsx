@@ -34,7 +34,7 @@ export default function GalleryPage() {
 
     const fetchImages = async () => {
         try {
-            const url = process.env.NODE_ENV === 'production' ? '/api.php?board=gallery' : '/api/admin/data/gallery';
+            const url = '/api/admin/data/gallery';
             const res = await fetch(url);
             if (!res.ok) throw new Error('Failed to fetch images');
             const json = await res.json();
@@ -59,9 +59,7 @@ export default function GalleryPage() {
     const handleDelete = async (id: string) => {
         if (!confirm('정말 삭제하시겠습니까?')) return;
         try {
-            const url = process.env.NODE_ENV === 'production'
-                ? `/api.php?board=gallery&id=${id}`
-                : `/api/admin/data/gallery?id=${id}`;
+            const url = `/api/admin/data/gallery?id=${id}`;
             const res = await fetch(url, { method: 'DELETE' });
             if (res.ok) {
                 setImages(prev => prev.filter(img => img.id !== id));

@@ -27,7 +27,7 @@ function JobOpeningViewContent() {
                 return;
             }
             try {
-                const url = process.env.NODE_ENV === 'production' ? '/api.php?board=job-openings' : '/data/job_openings_data.json';
+                const url = '/api/admin/data/job-openings';
                 const res = await fetch(url);
                 if (res.ok) {
                     const data: Post[] = await res.json();

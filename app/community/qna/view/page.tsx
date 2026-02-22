@@ -19,7 +19,7 @@ function QnaDetailContent() {
             }
 
             try {
-                const url = process.env.NODE_ENV === 'production' ? '/api.php?board=qna' : '/data/qna_data.json';
+                const url = '/api/admin/data/qna';
                 const res = await fetch(url);
                 const data = await res.json();
 

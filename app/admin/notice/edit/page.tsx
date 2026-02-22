@@ -18,7 +18,7 @@ function EditNoticeContent() {
                 return;
             }
             try {
-                const url = process.env.NODE_ENV === 'production' ? '/api.php?board=notice' : '/api/admin/data/notice';
+                const url = '/api/admin/data/notice';
                 const res = await fetch(url);
                 if (!res.ok) throw new Error('Failed to fetch data');
                 const list = await res.json();

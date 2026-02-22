@@ -20,7 +20,7 @@ export default function CookingBoardList() {
     const fetchData = async () => {
         try {
             setLoading(true);
-            const url = process.env.NODE_ENV === 'production' ? '/api.php?board=cooking' : '/api/admin/data/cooking?t=' + Date.now();
+            const url = '/api/admin/data/cooking' + Date.now();
             const res = await fetch(url);
             if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
             const json = await res.json();
@@ -48,7 +48,7 @@ export default function CookingBoardList() {
     const handleDelete = async (id: string | number) => {
         if (!confirm('정말 삭제하시겠습니까?')) return;
         try {
-            const url = process.env.NODE_ENV === 'production' ? `/api.php?board=cooking&id=${id}` : `/api/admin/data/cooking?id=${id}`;
+            const url = `/api/admin/data/cooking?id=${id}`;
             const res = await fetch(url, {
                 method: 'DELETE',
             });

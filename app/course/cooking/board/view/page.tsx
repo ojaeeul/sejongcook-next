@@ -29,9 +29,7 @@ function CookingPostDetailContent() {
                 return;
             }
             try {
-                const url = process.env.NODE_ENV === 'production'
-                    ? '/api.php?board=cooking'
-                    : '/data/cooking_posts.json?t=' + Date.now();
+                const url = '/api/admin/data/cooking' + Date.now();
                 const res = await fetch(url);
                 if (res.ok) {
                     const data: Post[] = await res.json();

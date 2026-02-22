@@ -15,7 +15,7 @@ function EditReviewContent() {
         if (!id) return;
         const fetchData = async () => {
             try {
-                const url = process.env.NODE_ENV === 'production' ? '/api.php?board=review' : '/api/admin/data/review';
+                const url = '/api/admin/data/review';
                 const res = await fetch(url);
                 if (!res.ok) throw new Error('Failed to fetch data');
                 const list = await res.json();

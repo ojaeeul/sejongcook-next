@@ -24,7 +24,7 @@ export default function HonorList() {
 
     const fetchData = async () => {
         try {
-            const url = process.env.NODE_ENV === 'production' ? '/api.php?board=honor' : '/api/admin/data/honor?t=' + Date.now();
+            const url = '/api/admin/data/honor' + Date.now();
             const res = await fetch(url);
             const json = await res.json();
             if (Array.isArray(json)) {
@@ -56,7 +56,7 @@ export default function HonorList() {
         const id = confirmModal.id;
 
         try {
-            const url = process.env.NODE_ENV === 'production' ? `/api.php?board=honor&id=${id}` : `/api/admin/data/honor?id=${id}`;
+            const url = `/api/admin/data/honor?id=${id}`;
             const res = await fetch(url, {
                 method: 'DELETE',
             });

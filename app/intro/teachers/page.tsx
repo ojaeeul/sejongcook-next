@@ -19,7 +19,7 @@ function TeachersContent() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const url = process.env.NODE_ENV === 'production' ? '/api.php?board=teachers' : '/api/teachers';
+        const url = '/api/admin/data/teachers';
         fetch(url)
             .then(res => res.json())
             .then(data => {

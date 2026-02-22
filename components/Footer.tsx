@@ -15,9 +15,7 @@ export default function Footer() {
     });
 
     useEffect(() => {
-        const url = process.env.NODE_ENV === 'production'
-            ? '/api.php?board=footer'
-            : '/api/admin/footer';
+        const url = '/api/admin/data/footer';
 
         fetch(url)
             .then(res => {

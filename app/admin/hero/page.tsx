@@ -16,7 +16,7 @@ export default function AdminHeroPage() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const url = process.env.NODE_ENV === 'production' ? '/api.php?board=hero' : '/api/hero';
+                const url = '/api/admin/data/hero';
                 const res = await fetch(url);
                 if (res.ok) {
                     const data = await res.json();
@@ -83,7 +83,7 @@ export default function AdminHeroPage() {
 
     const handleSubmit = async () => {
         try {
-            const url = process.env.NODE_ENV === 'production' ? '/api.php?board=hero' : '/api/hero';
+            const url = '/api/admin/data/hero';
             const res = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

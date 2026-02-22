@@ -14,7 +14,7 @@ export default function QnaList() {
 
     const fetchData = async () => {
         try {
-            const url = process.env.NODE_ENV === 'production' ? '/api.php?board=qna' : '/api/admin/data/qna?t=' + Date.now();
+            const url = '/api/admin/data/qna' + Date.now();
             const res = await fetch(url);
             const json = await res.json();
             if (Array.isArray(json)) {
@@ -45,7 +45,7 @@ export default function QnaList() {
         const id = confirmModal.id;
 
         try {
-            const url = process.env.NODE_ENV === 'production' ? `/api.php?board=qna&id=${id}` : `/api/admin/data/qna?id=${id}`;
+            const url = `/api/admin/data/qna?id=${id}`;
             const res = await fetch(url, {
                 method: 'DELETE',
             });

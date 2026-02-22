@@ -20,7 +20,7 @@ export default function ReviewList() {
 
     const fetchData = useCallback(async () => {
         try {
-            const url = process.env.NODE_ENV === 'production' ? '/api.php?board=review' : '/api/admin/data/review';
+            const url = '/api/admin/data/review';
             const res = await fetch(url);
             if (!res.ok) throw new Error('Failed to fetch reviews');
             const data = await res.json();
@@ -49,7 +49,7 @@ export default function ReviewList() {
         const id = confirmModal.id;
 
         try {
-            const url = process.env.NODE_ENV === 'production' ? `/api.php?board=review&id=${id}` : `/api/admin/data/review?id=${id}`;
+            const url = `/api/admin/data/review?id=${id}`;
             const res = await fetch(url, {
                 method: 'DELETE',
             });

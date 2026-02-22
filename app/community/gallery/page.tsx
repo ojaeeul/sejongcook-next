@@ -16,7 +16,7 @@ export default function GalleryPage() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const url = process.env.NODE_ENV === 'production' ? '/api.php?board=gallery' : '/data/gallery_data.json';
+        const url = '/api/admin/data/gallery';
         fetch(url)
             .then(res => res.json())
             .then(data => {

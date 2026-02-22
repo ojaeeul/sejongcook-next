@@ -11,7 +11,7 @@ export default function JobSeekersPage() {
     useEffect(() => {
         const fetchPosts = async () => {
             try {
-                const url = process.env.NODE_ENV === 'production' ? '/api.php?board=job-seekers' : '/data/job_seekers_data.json';
+                const url = '/api/admin/data/job-seekers';
                 const res = await fetch(url);
                 const data = await res.json();
 
