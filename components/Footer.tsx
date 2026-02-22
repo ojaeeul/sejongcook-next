@@ -15,9 +15,9 @@ export default function Footer() {
     });
 
     useEffect(() => {
-        const url = '/api/admin/data/footer';
+        const url = '/api/admin/data/footer?_t=' + Date.now();
 
-        fetch(url)
+        fetch(url, { cache: 'no-store' })
             .then(res => {
                 if (!res.ok) throw new Error('Footer data fetch failed');
                 return res.json();
