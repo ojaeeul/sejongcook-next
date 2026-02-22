@@ -994,7 +994,19 @@
         let membersData = [];
         let attendanceData = [];
         let holidaysData = [];
-        let timetableData = {};
+        let timetableData = {
+            '한식기능사': [1, 2],
+            '양식기능사': [2, 4],
+            '일식기능사': [2, 4],
+            '중식기능사': [2, 4],
+            '제과기능사': [1, 3],
+            '제빵기능사': [2, 4],
+            '제과제빵기능사': [1, 2, 3, 4],
+            '복어기능사': [5],
+            '산업기사': [5],
+            '가정요리': [1, 2],
+            '브런치': [5]
+        };
         let sheetFilter = 'all';
         let sheetTimeFilter = 'all';
         let activeStatusBrush = null; // 'present', 'absent', 'extension', or null (toggle)
@@ -1186,7 +1198,12 @@
         async function fetchTimetable() {
             try {
                 const res = await fetch(`${SHEET_API_BASE}/timetable`);
-                if (res.ok) timetableData = await res.json();
+                if (res.ok) {
+                    const apiData = await res.json();
+                    if (apiData && Object.keys(apiData).length > 0) {
+                        timetableData = { ...timetableData, ...apiData };
+                    }
+                }
             } catch (e) { console.error(e); }
         }
 
@@ -1453,7 +1470,7 @@
                                     }
                                 } else {
                                     td.classList.remove('cell-disabled');
-                                    td.style.backgroundColor = '';
+                                    td.style.backgroundColor = '#ffffff';
                                 }
 
                                 // Interactive Cell Configuration
