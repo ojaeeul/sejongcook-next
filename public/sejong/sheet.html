@@ -1517,7 +1517,7 @@
                                     editCellText(td, m.id, dateStr, rowCourseNameScope);
                                 };
 
-                                // Check if this is the date when 재고출석 reaches 9
+                                // Check if this is the date when 재고출석 reaches 9 (a multiple of 9 completion)
                                 // Calculate cumulative makeup attendance up to this date
                                 const isDualCourse = rowData && rowData.courseName && rowData.courseName.includes('제과제빵');
                                 const attendanceIncrement = isDualCourse ? 0.5 : 1;
@@ -1535,41 +1535,39 @@
                                 const recordsUpToThisDate = Array.from(uniqueRecordsMap.values()).filter(a => {
                                     const aDate = new Date(a.date);
                                     const thisDate = new Date(dateStr);
-                                    return aDate <= thisDate && aDate.getFullYear() === currentYear;
+                                    return aDate <= thisDate;
                                 }).sort((a, b) => new Date(a.date) - new Date(b.date));
 
                                 let cumulativeMakeup = 0;
-                                let reachedEightOnThisDate = false;
+                                let reachedNineOnThisDate = false;
 
                                 for (const record of recordsUpToThisDate) {
                                     const recDate = new Date(record.date);
                                     const recMonth = recDate.getMonth() + 1;
 
                                     const isMakeupMarker = ['[', ']'].includes(record.status);
+                                    const isNumericPresent = ['10', '12', '2', '5', '7'].includes(record.status);
                                     const isAbsent = record.status === 'absent' || (typeof record.status === 'string' && record.status.startsWith('X'));
-                                    const isRegularAttendance = record.status === 'present' || ['10', '12', '2', '5', '7'].includes(record.status) || isAbsent;
+                                    const isRegularAttendance = record.status === 'present' || isNumericPresent || isAbsent;
 
                                     const prevMakeup = cumulativeMakeup;
 
-                                    if (recMonth < currentMonth) {
-                                        if (isMakeupMarker || isRegularAttendance) {
-                                            cumulativeMakeup += attendanceIncrement;
-                                        }
-                                    } else if (recMonth === currentMonth) {
-                                        // Current month: include Regular Attendance consistent with user expectation for "8th Day" highlight
-                                        if (isMakeupMarker || isRegularAttendance) {
-                                            cumulativeMakeup += attendanceIncrement;
-                                        }
+                                    if (isMakeupMarker || isRegularAttendance) {
+                                        cumulativeMakeup += attendanceIncrement;
                                     }
 
-                                    // Check if we just reached exactly 9 on this date
-                                    if (record.date === dateStr && prevMakeup < 9 && cumulativeMakeup === 9) {
-                                        reachedEightOnThisDate = true;
+                                    // Check if we crossed a multiple of 9 threshold on this exact date
+                                    if (record.date === dateStr) {
+                                        // E.g., prev was 8.5, now 9.5 -> crossed 9
+                                        // prev was 17, now 18 -> crossed 18
+                                        if (Math.floor((prevMakeup - 0.001) / 9) < Math.floor((cumulativeMakeup - 0.001) / 9)) {
+                                            reachedNineOnThisDate = true;
+                                        }
                                     }
                                 }
 
-                                // Apply red border if this is the 9th makeup attendance date
-                                if (reachedEightOnThisDate) {
+                                // Apply red border if this date completes a 9-day payment cycle
+                                if (reachedNineOnThisDate) {
                                     td.style.border = '3px solid red';
                                     td.style.boxShadow = '0 0 5px rgba(255, 0, 0, 0.5)';
                                 }
@@ -1642,23 +1640,15 @@
                     // User Request: Combine Absence count with Attendance count
                     let displayP = sumP + sumA;
 
-                    // NEW LOGIC: Prioritize filling 재고출석 to 9, then show remainder in 출석
-                    // Example: Previous month makeup = 5, Current month attendance = 9
-                    // Result: 재고출석 = 9 (5 from prev + 4 from current), 출석 = 5 (9 - 4)
-                    let displayMakeup = sumMakeup;
+                    // Calculate the "carried over" remainder from prior cycles (e.g., if total 12, carryover is 3)
+                    let startingMakeup = sumMakeup % 9;
+                    let displayMakeup = startingMakeup;
 
-                    if (sumMakeup < 9) {
-                        // If previous makeup is less than 9, use current attendance to fill it
-                        const spaceInMakeup = 9 - sumMakeup; // How much space left in makeup
-                        const toFillMakeup = Math.min(spaceInMakeup, displayP); // Use current attendance to fill
-
-                        displayMakeup = sumMakeup + toFillMakeup; // Fill makeup (max 9)
-                        displayP = displayP - toFillMakeup; // Remaining goes to attendance
-                    } else if (sumMakeup > 9) {
-                        // If previous makeup exceeds 9, cap it and add overflow to attendance
-                        displayMakeup = 9;
-                        const overflow = sumMakeup - 9;
-                        displayP += overflow;
+                    // NEW LOGIC: Prioritize filling 재고출석 to 8, then show remainder in 출석
+                    if (displayMakeup + displayP >= 9) {
+                        const spaceTo8 = 8 - displayMakeup;
+                        displayMakeup = 8;
+                        displayP = displayP - spaceTo8;
                     }
 
                     [displayMakeup, displayP, sumA, sumE].forEach((val, idx) => {
