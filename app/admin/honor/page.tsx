@@ -24,7 +24,7 @@ export default function HonorList() {
 
     const fetchData = async () => {
         try {
-            const url = '/api/admin/data/honor' + Date.now();
+            const url = '/api/admin/data/honor?_t=' + Date.now();
             const res = await fetch(url);
             const json = await res.json();
             if (Array.isArray(json)) {

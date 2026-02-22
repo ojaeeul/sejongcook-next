@@ -20,7 +20,7 @@ export default function BakingBoardList() {
     const fetchData = async () => {
         try {
             setLoading(true);
-            const url = '/api/admin/data/baking' + Date.now();
+            const url = '/api/admin/data/baking?_t=' + Date.now();
             const res = await fetch(url);
             if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
             const json = await res.json();

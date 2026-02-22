@@ -13,7 +13,7 @@ export default function JobOpeningsList() {
 
     const fetchData = async () => {
         try {
-            const url = '/api/admin/data/job-openings' + Date.now();
+            const url = '/api/admin/data/job-openings?_t=' + Date.now();
             const res = await fetch(url);
             const json = await res.json();
             if (Array.isArray(json)) {

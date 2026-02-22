@@ -19,7 +19,7 @@ export default function JobSeekersList() {
 
     const fetchData = useCallback(async () => {
         try {
-            const url = '/api/admin/data/job-seekers' + Date.now();
+            const url = '/api/admin/data/job-seekers?_t=' + Date.now();
             const res = await fetch(url);
             const json = await res.json();
             if (Array.isArray(json)) {

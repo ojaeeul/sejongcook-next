@@ -20,7 +20,7 @@ export default function LinksList() {
 
     const fetchData = useCallback(async () => {
         try {
-            const url = '/api/admin/data/links' + Date.now();
+            const url = '/api/admin/data/links?_t=' + Date.now();
             const res = await fetch(url);
             const json = await res.json();
             if (Array.isArray(json)) {

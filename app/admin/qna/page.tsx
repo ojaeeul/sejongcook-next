@@ -14,7 +14,7 @@ export default function QnaList() {
 
     const fetchData = async () => {
         try {
-            const url = '/api/admin/data/qna' + Date.now();
+            const url = '/api/admin/data/qna?_t=' + Date.now();
             const res = await fetch(url);
             const json = await res.json();
             if (Array.isArray(json)) {
