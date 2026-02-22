@@ -180,7 +180,7 @@ function CakeContent() {
 
             {/* Action Buttons */}
             <ActionButtons
-              listLink="/course"
+              listLink="/course/baking#overview"
               editLink="/course/cake?mode=edit"
               onDelete={() => alert('기본 페이지는 삭제할 수 없습니다.')}
             />

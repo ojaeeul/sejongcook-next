@@ -16,6 +16,8 @@ interface Inquiry {
     courses: string[];
     date: string;
     isRead: boolean;
+    marketingAgree?: boolean;
+    content?: string;
 }
 
 export default function AdminInquiryPage() {
@@ -23,9 +25,26 @@ export default function AdminInquiryPage() {
 
     const fetchData = async () => {
         try {
-            const res = await fetch('/api/admin/data/inquiries');
+            const url = process.env.NODE_ENV === 'production' ? '/api.php?board=inquiry' : '/api/admin/data/inquiries';
+            const res = await fetch(url);
             const json = await res.json();
-            setInquiries(Array.isArray(json) ? json : []);
+
+            // Validate and sanitize fields
+            const safeData = (Array.isArray(json) ? json : []).map((item: Record<string, unknown>) => ({
+                id: String(item.id || ''),
+                name: String(item.name || 'Unknown'),
+                phone: String(item.phone || ''),
+                date: String(item.date || new Date().toISOString()),
+                // Ensure courses is an array even if missing or a single string
+                courses: Array.isArray(item.courses)
+                    ? (item.courses as string[])
+                    : (typeof item.courses === 'string' && item.courses ? [item.courses] : []),
+                isRead: !!item.isRead,
+                marketingAgree: !!item.marketingAgree,
+                content: String(item.content || '')
+            }));
+
+            setInquiries(safeData);
         } catch (error) {
             console.error('Failed to fetch inquiries', error);
         }
@@ -39,8 +58,9 @@ export default function AdminInquiryPage() {
     const handleDelete = async (id: string) => {
         if (confirm('정말 삭제하시겠습니까?')) {
             try {
-                const newData = inquiries.filter((item) => item.id !== id);
-                await fetch('/api/admin/data/inquiries', {
+                const newData = inquiries.filter((item) => String(item.id) !== String(id));
+                const url = process.env.NODE_ENV === 'production' ? '/api.php?board=inquiry' : '/api/admin/data/inquiries';
+                await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(newData),
@@ -69,6 +89,8 @@ export default function AdminInquiryPage() {
                                     <th scope="col" className="px-6 py-3">이름</th>
                                     <th scope="col" className="px-6 py-3">연락처</th>
                                     <th scope="col" className="px-6 py-3">관심과정</th>
+                                    <th scope="col" className="px-6 py-3">상담내용</th>
+                                    <th scope="col" className="px-6 py-3 text-center">마케팅</th>
                                     <th scope="col" className="px-6 py-3 text-center">관리</th>
                                 </tr>
                             </thead>
@@ -94,6 +116,20 @@ export default function AdminInquiryPage() {
                                                     ))}
                                                 </div>
                                             </td>
+                                            <td className="px-6 py-4 truncate max-w-xs" title={item.content}>
+                                                {item.content || '-'}
+                                            </td>
+                                            <td className="px-6 py-4 text-center">
+                                                {item.marketingAgree ? (
+                                                    <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded border border-blue-400">
+                                                        동의
+                                                    </span>
+                                                ) : (
+                                                    <span className="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded border border-gray-500">
+                                                        미동의
+                                                    </span>
+                                                )}
+                                            </td>
                                             <td className="px-6 py-4 text-center">
                                                 <button
                                                     onClick={() => handleDelete(item.id)}
@@ -106,7 +142,7 @@ export default function AdminInquiryPage() {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan={5} className="px-6 py-10 text-center text-gray-500">
+                                        <td colSpan={7} className="px-6 py-10 text-center text-gray-500">
                                             아직 접수된 상담 내역이 없습니다.
                                         </td>
                                     </tr>

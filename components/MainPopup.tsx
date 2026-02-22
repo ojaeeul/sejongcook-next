@@ -30,7 +30,7 @@ export default function MainPopup() {
     useEffect(() => {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setMounted(true);
-        fetch('/api/admin/popups')
+        fetch(`/api/admin/popups?t=${Date.now()}`, { cache: 'no-store' })
             .then(res => res.json())
             .then(data => {
                 if (Array.isArray(data)) {

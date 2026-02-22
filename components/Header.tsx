@@ -80,6 +80,7 @@ export default function Header({ initialShowAuthLinks = true }: { initialShowAut
                 { label: '공지사항', href: '/community/notice' },
                 { label: '수강후기', href: '/community/review' },
                 { label: '질문&답변', href: '/community/qna' },
+                { label: '갤러리', href: '/community/gallery' },
                 { label: '관련사이트', href: '/community/sites' },
                 { label: '명예의 전당', href: '/community/honor' },
             ]

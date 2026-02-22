@@ -24,6 +24,7 @@ export default function Editor({ onChange, content = "" }: EditorProps) {
                 onChange={onChange}
                 setOptions={{
                     lang: ko,
+                    defaultStyle: "font-family: 'Pretendard', sans-serif; font-size: 16px; line-height: 1.6;",
                     buttonList: [
                         ['undo', 'redo'],
                         ['font', 'fontSize', 'formatBlock'],
@@ -34,10 +35,17 @@ export default function Editor({ onChange, content = "" }: EditorProps) {
                         ['outdent', 'indent'],
                         ['align', 'horizontalRule', 'list', 'lineHeight'],
                         ['table', 'link', 'image', 'video'],
-                        ['template'], // Template button
+                        ['template'],
                         ['fullScreen', 'showBlocks', 'codeView'],
                         ['preview', 'print']
                     ],
+                    // Critical for preserving tables and styles
+                    mode: "classic",
+                    // @ts-expect-error SunEditor types may not allow null, but it is required to disable sanitation
+                    allowedTags: null, // Allow all tags
+                    allowedAttributes: null, // Allow all attributes (style, class, etc.)
+                    iframe: false,
+                    fullPage: false,
                     templates: [
                         {
                             name: '🍊 요리/조리 스타일 (오렌지)',
@@ -148,11 +156,9 @@ export default function Editor({ onChange, content = "" }: EditorProps) {
                             </div>`
                         }
                     ],
-                    defaultTag: "div",
-                    showPathLabel: false,
                     font: [
                         'Arial', 'Comic Sans MS', 'Courier New', 'Impact',
-                        'Georgia', 'Tahoma', 'Trebuchet MS', 'Verdana', 'Noto Sans KR'
+                        'Georgia', 'Tahoma', 'Trebuchet MS', 'Verdana', 'Noto Sans KR', 'Pretendard'
                     ]
                 }}
             />

@@ -67,5 +67,10 @@ export const DEFAULT_HERO_DATA = {
     phoneAlignment: "center",
     phoneBackgroundColor: "rgba(0, 0, 0, 0.4)",
     phoneTextColor: "#ffffff",
-    phoneBold: true
+    phoneBold: true,
+
+    // Laurel Banner Settings
+    laurelBannerVisible: true,
+    laurelStars: 5,
+    laurelName: "강란기 대표"
 };

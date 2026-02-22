@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>세종요리 수강생 전용</title>
+    <link rel="stylesheet" href="style.css?v=20260211_10">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        body {
+            overflow: hidden;
+        }
+
+        /* Full screen feel */
+        .kiosk-container {
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+            background-color: #f0f2f5;
+        }
+
+        /* Left Side: Notice Board */
+        .kiosk-left {
+            flex: 1;
+            background-color: #2c3e50;
+            color: white;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .notice-title {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            font-weight: 700;
+        }
+
+        .notice-content {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 20px;
+            width: 80%;
+            height: 60%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        /* Right Side: Keypad */
+        .kiosk-right {
+            width: 500px;
+            background-color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            box-shadow: -5px 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-display {
+            width: 100%;
+            max-width: 360px;
+            height: 80px;
+            background-color: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            font-size: 3rem;
+            text-align: center;
+            line-height: 80px;
+            letter-spacing: 10px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .keypad-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            width: 100%;
+            max-width: 360px;
+        }
+
+        .key-btn {
+            width: 100%;
+            aspect-ratio: 1;
+            background-color: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 50%;
+            font-size: 2rem;
+            font-weight: 500;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.1s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .key-btn:active {
+            transform: scale(0.95);
+            background-color: #f0f0f0;
+        }
+
+        .key-btn.action {
+            font-size: 1.2rem;
+            background-color: #f8f9fa;
+            color: #666;
+        }
+
+        .key-btn.submit {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            font-size: 1.2rem;
+        }
+
+        .status-message {
+            margin-top: 30px;
+            height: 40px;
+            color: #4CAF50;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .back-link {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            text-decoration: none;
+            color: #ccc;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="kioskApp" class="kiosk-container"
+        style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); display: flex; width: 100vw; height: 100vh; overflow: hidden; font-family: 'Noto Sans KR', sans-serif;">
+
+        <!-- [1] HOME LANDING SCREEN -->
+        <div id="homeScreen"
+            style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100;">
+            <div style="text-align: center; margin-bottom: 50px;">
+                <div
+                    style="width: 70px; height: 70px; background: #059669; border-radius: 18px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 15px 30px rgba(5, 150, 105, 0.4); margin-bottom: 15px;">
+                    <span class="material-icons" style="color: white; font-size: 40px;">restaurant</span>
+                </div>
+                <h1 style="color: white; font-size: 3rem; font-weight: 900; margin: 0; letter-spacing: -2px;">세종요리학원
+                </h1>
+                <p style="color: #94a3b8; font-size: 1.2rem; font-weight: 500; margin-top: 5px;">수강생 전용 키오스크
+                </p>
+                <h2 style="color: #4ade80; font-size: 1.8rem; font-weight: 700; margin-top: 25px;">출석 방법을 선택해주세요</h2>
+            </div>
+
+            <div style="display: flex; gap: 30px; width: 95%; max-width: 1000px; padding: 0 20px;">
+                <!-- Mode 1: Pure Number -->
+                <div onclick="switchMode('number')" class="mode-card"
+                    style="flex: 1; height: 400px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 35px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.4s;">
+                    <div class="icon-circle"
+                        style="width: 100px; height: 100px; background: #3b82f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 25px; box-shadow: 0 20px 40px rgba(59, 130, 246, 0.3);">
+                        <span class="material-icons" style="color: white; font-size: 50px;">dialpad</span>
+                    </div>
+                    <h3 style="color: white; font-size: 2.2rem; font-weight: 900; margin-bottom: 10px;">번호 출석</h3>
+                    <p style="color: #94a3b8; font-size: 1.1rem; text-align: center;">등록된 번호로<br>빠르게 출석체크</p>
+                </div>
+
+                <!-- Mode 2: Pure Face (No Numbers) -->
+                <div class="mode-card highlight"
+                    style="flex: 1; height: 400px; background: rgba(5, 150, 105, 0.15); border: 2px solid #059669; border-radius: 35px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.4s; position: relative; overflow: hidden;"
+                    onclick="if(!event.target.closest('.register-btn')) switchMode('face_only')">
+                    <div
+                        style="position: absolute; top:0; left:0; width: 100%; height: 100%; background: radial-gradient(circle at center, rgba(74, 222, 128, 0.15), transparent 70%);">
+                    </div>
+                    <div class="icon-circle"
+                        style="width: 100px; height: 100px; background: #059669; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 25px; box-shadow: 0 20px 40px rgba(5, 150, 105, 0.4);">
+                        <span class="material-icons" style="color: white; font-size: 50px;">face</span>
+                    </div>
+                    <h3 style="color: white; font-size: 2.2rem; font-weight: 900; margin-bottom: 10px;">얼굴 출석</h3>
+                    <p style="color: #94a3b8; font-size: 1.1rem; text-align: center;">번호 입력 없이<br>얼굴로만 즉시 출석</p>
+
+                    <!-- New Small Registration Button -->
+                    <div class="register-btn" onclick="switchMode('register')"
+                        style="margin-top: 20px; display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.1); padding: 8px 16px; border-radius: 20px; cursor: pointer; transition: background 0.2s;"
+                        onmouseover="this.style.background='rgba(255,255,255,0.2)'"
+                        onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+                        <span class="material-icons" style="color: #fff; font-size: 18px;">add_a_photo</span>
+                        <span style="color: #fff; font-size: 0.9rem; font-weight: 500;">신규 등록 (처음)</span>
+                    </div>
+                </div>
+
+                <!-- Mode 3 Removed -->
+            </div>
+
+            <div style="margin-top: 60px; text-align: center;">
+                <div id="homeDate" style="color: #64748b; font-size: 1.3rem; font-weight: 500;"></div>
+                <div id="homeTime" style="color: white; font-size: 3rem; font-weight: 900; margin-top: 5px;"></div>
+            </div>
+        </div>
+
+        <!-- [2] MAIN WORKSPACE (Hidden by default) -->
+        <div id="workspace" style="display: none; width: 100%; height: 100%; flex-direction: row;">
+            <!-- Left Section: Mirror/Camera -->
+            <div id="mirrorSection" class="kiosk-left"
+                style="flex: 1.2; position: relative; padding: 40px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                <div id="mirrorHeader"
+                    style="position: absolute; top: 40px; left: 60px; display: flex; align-items: center; gap: 15px;">
+                    <div
+                        style="width: 40px; height: 40px; background: #059669; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                        <span class="material-icons" style="color: white; font-size: 24px;">restaurant</span>
+                    </div>
+                    <h2 style="color: white; margin: 0; font-size: 1.5rem; font-weight: 900;">세종요리학원</h2>
+                </div>
+
+                <div style="position: relative; width: 90%; height: 80%; max-width: 900px;">
+                    <div class="camera-frame"
+                        style="position: absolute; inset: -4px; border-radius: 40px; background: linear-gradient(45deg, #059669, #34d399, #059669); padding: 4px; box-shadow: 0 0 50px rgba(5, 150, 105, 0.4);">
+                        <div
+                            style="width: 100%; height: 100%; background: #000; border-radius: 36px; overflow: hidden;">
+                            <video id="video" autoplay playsinline
+                                style="width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1);"></video>
+                            <div id="shutterEffect"
+                                style="position: absolute; inset:0; background:white; opacity:0; pointer-events:none; z-index: 10;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="scanStatus"
+                    style="margin-top: 30px; color: white; display: flex; align-items: center; gap: 10px;">
+                    <span class="material-icons" style="color: #4ade80;">videocam</span>
+                    <span style="font-size: 1.2rem; font-weight: 500;">실시간 에코 미러 작동 중</span>
+                </div>
+            </div>
+
+            <!-- Right Section: Keypad Controls -->
+            <div id="keypadSection" class="kiosk-right"
+                style="width: 550px; background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(30px); border-left: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; position: relative;">
+                <button onclick="switchMode('home')"
+                    style="position: absolute; top: 40px; left: 40px; background: none; border: none; color: #94a3b8; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                    <span class="material-icons">arrow_back</span> 처음으로
+                </button>
+
+                <div id="rightHeader" style="text-align: center; margin-bottom: 40px; width: 100%;">
+                    <h2 id="mainTitle" style="color: white; font-size: 2.8rem; font-weight: 900; margin-bottom: 10px;">
+                        번호 출석</h2>
+                    <p id="mainSub" style="color: #94a3b8; font-size: 1.2rem;">휴대폰 뒷번호 <span
+                            style="color: #4ade80; font-weight: 900;">8자리</span>를 입력하세요</p>
+                </div>
+
+                <div id="inputWrapper" style="width: 100%; max-width: 380px; margin-bottom: 30px;">
+                    <div class="input-display" id="inputDisplay"
+                        style="width: 100%; height: 100px; background: rgba(0,0,0,0.3); border: 2px solid rgba(255,255,255,0.1); border-radius: 20px; color: #fff; font-size: 3.5rem; display: flex; align-items: center; justify-content: center; letter-spacing: 15px; font-weight: 900; box-shadow: inset 0 4px 20px rgba(0,0,0,0.5);">
+                    </div>
+                </div>
+
+                <div id="keypadGrid" class="keypad-grid"
+                    style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; width: 100%; max-width: 380px;">
+                    <button class="kiosk-key" onclick="addNum(1)">1</button>
+                    <button class="kiosk-key" onclick="addNum(2)">2</button>
+                    <button class="kiosk-key" onclick="addNum(3)">3</button>
+                    <button class="kiosk-key" onclick="addNum(4)">4</button>
+                    <button class="kiosk-key" onclick="addNum(5)">5</button>
+                    <button class="kiosk-key" onclick="addNum(6)">6</button>
+                    <button class="kiosk-key" onclick="addNum(7)">7</button>
+                    <button class="kiosk-key" onclick="addNum(8)">8</button>
+                    <button class="kiosk-key" onclick="addNum(9)">9</button>
+                    <button class="kiosk-key action" onclick="clearNum()">지움</button>
+                    <button class="kiosk-key" onclick="addNum(0)">0</button>
+                    <button id="mainSubmitBtn" class="kiosk-key submit" onclick="submitAttendance()">출석</button>
+                    <button id="faceSubmitBtn" class="kiosk-key submit"
+                        style="display: none; background: #059669; font-size: 1.1rem;" onclick="capturePhoto()">얼굴
+                        촬영<br>및 출석</button>
+                </div>
+
+                <!-- Face-Only Action Panel -->
+                <div id="faceOnlyPanel" style="display: none; text-align: center; width: 100%;">
+                    <div
+                        style="width: 180px; height: 180px; border: 4px solid #059669; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 40px; background: rgba(5,150,105,0.1);">
+                        <span class="material-icons"
+                            style="color: #059669; font-size: 100px; animation: pulse 2s infinite;">face_retouching_natural</span>
+                    </div>
+                    <button onclick="recognizeAndAttend()"
+                        style="width: 320px; height: 90px; border-radius: 45px; background: #059669; color: white; border: none; font-size: 1.8rem; font-weight: 900; cursor: pointer; box-shadow: 0 15px 30px rgba(5,150,105,0.4);">
+                        얼굴로 출석하기
+                    </button>
+                    <p style="color: #64748b; margin-top: 25px; font-size: 1.1rem;">카메라를 정면으로 바라봐 주세요</p>
+                </div>
+
+                <div id="statusMsg"
+                    style="margin-top: 30px; height: 50px; font-size: 1.3rem; font-weight: 700; text-align: center;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <canvas id="canvas" width="640" height="480" style="display: none;"></canvas>
+
+    <style>
+        @keyframes frameGlow {
+            from {
+                box-shadow: 0 0 20px rgba(5, 150, 105, 0.2);
+            }
+
+            to {
+                box-shadow: 0 0 60px rgba(5, 150, 105, 0.5);
+            }
+        }
+
+        @keyframes blink {
+            50% {
+                opacity: 0.3;
+            }
+        }
+
+        .kiosk-key {
+            aspect-ratio: 1.2;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        .kiosk-key:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .kiosk-key.action {
+            font-size: 1rem;
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+
+        .kiosk-key.submit {
+            background: #059669;
+            color: white;
+            border: none;
+            box-shadow: 0 4px 0 #064e3b;
+        }
+
+        .kiosk-key.submit:active {
+            box-shadow: 0 0 0 #064e3b;
+        }
+
+        .mode-card:hover {
+            transform: translateY(-15px) scale(1.02);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .mode-card.highlight:hover {
+            background: rgba(5, 150, 105, 0.15);
+            box-shadow: 0 30px 60px rgba(5, 150, 105, 0.2);
+        }
+
+        .kiosk-key {
+            aspect-ratio: 1.3;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        .kiosk-key:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+        }
+
+        .kiosk-key.action {
+            font-size: 1.2rem;
+            color: #ef4444;
+        }
+
+        .kiosk-key.submit {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            box-shadow: 0 4px 0 #1e40af;
+        }
+
+        @keyframes popIn {
+            0% {
+                transform: translate(-50%, -50%) scale(0.5);
+                opacity: 0;
+            }
+
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+    </style>
+
+    <script src="login.js?v=20260211_11"></script>
+    <script>
+        // Real-time Clock Implementation
+        function updateKioskTime() {
+            const now = new Date();
+            const timeStr = now.toTimeString().split(' ')[0];
+            const dateStr = now.getFullYear() + '. ' +
+                String(now.getMonth() + 1).padStart(2, '0') + '. ' +
+                String(now.getDate()).padStart(2, '0') + ' (' +
+                ['일', '월', '화', '수', '목', '금', '토'][now.getDay()] + ')';
+
+            const clockEl = document.getElementById('kioskClock');
+            const dateEl = document.getElementById('kioskDate');
+            if (clockEl) clockEl.textContent = timeStr;
+            if (dateEl) dateEl.textContent = dateStr;
+        }
+        setInterval(updateKioskTime, 1000);
+        updateKioskTime();
+    </script>
+</body>
+
+</html>

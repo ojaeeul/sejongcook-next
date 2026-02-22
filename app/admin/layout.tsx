@@ -13,7 +13,8 @@ import {
     Menu,
     X,
     Settings,
-    Link as LinkIcon
+    Link as LinkIcon,
+    Layers
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import type { SupabaseClient, Session } from '@supabase/supabase-js';
@@ -28,6 +29,10 @@ export default function AdminLayout({
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [authorized, setAuthorized] = useState(false);
 
+    // Normalize pathname to handle trailingSlash: true config
+    const normalizedPath = pathname?.replace(/\/$/, '') || '';
+    const isLoginPage = normalizedPath === '/admin/login';
+
     const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
 
     useEffect(() => {
@@ -37,12 +42,19 @@ export default function AdminLayout({
     }, []);
 
     useEffect(() => {
+        // 🟢 Check for local backdoor token first
+        const localToken = localStorage.getItem('adminToken');
+        if (localToken === 'sejong_admin_token') {
+            setAuthorized(true);
+            return; // Skip Supabase check if local token exists
+        }
+
         if (!supabase) return;
 
         const checkAuth = async () => {
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) {
-                if (pathname !== '/admin/login') {
+                if (!isLoginPage) {
                     router.push('/admin/login');
                 }
             } else {
@@ -52,8 +64,14 @@ export default function AdminLayout({
         checkAuth();
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: string, session: Session | null) => {
+            // Re-check local token on auth state change just in case
+            if (localStorage.getItem('adminToken') === 'sejong_admin_token') {
+                setAuthorized(true);
+                return;
+            }
+
             if (!session) {
-                if (pathname !== '/admin/login') {
+                if (!isLoginPage) {
                     router.push('/admin/login');
                 }
                 setAuthorized(false);
@@ -63,13 +81,14 @@ export default function AdminLayout({
         });
 
         return () => subscription.unsubscribe();
-    }, [supabase, router, pathname]);
+    }, [supabase, router, pathname, isLoginPage]);
 
     const handleLogout = async () => {
         try {
             if (supabase) {
                 await supabase.auth.signOut();
             }
+            document.cookie = "admin_auth=; path=/; max-age=0"; // Clear cookie
             router.push('/admin/login');
         } catch (error) {
             console.error('Logout failed', error);
@@ -77,7 +96,7 @@ export default function AdminLayout({
     };
 
     // If on login page, don't show the admin layout shell
-    if (pathname === '/admin/login') {
+    if (isLoginPage) {
         return <>{children}</>;
     }
 
@@ -88,11 +107,14 @@ export default function AdminLayout({
     const menuItems = [
         { name: '대시보드', href: '/admin', icon: LayoutDashboard },
         { name: '공지사항', href: '/admin/notice', icon: FileText },
+        { name: '제과제빵 게시판', href: '/admin/baking-board', icon: FileText },
+        { name: '조리 게시판', href: '/admin/cooking-board', icon: FileText },
         { name: '수강후기', href: '/admin/review', icon: MessageSquare }, // Using MessageSquare for reviews
         { name: '구인구직', href: '/admin/job-openings', icon: Briefcase },
         { name: '문의사항', href: '/admin/qna', icon: MessageSquare },
-        { name: '팝업 관리', href: '/admin/popups', icon: Menu }, // Using Menu icon for popups
+        { name: '팝업 관리', href: '/admin/popups', icon: Layers }, // Using Layers icon for popups
         { name: '갤러리', href: '/admin/gallery', icon: ImageIcon },
+        { name: '명예의 전당', href: '/admin/honor', icon: ImageIcon }, // Re-using ImageIcon or similar
         { name: '사이트 링크', href: '/admin/links', icon: LinkIcon },
         { name: '하단 정보 (Footer)', href: '/admin/footer', icon: FileText },
         { name: '환경 설정', href: '/admin/settings', icon: Settings },

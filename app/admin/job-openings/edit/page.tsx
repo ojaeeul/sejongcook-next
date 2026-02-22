@@ -4,7 +4,6 @@
 import { useEffect, useState, Suspense } from 'react';
 import DataEditor from '../../components/DataEditor';
 import { useSearchParams } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
 
 function EditJobOpeningContent() {
     const searchParams = useSearchParams();
@@ -17,13 +16,13 @@ function EditJobOpeningContent() {
         if (!id) return;
         const fetchData = async () => {
             try {
-                const { data: post, error } = await supabase
-                    .from('posts')
-                    .select('*')
-                    .eq('id', id)
-                    .single();
+                const url = process.env.NODE_ENV === 'production' ? '/api.php?board=job-openings' : '/api/admin/data/job-openings';
+                const res = await fetch(url);
+                if (!res.ok) throw new Error('Failed to fetch data');
+                const list = await res.json();
+                const post = list.find((i: { id: string | number }) => String(i.id) === String(id));
 
-                if (error) throw error;
+                if (!post) throw new Error('Job not found');
                 setData(post);
             } catch (error) {
                 console.error('Failed to fetch job', error);
@@ -41,7 +40,7 @@ function EditJobOpeningContent() {
         <DataEditor
             title="구인구직 수정"
             initialData={data}
-            type="job_openings"
+            type="job-openings"
             backLink="/admin/job-openings"
         />
     );

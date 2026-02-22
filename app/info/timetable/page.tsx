@@ -18,7 +18,8 @@ function Content() {
     // Load data on mount from timetable endpoint
     const fetchData = async () => {
         try {
-            const res = await fetch('/api/admin/data/timetable', { cache: 'no-store' });
+            const url = process.env.NODE_ENV === 'production' ? '/api.php?board=timetable' : '/api/admin/data/timetable';
+            const res = await fetch(url, { cache: 'no-store' });
             if (res.ok) {
                 const data = await res.json();
                 if (data && data.content) {
@@ -39,7 +40,8 @@ function Content() {
     const handleSave = async () => {
         // Removed native confirm
         try {
-            const res = await fetch('/api/admin/data/timetable', {
+            const url = process.env.NODE_ENV === 'production' ? '/api.php?board=timetable' : '/api/admin/data/timetable';
+            const res = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

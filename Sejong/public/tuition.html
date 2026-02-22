@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>수강료 관리 - 세종요리</title>
+    <link rel="stylesheet" href="style.css?v=20260211_10">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="tuition_v3.js?v=20260211_10" defer></script>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="brand-logo">
+                <span class="logo-text">세종요리</span>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-category">수강 관리</div>
+                <a href="register.html" class="nav-item">수강생 등록</a>
+                <a href="index.html" class="nav-item">수강생 대장</a>
+                <a href="sheet.html" class="nav-item">월간 출석부</a>
+
+                <div class="nav-category">수강료</div>
+                <a href="tuition.html" class="nav-item active">수강료 관리</a>
+                <a href="ledger.html" class="nav-item">수강료 납부대장</a>
+                <a href="paid_list.html" class="nav-item">납부완료 명단</a>
+
+                <div class="nav-category">소통</div>
+                <a href="#" class="nav-item">학원 공지</a>
+                <a href="feed.html" class="nav-item">피드 관리</a>
+                <a href="wagashi.html" class="nav-item">숙주나물 홍보</a>
+
+                <div class="nav-category toggle-category" onclick="toggleNavSub(this)">시험지</div>
+                <div class="nav-sub-menu">
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">한식기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('한식_2021')" class="nav-item">2021년 한식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('한식_2022')" class="nav-item">2022년 한식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('한식_2023')" class="nav-item">2023년 한식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('한식_2024')" class="nav-item">2024년 한식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('한식_2025')" class="nav-item">2025년 한식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('한식_2026')" class="nav-item">2026년 한식</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">양식기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('양식_2021')" class="nav-item">2021년 양식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('양식_2022')" class="nav-item">2022년 양식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('양식_2023')" class="nav-item">2023년 양식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('양식_2024')" class="nav-item">2024년 양식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('양식_2025')" class="nav-item">2025년 양식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('양식_2026')" class="nav-item">2026년 양식</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">일식기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('일식_2021')" class="nav-item">2021년 일식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('일식_2022')" class="nav-item">2022년 일식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('일식_2023')" class="nav-item">2023년 일식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('일식_2024')" class="nav-item">2024년 일식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('일식_2025')" class="nav-item">2025년 일식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('일식_2026')" class="nav-item">2026년 일식</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">중식기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('중식_2021')" class="nav-item">2021년 중식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('중식_2022')" class="nav-item">2022년 중식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('중식_2023')" class="nav-item">2023년 중식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('중식_2024')" class="nav-item">2024년 중식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('중식_2025')" class="nav-item">2025년 중식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('중식_2026')" class="nav-item">2026년 중식</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">제과기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('제과_2021')" class="nav-item">2021년 제과</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과_2022')" class="nav-item">2022년 제과</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과_2023')" class="nav-item">2023년 제과</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과_2024')" class="nav-item">2024년 제과</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과_2025')" class="nav-item">2025년 제과</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과_2026')" class="nav-item">2026년 제과</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">제빵기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2021')" class="nav-item">2021년 제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2022')" class="nav-item">2022년 제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2023')" class="nav-item">2023년 제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2024')" class="nav-item">2024년 제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2025')" class="nav-item">2025년 제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2026')" class="nav-item">2026년 제빵</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">제과제빵기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" class="nav-item">준비중입니다</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">복어기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" class="nav-item">준비중입니다</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">산업기사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" class="nav-item">준비중입니다</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">가정요리</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" class="nav-item">준비중입니다</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">브런치</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" class="nav-item">준비중입니다</a>
+                    </div>
+                </div>
+
+                <div class="nav-category">기타</div>
+                <a href="stats.html" class="nav-item">통계 및 납부</a>
+                <a href="monitor.html" target="_blank" class="nav-item highlight">키오스크 모니터</a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Exam Board (Hidden by default) -->
+            <div id="examBoardContainer" class="hidden"
+                style="display: none; padding: 20px; background: white; border-radius: 12px; margin-bottom: 20px;">
+                <div class="exam-board-header" style="margin-bottom: 20px;">
+                    <h2 id="examBoardTitle" class="exam-board-title">시험지 보기</h2>
+                </div>
+                <div id="examQuestionList" class="exam-board-list">
+                    <!-- Questions populated by JS -->
+                </div>
+            </div>
+
+            <div id="memberListSection">
+                <header class="main-header">
+                    <h1 class="page-title">수강료 관리</h1>
+                    <div class="header-actions">
+                        <!-- Right Actions -->
+                    </div>
+                </header>
+
+                <div class="content-body" style="padding-top: 20px;">
+                    <!-- Filter Bar -->
+                    <div class="filter-card">
+                        <div class="filter-row" style="align-items: center; gap: 20px;">
+                            <div class="month-nav">
+                                <button onclick="changeMonth(-1)">&lt;</button>
+                                <div style="display: flex; gap: 5px; align-items: center;">
+                                    <select id="yearSelect" class="form-select" title="조회 연도 선택"
+                                        style="border:none; font-weight:700; font-size:1.1rem; padding: 0 10px; width: auto; cursor: pointer; background: transparent;">
+                                        <option value="2025">2025년</option>
+                                        <option value="2026" selected>2026년</option>
+                                    </select>
+                                    <select id="monthSelect" class="form-select" title="조회 월 선택"
+                                        style="border:none; font-weight:700; font-size:1.1rem; padding: 0 10px; width: auto; cursor: pointer; background: transparent;">
+                                        <option value="1">1월</option>
+                                        <option value="2" selected>2월</option>
+                                        <option value="3">3월</option>
+                                        <option value="4">4월</option>
+                                        <option value="5">5월</option>
+                                        <option value="6">6월</option>
+                                        <option value="7">7월</option>
+                                        <option value="8">8월</option>
+                                        <option value="9">9월</option>
+                                        <option value="10">10월</option>
+                                        <option value="11">11월</option>
+                                        <option value="12">12월</option>
+                                    </select>
+                                </div>
+                                <button onclick="changeMonth(1)">&gt;</button>
+                            </div>
+
+                            <div style="display: flex; gap: 12px; flex: 1;">
+                                <select class="form-group filter-select" id="courseFilter" title="강좌 필터 선택"
+                                    style="max-width: 200px; padding: 10px; border-radius: 8px;">
+                                    <option value="all">전체 강좌</option>
+                                    <option value="한식기능사">한식기능사</option>
+                                    <option value="양식기능사">양식기능사</option>
+                                    <option value="일식기능사">일식기능사</option>
+                                    <option value="중식기능사">중식기능사</option>
+                                    <option value="제과기능사">제과기능사</option>
+                                    <option value="제빵기능사">제빵기능사</option>
+                                    <option value="제과제빵기능사">제과제빵기능사</option>
+                                    <option value="복어기능사">복어기능사</option>
+                                    <option value="산업기사">산업기사</option>
+                                    <option value="가정요리">가정요리</option>
+                                    <option value="브런치">브런치</option>
+                                </select>
+                                <select class="form-group filter-select" id="statusFilter" title="납부 상태 필터 선택"
+                                    style="max-width: 200px; padding: 10px; border-radius: 8px;">
+                                    <option value="all">전체 상태</option>
+                                    <option value="unpaid">미납</option>
+                                    <option value="paid">납부완료</option>
+                                    <option value="enrolled">수강중</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="filter-actions-row">
+                            <div class="left-group">
+                                <button id="btnViewTotal" class="btn-toggle active">전체 목록</button>
+                                <button id="btnViewCard" class="btn-toggle">상태별 카드</button>
+                                <button id="btnViewGrouped" class="btn-toggle">상태별 목록</button>
+                            </div>
+                            <div class="right-group">
+                                <button id="btnAutoSendSettings" class="btn-secondary-outline icon-btn">
+                                    <span class="material-icons">send</span> 자동발송 설정
+                                </button>
+                                <button id="btnTuitionSettings" class="btn-primary icon-btn">
+                                    <span class="material-icons">payment</span> 클래스 수강료
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tabs -->
+                    <div class="status-tabs-row">
+                        <button class="status-tab tab-enrolled" title="현재 수업을 듣고 있는 수강생 목록">
+                            수강중 <span class="material-icons">school</span>
+                        </button>
+                        <button class="status-tab tab-unpaid" title="수강료 납부일이 지난 미납자 목록">
+                            미납 내역 <span class="material-icons">inbox</span>
+                        </button>
+                        <button class="status-tab tab-paid" title="이번 달 수강료 납부가 완료된 명단">
+                            납부 내역 <span class="material-icons">check_circle</span>
+                        </button>
+                        <div class="tab-actions">
+                            <button id="btnViewPaidList" class="mini-btn emerald" title="납부 완료 명단"><span
+                                    class="material-icons">receipt_long</span></button>
+                            <button id="btnSaveExcel" class="mini-btn blue" title="엑셀 저장"><span
+                                    class="material-icons">save</span></button>
+                            <button id="btnPrint" class="mini-btn yellow" title="인쇄"><span
+                                    class="material-icons">print</span></button>
+                            <button id="btnMail" class="mini-btn pink" title="메일 발송"><span
+                                    class="material-icons">mail</span></button>
+                            <button id="btnSMS" class="mini-btn green" title="SMS/카톡 발송"><span
+                                    class="material-icons">sms</span></button>
+                        </div>
+                    </div>
+
+                    <!-- Main Data Display Area -->
+                    <div class="table-card">
+                        <table class="tuition-table" id="tuitionTable">
+                            <thead>
+                                <tr>
+                                    <th class="w-100-px">상태</th>
+                                    <th class="w-40-px"><input type="checkbox" title="전체 선택"></th>
+                                    <th>이름/강좌</th>
+                                    <th class="text-right">청구금액</th>
+                                    <th class="text-right">수강료</th>
+                                    <th class="text-right">할인</th>
+                                    <th class="text-right">추가</th>
+                                    <th class="w-150-px">진행</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tuitionListBody">
+                                <!-- Data will be loaded via JS -->
+                            </tbody>
+                        </table>
+
+                        <!-- View Mode Containers (Hidden by default) -->
+                        <div id="tuitionGridContainer" class="tuition-grid hidden"></div>
+                        <div id="tuitionGroupedContainer" class="tuition-grouped hidden"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Message Modal -->
+    <div id="messageModal" class="modal-overlay hidden">
+        <div class="modal-window">
+            <div class="modal-header">
+                <h2 id="msgModalTitle">메시지 발송</h2>
+                <button class="close-btn" onclick="closeMessageModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-10 text-muted">선택한 수강생들에게 알림을 발송합니다.</p>
+                <textarea class="full-width p-10 border-light rounded" rows="5"
+                    placeholder="발송 내용을 입력하세요..."> 수강료 납부 안내 입니다. 이번 달 수강료를 확인해 주세요.</textarea>
+                <div class="flex-center mt-20 gap-10">
+                    <button class="btn-primary" onclick="simulateSend()">복사 및 발송</button>
+                    <button class="btn-secondary-outline" onclick="closeMessageModal()">취소</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tuition Settings Modal -->
+    <div id="tuitionSettingModal" class="modal-overlay hidden">
+        <div class="modal-window">
+            <div class="modal-header">
+                <h2>강좌별 수강료 설정</h2>
+                <button class="close-btn" onclick="closeTuitionSettings()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="max-height: 400px; overflow-y: auto; padding-right: 10px;">
+                    <div class="form-group">
+                        <label>기본 수강료</label>
+                        <input type="text" id="fee_all" value="200,000" class="text-right" title="기본 수강료"
+                            placeholder="금액 입력">
+                    </div>
+                    <div class="form-group">
+                        <label>한식기능사</label>
+                        <input type="text" id="fee_hansik" value="200,000" class="text-right" title="한식기능사 수강료"
+                            placeholder="금액 입력">
+                    </div>
+                    <div class="form-group">
+                        <label>양식기능사</label>
+                        <input type="text" id="fee_yangsik" value="200,000" class="text-right" title="양식기능사 수강료"
+                            placeholder="금액 입력">
+                    </div>
+                    <div class="form-group">
+                        <label>일식기능사</label>
+                        <input type="text" id="fee_ilsik" value="200,000" class="text-right" title="일식기능사 수강료"
+                            placeholder="금액 입력">
+                    </div>
+                    <div class="form-group">
+                        <label>중식기능사</label>
+                        <input type="text" id="fee_jungsik" value="200,000" class="text-right" title="중식기능사 수강료"
+                            placeholder="금액 입력">
+                    </div>
+                    <div class="form-group">
+                        <label>제과기능사</label>
+                        <input type="text" id="fee_jegwa" value="200,000" class="text-right" title="제과기능사 수강료"
+                            placeholder="금액 입력">
+                    </div>
+                    <div class="form-group">
+                        <label>제빵기능사</label>
+                        <input type="text" id="fee_jebang" value="200,000" class="text-right" title="제빵기능사 수강료"
+                            placeholder="금액 입력">
+                    </div>
+                    <div class="form-group">
+                        <label>제과제빵기능사</label>
+                        <input type="text" id="fee_jegwajebang" value="200,000" class="text-right" title="제과제빵기능사 수강료"
+                            placeholder="금액 입력">
+                    </div>
+                    <div class="form-group">
+                        <label>복어기능사</label>
+                        <input type="text" id="fee_bok-eo" value="200,000" class="text-right" title="복어기능사 수강료"
+                            placeholder="금액 입력">
+                    </div>
+                    <div class="form-group">
+                        <label>산업기사</label>
+                        <input type="text" id="fee_san-eop" value="200,000" class="text-right" title="산업기사 수강료"
+                            placeholder="금액 입력">
+                    </div>
+                    <div class="form-group">
+                        <label>가정요리</label>
+                        <input type="text" id="fee_gajeong" value="200,000" class="text-right" title="가정요리 수강료"
+                            placeholder="금액 입력">
+                    </div>
+                    <div class="form-group">
+                        <label>브런치</label>
+                        <input type="text" id="fee_brunch" value="200,000" class="text-right" title="브런치 수강료"
+                            placeholder="금액 입력">
+                    </div>
+                </div>
+                <p class="fs-0-8-em text-muted mt-10">단위: 원 / 설정된 수강료는 청구 시 자동 반영됩니다.</p>
+                <div class="flex-center mt-20 gap-10">
+                    <button class="btn-primary" onclick="saveTuitionSettings()">저장하기</button>
+                    <button class="btn-secondary-outline" onclick="closeTuitionSettings()">닫기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- General Result Modal (Custom Alert) -->
+    <div id="resultModal" class="modal-overlay hidden">
+        <div class="modal-window modal-sm">
+            <div class="modal-header">
+                <h2 id="resultModalTitle">안내</h2>
+                <button class="close-btn" onclick="closeResultModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="resultModalMessage" class="text-center py-20">처리되었습니다.</p>
+                <div class="flex-center mt-10">
+                    <button class="btn-primary px-30" onclick="closeResultModal()">확인</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="modal-overlay hidden">
+        <div class="modal-window modal-sm">
+            <div class="modal-header">
+                <h2 id="confirmModalTitle">확인</h2>
+                <button class="close-btn" onclick="closeConfirmModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmModalMessage" class="text-center py-20">진행하시겠습니까?</p>
+                <div class="flex-center mt-10 gap-10">
+                    <button id="confirmModalYes" class="btn-primary px-30">확인</button>
+                    <button id="confirmModalNo" class="btn-secondary-outline px-30"
+                        onclick="closeConfirmModal()">취소</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="questions_data.js"></script>
+</body>
+
+</html>

@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useState } from "react";
 import Editor from "./Editor";
 import { useAuth } from "@/context/AuthContext";
+import ShinyLaurelBanner from "./ShinyLaurelBanner";
+import AlertModal from "./AlertModal";
 
 // Reusing Post interface (should ideally be shared)
 // Reusing Post interface (should ideally be shared)
@@ -16,6 +18,8 @@ export interface Post {
     hit: string;
     content?: string;
     category?: string; // Added to support category
+    name?: string;
+    stars?: number;
 }
 
 export interface BoardViewProps {
@@ -33,6 +37,14 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
     const [editValues, setEditValues] = useState({
         title: initialPost.title,
         content: initialPost.content || ''
+    });
+
+    // Alert Modal State
+    const [showAlert, setShowAlert] = useState(false);
+    const [alertConfig, setAlertConfig] = useState({
+        title: '알림',
+        message: '',
+        type: 'warning' as 'success' | 'warning' | 'error' | 'info'
     });
 
     const handleEditToggle = () => {
@@ -53,18 +65,38 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
     // State for Success Modal
     const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-    const handleSave = () => {
-        // Mock Save Functionality
-        // In a real app, this would be an API call (PUT /api/posts/:id)
+    const handleSave = async () => {
+        const isProd = process.env.NODE_ENV === 'production';
+        if (isProd) {
+            try {
+                const res = await fetch(`/api.php?board=${boardCode}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        id: post.id,
+                        title: editValues.title,
+                        content: editValues.content
+                    })
+                });
+                if (!res.ok) throw new Error('Save failed');
+            } catch (error) {
+                console.error('PHP Bridge Save Error:', error);
+                setAlertConfig({
+                    title: '저장 실패',
+                    message: "저장에 실패했습니다.",
+                    type: 'error'
+                });
+                setShowAlert(true);
+                return;
+            }
+        }
 
-        // Update local state to reflect changes
         setPost({
             ...post,
             title: editValues.title,
             content: editValues.content
         });
 
-        // Show success modal instead of alert
         setShowSuccessModal(true);
     };
 
@@ -77,7 +109,12 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
 
     const handleDelete = () => {
         // Protection for default/migrated posts as requested
-        alert("기본 공지사항은 삭제할 수 없습니다. (보호됨)");
+        setAlertConfig({
+            title: '삭제 불가',
+            message: "기본 공지사항은 삭제할 수 없습니다.\n(데이터 보호됨)",
+            type: 'warning'
+        });
+        setShowAlert(true);
     };
 
     const handlePrint = () => {
@@ -95,8 +132,8 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
 
     const [replies, setReplies] = useState<Reply[]>([
         // Mock initial reply for demo if Q&A
-        initialPost.id.startsWith('qna') ? {
-            id: 'r1', author: '관리자', date: '2024-01-24', content: '문의주셔서 감사합니다. 전화로 상담 도와드리겠습니다.'
+        String(initialPost.id).startsWith('qna') ? {
+            id: 'r1', author: 'admin', date: '2024-01-24', content: '문의주셔서 감사합니다. 전화로 상담 도와드리겠습니다.'
         } : null
     ].filter(Boolean) as Reply[]);
 
@@ -104,20 +141,30 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
 
     const handleReplySubmit = () => {
         if (!replyContent.trim()) {
-            alert("내용을 입력해주세요.");
+            setAlertConfig({
+                title: '입력 오류',
+                message: "내용을 입력해주세요.",
+                type: 'warning'
+            });
+            setShowAlert(true);
             return;
         }
 
         const newReply: Reply = {
             id: `r${Date.now()}`,
-            author: "관리자", // Mock Author
+            author: "admin", // Standardized Author Name
             date: new Date().toISOString().split('T')[0],
             content: replyContent
         };
 
         setReplies([...replies, newReply]);
         setReplyContent("");
-        alert("답변이 등록되었습니다.");
+        setAlertConfig({
+            title: '등록 완료',
+            message: "답변이 등록되었습니다.",
+            type: 'success'
+        });
+        setShowAlert(true);
     };
 
     const handleReplyDelete = (id: string) => {
@@ -180,6 +227,14 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
 
             {/* Content Area */}
             <div className="min-h-[400px] p-8 text-gray-800 leading-relaxed border-b border-gray-300 overflow-x-hidden">
+                {boardCode === 'honor' && !isEdit && (
+                    <div className="mb-8">
+                        <ShinyLaurelBanner
+                            stars={post.stars}
+                            name={post.name}
+                        />
+                    </div>
+                )}
                 {isEdit ? (
                     <Editor
                         content={editValues.content}
@@ -194,60 +249,67 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
                 )}
             </div>
 
-            {/* Reply Section (Visible only for Q&A or broadly enabled) */}
-            <div className="mt-8 bg-gray-50 p-6 rounded-lg border border-gray-200">
-                <h4 className="font-bold text-lg mb-4 text-gray-800 flex items-center gap-2">
-                    답변/댓글
-                    <span className="text-amber-600 text-sm font-normal">({replies.length})</span>
-                </h4>
+            {/* Reply Section (Visible only for Q&A/Job Openings or Admins) */}
+            {(() => {
+                const isPublicReplyBoard = ['qna', 'openings'].includes(boardCode);
+                if (!isPublicReplyBoard && !isAdmin) return null;
 
-                {/* Reply List */}
-                <div className="space-y-4 mb-6">
-                    {replies.length === 0 ? (
-                        <p className="text-gray-500 text-sm py-4 text-center">등록된 답변이 없습니다.</p>
-                    ) : (
-                        replies.map(reply => (
-                            <div key={reply.id} className="bg-white p-4 rounded border border-gray-200 shadow-sm relative group">
-                                <div className="flex justify-between items-center mb-2 border-b border-gray-100 pb-2">
-                                    <div className="flex gap-2 text-sm">
-                                        <span className="font-bold text-gray-800">{reply.author}</span>
-                                        <span className="text-gray-400">|</span>
-                                        <span className="text-gray-500 font-sans">{reply.date}</span>
+                return (
+                    <div className="mt-8 bg-gray-50 p-6 rounded-lg border border-gray-200">
+                        <h4 className="font-bold text-lg mb-4 text-gray-800 flex items-center gap-2">
+                            답변/댓글
+                            <span className="text-amber-600 text-sm font-normal">({replies.length})</span>
+                        </h4>
+
+                        {/* Reply List */}
+                        <div className="space-y-4 mb-6">
+                            {replies.length === 0 ? (
+                                <p className="text-gray-500 text-sm py-4 text-center">등록된 답변이 없습니다.</p>
+                            ) : (
+                                replies.map(reply => (
+                                    <div key={reply.id} className="bg-white p-4 rounded border border-gray-200 shadow-sm relative group">
+                                        <div className="flex justify-between items-center mb-2 border-b border-gray-100 pb-2">
+                                            <div className="flex gap-2 text-sm">
+                                                <span className="font-bold text-gray-800">{reply.author}</span>
+                                                <span className="text-gray-400">|</span>
+                                                <span className="text-gray-500 font-sans">{reply.date}</span>
+                                            </div>
+                                            <button
+                                                onClick={() => handleReplyDelete(reply.id)}
+                                                className="text-gray-400 hover:text-red-500 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                                            >
+                                                삭제
+                                            </button>
+                                        </div>
+                                        <div className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
+                                            {reply.content}
+                                        </div>
                                     </div>
-                                    <button
-                                        onClick={() => handleReplyDelete(reply.id)}
-                                        className="text-gray-400 hover:text-red-500 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                                    >
-                                        삭제
-                                    </button>
-                                </div>
-                                <div className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
-                                    {reply.content}
-                                </div>
-                            </div>
-                        ))
-                    )}
-                </div>
+                                ))
+                            )}
+                        </div>
 
-                {/* Reply Form */}
-                <div className="bg-white p-4 rounded border border-gray-300 focus-within:border-amber-500 focus-within:ring-1 focus-within:ring-amber-500 transition-colors">
-                    <div className="mb-2 font-bold text-sm text-gray-700">답변 작성</div>
-                    <textarea
-                        className="w-full h-24 p-2 text-sm outline-none resize-none"
-                        placeholder="답변 내용을 입력해주세요..."
-                        value={replyContent}
-                        onChange={(e) => setReplyContent(e.target.value)}
-                    />
-                    <div className="flex justify-end mt-2 pt-2 border-t border-gray-100">
-                        <button
-                            onClick={handleReplySubmit}
-                            className="bg-gray-800 text-white px-4 py-1.5 text-sm font-bold rounded hover:bg-black transition-colors"
-                        >
-                            등록
-                        </button>
+                        {/* Reply Form */}
+                        <div className="bg-white p-4 rounded border border-gray-300 focus-within:border-amber-500 focus-within:ring-1 focus-within:ring-amber-500 transition-colors">
+                            <div className="mb-2 font-bold text-sm text-gray-700">답변 작성</div>
+                            <textarea
+                                className="w-full h-24 p-2 text-sm outline-none resize-none"
+                                placeholder="답변 내용을 입력해주세요..."
+                                value={replyContent}
+                                onChange={(e) => setReplyContent(e.target.value)}
+                            />
+                            <div className="flex justify-end mt-2 pt-2 border-t border-gray-100">
+                                <button
+                                    onClick={handleReplySubmit}
+                                    className="bg-gray-800 text-white px-4 py-1.5 text-sm font-bold rounded hover:bg-black transition-colors"
+                                >
+                                    등록
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
+                );
+            })()}
 
             {/* Buttons */}
             <div className="flex justify-end gap-2 py-6 mt-4 no-print">
@@ -323,6 +385,15 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
                     </div>
                 </div>
             )}
+
+            {/* General Alert Modal */}
+            <AlertModal
+                isOpen={showAlert}
+                onClose={() => setShowAlert(false)}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                type={alertConfig.type}
+            />
         </div>
     );
 }

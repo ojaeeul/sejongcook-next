@@ -15,14 +15,26 @@ export default function Footer() {
     });
 
     useEffect(() => {
-        fetch('/api/admin/footer')
-            .then(res => res.json())
+        const url = process.env.NODE_ENV === 'production'
+            ? '/api.php?board=footer'
+            : '/api/admin/footer';
+
+        fetch(url)
+            .then(res => {
+                if (!res.ok) throw new Error('Footer data fetch failed');
+                return res.json();
+            })
             .then(json => {
-                if (json && json.length > 0) {
+                if (json && Array.isArray(json) && json.length > 0) {
                     setData(json[0]);
+                } else if (json && !Array.isArray(json)) {
+                    setData(json);
                 }
             })
-            .catch(err => console.error(err));
+            .catch(err => {
+                console.warn('Footer data fetch error:', err);
+                // Keep default data
+            });
     }, []);
 
     return (

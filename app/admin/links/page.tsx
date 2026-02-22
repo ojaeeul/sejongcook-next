@@ -1,70 +1,111 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import Link from 'next/link';
 import AdminTable from '../components/AdminTable';
 import { Settings } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import SuccessModal from '@/components/SuccessModal';
+import ConfirmModal from '@/components/ConfirmModal';
 
 export default function LinksList() {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const [data, setData] = useState<any[]>([]);
+    interface LinkItem {
+        id: string | number;
+        title: string;
+        author: string;
+        created_at: string;
+    }
+    const [data, setData] = useState<LinkItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [showAuthLinks, setShowAuthLinks] = useState(true);
 
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
         try {
-            const { data: posts, error } = await supabase
-                .from('posts')
-                .select('*')
-                .eq('board_type', 'sites')
-                .order('created_at', { ascending: false });
-
-            if (error) throw error;
-            setData(posts || []);
+            const url = process.env.NODE_ENV === 'production' ? '/api.php?board=links' : '/api/admin/data/links?t=' + Date.now();
+            const res = await fetch(url);
+            const json = await res.json();
+            if (Array.isArray(json)) {
+                setData(json.sort((a: LinkItem, b: LinkItem) => Number(b.id) - Number(a.id)));
+            } else {
+                setData([]);
+            }
         } catch (error) {
             console.error('Failed to fetch sites', error);
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
-    const fetchSettings = async () => {
-        // Mock settings or implement distinct table
-        // For now, default true
-        setShowAuthLinks(true);
-    };
+    const fetchSettings = useCallback(async () => {
+        try {
+            const url = process.env.NODE_ENV === 'production' ? '/api.php?board=settings' : '/api/settings';
+            const res = await fetch(url);
+            const data = await res.json();
+            if (data.showAuthLinks !== undefined) setShowAuthLinks(data.showAuthLinks);
+        } catch {
+            // ignore
+        }
+    }, []);
 
     const toggleAuthLinks = async (checked: boolean) => {
         setShowAuthLinks(checked);
-        // Implement settings save to Supabase if needed
-        alert('설정 기능은 현재 개발 중입니다.');
+        try {
+            const url = process.env.NODE_ENV === 'production' ? '/api.php?board=settings' : '/api/settings';
+            await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ showAuthLinks: checked }),
+            });
+        } catch {
+            alert('설정 저장 실패');
+        }
     };
 
     useEffect(() => {
         fetchData();
         fetchSettings();
-    }, []);
+    }, [fetchData, fetchSettings]);
 
-    const handleDelete = async (id: string | number) => {
-        if (!confirm('정말 삭제하시겠습니까?')) return;
+    const [confirmModal, setConfirmModal] = useState({ isOpen: false, id: '' as string | number });
+    const [successModal, setSuccessModal] = useState({ isOpen: false, message: '' });
+
+    const handleDeleteClick = (id: string | number) => {
+        setConfirmModal({ isOpen: true, id });
+    };
+
+    const handleDeleteConfirm = async () => {
+        if (!confirmModal.id) return;
+        const id = confirmModal.id;
+
         try {
-            const { error } = await supabase
-                .from('posts')
-                .delete()
-                .eq('id', id);
+            const url = process.env.NODE_ENV === 'production' ? `/api.php?board=links&id=${id}` : `/api/admin/data/links?id=${id}`;
+            const res = await fetch(url, {
+                method: 'DELETE',
+            });
 
-            if (error) throw error;
-            setData(data.filter((item) => item.id !== id));
+            if (!res.ok) throw new Error('Failed to delete');
+
+            setData(prev => prev.filter((item: LinkItem) => String(item.id) !== String(id)));
+            setSuccessModal({ isOpen: true, message: '링크가 삭제되었습니다.' });
         } catch (error) {
             console.error('Failed to delete site', error);
             alert('삭제에 실패했습니다');
+        } finally {
+            setConfirmModal({ isOpen: false, id: '' });
         }
     };
 
     const columns = [
-        { key: 'title', label: '제목' },
+        {
+            key: 'title',
+            label: '제목',
+            render: (val: string, item: LinkItem) => (
+                <Link href={`/admin/links/edit?id=${item.id}`} className="hover:text-indigo-600 hover:underline font-medium">
+                    {val}
+                </Link>
+            )
+        },
         { key: 'author', label: '작성자' },
-        { key: 'created_at', label: '작성일', format: (val: string) => new Date(val).toLocaleDateString('ko-KR') },
+        { key: 'created_at', label: '작성일', format: (val: string) => val ? new Date(val).toLocaleDateString('ko-KR') : '-' },
     ];
 
     if (loading) return <div className="p-8 text-center text-gray-500">로딩 중...</div>;
@@ -79,12 +120,12 @@ export default function LinksList() {
                 title="사이트 컨텐츠"
                 data={data}
                 columns={columns}
-                onDelete={handleDelete}
+                onDelete={handleDeleteClick}
                 newLink="/admin/links/new"
                 editLinkPrefix="/admin/links/edit"
             />
 
-            {/* Global Settings Section (Based on admin.html) */}
+            {/* Global Settings Section */}
             <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mt-8">
                 <h2 className="text-lg font-bold text-gray-800 mb-4 border-l-4 border-indigo-500 pl-3 flex items-center gap-2">
                     <Settings size={20} className="text-indigo-500" />
@@ -113,6 +154,23 @@ export default function LinksList() {
                     </div>
                 </div>
             </div>
+
+            <ConfirmModal
+                isOpen={confirmModal.isOpen}
+                title="링크 삭제"
+                message="정말 이 링크를 삭제하시겠습니까?"
+                onConfirm={handleDeleteConfirm}
+                onCancel={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                confirmText="삭제"
+                isDangerous={true}
+            />
+
+            <SuccessModal
+                isOpen={successModal.isOpen}
+                onClose={() => setSuccessModal({ ...successModal, isOpen: false })}
+                title="삭제 완료"
+                message={successModal.message}
+            />
         </div>
     );
 }

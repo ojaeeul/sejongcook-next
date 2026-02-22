@@ -1,25 +1,38 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import AdminTable from '@/app/admin/components/AdminTable';
+import SuccessModal from '@/components/SuccessModal';
+import ConfirmModal from '@/components/ConfirmModal';
 
-import { supabase } from '@/lib/supabase';
+interface HonorPost {
+    id: string;
+    title: string;
+    author: string;
+    date: string;
+    hit: string | number;
+    name?: string;
+    thumbnail?: string;
+    content?: string;
+    stars?: number;
+}
 
 export default function HonorList() {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const [data, setData] = useState<any[]>([]);
+    const [data, setData] = useState<HonorPost[]>([]);
     const [loading, setLoading] = useState(true);
 
     const fetchData = async () => {
         try {
-            const { data: posts, error } = await supabase
-                .from('posts')
-                .select('*')
-                .eq('board_type', 'honor')
-                .order('created_at', { ascending: false });
-
-            if (error) throw error;
-            setData(posts || []);
+            const url = process.env.NODE_ENV === 'production' ? '/api.php?board=honor' : '/api/admin/data/honor?t=' + Date.now();
+            const res = await fetch(url);
+            const json = await res.json();
+            if (Array.isArray(json)) {
+                // Sort by ID descending
+                setData(json.sort((a: HonorPost, b: HonorPost) => Number(b.id) - Number(a.id)));
+            } else {
+                setData([]);
+            }
         } catch (error) {
             console.error('Failed to fetch honor posts', error);
         } finally {
@@ -31,27 +44,47 @@ export default function HonorList() {
         fetchData();
     }, []);
 
-    const handleDelete = async (id: string | number) => {
-        if (!confirm('정말 삭제하시겠습니까?')) return;
+    const [confirmModal, setConfirmModal] = useState({ isOpen: false, id: '' as string | number });
+    const [successModal, setSuccessModal] = useState({ isOpen: false, message: '' });
+
+    const handleDeleteClick = (id: string | number) => {
+        setConfirmModal({ isOpen: true, id });
+    };
+
+    const handleDeleteConfirm = async () => {
+        if (!confirmModal.id) return;
+        const id = confirmModal.id;
+
         try {
-            const { error } = await supabase
-                .from('posts')
-                .delete()
-                .eq('id', id);
+            const url = process.env.NODE_ENV === 'production' ? `/api.php?board=honor&id=${id}` : `/api/admin/data/honor?id=${id}`;
+            const res = await fetch(url, {
+                method: 'DELETE',
+            });
 
-            if (error) throw error;
+            if (!res.ok) throw new Error('Failed to delete');
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            setData(prev => prev.filter((item: any) => item.id !== id));
-        } catch {
+            setData(prev => prev.filter((item: HonorPost) => String(item.id) !== String(id)));
+            setSuccessModal({ isOpen: true, message: '게시물이 삭제되었습니다.' });
+        } catch (error) {
+            console.error('Failed to delete honor post', error);
             alert('삭제에 실패했습니다');
+        } finally {
+            setConfirmModal({ isOpen: false, id: '' });
         }
     };
 
     const columns = [
-        { key: 'title', label: '제목' },
+        {
+            key: 'title',
+            label: '제목',
+            render: (val: string, item: HonorPost) => (
+                <Link href={`/admin/honor/edit?id=${item.id}`} className="hover:text-indigo-600 hover:underline font-medium">
+                    {val}
+                </Link>
+            )
+        },
         { key: 'author', label: '작성자' },
-        { key: 'date', label: '작성일' },
+        { key: 'date', label: '작성일', format: (val: string) => val ? val : '-' },
         { key: 'hit', label: '조회수' },
     ];
 
@@ -67,9 +100,26 @@ export default function HonorList() {
                 title="명예의 전당 게시물"
                 data={data}
                 columns={columns}
-                onDelete={handleDelete}
+                onDelete={handleDeleteClick}
                 newLink="/admin/honor/new"
                 editLinkPrefix="/admin/honor/edit"
+            />
+
+            <ConfirmModal
+                isOpen={confirmModal.isOpen}
+                title="게시물 삭제"
+                message="정말 이 게시물을 삭제하시겠습니까?"
+                onConfirm={handleDeleteConfirm}
+                onCancel={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                confirmText="삭제"
+                isDangerous={true}
+            />
+
+            <SuccessModal
+                isOpen={successModal.isOpen}
+                onClose={() => setSuccessModal({ ...successModal, isOpen: false })}
+                title="삭제 완료"
+                message={successModal.message}
             />
         </div>
     );

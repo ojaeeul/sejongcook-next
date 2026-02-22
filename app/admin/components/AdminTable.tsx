@@ -96,7 +96,7 @@ export default function AdminTable({
                                     <td className="px-6 py-4 text-sm text-right whitespace-nowrap">
                                         <div className="flex items-center justify-end gap-2">
                                             <Link
-                                                href={`${editLinkPrefix}/${item.id}`}
+                                                href={`${editLinkPrefix}?id=${item.id}`}
                                                 className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-md transition-colors"
                                                 title="Edit"
                                             >

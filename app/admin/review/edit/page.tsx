@@ -3,7 +3,6 @@
 import { useEffect, useState, Suspense } from 'react';
 import DataEditor from '../../components/DataEditor';
 import { useSearchParams } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
 
 function EditReviewContent() {
     const searchParams = useSearchParams();
@@ -16,13 +15,13 @@ function EditReviewContent() {
         if (!id) return;
         const fetchData = async () => {
             try {
-                const { data: post, error } = await supabase
-                    .from('posts')
-                    .select('*')
-                    .eq('id', id)
-                    .single();
+                const url = process.env.NODE_ENV === 'production' ? '/api.php?board=review' : '/api/admin/data/review';
+                const res = await fetch(url);
+                if (!res.ok) throw new Error('Failed to fetch data');
+                const list = await res.json();
+                const post = list.find((i: { id: string | number }) => String(i.id) === String(id));
 
-                if (error) throw error;
+                if (!post) throw new Error('Review not found');
                 setData(post);
             } catch (error) {
                 console.error('Failed to fetch review', error);

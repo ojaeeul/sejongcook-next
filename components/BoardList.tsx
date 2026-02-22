@@ -1,6 +1,7 @@
 'use client';
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -13,6 +14,7 @@ export interface Post {
     date: string;
     hit: string | number;
     content?: string;
+    thumbnail?: string;
 }
 
 import { useAuth } from "@/context/AuthContext";
@@ -58,6 +60,50 @@ export default function BoardList({ boardCode, boardName, posts, basePath = '/co
         router.push(`/admin/${adminSection}/edit?id=${postId}`);
     };
 
+    const handleAdminDelete = async (e: React.MouseEvent, postId: string | number) => {
+        e.stopPropagation();
+        if (!confirm("정말 삭제하시겠습니까? 삭제된 데이터는 복구할 수 없습니다.")) return;
+
+        try {
+            // Determine API Endpoint
+            // Determine API Endpoint
+            // Simplified: api.php uses 'board' param which matches our boardCode mostly, 
+            // but let's be careful. api.php map: 
+            // 'job-openings' key exists. 'job-seekers' key exists. 'cooking', 'baking' exist.
+
+            // Re-map for api.php specifically
+            let apiBoardName = boardCode;
+            if (boardCode === 'seekers') apiBoardName = 'job-seekers';
+            if (boardCode === 'openings') apiBoardName = 'job-openings';
+
+            // Production URL
+            const isProd = process.env.NODE_ENV === 'production';
+            const url = isProd
+                ? `/api.php?board=${apiBoardName}&id=${postId}`
+                : `/api/admin/data/${apiBoardName}?id=${postId}`; // Local might need adjustment based on route structure
+
+            // DELETE request
+            const res = await fetch(url, { method: 'DELETE' });
+
+            if (res.ok) {
+                alert("삭제되었습니다.");
+                // Refresh logic
+                if (typeof window !== 'undefined') window.location.reload();
+            } else {
+                // Fallback for local static export limitations
+                if (!isProd && res.status === 405) {
+                    alert("로컬 환경(정적 모드)에서는 삭제가 제한될 수 있습니다. 프로덕션에서 확인해주세요.");
+                } else {
+                    const err = await res.json();
+                    alert("삭제 실패: " + (err.error || "알 수 없는 오류"));
+                }
+            }
+        } catch (error) {
+            console.error("Delete error:", error);
+            alert("삭제 중 오류가 발생했습니다.");
+        }
+    };
+
     // Determine Write Link
     const getWriteLink = () => {
         if (showWriteButton) return `${basePath ? basePath + '/' : ''}${boardCode}/write`;
@@ -76,7 +122,7 @@ export default function BoardList({ boardCode, boardName, posts, basePath = '/co
             {/* Header Area */}
             <div className="flex justify-between items-end mb-4 border-b-2 border-black pb-2">
                 <div>
-                    <h1 className="text-3xl font-bold text-black"><Link href={`${basePath}/${boardCode}`}>{boardName}</Link></h1>
+                    <h1 className="text-2xl md:text-3xl font-bold text-black whitespace-nowrap"><Link href={`${basePath}/${boardCode}`}>{boardName}</Link></h1>
                 </div>
                 {/* Search, Write, and Limit Selector */}
                 <div className="flex gap-4 text-gray-400 items-center">
@@ -134,22 +180,38 @@ export default function BoardList({ boardCode, boardName, posts, basePath = '/co
                                         <span className="text-gray-500">{posts.length - ((currentPage - 1) * itemsPerPage) - index}</span>
                                     </td>
                                     <td className="py-4 text-left pl-2 md:pl-4">
-                                        <div className="block">
-                                            <div className="flex items-center gap-2 mb-1">
-                                                {post.category && (
-                                                    <span className="bg-[#3e2723] text-white text-[10px] font-bold px-1.5 py-0.5 rounded uppercase leading-none">
-                                                        {post.category}
-                                                    </span>
-                                                )}
-                                                <span className="text-gray-700 font-medium text-[15px] block break-words">{post.title}</span>
-                                            </div>
-                                            {/* Mobile-only Meta Info */}
-                                            <div className="md:hidden text-xs text-gray-400 mt-1 flex gap-2 flex-wrap">
-                                                <span>{post.author}</span>
-                                                <span>|</span>
-                                                <span>{post.date}</span>
-                                                <span>|</span>
-                                                <span>조회 {post.hit}</span>
+                                        <div className="flex items-center gap-4">
+                                            {/* Thumbnail Start */}
+                                            {post.thumbnail && (
+                                                <div className="relative w-16 h-12 flex-shrink-0 bg-gray-100 rounded overflow-hidden border border-gray-200">
+                                                    <Image
+                                                        src={post.thumbnail}
+                                                        alt="preview"
+                                                        fill
+                                                        className="object-cover"
+                                                        unoptimized
+                                                    />
+                                                </div>
+                                            )}
+                                            {/* Thumbnail End */}
+
+                                            <div className="block">
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    {post.category && (
+                                                        <span className="bg-[#3e2723] text-white text-[10px] font-bold px-1.5 py-0.5 rounded uppercase leading-none">
+                                                            {post.category}
+                                                        </span>
+                                                    )}
+                                                    <span className="text-gray-700 font-medium text-[15px] block break-words">{post.title}</span>
+                                                </div>
+                                                {/* Mobile-only Meta Info */}
+                                                <div className="md:hidden text-xs text-gray-400 mt-1 flex gap-2 flex-wrap">
+                                                    <span>{post.author}</span>
+                                                    <span>|</span>
+                                                    <span>{post.date}</span>
+                                                    <span>|</span>
+                                                    <span>조회 {post.hit}</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </td>
@@ -158,16 +220,28 @@ export default function BoardList({ boardCode, boardName, posts, basePath = '/co
                                     <td className="py-4 text-gray-500 font-sans hidden md:table-cell">{post.hit}</td>
                                     {isAdmin && (
                                         <td className="py-4 text-gray-500">
-                                            <button
-                                                onClick={(e) => handleAdminEdit(e, post.id)}
-                                                className="text-gray-400 hover:text-blue-600 transition-colors p-1"
-                                                title="수정"
-                                            >
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                                                </svg>
-                                            </button>
+                                            <div className="flex justify-center gap-2">
+                                                <button
+                                                    onClick={(e) => handleAdminEdit(e, post.id)}
+                                                    className="text-gray-400 hover:text-blue-600 transition-colors p-1"
+                                                    title="수정"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                                    </svg>
+                                                </button>
+                                                <button
+                                                    onClick={(e) => handleAdminDelete(e, post.id)}
+                                                    className="text-gray-400 hover:text-red-600 transition-colors p-1"
+                                                    title="삭제"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                                    </svg>
+                                                </button>
+                                            </div>
                                         </td>
                                     )}
                                 </tr>

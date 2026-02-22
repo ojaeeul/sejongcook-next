@@ -20,7 +20,8 @@ export default function DessertBoardPage() {
     useEffect(() => {
         const fetchPosts = async () => {
             try {
-                const res = await fetch('/data/dessert_posts.json');
+                const url = process.env.NODE_ENV === 'production' ? '/api.php?board=dessert' : '/data/dessert_posts.json';
+                const res = await fetch(url);
                 if (res.ok) {
                     const data: Post[] = await res.json();
                     setPosts(data.reverse());

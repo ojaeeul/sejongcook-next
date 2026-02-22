@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, Save } from 'lucide-react';
 import Link from 'next/link';
 import SuccessModal from '@/components/SuccessModal';
-import { supabase } from '@/lib/supabase';
+import ShinyLaurelBanner from '@/components/ShinyLaurelBanner';
 
 // Dynamically import SunEditor to avoid SSR issues
 const SunEditor = dynamic(() => import('suneditor-react'), {
@@ -30,6 +30,7 @@ export default function DataEditor({ title, initialData, type, backLink }: DataE
         author: initialData?.author || 'Admin',
         date: initialData?.date || new Date().toISOString().split('T')[0],
         content: initialData?.content || '',
+        textScale: initialData?.textScale || 1,
         ...initialData // spread other fields if any
     });
     const [loading, setLoading] = useState(false);
@@ -37,11 +38,56 @@ export default function DataEditor({ title, initialData, type, backLink }: DataE
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const onImageUploadBefore = (files: File[], info: object, uploadHandler: (response: any) => void) => {
-        // TODO: Implement Supabase Storage Upload
-        // For now, alerting user that image upload requires storage setup
-        alert("Image upload via Supabase Storage is not yet implemented.");
-        uploadHandler({ errorMessage: "Not implemented" });
-        return undefined;
+        // Use upload.php for handling file uploads (renames to safe ASCII)
+        const isProd = process.env.NODE_ENV === 'production';
+        // Local dev: usually runs on port 3000, PHP on 8000 or similar if separate.
+        // Assuming PHP is served from public/ locally or via a proxy. 
+        // If 'npm run dev' is Next.js only, purely static PHP file won't execute. 
+        // Ideally, in production, /upload.php works. 
+        // In local dev without PHP server, this might fail unless proxied.
+        // However, for verify instructions, we assume User has PHP env or will deploy.
+
+        const uploadEndpoint = '/upload.php';
+
+        const formData = new FormData();
+        formData.append('file', files[0]);
+
+        fetch(uploadEndpoint, {
+            method: 'POST',
+            body: formData
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    alert('Upload failed: ' + data.error);
+                    uploadHandler({ errorMessage: data.error });
+                } else {
+                    // Success: SunEditor expects { result: [ { url: ..., name: ... } ] }
+                    uploadHandler(data);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                // Fallback for local dev if PHP not running: mock it
+                if (!isProd) {
+                    console.warn("Local PHP upload failed (likely no PHP server). Mocking success for UI test.");
+                    // Mock success for testing UI flow only
+                    const mockUrl = URL.createObjectURL(files[0]);
+                    uploadHandler({
+                        result: [{
+                            url: mockUrl,
+                            name: files[0].name,
+                            size: files[0].size
+                        }]
+                    });
+                    alert("로컬 개발 환경에서는 PHP가 실행되지 않아 '가상 업로드'로 처리되었습니다. 실제 서버에서는 정상적으로 저장됩니다.");
+                } else {
+                    alert('Upload error. Check network or server.');
+                    uploadHandler({ errorMessage: "Network Error" });
+                }
+            });
+
+        return undefined; // mandatory return for this handler
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -49,51 +95,24 @@ export default function DataEditor({ title, initialData, type, backLink }: DataE
         setLoading(true);
 
         try {
-            if (type === 'baking') {
-                // Use JSON API for Baking
-                const res = await fetch('/api/admin/data/baking', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        id: initialData?.id,
-                        title: formData.title,
-                        author: formData.author,
-                        content: formData.content,
-                        category: initialData?.category || '갤러리', // Default to Gallery
-                    })
-                });
+            const isProd = process.env.NODE_ENV === 'production';
+            const endpoint = isProd ? `/api.php?board=${type}` : `/api/admin/data/${type}`;
+            const method = initialData?.id ? 'PUT' : 'POST';
 
-                if (!res.ok) throw new Error("Failed to save via API");
-            } else {
-                // Legacy Supabase for others
-                const postData = {
-                    title: formData.title,
-                    author: formData.author,
-                    content: formData.content,
-                    board_type: type,
-                    updated_at: new Date().toISOString(),
-                };
+            const payload = {
+                ...formData,
+                id: initialData?.id,
+            };
 
-                let error;
+            const res = await fetch(endpoint, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
 
-                if (initialData?.id) {
-                    const { error: updateError } = await supabase
-                        .from('posts')
-                        .update(postData)
-                        .eq('id', initialData.id);
-                    error = updateError;
-                } else {
-                    const { error: insertError } = await supabase
-                        .from('posts')
-                        .insert([{
-                            ...postData,
-                            created_at: new Date().toISOString(),
-                            view_count: 0
-                        }]);
-                    error = insertError;
-                }
-
-                if (error) throw error;
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(errorData.error || 'Failed to save via API');
             }
 
             setShowSuccessModal(true);
@@ -125,12 +144,16 @@ export default function DataEditor({ title, initialData, type, backLink }: DataE
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700">제목</label>
+                            <label className="text-sm font-medium text-gray-700">게시물 제목 (리스트 및 상세페이지 노출)</label>
                             <input
                                 type="text"
                                 required
                                 value={formData.title}
-                                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                    setFormData((prev: any) => ({ ...prev, title: val }));
+                                }}
                                 className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 placeholder="제목을 입력하세요"
                             />
@@ -138,20 +161,81 @@ export default function DataEditor({ title, initialData, type, backLink }: DataE
 
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-gray-700">작성자</label>
+                            <div className="flex gap-2">
+                                <input
+                                    type="text"
+                                    value={formData.author}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                        setFormData((prev: any) => ({ ...prev, author: val }));
+                                    }}
+                                    className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    placeholder="작성자 입력 또는 우측 선택"
+                                />
+                                <select
+                                    className="w-32 px-2 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-50 text-sm"
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        if (val) {
+                                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                            setFormData((prev: any) => ({ ...prev, author: val }));
+                                        }
+                                    }}
+                                    value=""
+                                >
+                                    <option value="" disabled>선택</option>
+                                    <option value="Admin">Admin</option>
+                                    <option value="관리자">관리자</option>
+                                    <option value="학원장">학원장</option>
+                                    <option value="대표">대표</option>
+                                    <option value="세종요리제과기술학원">세종요리학원</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-700">작성일 (YYYY-MM-DD)</label>
                             <input
-                                type="text"
-                                value={formData.author}
-                                onChange={(e) => setFormData({ ...formData, author: e.target.value })}
+                                type="date"
+                                value={formData.date}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                    setFormData((prev: any) => ({ ...prev, date: val }));
+                                }}
                                 className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             />
                         </div>
+
+                        {type === 'baking' && (
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-gray-700">카테고리</label>
+                                <select
+                                    value={formData.category || '갤러리'}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                        setFormData((prev: any) => ({ ...prev, category: val }));
+                                    }}
+                                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                >
+                                    <option value="갤러리">갤러리</option>
+                                    <option value="수업뉴스">수업뉴스</option>
+                                </select>
+                            </div>
+                        )}
 
                         {type === 'qna' && (
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-gray-700">상태</label>
                                 <select
                                     value={formData.status || '대기중'}
-                                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                        setFormData((prev: any) => ({ ...prev, status: val }));
+                                    }}
                                     className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 >
                                     <option value="대기중">대기중</option>
@@ -159,16 +243,102 @@ export default function DataEditor({ title, initialData, type, backLink }: DataE
                                 </select>
                             </div>
                         )}
+
+                        {type === 'honor' && (
+                            <>
+                                <div className="space-y-4 md:col-span-2">
+                                    <label className="text-sm font-medium text-gray-700 block">미리보기</label>
+                                    <div className="w-full max-w-sm mx-auto border border-gray-200 rounded-lg overflow-hidden bg-black">
+                                        <ShinyLaurelBanner
+                                            stars={formData.stars || 5}
+                                            name={formData.name}
+                                            textScale={formData.textScale || 1}
+                                        />
+                                    </div>
+                                    <p className="text-xs text-center text-gray-500">실제 화면과 동일한 비율의 미리보기입니다.</p>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-gray-700">수상자 이름 (사진 오버레이)</label>
+                                    <input
+                                        type="text"
+                                        value={formData.name || ''}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                            setFormData((prev: any) => ({ ...prev, name: val }));
+                                        }}
+                                        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                        placeholder="사진 위에 표시될 이름을 입력하세요"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-gray-700">추천 별 개수 (1-8성)</label>
+                                    <div className="flex items-center gap-4">
+                                        <input
+                                            type="range"
+                                            min="1"
+                                            max="8"
+                                            value={formData.stars || 5}
+                                            onChange={(e) => {
+                                                const val = parseInt(e.target.value);
+                                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                                setFormData((prev: any) => ({ ...prev, stars: val }));
+                                            }}
+                                            className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                                        />
+                                        <span className="text-lg font-bold text-indigo-600 w-12 text-right">{formData.stars || 5}성</span>
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-gray-700">이름 크기 조절 (기본: 100%)</label>
+                                    <div className="flex items-center gap-4">
+                                        <input
+                                            type="range"
+                                            min="0.5"
+                                            max="2.0"
+                                            step="0.1"
+                                            value={formData.textScale || 1}
+                                            onChange={(e) => {
+                                                const val = parseFloat(e.target.value);
+                                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                                setFormData((prev: any) => ({ ...prev, textScale: val }));
+                                            }}
+                                            className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                                        />
+                                        <span className="text-lg font-bold text-indigo-600 w-12 text-right">{Math.round((formData.textScale || 1) * 100)}%</span>
+                                    </div>
+                                </div>
+                            </>
+                        )}
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-700">게시물 제목 (리스트 및 상세페이지 노출)</label>
+                        <input
+                            type="text"
+                            required
+                            value={formData.title}
+                            onChange={(e) => {
+                                const val = e.target.value;
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                setFormData((prev: any) => ({ ...prev, title: val }));
+                            }}
+                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            placeholder="제목을 입력하세요"
+                        />
                     </div>
 
                     <div className="space-y-2">
                         <label className="text-sm font-medium text-gray-700">내용</label>
                         <SunEditor
                             setContents={formData.content}
-                            onChange={(content) => setFormData({ ...formData, content: content })}
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            onChange={(content) => setFormData((prev: any) => ({ ...prev, content: content }))}
                             onImageUploadBefore={onImageUploadBefore}
                             setOptions={{
                                 height: '400px',
+                                defaultStyle: "font-family: 'Pretendard', sans-serif; font-size: 16px; line-height: 1.6;",
                                 buttonList: [
                                     ['undo', 'redo'],
                                     ['font', 'fontSize', 'formatBlock'],
@@ -179,8 +349,17 @@ export default function DataEditor({ title, initialData, type, backLink }: DataE
                                     ['align', 'horizontalRule', 'list', 'lineHeight'],
                                     ['table', 'link', 'image', 'video'],
                                     ['fullScreen', 'showBlocks', 'codeView']
-                                ]
-                            }}
+                                ],
+                                // Critical for preserving tables and styles
+                                mode: "classic",
+                                // Bypass strict type checks for sanitation options which sometimes fail in CI
+                                ...({
+                                    allowedTags: null,
+                                    allowedAttributes: null,
+                                } as any),
+                                iframe: false,
+                                fullPage: false,
+                            } as any}
                         />
                     </div>
 

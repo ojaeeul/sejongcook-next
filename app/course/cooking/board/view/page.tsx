@@ -29,10 +29,13 @@ function CookingPostDetailContent() {
                 return;
             }
             try {
-                const res = await fetch('/data/cooking_posts.json');
+                const url = process.env.NODE_ENV === 'production'
+                    ? '/api.php?board=cooking'
+                    : '/data/cooking_posts.json?t=' + Date.now();
+                const res = await fetch(url);
                 if (res.ok) {
                     const data: Post[] = await res.json();
-                    const found = data.find(p => p.id === idx);
+                    const found = data.find(p => String(p.id) === String(idx));
                     if (found) setPost(found);
                 }
             } catch (e) {

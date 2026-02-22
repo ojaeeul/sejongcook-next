@@ -1,0 +1,138 @@
+[
+  {
+    "memberId": "1770517014506",
+    "year": 2026,
+    "month": 2,
+    "status": "enrolled",
+    "amount": 270000,
+    "updatedAt": "2026-02-11T05:51:09.498Z"
+  },
+  {
+    "memberId": "1770517016128",
+    "year": 2026,
+    "month": 2,
+    "status": "enrolled",
+    "amount": 270000,
+    "updatedAt": "2026-02-11T06:06:12.255Z"
+  },
+  {
+    "memberId": "1770517017002",
+    "year": 2026,
+    "month": 2,
+    "status": "enrolled",
+    "amount": 270000,
+    "updatedAt": "2026-02-11T06:06:14.918Z"
+  },
+  {
+    "memberId": "1770517017920",
+    "year": 2026,
+    "month": 2,
+    "status": "unpaid",
+    "amount": 270000,
+    "updatedAt": "2026-02-11T09:55:23.761Z",
+    "course": ""
+  },
+  {
+    "memberId": "1770517159336",
+    "year": 2026,
+    "month": 2,
+    "status": "paid",
+    "amount": 270000,
+    "updatedAt": "2026-02-08T16:38:19.172Z"
+  },
+  {
+    "memberId": "1770517693101",
+    "year": 2026,
+    "month": 2,
+    "status": "enrolled",
+    "amount": 620000,
+    "updatedAt": "2026-02-11T09:55:18.450Z",
+    "course": ""
+  },
+  {
+    "memberId": "1770529179643",
+    "year": 2026,
+    "month": 2,
+    "status": "enrolled",
+    "amount": 270000,
+    "updatedAt": "2026-02-11T09:55:28.254Z",
+    "course": ""
+  },
+  {
+    "memberId": "1770551037066",
+    "year": 2026,
+    "month": 2,
+    "status": "unpaid",
+    "amount": 200000,
+    "updatedAt": "2026-02-08T15:22:37.225Z"
+  },
+  {
+    "memberId": "1770551100795",
+    "year": 2026,
+    "month": 2,
+    "status": "unpaid",
+    "amount": 2400000,
+    "updatedAt": "2026-02-08T16:32:50.624Z"
+  },
+  {
+    "memberId": "1770551214556",
+    "year": 2026,
+    "month": 2,
+    "status": "unpaid",
+    "amount": 200000,
+    "updatedAt": "2026-02-08T15:22:37.922Z"
+  },
+  {
+    "memberId": "1770556890568",
+    "year": 2026,
+    "month": 2,
+    "status": "unpaid",
+    "amount": 500000,
+    "updatedAt": "2026-02-08T16:32:50.824Z"
+  },
+  {
+    "memberId": "1770517017920",
+    "year": 2026,
+    "month": 2,
+    "course": "양식기능사",
+    "status": "paid",
+    "amount": 270000,
+    "updatedAt": "2026-02-11T22:38:13.938Z"
+  },
+  {
+    "memberId": "1770517017920",
+    "year": 2026,
+    "month": 1,
+    "course": "양식기능사",
+    "status": "paid",
+    "amount": 270000,
+    "updatedAt": "2026-02-11T22:42:10.807Z"
+  },
+  {
+    "memberId": "1770517693101",
+    "year": 2026,
+    "month": 2,
+    "course": "양식기능사",
+    "status": "paid",
+    "amount": 270000,
+    "updatedAt": "2026-02-11T22:42:39.854Z"
+  },
+  {
+    "memberId": "1770517693101",
+    "year": 2026,
+    "month": 2,
+    "course": "제과제빵기능사",
+    "status": "paid",
+    "amount": 350000,
+    "updatedAt": "2026-02-11T22:42:42.334Z"
+  },
+  {
+    "memberId": "1770551214556",
+    "year": 2026,
+    "month": 2,
+    "course": "중식기능사",
+    "status": "paid",
+    "amount": 300000,
+    "updatedAt": "2026-02-11T22:42:48.486Z"
+  }
+]

@@ -7,6 +7,7 @@ import SuccessModal from "@/components/SuccessModal";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useState, Suspense, useEffect } from "react";
 import { createPortal } from "react-dom";
+import Image from "next/image";
 
 import BakingSubNav from "@/components/BakingSubNav";
 
@@ -259,19 +260,23 @@ function BakingContent() {
                                 className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200"
                                 onClick={() => setLightboxImage(null)}
                             >
-                                <img
-                                    src={lightboxImage}
-                                    alt="Enlarged view"
-                                    className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl scale-100 transition-transform duration-300"
-                                    style={{ animation: 'zoomIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)' }}
-                                />
+                                <div className="relative max-w-full max-h-[90vh] w-full h-full overflow-hidden">
+                                    <Image
+                                        src={lightboxImage}
+                                        alt="Enlarged view"
+                                        fill
+                                        className="object-contain rounded-lg shadow-2xl scale-100 transition-transform duration-300"
+                                        style={{ animation: 'zoomIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)' }}
+                                        unoptimized
+                                    />
+                                </div>
                             </div>,
                             document.body
                         )}
 
                         {/* Action Buttons */}
                         <ActionButtons
-                            listLink="/course"
+                            listLink="/course/baking#overview"
                             editLink={`/course/baking?mode=edit#${activeTab === 'overview' ? '' : activeTab}`}
                             onDelete={() => alert('기본 페이지는 삭제할 수 없습니다.')}
                         />

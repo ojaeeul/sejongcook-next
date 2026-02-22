@@ -10,7 +10,8 @@ export default function CookingBoardPage() {
     useEffect(() => {
         const fetchPosts = async () => {
             try {
-                const res = await fetch('/data/cooking_posts.json');
+                const url = process.env.NODE_ENV === 'production' ? '/api.php?board=cooking' : '/data/cooking_posts.json';
+                const res = await fetch(url);
                 const data = await res.json();
                 setPosts(data.reverse());
             } catch (e) {

@@ -18,7 +18,8 @@ function Content() {
     // Load data on mount
     const fetchData = async () => {
         try {
-            const res = await fetch('/api/admin/data/schedule', { cache: 'no-store' });
+            const url = process.env.NODE_ENV === 'production' ? '/api.php?board=schedule' : '/api/admin/data/schedule';
+            const res = await fetch(url, { cache: 'no-store' });
             if (res.ok) {
                 const data = await res.json();
                 if (data) {
@@ -39,7 +40,8 @@ function Content() {
     const handleSave = async () => {
         // if (confirm("저장하시겠습니까?")) { // Removed native confirm
         try {
-            const res = await fetch('/api/admin/data/schedule', {
+            const url = process.env.NODE_ENV === 'production' ? '/api.php?board=schedule' : '/api/admin/data/schedule';
+            const res = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

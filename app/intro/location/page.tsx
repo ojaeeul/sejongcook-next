@@ -5,7 +5,7 @@ import ActionButtons from "@/components/ActionButtons";
 import Editor from "@/components/Editor";
 import SuccessModal from "@/components/SuccessModal";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 
 function LocationContent() {
     const searchParams = useSearchParams();
@@ -16,7 +16,7 @@ function LocationContent() {
     const [content, setContent] = useState(`
         <div style="font-family: sans-serif;">
              <div style="margin-bottom: 30px; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; height: 450px; background-color: #f3f4f6; display: flex; align-items: center; justify-content: center;">
-                 <!-- Google Map Embed for "경기도 김포시 김포대로 841" (Sejong Cooking Academy) -->
+                 <!-- Google Map Embed -->
                  <iframe 
                     src="https://maps.google.com/maps?q=경기도+김포시+김포대로+841&output=embed"
                     width="100%" 
@@ -39,18 +39,46 @@ function LocationContent() {
 
                 <div style="background-color: #f9fafb; padding: 24px; border-radius: 8px;">
                     <strong style="color: #ea580c; font-size: 1.125rem; display: block; margin-bottom: 8px;">📞 문의전화</strong>
-                    <p style="color: #1f2937; font-size: 1.25rem; font-weight: bold; margin: 0;">031-986-1833, 1966</p>
+                    <p style="color: #1f2937; font-size: 1.25rem; font-weight: bold; margin: 0;">031-986-1933, 1966</p>
                     <p style="color: #6b7280; font-size: 0.9rem; margin-top: 4px;">궁금하신 점이 있으시면 언제든지 문의주세요.</p>
                 </div>
              </div>
         </div>
     `);
 
-    const handleSave = () => {
+    // Load content on mount
+    useEffect(() => {
+        fetch('/api/admin/data/intro')
+            .then(res => res.json())
+            .then(data => {
+                if (data.location) {
+                    setContent(data.location);
+                }
+            })
+            .catch(err => console.error('Failed to load location content:', err));
+    }, []);
+
+    const handleSave = async () => {
         if (confirm("저장하시겠습니까?")) {
-            // alert("저장되었습니다. (데모)");
-            // router.push('/intro/location');
-            setShowSuccessModal(true);
+            try {
+                const res = await fetch('/api/admin/data/intro', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        pageKey: 'location',
+                        content: content
+                    })
+                });
+
+                if (res.ok) {
+                    setShowSuccessModal(true);
+                } else {
+                    alert("저장에 실패했습니다.");
+                }
+            } catch (err) {
+                console.error(err);
+                alert("저장 중 오류가 발생했습니다.");
+            }
         }
     };
 

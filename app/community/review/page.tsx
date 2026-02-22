@@ -10,7 +10,8 @@ export default function ReviewPage() {
     useEffect(() => {
         const fetchPosts = async () => {
             try {
-                const res = await fetch('/data/review_data.json');
+                const url = process.env.NODE_ENV === 'production' ? '/api.php?board=review' : '/data/review_data.json';
+                const res = await fetch(url);
                 const data = await res.json();
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const mappedPosts: Post[] = data.map((item: any) => ({
@@ -21,6 +22,8 @@ export default function ReviewPage() {
                     hit: item.hit || 0,
                     content: item.content
                 }));
+                // Sort by date DESCENDING
+                mappedPosts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
                 setPosts(mappedPosts);
             } catch (err) {
                 console.error('Error fetching reviews:', err);

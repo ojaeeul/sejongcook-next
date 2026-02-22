@@ -3,7 +3,6 @@
 import { useEffect, useState, Suspense } from 'react';
 import DataEditor from '../../components/DataEditor';
 
-import { supabase } from '@/lib/supabase';
 import { useSearchParams } from 'next/navigation';
 
 function EditBakingPostContent() {
@@ -19,10 +18,11 @@ function EditBakingPostContent() {
                 return;
             }
             try {
-                const res = await fetch('/api/admin/data/baking');
+                const url = process.env.NODE_ENV === 'production' ? '/api.php?board=baking' : '/api/admin/data/baking';
+                const res = await fetch(url);
                 if (res.ok) {
                     const posts = await res.json();
-                    const found = posts.find((p: any) => p.id === id);
+                    const found = posts.find((p: { id: string }) => String(p.id) === String(id));
                     if (found) setData(found);
                 }
             } catch (error) {

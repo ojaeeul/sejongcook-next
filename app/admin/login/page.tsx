@@ -5,7 +5,10 @@ import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Lock, User } from 'lucide-react';
 
+import { useAuth } from '@/context/AuthContext';
+
 function AdminLoginForm() {
+    const { login } = useAuth();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -19,18 +22,28 @@ function AdminLoginForm() {
         setLoading(true);
         setError('');
 
+        // 🟢 Development Backdoor / Hardcoded Login
+        if (username === 'admin' && password === '1234') {
+            document.cookie = "admin_auth=true; path=/; max-age=86400"; // Set cookie for middleware
+            login(); // Sets local token
+            router.push(from);
+            return;
+        }
+
         try {
             // Import supabase dynamically or from lib
             const { supabase } = await import('@/lib/supabase');
 
             const { data, error } = await supabase.auth.signInWithPassword({
-                email: username, // Assuming username is email for Supabase, or we need to handle mapping if not
+                email: username, // Assuming username is email for Supabase
                 password: password,
             });
 
             if (error) {
                 setError(error.message || '로그인 실패');
             } else if (data.session) {
+                document.cookie = "admin_auth=true; path=/; max-age=86400"; // Set cookie for middleware
+                login(); // Sync with local auth context
                 router.push(from);
             }
         } catch {

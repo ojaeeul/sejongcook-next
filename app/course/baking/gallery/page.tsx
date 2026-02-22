@@ -1,44 +1,57 @@
+'use client';
+
 import BakingSubNav from "@/components/BakingSubNav";
 import Link from "next/link";
 import Image from "next/image";
-import { promises as fs } from 'fs';
-import path from 'path';
-import { Suspense } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 
 interface Post {
-    id: string;
+    id: string | number;
     category: string;
     title: string;
     author: string;
     date: string;
-    hit: string;
+    hit: string | number;
     content?: string;
-}
-
-async function getBakingPosts() {
-    const filePath = path.join(process.cwd(), 'public', 'data', 'baking_posts.json');
-    try {
-        const fileContents = await fs.readFile(filePath, 'utf8');
-        const data: Post[] = JSON.parse(fileContents);
-        // Assuming we want to show all posts, or maybe filter by category '갤러리'?
-        // The user request was just "Baking Gallery", and usually Gallery shows images.
-        // Let's filter for posts that likely have images or just show all for now with a placeholder if no image.
-        // For better UX, let's show all and try to extract an image.
-        return data.reverse();
-    } catch (e) {
-        console.error("Failed to load baking posts:", e);
-        return [];
-    }
 }
 
 function extractImage(content?: string): string | null {
     if (!content) return null;
-    const match = content.match(/<img[^>]+src="([^">]+)"/);
+    // Improved regex to handle various image tag structures and single/double quotes
+    const match = content.match(/<img[^>]+src=["']([^"']+)["']/i);
     return match ? match[1] : null;
 }
 
-export default async function BakingGalleryPage() {
-    const posts = await getBakingPosts();
+export default function BakingGalleryPage() {
+    const [posts, setPosts] = useState<Post[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchPosts = async () => {
+            try {
+                // In production, use api.php to get the latest data. In dev, use the JSON directly.
+                const url = process.env.NODE_ENV === 'production'
+                    ? '/api.php?board=baking'
+                    : '/data/baking_posts.json?t=' + Date.now();
+
+                const res = await fetch(url);
+                if (!res.ok) throw new Error('Failed to fetch baking posts');
+                const data = await res.json();
+
+                if (Array.isArray(data)) {
+                    // Filter for gallery category or show all? 
+                    // Let's keep all but sort by ID descending (newest first)
+                    const sorted = [...data].sort((a, b) => Number(b.id) - Number(a.id));
+                    setPosts(sorted);
+                }
+            } catch (e) {
+                console.error("Failed to load baking posts:", e);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchPosts();
+    }, []);
 
     return (
         <div className="modern-container" style={{ padding: '40px 0' }}>
@@ -54,7 +67,11 @@ export default async function BakingGalleryPage() {
                 <p className="text-gray-500 mb-6 text-sm italic">학생들의 정성과 열정이 담긴 작품들을 감상해보세요.</p>
 
                 {/* Gallery Grid */}
-                {posts.length === 0 ? (
+                {loading ? (
+                    <div className="py-20 text-center text-gray-500 bg-gray-50 rounded-lg animate-pulse">
+                        갤러리 게시물을 불러오는 중입니다...
+                    </div>
+                ) : posts.length === 0 ? (
                     <div className="py-20 text-center text-gray-500 bg-gray-50 rounded-lg">
                         등록된 갤러리 게시물이 없습니다.
                     </div>

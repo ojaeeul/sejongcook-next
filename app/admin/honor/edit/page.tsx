@@ -3,7 +3,6 @@
 import { useEffect, useState, Suspense } from 'react';
 import DataEditor from '../../components/DataEditor';
 
-import { supabase } from '@/lib/supabase';
 import { useSearchParams } from 'next/navigation';
 
 function EditHonorContent() {
@@ -19,13 +18,13 @@ function EditHonorContent() {
                 return;
             }
             try {
-                const { data: item, error } = await supabase
-                    .from('posts')
-                    .select('*')
-                    .eq('id', id)
-                    .single();
+                const url = process.env.NODE_ENV === 'production' ? '/api.php?board=honor' : '/api/admin/data/honor';
+                const res = await fetch(url);
+                if (!res.ok) throw new Error('Failed to fetch data');
+                const list = await res.json();
+                const item = list.find((i: { id: string | number }) => String(i.id) === String(id));
 
-                if (error) throw error;
+                if (!item) throw new Error('Post not found');
                 setData(item);
             } catch (error) {
                 console.error('Failed to fetch honor post', error);

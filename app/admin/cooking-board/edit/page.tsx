@@ -2,8 +2,6 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import DataEditor from '../../components/DataEditor';
-
-import { supabase } from '@/lib/supabase';
 import { useSearchParams } from 'next/navigation';
 
 function EditCookingPostContent() {
@@ -19,14 +17,13 @@ function EditCookingPostContent() {
                 return;
             }
             try {
-                const { data: item, error } = await supabase
-                    .from('posts')
-                    .select('*')
-                    .eq('id', id)
-                    .single();
-
-                if (error) throw error;
-                setData(item);
+                const url = process.env.NODE_ENV === 'production' ? '/api.php?board=cooking' : '/api/admin/data/cooking';
+                const res = await fetch(url);
+                if (res.ok) {
+                    const posts = await res.json();
+                    const found = posts.find((p: { id: string | number }) => String(p.id) === String(id));
+                    if (found) setData(found);
+                }
             } catch (error) {
                 console.error('Failed to fetch cooking post', error);
             } finally {

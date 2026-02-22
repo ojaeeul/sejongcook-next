@@ -3,7 +3,7 @@ let membersData = [];
 let paymentsData = [];
 let attendanceData = [];
 let courseFees = {};
-const API_BASE = `${window.location.origin}/api/sejong`;
+const API_BASE = '/api/sejong';
 const DEFAULT_PRICE = 200000;
 
 let attendanceByMember = {}; // Optimized lookup
@@ -41,12 +41,12 @@ async function loadData(targetId, targetYear) {
             throw new Error('Failed to fetch data');
         }
 
-        membersData = await mRes.json();
+        const rawMembers = await mRes.json();
+        membersData = Array.isArray(rawMembers) ? rawMembers.filter(m => !['delete', 'trash', 'hold', 'completed'].includes(m.status)) : [];
+
         paymentsData = await pRes.json();
         attendanceData = await aRes.json();
         const settings = await sRes.json();
-
-        if (!Array.isArray(membersData)) membersData = [];
         if (!Array.isArray(paymentsData)) paymentsData = [];
         if (!Array.isArray(attendanceData)) attendanceData = [];
 
@@ -95,7 +95,12 @@ function processAttendanceData() {
 function getLedgerMonthStats(memberId, year, month, courseFilter = null) {
     const memberRecords = attendanceByMember[memberId] || [];
     let eighthDay = null;
+    let isSimulated = false;
     let rollingTotal = 0;
+
+    const incAmount = (courseFilter && courseFilter.includes('제과제빵')) ? 0.5 : 1.0;
+    let lastRecordDate = null;
+    let hitTargetInMonth = false;
 
     for (const r of memberRecords) {
         if (courseFilter) {
@@ -105,23 +110,78 @@ function getLedgerMonthStats(memberId, year, month, courseFilter = null) {
             if (rCourse !== fCourse) continue;
         }
 
-        if (r.yearNum !== year || r.monthNum > month) continue;
+        if (r.yearNum < year || (r.yearNum === year && r.monthNum < month)) {
+            // Count past months
+            const isMarker = ['[', ']'].includes(r.status);
+            const isNumericPresent = ['10', '12', '2', '5', '7'].includes(r.status);
+            const isAbsent = r.status === 'absent' || (typeof r.status === 'string' && r.status.startsWith('X'));
+            const isRegular = r.status === 'present' || r.status === 'extension' || isNumericPresent || isAbsent;
+            if (isMarker || isRegular) {
+                rollingTotal += incAmount;
+                lastRecordDate = r.dateObj;
+            }
+        } else if (r.yearNum === year && r.monthNum === month) {
+            // Count current month
+            const isMarker = ['[', ']'].includes(r.status);
+            const isNumericPresent = ['10', '12', '2', '5', '7'].includes(r.status);
+            const isAbsent = r.status === 'absent' || (typeof r.status === 'string' && r.status.startsWith('X'));
+            const isRegular = r.status === 'present' || r.status === 'extension' || isNumericPresent || isAbsent;
 
-        const inc = (r.course && r.course.includes('제과제빵')) ? 0.5 : 1.0;
-        const isMarker = ['[', ']'].includes(r.status);
-        const isNumericPresent = ['10', '12', '2', '5', '7'].includes(r.status);
-        const isAbsent = r.status === 'absent' || (typeof r.status === 'string' && r.status.startsWith('X'));
-        const isRegular = r.status === 'present' || r.status === 'extension' || isNumericPresent || isAbsent;
-
-        const prevRolling = rollingTotal;
-        if (isMarker || isRegular) {
-            rollingTotal += inc;
-            if (r.yearNum === year && r.monthNum === month && Math.floor(prevRolling / 8) < Math.floor(rollingTotal / 8)) {
-                eighthDay = r.dateObj.getDate();
+            const prevRolling = rollingTotal;
+            if (isMarker || isRegular) {
+                rollingTotal += incAmount;
+                lastRecordDate = r.dateObj;
+                if (Math.floor((prevRolling - 0.001) / 8) < Math.floor((rollingTotal - 0.001) / 8)) {
+                    eighthDay = r.dateObj.getDate();
+                    hitTargetInMonth = true;
+                }
             }
         }
     }
-    return { eighthDay };
+
+    // --- Simulation Logic ---
+    const now = new Date();
+    // Simulate from the 1st of the PREVIOUS month to ensure last month's scheduled payments don't disappear
+    const firstDayOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+
+    let eighthMonth = month;
+
+    if (!hitTargetInMonth) {
+        let simDate = new Date(firstDayOfLastMonth.getTime());
+        if (lastRecordDate && lastRecordDate > firstDayOfLastMonth) {
+            simDate = new Date(lastRecordDate.getTime() + (24 * 60 * 60 * 1000));
+        } else if (!lastRecordDate) {
+            simDate = new Date(firstDayOfLastMonth.getTime());
+        }
+
+        const limitDate = new Date(now.getFullYear(), now.getMonth() + 2, 0); // Last day of next month
+        let simRolling = rollingTotal;
+        let foundSimulatedDay = null;
+
+        while (simDate <= limitDate) {
+            const dayOfWeek = simDate.getDay();
+            if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+                const prevSim = simRolling;
+                simRolling += incAmount;
+
+                if (Math.floor((prevSim - 0.001) / 8) < Math.floor((simRolling - 0.001) / 8)) {
+                    if (simDate.getFullYear() === year && (simDate.getMonth() + 1) === month) {
+                        foundSimulatedDay = simDate.getDate();
+                        eighthMonth = simDate.getMonth() + 1;
+                        break;
+                    }
+                }
+            }
+            simDate.setDate(simDate.getDate() + 1);
+        }
+
+        if (foundSimulatedDay) {
+            eighthDay = foundSimulatedDay;
+            isSimulated = true;
+        }
+    }
+
+    return { eighthDay, eighthMonth, isSimulated };
 }
 
 function getAllLedgerMonthStats(memberId, year, month) {
@@ -137,6 +197,8 @@ function getAllLedgerMonthStats(memberId, year, month) {
             results.push({
                 course: courseName,
                 eighthDay: stats.eighthDay,
+                eighthMonth: stats.eighthMonth,
+                isSimulated: stats.isSimulated,
                 fee: courseFees[courseName] || courseFees['all'] || 0
             });
         }
@@ -175,7 +237,7 @@ const COURSE_CATEGORIES = {
 };
 
 let activeCategory = '전체';
-let currentPeriodFilter = 'all';
+let currentFilterDate = '';
 
 function renderLedger() {
     const container = document.getElementById('ledgerTablesContainer');
@@ -232,19 +294,57 @@ function renderLedger() {
     container.appendChild(mainNavContainer);
 
     const now = new Date();
+    const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
     const filterByPeriod = (members) => {
-        if (currentPeriodFilter === 'all') return members;
-        const days = currentPeriodFilter === '1week' ? 7 : 14;
-        const limitDate = new Date(now.getTime() + (days * 24 * 60 * 60 * 1000));
+        if (!currentFilterDate) {
+            return members; // Show all if no date is picked
+        }
+        let startM, startD, endM, endD;
+        if (currentFilterDate.includes('~')) {
+            const parts = currentFilterDate.split('~').map(s => s.trim());
+            startM = parseInt(parts[0].split('-')[1], 10);
+            startD = parseInt(parts[0].split('-')[2], 10);
+            endM = parseInt(parts[1].split('-')[1], 10);
+            endD = parseInt(parts[1].split('-')[2], 10);
+        } else {
+            startM = parseInt(currentFilterDate.split('-')[1], 10);
+            startD = parseInt(currentFilterDate.split('-')[2], 10);
+            endM = startM;
+            endD = startD;
+        }
 
         return members.filter(m => {
-            const currentMonth = now.getMonth() + 1;
-            const currentYearVal = now.getFullYear();
-            const schedules = getAllLedgerMonthStats(m.id, currentYearVal, currentMonth);
-            return schedules.some(s => {
-                const schedDate = new Date(currentYearVal, currentMonth - 1, s.eighthDay);
-                return schedDate >= now && schedDate <= limitDate;
-            });
+            for (let month = 1; month <= 12; month++) {
+                const schedules = getAllLedgerMonthStats(m.id, currentYear, month);
+                const hasMatch = schedules.some(s => {
+                    const sMonth = s.eighthMonth || month;
+                    let isMatch = false;
+
+                    if (currentFilterDate.includes('~')) {
+                        const sVal = sMonth * 100 + s.eighthDay;
+                        const startVal = startM * 100 + startD;
+                        const endVal = endM * 100 + endD;
+                        if (sVal >= startVal && sVal <= endVal) isMatch = true;
+                    } else {
+                        if (sMonth === startM && s.eighthDay === startD) isMatch = true;
+                    }
+
+                    if (!isMatch) return false;
+
+                    const isPaid = paymentsData.some(p =>
+                        String(p.memberId) === String(m.id) &&
+                        String(p.year) === String(currentYear) &&
+                        String(p.month) === String(month) &&
+                        p.status === 'paid' &&
+                        (p.course.includes(s.course) || s.course.includes(p.course))
+                    );
+
+                    return !isPaid;
+                });
+                if (hasMatch) return true;
+            }
+            return false;
         });
     };
 
@@ -326,11 +426,7 @@ function renderTable(container, title, members, id, isOther = false) {
             <h2 style="margin: 0; font-size: 1.4rem; font-weight: 900;">${title} (${members.length}명)</h2>
             <div style="display: flex; align-items: center; gap: 10px;">
                 <label style="font-size: 0.8rem; font-weight: 700;">결재 일정 필터:</label>
-                <select onchange="currentPeriodFilter = this.value; renderLedger();" style="padding: 4px 8px; border-radius: 4px; border: 1px solid #cbd5e1; font-weight: 700; font-size: 0.8rem;">
-                    <option value="all" ${currentPeriodFilter === 'all' ? 'selected' : ''}>전체</option>
-                    <option value="1week" ${currentPeriodFilter === '1week' ? 'selected' : ''}>1주일 이내</option>
-                    <option value="2weeks" ${currentPeriodFilter === '2weeks' ? 'selected' : ''}>2주일 이내</option>
-                </select>
+                <input type="text" id="dateFilter-${id}" value="${currentFilterDate}" placeholder="날짜 범위 (드래그)" style="padding: 3px 6px; border-radius: 4px; border: 1px solid #cbd5e1; font-weight: 700; font-size: 0.8rem; cursor: pointer; width: 180px;">
             </div>
         </div>
         <div style="overflow-x: auto; border: 1.5px solid #0f172a; border-radius: 4px; background: #fff;">
@@ -361,15 +457,65 @@ function renderTable(container, title, members, id, isOther = false) {
             </td>`;
 
         for (let month = 1; month <= 12; month++) {
-            const schedules = getAllLedgerMonthStats(m.id, currentYear, month);
+            let schedules = getAllLedgerMonthStats(m.id, currentYear, month);
+
+            if (currentFilterDate) {
+                let startM, startD, endM, endD;
+                if (currentFilterDate.includes('~')) {
+                    const parts = currentFilterDate.split('~').map(s => s.trim());
+                    startM = parseInt(parts[0].split('-')[1], 10);
+                    startD = parseInt(parts[0].split('-')[2], 10);
+                    endM = parseInt(parts[1].split('-')[1], 10);
+                    endD = parseInt(parts[1].split('-')[2], 10);
+                } else {
+                    startM = parseInt(currentFilterDate.split('-')[1], 10);
+                    startD = parseInt(currentFilterDate.split('-')[2], 10);
+                    endM = startM;
+                    endD = startD;
+                }
+
+                schedules = schedules.filter(s => {
+                    const sMonth = s.eighthMonth || month;
+                    let isMatch = false;
+
+                    if (currentFilterDate.includes('~')) {
+                        const sVal = sMonth * 100 + s.eighthDay;
+                        const startVal = startM * 100 + startD;
+                        const endVal = endM * 100 + endD;
+                        if (sVal >= startVal && sVal <= endVal) isMatch = true;
+                    } else {
+                        if (sMonth === startM && s.eighthDay === startD) isMatch = true;
+                    }
+
+                    if (!isMatch) return false;
+
+                    const isPaid = paymentsData.some(p =>
+                        String(p.memberId) === String(m.id) &&
+                        String(p.year) === String(currentYear) &&
+                        String(p.month) === String(month) &&
+                        p.status === 'paid' &&
+                        (p.course.includes(s.course) || s.course.includes(p.course))
+                    );
+
+                    return !isPaid;
+                });
+            }
+
             const paid = paymentsData.filter(p => String(p.memberId) === String(m.id) && String(p.year) === String(currentYear) && String(p.month) === String(month) && p.status === 'paid');
 
-            let expectedHTML = schedules.map(s => `
-                <div style="font-size: 0.65rem; color: #d946ef; font-weight: 800;">${s.eighthDay}일 (${s.fee / 10000}만)</div>
-            `).join('');
+            let expectedHTML = schedules.map(s => {
+                const dayText = `${s.eighthDay}일`;
+                const color = s.isSimulated ? '#a855f7' : '#d946ef';
+                return `
+                <div style="font-size: 0.65rem; color: ${color}; font-weight: 800; display: flex; flex-direction: column; gap: 2px;">
+                    <div>${dayText}</div>
+                    <div style="font-size: 0.6rem;">${s.fee / 10000}만</div>
+                    <div style="font-size: 0.55rem; color: #64748b; font-weight: 600; line-height: 1;">${s.course}</div>
+                </div>
+            `}).join('');
 
             let actualHTML = paid.map(p => `
-                <div style="font-size: 0.65rem; font-weight: 900;">${new Date(p.updatedAt).getDate()}일 (${p.amount / 10000}만)</div>
+                <div style="font-size: 0.65rem; font-weight: 900;">${new Date(p.updatedAt).getDate()}일 ${p.amount / 10000}만</div>
             `).join('');
 
             html += `<td style="text-align: center; border-right: 1px dotted #cbd5e1; padding: 4px;">${expectedHTML}</td>
@@ -381,6 +527,26 @@ function renderTable(container, title, members, id, isOther = false) {
     html += `</tbody></table></div>`;
     section.innerHTML = html;
     container.appendChild(section);
+
+    // Initialize Flatpickr for this table's date input
+    if (typeof flatpickr !== 'undefined') {
+        flatpickr(`#dateFilter-${id}`, {
+            mode: "range",
+            locale: "ko",
+            dateFormat: "Y-m-d",
+            maxRange: 7, // User requested 1~7 days
+            onChange: function (selectedDates, dateStr, instance) {
+                if (selectedDates.length === 2) {
+                    currentFilterDate = dateStr;
+                    renderLedger();
+                }
+            },
+            onClose: function (selectedDates, dateStr) {
+                currentFilterDate = dateStr;
+                renderLedger();
+            }
+        });
+    }
 
     if (window.targetMemberId) {
         setTimeout(() => {

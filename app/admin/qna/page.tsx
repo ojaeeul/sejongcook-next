@@ -2,9 +2,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import AdminTable from '../components/AdminTable';
-
-import { supabase } from '@/lib/supabase';
+import SuccessModal from '@/components/SuccessModal';
+import ConfirmModal from '@/components/ConfirmModal';
 
 export default function QnaList() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -13,14 +14,14 @@ export default function QnaList() {
 
     const fetchData = async () => {
         try {
-            const { data: posts, error } = await supabase
-                .from('posts')
-                .select('*')
-                .eq('board_type', 'qna')
-                .order('created_at', { ascending: false });
-
-            if (error) throw error;
-            setData(posts || []);
+            const url = process.env.NODE_ENV === 'production' ? '/api.php?board=qna' : '/api/admin/data/qna?t=' + Date.now();
+            const res = await fetch(url);
+            const json = await res.json();
+            if (Array.isArray(json)) {
+                setData(json);
+            } else {
+                setData([]);
+            }
         } catch (error) {
             console.error('Failed to fetch qna', error);
         } finally {
@@ -32,27 +33,47 @@ export default function QnaList() {
         fetchData();
     }, []);
 
-    const handleDelete = async (id: string | number) => {
-        if (!confirm('정말 삭제하시겠습니까?')) return;
-        try {
-            const { error } = await supabase
-                .from('posts')
-                .delete()
-                .eq('id', id);
+    const [confirmModal, setConfirmModal] = useState({ isOpen: false, id: '' as string | number });
+    const [successModal, setSuccessModal] = useState({ isOpen: false, message: '' });
 
-            if (error) throw error;
+    const handleDeleteClick = (id: string | number) => {
+        setConfirmModal({ isOpen: true, id });
+    };
+
+    const handleDeleteConfirm = async () => {
+        if (!confirmModal.id) return;
+        const id = confirmModal.id;
+
+        try {
+            const url = process.env.NODE_ENV === 'production' ? `/api.php?board=qna&id=${id}` : `/api/admin/data/qna?id=${id}`;
+            const res = await fetch(url, {
+                method: 'DELETE',
+            });
+            if (!res.ok) throw new Error('Failed to delete');
 
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            setData(prev => prev.filter((item: any) => item.id !== id));
+            setData(prev => prev.filter((item: any) => String(item.id) !== String(id)));
+            setSuccessModal({ isOpen: true, message: '문의사항이 삭제되었습니다.' });
         } catch {
-            alert('삭제에 실패했습니다'); // Failed to delete
+            alert('삭제에 실패했습니다');
+        } finally {
+            setConfirmModal({ isOpen: false, id: '' });
         }
     };
 
     const columns = [
-        { key: 'title', label: '제목' }, // Title
-        { key: 'author', label: '작성자' }, // Author
-        { key: 'date', label: '작성일' }, // Date
+        {
+            key: 'title',
+            label: '제목',
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            render: (val: string, item: any) => (
+                <Link href={`/admin/qna/edit?id=${item.id}`} className="hover:text-indigo-600 hover:underline font-medium">
+                    {val}
+                </Link>
+            )
+        },
+        { key: 'author', label: '작성자' },
+        { key: 'date', label: '작성일' },
         {
             key: 'status', label: '상태', render: (val: string) => ( // Status
                 <span className={`px-2 py-1 rounded-full text-xs ${val === '답변완료' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
@@ -67,16 +88,33 @@ export default function QnaList() {
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold text-gray-800">문의사항 관리</h1> {/* Q&A Management */}
+                <h1 className="text-2xl font-bold text-gray-800">문의사항 관리</h1>
             </div>
 
             <AdminTable
-                title="문의사항 목록" /* Q&A List */
+                title="문의사항 목록"
                 data={data}
                 columns={columns}
-                onDelete={handleDelete}
+                onDelete={handleDeleteClick}
                 newLink="/admin/qna/new"
                 editLinkPrefix="/admin/qna/edit"
+            />
+
+            <ConfirmModal
+                isOpen={confirmModal.isOpen}
+                title="문의사항 삭제"
+                message="정말 이 문의사항을 삭제하시겠습니까?"
+                onConfirm={handleDeleteConfirm}
+                onCancel={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                confirmText="삭제"
+                isDangerous={true}
+            />
+
+            <SuccessModal
+                isOpen={successModal.isOpen}
+                onClose={() => setSuccessModal({ ...successModal, isOpen: false })}
+                title="삭제 완료"
+                message={successModal.message}
             />
         </div>
     );

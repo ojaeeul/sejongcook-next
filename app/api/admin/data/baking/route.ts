@@ -1,3 +1,4 @@
+export const dynamic = "force-static";
 import { NextResponse } from 'next/server';
 import path from 'path';
 import { promises as fs } from 'fs';
@@ -22,7 +23,7 @@ export async function POST(request: Request) {
         try {
             const fileContent = await fs.readFile(dataFilePath, 'utf8');
             posts = JSON.parse(fileContent);
-        } catch (e) {
+        } catch {
             // If file doesn't exist or is empty, start fresh
             posts = [];
         }
@@ -42,7 +43,7 @@ export async function POST(request: Request) {
 
         if (body.id) {
             // Update existing
-            const index = posts.findIndex((p: any) => p.id === body.id);
+            const index = posts.findIndex((p: { id: string }) => p.id === body.id);
             if (index !== -1) {
                 posts[index] = { ...posts[index], ...newPost };
             } else {
@@ -61,4 +62,26 @@ export async function POST(request: Request) {
         console.error("Failed to save baking post", error);
         return NextResponse.json({ success: false, error: "Failed to save data" }, { status: 500 });
     }
+}
+
+export async function DELETE(request: Request) {
+    try {
+        const { searchParams } = new URL(request.url);
+        const id = searchParams.get('id');
+        if (!id) return NextResponse.json({ error: "Missing ID" }, { status: 400 });
+
+        const fileContent = await fs.readFile(dataFilePath, 'utf8');
+        let posts = JSON.parse(fileContent);
+        posts = posts.filter((p: { id: string | number }) => String(p.id) !== String(id));
+
+        await fs.writeFile(dataFilePath, JSON.stringify(posts, null, 4), 'utf8');
+        return NextResponse.json({ success: true });
+    } catch (error) {
+        console.error("Failed to delete baking post", error);
+        return NextResponse.json({ success: false, error: "Failed to delete data" }, { status: 500 });
+    }
+}
+
+export async function PUT(request: Request) {
+    return POST(request);
 }

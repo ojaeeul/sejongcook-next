@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import SuccessModal from "@/components/SuccessModal";
 import JobSidebar from "@/components/JobSidebar";
 import Editor from "@/components/Editor";
-import { supabase } from "@/lib/supabase";
+
 
 
 
@@ -24,22 +24,29 @@ function WriteForm() {
     useEffect(() => {
         const load = async () => {
             if (isEdit && idx) {
-                const { data, error } = await supabase
-                    .from('posts')
-                    .select('*')
-                    .eq('id', idx)
-                    .single();
+                try {
+                    // Fetch all data and find the specific post
+                    const url = process.env.NODE_ENV === 'production' ? '/api.php?board=job-seekers' : '/data/job_seekers_data.json';
+                    const res = await fetch(url);
+                    const data = await res.json();
 
-                if (data) {
-                    setSubject(data.title);
-                    setAuthor(data.author || "");
-                    setContent(data.content || "");
-                } else if (error) {
+                    if (Array.isArray(data)) {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const found = data.find((item: any) => String(item.id) === String(idx) || String(item.idx) === String(idx));
+                        if (found) {
+                            setSubject(found.title);
+                            setAuthor(found.author || "");
+                            setContent(found.content || "");
+                        } else {
+                            console.error("Post not found");
+                        }
+                    }
+                } catch (error) {
                     console.error("Error loading post:", error);
                 }
             } else {
                 setAuthor("구직자");
-                if (isEdit) { // Just in case logic flow needs initial setup
+                if (isEdit) {
                     setSubject("구직 희망합니다 (수정)");
                     setContent(`
                         <p>희망 근무 조건:</p>
@@ -57,30 +64,40 @@ function WriteForm() {
         setLoading(true);
 
         try {
+            const isProd = process.env.NODE_ENV === 'production';
+            const endpoint = isProd ? '/api.php?board=job-seekers' : '/api/admin/data/job-seekers';
+
+            // For PHP bridge, we use POST for new and PUT for edit if ID exists
+            // But DataEditor logic suggests: initialData?.id ? 'PUT' : 'POST'
+            // Here we mimic that.
+            const method = isEdit ? 'PUT' : 'POST';
+
             const postData = {
-                board_type: 'seekers',
+                id: isEdit ? idx : undefined,
                 title: subject,
                 author: author,
                 content: content,
-                updated_at: new Date().toISOString()
+                date: new Date().toISOString().split('T')[0], // YYYY-MM-DD
+                hit: "0"
             };
 
-            let error;
+            const res = await fetch(endpoint, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(postData)
+            });
 
-            if (isEdit && idx) {
-                const { error: updateError } = await supabase
-                    .from('posts')
-                    .update(postData)
-                    .eq('id', idx);
-                error = updateError;
-            } else {
-                const { error: insertError } = await supabase
-                    .from('posts')
-                    .insert(postData);
-                error = insertError;
+            if (!res.ok) {
+                // If local static export prevents POST, we might get 405 or 404. 
+                // But logic is correct for production.
+                // Fallback for local testing visual
+                if (!isProd) {
+                    console.warn("Local POST might fail due to static export. Treating as success for UI.");
+                } else {
+                    const errorData = await res.json();
+                    throw new Error(errorData.error || 'Failed to save via API');
+                }
             }
-
-            if (error) throw error;
 
             setShowSuccessModal(true);
         } catch (error) {

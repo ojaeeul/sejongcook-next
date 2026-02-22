@@ -18,7 +18,8 @@ export default function AdminFooterPage() {
     });
 
     useEffect(() => {
-        fetch('/api/admin/footer')
+        const url = process.env.NODE_ENV === 'production' ? '/api.php?board=footer' : '/api/admin/footer';
+        fetch(url)
             .then(res => res.json())
             .then(json => {
                 if (json && json.length > 0) {
@@ -50,7 +51,8 @@ export default function AdminFooterPage() {
                 // Updating entire array with single object as index 0
                 const payload = [{ id: "1", ...data }];
 
-                await fetch('/api/admin/footer', {
+                const url = process.env.NODE_ENV === 'production' ? '/api.php?board=footer' : '/api/admin/footer';
+                await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)

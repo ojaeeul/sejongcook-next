@@ -16,7 +16,8 @@ export default function AdminHeroPage() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const res = await fetch('/api/hero');
+                const url = process.env.NODE_ENV === 'production' ? '/api.php?board=hero' : '/api/hero';
+                const res = await fetch(url);
                 if (res.ok) {
                     const data = await res.json();
                     setHeroData({ ...DEFAULT_HERO_DATA, ...data });
@@ -82,7 +83,8 @@ export default function AdminHeroPage() {
 
     const handleSubmit = async () => {
         try {
-            const res = await fetch('/api/hero', {
+            const url = process.env.NODE_ENV === 'production' ? '/api.php?board=hero' : '/api/hero';
+            const res = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(heroData),
@@ -540,6 +542,61 @@ export default function AdminHeroPage() {
                                 className="flex-1 px-4 border border-orange-200 rounded-lg bg-gray-50 text-gray-600 font-mono"
                             />
                         </div>
+                    </div>
+                </div>
+
+
+            </div>
+
+            <div className="border-t border-gray-100 pt-8 mt-8">
+                <div className="border-l-4 border-yellow-500 pl-4 mb-8">
+                    <h2 className="text-xl font-bold text-gray-800">월계관 배너 설정 (Shiny Laurel Banner)</h2>
+                    <p className="text-sm text-gray-500 mt-1">상단 월계관 배너의 별 개수(1~6개)와 이름을 설정합니다.</p>
+                </div>
+
+                <div className="bg-yellow-50 p-6 rounded-xl border border-yellow-100 grid md:grid-cols-2 gap-6">
+                    <div className="md:col-span-2">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                name="laurelBannerVisible"
+                                checked={heroData.laurelBannerVisible}
+                                onChange={handleChange}
+                                className="w-5 h-5 accent-yellow-600 rounded"
+                            />
+                            <span className="font-bold text-gray-700">배너 표시하기 (Show Banner)</span>
+                        </label>
+                    </div>
+
+                    <div className="md:col-span-2">
+                        <label className="block text-sm font-bold text-gray-700 mb-3">별 개수 (Stars)</label>
+                        <div className="flex gap-4 flex-wrap">
+                            {[1, 2, 3, 4, 5, 6].map((num) => (
+                                <label key={num} className="flex items-center gap-2 cursor-pointer bg-white px-4 py-2 rounded-lg border border-yellow-200 hover:border-yellow-400 transition-colors">
+                                    <input
+                                        type="radio"
+                                        name="laurelStars"
+                                        value={num}
+                                        checked={Number(heroData.laurelStars) === num}
+                                        onChange={handleChange}
+                                        className="w-4 h-4 accent-yellow-600"
+                                    />
+                                    <span className="text-gray-700 font-medium">{num}개 {Array(num).fill('★').join('')}</span>
+                                </label>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="md:col-span-2">
+                        <label className="block text-sm font-bold text-gray-700 mb-2">이름 / 직함 (Name)</label>
+                        <input
+                            type="text"
+                            name="laurelName"
+                            value={heroData.laurelName || ''}
+                            onChange={handleChange}
+                            placeholder="예: 강란기 대표"
+                            className="w-full px-4 py-3 border border-yellow-200 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none bg-white text-lg font-bold text-center"
+                        />
                     </div>
                 </div>
             </div>

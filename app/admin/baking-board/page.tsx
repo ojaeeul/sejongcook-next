@@ -3,25 +3,39 @@
 import { useEffect, useState } from 'react';
 import AdminTable from '@/app/admin/components/AdminTable';
 
-import { supabase } from '@/lib/supabase';
+interface BakingPost {
+    id: string | number;
+    category: string;
+    title: string;
+    author: string;
+    date: string;
+    hit: string | number;
+    [key: string]: unknown;
+}
 
 export default function BakingBoardList() {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const [data, setData] = useState<any[]>([]);
+    const [data, setData] = useState<BakingPost[]>([]);
     const [loading, setLoading] = useState(true);
 
     const fetchData = async () => {
         try {
-            const { data: posts, error } = await supabase
-                .from('posts')
-                .select('*')
-                .eq('board_type', 'baking')
-                .order('created_at', { ascending: false });
-
-            if (error) throw error;
-            setData(posts || []);
+            setLoading(true);
+            const url = process.env.NODE_ENV === 'production' ? '/api.php?board=baking' : '/api/admin/data/baking?t=' + Date.now();
+            const res = await fetch(url);
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+            const json = await res.json();
+            if (Array.isArray(json)) {
+                setData(json.sort((a: BakingPost, b: BakingPost) => {
+                    const idA = Number(a.id) || 0;
+                    const idB = Number(b.id) || 0;
+                    return idB - idA;
+                }));
+            } else {
+                setData([]);
+            }
         } catch (error) {
             console.error('Failed to fetch baking posts', error);
+            setData([]);
         } finally {
             setLoading(false);
         }
@@ -34,15 +48,14 @@ export default function BakingBoardList() {
     const handleDelete = async (id: string | number) => {
         if (!confirm('정말 삭제하시겠습니까?')) return;
         try {
-            const { error } = await supabase
-                .from('posts')
-                .delete()
-                .eq('id', id);
+            const url = process.env.NODE_ENV === 'production' ? `/api.php?board=baking&id=${id}` : `/api/admin/data/baking?id=${id}`;
+            const res = await fetch(url, {
+                method: 'DELETE',
+            });
 
-            if (error) throw error;
+            if (!res.ok) throw new Error('Delete failed');
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            setData(prev => prev.filter((item: any) => item.id !== id));
+            setData(prev => prev.filter((item: BakingPost) => String(item.id) !== String(id)));
         } catch {
             alert('삭제에 실패했습니다');
         }

@@ -1,3 +1,4 @@
+export const dynamic = "force-static";
 import { NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import path from 'path';
@@ -13,7 +14,7 @@ export async function GET() {
         const fileContent = await fs.readFile(DATA_FILE_PATH, 'utf-8');
         const data = JSON.parse(fileContent);
         return NextResponse.json(data);
-    } catch (error) {
+    } catch {
         // If file doesn't exist, return default data
         return NextResponse.json(DEFAULT_SETTINGS);
     }

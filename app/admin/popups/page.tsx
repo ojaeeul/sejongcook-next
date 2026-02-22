@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import SuccessModal from '@/components/SuccessModal';
+// import ConfirmModal from '@/components/ConfirmModal'; // Reserved for future delete features
 
 // Reuse types or define locally
 interface Schedule {
@@ -59,7 +61,8 @@ export default function AdminPopupsPage() {
 
     const fetchPopups = async () => {
         try {
-            const res = await fetch('/api/admin/popups');
+            const url = process.env.NODE_ENV === 'production' ? '/api.php?board=popups' : `/api/admin/popups?t=${Date.now()}`;
+            const res = await fetch(url, { cache: 'no-store' });
             if (res.ok) {
                 const data = await res.json();
                 setPopups(data);
@@ -81,7 +84,8 @@ export default function AdminPopupsPage() {
 
     const savePopups = async (data: Popup[]) => {
         try {
-            await fetch('/api/admin/popups', {
+            const url = process.env.NODE_ENV === 'production' ? '/api.php?board=popups' : '/api/admin/popups';
+            await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data),
@@ -102,7 +106,8 @@ export default function AdminPopupsPage() {
         formData.append('file', file);
 
         try {
-            const res = await fetch('/api/admin/upload', {
+            const url = process.env.NODE_ENV === 'production' ? '/api.php?board=upload' : '/api/admin/upload';
+            const res = await fetch(url, {
                 method: 'POST',
                 body: formData,
             });
@@ -161,6 +166,8 @@ export default function AdminPopupsPage() {
         }
     };
 
+    const [showSuccess, setShowSuccess] = useState(false);
+
     const saveEdit = async () => {
         if (!editForm) return;
         const updatedPopups = popups.map(p => p.id === editForm.id ? editForm : p);
@@ -168,7 +175,7 @@ export default function AdminPopupsPage() {
         await savePopups(updatedPopups);
         setEditingId(null);
         setEditForm(null);
-        alert('수정 내용이 저장되었습니다.');
+        setShowSuccess(true);
     };
 
     if (loading) return <div className="p-8">Loading...</div>;
@@ -656,6 +663,13 @@ export default function AdminPopupsPage() {
                 <p className="mb-1">• <strong>&quot;텍스트 표시하기&quot;</strong> 체크박스를 끄면, 글자 없이 이미지만 보여줄 수 있습니다.</p>
                 <p>• 위치 조절 시 슬라이더를 사용하여 마우스로 쉽게 이동하세요.</p>
             </div>
+
+            <SuccessModal
+                isOpen={showSuccess}
+                onClose={() => setShowSuccess(false)}
+                title="저장 완료"
+                message="팝업 설정이 성공적으로 저장되었습니다."
+            />
         </div>
     );
 }

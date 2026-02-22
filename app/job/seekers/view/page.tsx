@@ -28,7 +28,8 @@ function JobSeekerViewContent() {
             }
 
             try {
-                const res = await fetch('/data/job_seekers_data.json');
+                const url = process.env.NODE_ENV === 'production' ? '/api.php?board=job-seekers' : '/data/job_seekers_data.json';
+                const res = await fetch(url);
                 if (res.ok) {
                     const data = await res.json();
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any

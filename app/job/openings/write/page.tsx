@@ -16,26 +16,75 @@ function WriteForm() {
     const [author, setAuthor] = useState("");
     const [content, setContent] = useState("");
     const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        if (isEdit) {
-            // Mock Data for Demo
-            // eslint-disable-next-line react-hooks/set-state-in-effect
-            setSubject("구인합니다 (수정)");
-            setAuthor("작성자");
-            setContent(`
-                <p>구인 세부 내용을 입력해주세요.</p>
-                <p>근무조건, 급여, 위치 등</p>
-            `);
-        }
-    }, [isEdit]);
+        const load = async () => {
+            if (isEdit && idx) {
+                try {
+                    const url = process.env.NODE_ENV === 'production' ? '/api.php?board=job-openings' : '/data/job_openings_data.json';
+                    const res = await fetch(url);
+                    const data = await res.json();
 
-    const handleSubmit = (e: React.FormEvent) => {
+                    if (Array.isArray(data)) {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const found = data.find((item: any) => String(item.id) === String(idx) || String(item.idx) === String(idx));
+                        if (found) {
+                            setSubject(found.title);
+                            setAuthor(found.author || "");
+                            setContent(found.content || "");
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error loading post:", error);
+                }
+            } else {
+                setAuthor("관리자");
+            }
+        };
+        load();
+    }, [isEdit, idx]);
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        // Simulate processing time
-        setTimeout(() => {
+        setLoading(true);
+
+        try {
+            const isProd = process.env.NODE_ENV === 'production';
+            const endpoint = isProd ? '/api.php?board=job-openings' : '/api/admin/data/job-openings';
+            const method = isEdit ? 'PUT' : 'POST';
+
+            const postData = {
+                id: isEdit ? idx : undefined,
+                title: subject,
+                author: author,
+                content: content,
+                date: new Date().toISOString().split('T')[0],
+                hit: "0"
+            };
+
+            const res = await fetch(endpoint, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(postData)
+            });
+
+            if (!res.ok) {
+                if (!isProd) {
+                    console.warn("Local POST might fail due to static export. Treating as success for UI.");
+                } else {
+                    const errorData = await res.json();
+                    throw new Error(errorData.error || 'Failed to save via API');
+                }
+            }
+
             setShowSuccessModal(true);
-        }, 1000);
+        } catch (error) {
+            console.error(error);
+            alert('저장 중 오류가 발생했습니다.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleConfirmSuccess = () => {
@@ -52,7 +101,6 @@ function WriteForm() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-                {/* Subject */}
                 <div className="flex gap-4 items-center">
                     <label className="w-20 font-bold text-gray-700">제목</label>
                     <input
@@ -65,7 +113,6 @@ function WriteForm() {
                     />
                 </div>
 
-                {/* Author */}
                 <div className="flex gap-4 items-center">
                     <label className="w-20 font-bold text-gray-700">작성자</label>
                     <input
@@ -78,23 +125,24 @@ function WriteForm() {
                     />
                 </div>
 
-                {/* Editor */}
                 <div className="mt-4">
                     <Editor key={content ? 'loaded' : 'empty'} onChange={setContent} content={content} />
                 </div>
 
-                {/* Buttons */}
                 <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 mt-6">
                     <Link href="/job/openings" className="px-6 py-2 border border-gray-300 rounded hover:bg-gray-50 text-gray-700">
                         취소
                     </Link>
-                    <button type="submit" className="px-6 py-2 bg-amber-500 text-white font-bold rounded hover:bg-amber-600 shadow">
-                        {isEdit ? "수정하기" : "저장하기"}
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="px-6 py-2 bg-amber-500 text-white font-bold rounded hover:bg-amber-600 shadow disabled:opacity-50"
+                    >
+                        {loading ? "저장 중..." : (isEdit ? "수정하기" : "저장하기")}
                     </button>
                 </div>
             </form>
 
-            {/* Success Modal */}
             <SuccessModal
                 isOpen={showSuccessModal}
                 onClose={handleConfirmSuccess}

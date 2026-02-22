@@ -6,35 +6,74 @@ import { useEffect, useState, useMemo } from "react";
 // import noticeData from '../data/notice_data.json'; // Removed static import
 // import qnaData from '../data/qna_data.json'; // Removed static import
 // import jobData from '../data/job_openings_data.json'; // Removed static import
-import ActionCardSlider from "../components/ActionCardSlider";
-import MainPopup from "../components/MainPopup";
+import dynamic from "next/dynamic";
 import HeroBackground from "../components/HeroBackground";
 
-import { DEFAULT_HERO_DATA } from "./data/defaultHeroData";
-import initialHeroData from "./data/hero_data.json"; // Direct import for immediate render (SSR-like)
+const ActionCardSlider = dynamic(() => import("../components/ActionCardSlider"), {
+  loading: () => <div className="w-full h-full bg-gray-100 animate-pulse" />,
+  ssr: false
+});
+const MainPopup = dynamic(() => import("../components/MainPopup"), { ssr: false });
+
+
+import { DEFAULT_HERO_DATA } from "./data/defaultHeroData"; import initialHeroData from "../public/data/hero_data.json"; // Updated to public/data
+
+
+interface HeroData {
+  badge: string;
+  badgeSize?: string;
+  badgeBold?: boolean;
+  title: string;
+  titleSize?: string;
+  titleBold?: boolean;
+  desc: string;
+  descSize?: string;
+  descBold?: boolean;
+  longDesc: string;
+  longDescSize?: string;
+  longDescBold?: boolean;
+  btn1Text: string;
+  btn1Link: string;
+  btn2Text: string;
+  btn2Link: string;
+  photos: string[][] | string[];
+  phoneVisible?: boolean;
+  phoneIcon?: string;
+  phoneNumber?: string;
+  phoneSize?: string;
+  phoneBold?: boolean;
+  phoneBackgroundColor?: string;
+  phoneBorderColor?: string;
+  phoneAlignment?: string;
+  phoneTextColor?: string;
+  laurelBannerVisible?: boolean;
+  laurelStars?: number;
+  laurelName?: string;
+}
+
+interface BoardItem {
+  id: string | number;
+  title: string;
+  date: string;
+}
 
 export default function Home() {
   // const [currentSlide, setCurrentSlide] = useState(0); // REMOVED: Managed in HeroBackground
   // Use imported data as initial state for immediate render
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [heroData, setHeroData] = useState<any>(initialHeroData || DEFAULT_HERO_DATA);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [latestQna, setLatestQna] = useState<any[]>([]); // Dynamic Q&A Data
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [noticeData, setNoticeData] = useState<any[]>([]);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [jobData, setJobData] = useState<any[]>([]);
+  const [heroData, setHeroData] = useState<HeroData>(initialHeroData || DEFAULT_HERO_DATA);
+  const [latestQna, setLatestQna] = useState<BoardItem[]>([]); // Dynamic Q&A Data
+  const [noticeData, setNoticeData] = useState<BoardItem[]>([]);
+  const [jobData, setJobData] = useState<BoardItem[]>([]);
 
   useEffect(() => {
     // Optional: Re-fetch to get any admin updates since build
     const fetchHeroData = async () => {
       try {
-        const res = await fetch('/api/hero', { cache: 'no-store' });
+        const url = process.env.NODE_ENV === 'production' ? '/api.php?board=hero' : '/api/hero';
+        const res = await fetch(url, { cache: 'no-store' });
         if (res.ok) {
           const data = await res.json();
-          // Only update if different
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          setHeroData((prev: any) => {
+          setHeroData((prev: HeroData) => {
             if (JSON.stringify(data) !== JSON.stringify(prev)) {
               return data;
             }
@@ -51,27 +90,31 @@ export default function Home() {
     // Load Q&A Data dynamically
     const fetchDashboardData = async () => {
       try {
+        const isProd = process.env.NODE_ENV === 'production';
+
         // Fetch QnA
-        const qnaRes = await fetch('/data/qna_data.json');
+        const qnaUrl = isProd ? '/api.php?board=qna' : '/data/qna_data.json';
+        const qnaRes = await fetch(qnaUrl);
         if (qnaRes.ok) {
           const data = await qnaRes.json();
           if (Array.isArray(data)) setLatestQna([...data].reverse());
         }
 
         // Fetch Notice
-        const noticeRes = await fetch('/data/notice_data.json');
+        const noticeUrl = isProd ? '/api.php?board=notice' : '/data/notice_data.json';
+        const noticeRes = await fetch(noticeUrl);
         if (noticeRes.ok) {
           const data = await noticeRes.json();
           if (Array.isArray(data)) setNoticeData(data);
         }
 
         // Fetch Job
-        const jobRes = await fetch('/data/job_openings_data.json');
+        const jobUrl = isProd ? '/api.php?board=job-openings' : '/data/job_openings_data.json';
+        const jobRes = await fetch(jobUrl);
         if (jobRes.ok) {
           const data = await jobRes.json();
           if (Array.isArray(data)) setJobData(data);
         }
-
       } catch (e) {
         console.error("Failed to load dashboard data", e);
       }
@@ -84,10 +127,8 @@ export default function Home() {
   // We use useMemo to ensure this array reference is stable and doesn't trigger effect re-runs on every render
   const activeImages = useMemo(() => {
     return (Array.isArray(heroData.photos) ? heroData.photos : [])
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .map((group: any) => Array.isArray(group) ? group[0] : group) // scalable if group is string (legacy) or array
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .filter((p: any) => p && typeof p === 'string');
+      .map((group: string | string[]) => Array.isArray(group) ? group[0] : group) // scalable if group is string (legacy) or array
+      .filter((p: string) => p && typeof p === 'string');
   }, [heroData.photos]);
 
   const heroImages = useMemo(() => {
@@ -128,6 +169,7 @@ export default function Home() {
   return (
     <>
       <MainPopup />
+
       {/* Modern Hero Section */}
       <section className="hero-section" id="main-hero-section">
         {/* Background Slider - Isolated State */}
@@ -227,8 +269,8 @@ export default function Home() {
       {/* Modern Quick Links Grid */}
       < section className="modern-container" >
         <div className="section-header" data-animate="">
-          <h2 className="section-title">전문가를 위한 체계적인 교육과정</h2>
-          <p className="section-desc">기초부터 심화까지, 당신에게 딱 맞는 커리큘럼을 만나보세요.</p>
+          <h2 className="section-title">김포 요리학원만의 체계적인 교육과정</h2>
+          <p className="section-desc">세종요리제과학원에서는 기초부터 심화까지, 당신에게 딱 맞는 커리큘럼을 제공합니다.</p>
         </div>
 
 

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>세종요리 | 건강한 수제 숙주나물</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Noto+Serif+KR:wght@200;400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="wagashi.css?v=20260209_1">
+    <script src="script.js?v=20260209_1" defer></script>
+</head>
+
+<body>
+    <header>
+        <nav>
+            <div class="logo">SEJONG COOKING</div>
+            <div class="nav-links" style="display: flex; gap: 20px;">
+                <a href="index.html" style="color: white; text-decoration: none;">홈으로</a>
+                <a href="hansik_exam.html" style="color: white; text-decoration: none;">한식 필기 기출</a>
+            </div>
+            <div class="menu-hint">Scroll Down</div>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <div class="hero-bg" style="background-image: url('sukju.jpg');"></div>
+        <div class="hero-content">
+            <span class="sub-title">Premium Korean Side Dish</span>
+            <h1>아삭함을 빚어 담다,<br>세종 수제 숙주나물 무침</h1>
+            <p class="description">
+                신선한 숙주나물과 당근채, 부추가 어우러진<br>
+                세종요리만의 특별한 레시피로 매일 아침 정성껏 조리합니다.
+            </p>
+            <div class="scroll-indicator">
+                <span></span>
+            </div>
+        </div>
+    </section>
+
+    <section class="philosophy">
+        <div class="container">
+            <div class="text-block" data-aos="fade-up">
+                <span class="accent">Philosophy</span>
+                <h2>자연의 신선함, 알록달록한 건강 한 접시</h2>
+                <p>
+                    숙주나물의 아삭한 식감과 부추의 향긋함, 당근채의 달큰함이 만났습니다.<br>
+                    우리는 천연 재료만을 사용하여 본연의 맛을 살리고,<br>
+                    삼색 요리의 조화로 눈과 입이 모두 즐거운 반찬을 완성합니다.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section class="gallery">
+        <div class="image-wrapper" data-aos="zoom-in">
+            <img src="sukju.jpg" alt="수제 숙주나물 무침">
+        </div>
+        <div class="gallery-text">
+            <p>당근채와 부추가 어우러진 다채로운 색감</p>
+            <h3>프리미엄 건강 반찬</h3>
+            <p class="price">Daily Fresh Edition</p>
+        </div>
+    </section>
+
+    <section class="features">
+        <div class="grid">
+            <div class="feature-item">
+                <h3>매일 아침 조리</h3>
+                <p>가장 신선한 상태로 전달되는 아삭한 식감</p>
+            </div>
+            <div class="feature-item">
+                <h3>당근과 부추의 조화</h3>
+                <p>엄선된 채소들을 곁들인 풍부한 맛과 영양</p>
+            </div>
+            <div class="feature-item">
+                <h3>무첨가 건강식</h3>
+                <p>인공 조미료 없이 천연 재료로 살린 깊은 풍미</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta">
+        <div class="container">
+            <h2>품격 있는 식탁을 준비하세요</h2>
+            <p>세종요리 아카데미에서 직접 수강하거나 주문하실 수 있습니다.</p>
+            <div class="contact-info">
+                <p class="phone">📞 010-8799-9122</p>
+                <p class="instagram">📸 @rebong_cake</p>
+            </div>
+            <div class="btn-group">
+                <a href="tel:010-8799-9122" class="btn primary">주문 문의하기</a>
+                <a href="sukju.jpg" download="sejong_sukju.jpg" class="btn secondary">사진 다운로드</a>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <p>세종요리 아카데미 | 문의: 010-8799-9122 | Instagram: @rebong_cake</p>
+            <p>&copy; 2026 Sejong Cooking Academy. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        const observerOptions = {
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('[data-aos]').forEach(el => {
+            observer.observe(el);
+        });
+    </script>
+    <script src="questions_data.js"></script>
+</body>
+
+</html>

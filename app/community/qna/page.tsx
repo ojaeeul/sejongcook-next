@@ -10,19 +10,22 @@ export default function QnaPage() {
     useEffect(() => {
         const fetchPosts = async () => {
             try {
-                const res = await fetch('/data/qna_data.json');
+                const url = process.env.NODE_ENV === 'production' ? '/api.php?board=qna' : '/data/qna_data.json';
+                const res = await fetch(url);
                 const data = await res.json();
 
                 if (Array.isArray(data)) {
-                    const mapped: Post[] = data.map((item: any) => ({
-                        id: item.id || item.idx,
+                    const mapped: Post[] = data.map((item: { id?: string | number, idx?: string | number, title: string, author?: string, writer?: string, date?: string, created_at?: string, hit?: string | number, view_count?: string | number, content?: string }) => ({
+                        id: item.id || item.idx || 0,
                         title: item.title,
                         author: item.author || item.writer || '게스트',
-                        date: item.date || item.created_at,
+                        date: item.date || item.created_at || '',
                         hit: item.hit || item.view_count || '0',
                         content: item.content
                     }));
-                    setPosts(mapped.reverse());
+                    // Sort by date DESCENDING
+                    mapped.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+                    setPosts(mapped);
                 }
             } catch (err) {
                 console.error('Unexpected error:', err);

@@ -4,7 +4,7 @@ import IntroSidebar from "@/components/IntroSidebar";
 import ActionButtons from "@/components/ActionButtons";
 import Editor from "@/components/Editor";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import SuccessModal from "@/components/SuccessModal";
 
 function IntroContent() {
@@ -72,9 +72,9 @@ function IntroContent() {
                 </h3>
                 <div style="max-width: 700px; margin: 0 auto; line-height: 1.8; color: #555; text-align: left;">
                     <p style="margin-bottom: 15px;">
-                        안녕하세요. <strong>세종요리제과기술학원</strong> 홈페이지를 방문해주셔서 진심으로 감사드립니다.
+                        안녕하세요. <strong>세종요리제과기술학원</strong>입니다.
                         저희 학원은 2000년 설립 이래, 제과제빵 및 조리 분야의 전문 인재 양성을 목표로 
-                        수많은 합격생과 전문가를 배출해온 <strong>전통 있는 교육 기관</strong>입니다.
+                        수많은 합격생과 전문가를 배출해온 <strong>김포 최고의 전통 있는 교육 기관</strong>입니다.
                     </p>
                     <p style="margin-bottom: 15px;">
                         급변하는 외식 산업 트렌드에 발맞춰,단순한 자격증 취득을 넘어
@@ -94,7 +94,7 @@ function IntroContent() {
                 <div class="value-card">
                     <span class="value-icon">🔥</span>
                     <h4 style="font-size: 18px; font-weight: bold; margin-bottom: 10px;">최적의 환경</h4>
-                    <p style={{ fontSize: '14px', color: '#666', margin: 0 }}>쾌적한 실습실<br/>실무 중심 현장 교육</p>
+                    <p style="font-size: 14px; color: #666; margin: 0;">쾌적한 실습실<br/>실무 중심 현장 교육</p>
                 </div>
                 <div class="value-card">
                     <span class="value-icon">🤝</span>
@@ -104,23 +104,57 @@ function IntroContent() {
             </div>
 
             <!-- Closing -->
-            <div style="margin-top: 50px; padding: 30px; background: #f9f9f9; border-left: 4px solid #ff8c00; border-radius: 4px;">
+            <div style="margin-top: 50px; padding: 30px; background: #f9f9f9; border-left: 4px 파선 #ff8c00; border-radius: 4px;">
                 <p style="margin-bottom: 15px; font-size: 16px; line-height: 1.6; color: #444;">
                     여러분의 꿈이 현실이 되는 그날까지,<br/>
                     세종요리제과기술학원 강사진 모두가 든든한 멘토가 되어드리겠습니다.
                 </p>
                 <div style="text-align: right; margin-top: 20px;">
                     <span style="font-size: 14px; color: #777;">세종요리제과기술학원 원장</span>
-                    <strong style="font-size: 18px; margin-left: 10px; font-family: sans-serif;">오 재 을</strong>
+                    <strong style="font-size: 18px; margin-left: 10px; font-family: sans-serif;">이 미 선</strong>
+                </div>
+                 <div style="margin-top: 20px; padding-top: 20px; border-top: 1px dashed #ddd; font-size: 14px; color: #666;">
+                    <strong>상담문의:</strong> 031-986-1933 <br/>
+                    <strong>위치:</strong> 경기도 김포시 김포대로 841, 6층 (사우동, 제우스프라자)
                 </div>
             </div>
         </div>
     `);
 
-    const handleSave = () => {
-        // alert("저장되었습니다. (데모)");
-        // Show success modal instead of alert
-        setShowSuccessModal(true);
+    // Fetch initial intro content
+    useEffect(() => {
+        fetch('/api/admin/data/intro')
+            .then(res => res.json())
+            .then(data => {
+                if (data.greeting) {
+                    setContent(data.greeting);
+                }
+            })
+            .catch(err => console.error('Failed to load intro greeting content:', err));
+    }, []);
+
+    const handleSave = async () => {
+        if (confirm("저장하시겠습니까?")) {
+            try {
+                const res = await fetch('/api/admin/data/intro', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        pageKey: 'greeting',
+                        content: content
+                    })
+                });
+
+                if (res.ok) {
+                    setShowSuccessModal(true);
+                } else {
+                    alert("저장에 실패했습니다.");
+                }
+            } catch (err) {
+                console.error(err);
+                alert("저장 중 오류가 발생했습니다.");
+            }
+        }
     };
 
     const handleConfirmSuccess = () => {
@@ -135,7 +169,7 @@ function IntroContent() {
         <div className="container_2" style={{ flexGrow: 1 }}>
             {/* Content Body */}
             <div className="flex-grow">
-                <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 min-h-[600px]">
+                <div id="overview" className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 min-h-[600px]">
                     <div className="mb-6">
                         <h1 className="text-3xl font-bold mb-4 text-black">인사말 {isEdit && <span className="text-sm text-red-500 font-normal ml-2">- 수정 모드</span>}</h1>
                         <div className="border-b-2 border-black pb-2"></div>
@@ -156,7 +190,7 @@ function IntroContent() {
 
                                 {/* Action Buttons */}
                                 <ActionButtons
-                                    listLink="/intro"
+                                    listLink="/intro#overview"
                                     editLink="/intro?mode=edit"
                                     onDelete={() => alert('기본 페이지는 삭제할 수 없습니다.')}
                                 />

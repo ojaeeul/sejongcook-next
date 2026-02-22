@@ -20,7 +20,8 @@ export default function MemberPage() {
 
     const fetchSettings = async () => {
         try {
-            const res = await fetch('/api/settings', { cache: 'no-store' });
+            const url = process.env.NODE_ENV === 'production' ? '/api.php?board=settings' : '/api/settings';
+            const res = await fetch(url, { cache: 'no-store' });
             const data = await res.json();
             if (data.showAuthLinks !== undefined) setShowAuthLinks(data.showAuthLinks);
         } catch (error) {
@@ -32,7 +33,8 @@ export default function MemberPage() {
         const newState = checked;
         setShowAuthLinks(newState); // Optimistic update
         try {
-            await fetch('/api/settings', {
+            const url = process.env.NODE_ENV === 'production' ? '/api.php?board=settings' : '/api/settings';
+            await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ showAuthLinks: newState }),
@@ -46,7 +48,8 @@ export default function MemberPage() {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const res = await fetch('/api/admin/data/members');
+            const url = process.env.NODE_ENV === 'production' ? '/api.php?board=members' : '/api/admin/data/members';
+            const res = await fetch(url);
             const json = await res.json();
             setMembers(json);
         } catch (error) {
@@ -63,7 +66,8 @@ export default function MemberPage() {
 
     const handleSave = async (newData: Member[]) => {
         try {
-            await fetch('/api/admin/data/members', {
+            const url = process.env.NODE_ENV === 'production' ? '/api.php?board=members' : '/api/admin/data/members';
+            await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(newData),

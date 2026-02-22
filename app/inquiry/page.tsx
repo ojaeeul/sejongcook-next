@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import InfoSidebar from "@/components/InfoSidebar";
 // import Link from 'next/link'; // Unused
+import { useRouter } from 'next/navigation';
 
 export default function InquiryPage() {
     // const [activeTab, setActiveTab] = useState('cert'); // Unused
@@ -18,6 +19,10 @@ export default function InquiryPage() {
     const [content, setContent] = useState('');
     const [agreed, setAgreed] = useState(false);
     const [marketingAgreed, setMarketingAgreed] = useState(false);
+    const [showModal, setShowModal] = useState(false);
+    const [modalMessage, setModalMessage] = useState('');
+    const [isSuccess, setIsSuccess] = useState(false);
+    const router = useRouter(); // Ensure useRouter is imported from 'next/navigation'
 
     const toggleCourse = (course: string) => {
         setSelectedCourses(prev =>
@@ -30,15 +35,17 @@ export default function InquiryPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!name) { alert('이름을 입력해 주세요.'); return; }
-        if (!phone2 || !phone3) { alert('전화번호를 입력해 주세요.'); return; }
-        if (!agreed) { alert('개인정보 수집 및 이용에 동의해야 합니다.'); return; }
-        if (selectedCourses.length === 0) { alert('관심 과정을 1개 이상 선택해 주세요.'); return; }
+        if (!name) { setModalMessage('이름을 입력해 주세요.'); setIsSuccess(false); setShowModal(true); return; }
+        if (!phone2 || !phone3) { setModalMessage('전화번호를 입력해 주세요.'); setIsSuccess(false); setShowModal(true); return; }
+        if (!agreed) { setModalMessage('개인정보 수집 및 이용에 동의해야 합니다.'); setIsSuccess(false); setShowModal(true); return; }
+        if (!marketingAgreed) { setModalMessage('마케팅 활용 동의 및 광고 수신 동의에 체크해주세요.'); setIsSuccess(false); setShowModal(true); return; }
+        if (selectedCourses.length === 0) { setModalMessage('관심 과정을 1개 이상 선택해 주세요.'); setIsSuccess(false); setShowModal(true); return; }
 
         // Submit to Server API
         try {
             // 1. Get current data
-            const res = await fetch('/api/admin/data/inquiries');
+            const getUrl = process.env.NODE_ENV === 'production' ? '/api.php?board=inquiry' : '/api/admin/data/inquiries';
+            const res = await fetch(getUrl);
             const currentData = await res.json();
 
             // 2. Add new item
@@ -58,7 +65,8 @@ export default function InquiryPage() {
             const newData = [newItem, ...(Array.isArray(currentData) ? currentData : [])];
 
             // 3. Save updated data
-            const saveRes = await fetch('/api/admin/data/inquiries', {
+            const url = process.env.NODE_ENV === 'production' ? '/api.php?board=inquiry' : '/api/admin/data/inquiries';
+            const saveRes = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(newData),
@@ -68,7 +76,9 @@ export default function InquiryPage() {
 
         } catch (error) {
             console.error('Failed to submit inquiry', error);
-            alert('상담 신청 처리 중 오류가 발생했습니다.');
+            setModalMessage('상담 신청 처리 중 오류가 발생했습니다.');
+            setIsSuccess(false);
+            setShowModal(true);
             return;
         }
 
@@ -84,7 +94,9 @@ export default function InquiryPage() {
         (담당자가 확인 후 연락드립니다)
         `;
 
-        alert(message);
+        setModalMessage(message);
+        setIsSuccess(true);
+        setShowModal(true);
 
         // Reset form
         setName('');
@@ -96,6 +108,13 @@ export default function InquiryPage() {
         setSelectedCourses([]);
         setAgreed(false);
         setMarketingAgreed(false);
+    };
+
+    const handleCloseModal = () => {
+        setShowModal(false);
+        if (isSuccess) {
+            router.push('/');
+        }
     };
 
     return (
@@ -330,7 +349,7 @@ export default function InquiryPage() {
                                                 className="w-5 h-5 accent-orange-500 cursor-pointer"
                                             />
                                             <label htmlFor="marketingAgree" className="cursor-pointer text-sm font-medium text-gray-700">
-                                                마케팅 활용 동의 및 광고 수신 동의합니다.
+                                                마케팅 활용 동의 및 광고 수신 동의합니다. (필수)
                                             </label>
                                         </div>
 
@@ -362,6 +381,44 @@ export default function InquiryPage() {
                     </div>
                 </div>
             </div>
+
+            {/* Generic Modal (Success or Error) */}
+            {showModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-transparent">
+                    <div className="bg-white rounded-lg p-5 max-w-xs w-full shadow-2xl transform transition-all scale-100 border border-gray-200">
+                        <div className="text-center">
+                            <div className={`mx-auto flex items-center justify-center h-10 w-10 rounded-full mb-3 ${isSuccess ? 'bg-green-100' : 'bg-red-100'}`}>
+                                {isSuccess ? (
+                                    <svg className="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                ) : (
+                                    <svg className="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                    </svg>
+                                )}
+                            </div>
+                            <h3 className="text-base leading-6 font-medium text-gray-900 mb-2">
+                                {isSuccess ? '상담 신청 완료' : '입력 확인'}
+                            </h3>
+                            <div className="mt-2 text-left">
+                                <p className="text-sm text-gray-500 whitespace-pre-line bg-gray-50 p-3 rounded bg-opacity-50 border border-gray-100">
+                                    {modalMessage}
+                                </p>
+                            </div>
+                            <div className="mt-4">
+                                <button
+                                    onClick={handleCloseModal}
+                                    className={`w-full text-white text-sm font-bold py-2.5 px-4 rounded focus:outline-none focus:shadow-outline transition-colors ${isSuccess ? 'bg-orange-500 hover:bg-orange-600' : 'bg-gray-600 hover:bg-gray-700'
+                                        }`}
+                                >
+                                    {isSuccess ? '확인 (홈으로 이동)' : '확인'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { Save, Plus, Trash2, ArrowUp, ArrowDown, Edit2, X, Image as ImageIcon } from 'lucide-react';
 
 interface Teacher {
@@ -26,7 +27,8 @@ export default function AdminTeachersPage() {
     const fetchTeachers = async () => {
         setIsLoading(true);
         try {
-            const res = await fetch('/api/teachers');
+            const url = process.env.NODE_ENV === 'production' ? '/api.php?board=teachers' : '/api/teachers';
+            const res = await fetch(url);
             if (res.ok) {
                 const data = await res.json();
                 setTeachers(data);
@@ -73,7 +75,8 @@ export default function AdminTeachersPage() {
 
     const saveTeachers = async (updatedTeachers: Teacher[]) => {
         try {
-            const res = await fetch('/api/teachers', {
+            const url = process.env.NODE_ENV === 'production' ? '/api.php?board=teachers' : '/api/teachers';
+            const res = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(updatedTeachers),
@@ -169,10 +172,12 @@ export default function AdminTeachersPage() {
                             <div className="aspect-[3/4] bg-gray-100 rounded-lg overflow-hidden border border-gray-200 relative group">
                                 {editForm.image ? (
                                     <div className="relative w-full h-full">
-                                        <img
+                                        <Image
                                             src={editForm.image}
                                             alt="Preview"
-                                            className="w-full h-full object-cover"
+                                            fill
+                                            className="object-cover"
+                                            unoptimized
                                         />
                                     </div>
                                 ) : (
@@ -261,7 +266,7 @@ export default function AdminTeachersPage() {
                         >
                             <div className="w-[80px] h-[100px] bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 border border-gray-200">
                                 {teacher.image ? (
-                                    <img src={teacher.image} alt={teacher.name} className="w-full h-full object-cover" />
+                                    <Image src={teacher.image} alt={teacher.name} fill className="object-cover" unoptimized />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center text-gray-300">
                                         <ImageIcon className="w-6 h-6" />

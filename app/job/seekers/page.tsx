@@ -11,7 +11,8 @@ export default function JobSeekersPage() {
     useEffect(() => {
         const fetchPosts = async () => {
             try {
-                const res = await fetch('/data/job_seekers_data.json');
+                const url = process.env.NODE_ENV === 'production' ? '/api.php?board=job-seekers' : '/data/job_seekers_data.json';
+                const res = await fetch(url);
                 const data = await res.json();
 
                 if (Array.isArray(data)) {
@@ -24,7 +25,9 @@ export default function JobSeekersPage() {
                         hit: item.hits || item.hit || item.view_count || 0,
                         content: item.content
                     }));
-                    setPosts(mapped); // JSON usually ordered or we can sort
+                    // Sort by date DESCENDING
+                    mapped.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+                    setPosts(mapped);
                 }
             } catch (err) {
                 console.error('Unexpected error:', err);

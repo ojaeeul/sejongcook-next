@@ -10,7 +10,8 @@ export default function NoticePage() {
     useEffect(() => {
         const fetchNotices = async () => {
             try {
-                const res = await fetch('/data/notice_data.json');
+                const url = process.env.NODE_ENV === 'production' ? '/api.php?board=notice' : '/data/notice_data.json';
+                const res = await fetch(url);
                 const data = await res.json();
 
                 // Ensure data is array
@@ -20,15 +21,17 @@ export default function NoticePage() {
                     // Let's assume the JSON keys match standard or map them
                     // If existing JSON has 'writer', map to 'author'. 'date' is usually string.
                     // Let's stick to the JSON's structure or mapped Post interface
-                    const mapped: Post[] = data.map((item: any) => ({
-                        id: item.id || item.idx, // handle distinct id keys
+                    const mapped: Post[] = data.map((item: { id?: string | number, idx?: string | number, title: string, author?: string, writer?: string, date?: string, created_at?: string, hit?: string | number, view_count?: string | number, content?: string }) => ({
+                        id: item.id || item.idx || 0, // handle distinct id keys
                         title: item.title,
                         author: item.author || item.writer || '관리자',
-                        date: item.date || item.created_at, // Use existing date string if present
+                        date: item.date || item.created_at || '',
                         hit: item.hit || item.view_count || '0',
                         content: item.content
                     }));
-                    setNotices(mapped.reverse()); // Newest first usually
+                    // Sort by date DESCENDING (Newest -> Oldest)
+                    mapped.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+                    setNotices(mapped);
                 }
             } catch (err) {
                 console.error('Unexpected error:', err);

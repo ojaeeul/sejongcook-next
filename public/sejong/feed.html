@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>피드 관리 - 세종요리</title>
+    <link rel="stylesheet" href="style.css?v=20260209_1">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
+    <!-- Using Google Material Icons for generic icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="script.js?v=20260209_1" defer></script>
+    <script src="questions_data.js?v=20260209_1" defer></script>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Mobile Sidebar Overlay -->
+        <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="brand-logo">
+                <span class="logo-text">세종요리</span>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-category">수강 관리</div>
+                <a href="register.html" class="nav-item">수강생 등록</a>
+                <a href="index.html" class="nav-item">수강생 대장</a>
+                <a href="sheet.html" class="nav-item">월간 출석부</a>
+
+                <div class="nav-category">수강료</div>
+                <a href="tuition.html" class="nav-item">수강료 관리</a>
+                <a href="ledger.html" class="nav-item">수강료 납부대장</a>
+                <a href="paid_list.html" class="nav-item">납부완료 명단</a>
+
+                <div class="nav-category">소통</div>
+                <a href="#" class="nav-item">학원 공지</a>
+                <a href="feed.html" class="nav-item active">피드 관리</a>
+                <a href="wagashi.html" class="nav-item">홍보용</a>
+
+                <div class="nav-category toggle-category" onclick="toggleNavSub(this)">시험지</div>
+                <div class="nav-sub-menu">
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">한식기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('한식_2021')" class="nav-item">2021년 한식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('한식_2022')" class="nav-item">2022년 한식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('한식_2023')" class="nav-item">2023년 한식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('한식_2024')" class="nav-item">2024년 한식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('한식_2025')" class="nav-item">2025년 한식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('한식_2026')" class="nav-item">2026년 한식</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">양식기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('양식_2021')" class="nav-item">2021년 양식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('양식_2022')" class="nav-item">2022년 양식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('양식_2023')" class="nav-item">2023년 양식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('양식_2024')" class="nav-item">2024년 양식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('양식_2025')" class="nav-item">2025년 양식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('양식_2026')" class="nav-item">2026년 양식</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">일식기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('일식_2021')" class="nav-item">2021년 일식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('일식_2022')" class="nav-item">2022년 일식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('일식_2023')" class="nav-item">2023년 일식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('일식_2024')" class="nav-item">2024년 일식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('일식_2025')" class="nav-item">2025년 일식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('일식_2026')" class="nav-item">2026년 일식</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">중식기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('중식_2021')" class="nav-item">2021년 중식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('중식_2022')" class="nav-item">2022년 중식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('중식_2023')" class="nav-item">2023년 중식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('중식_2024')" class="nav-item">2024년 중식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('중식_2025')" class="nav-item">2025년 중식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('중식_2026')" class="nav-item">2026년 중식</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">제과기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('제과_2021')" class="nav-item">2021년 제과</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과_2022')" class="nav-item">2022년 제과</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과_2023')" class="nav-item">2023년 제과</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과_2024')" class="nav-item">2024년 제과</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과_2025')" class="nav-item">2025년 제과</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과_2026')" class="nav-item">2026년 제과</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">제빵기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2021')" class="nav-item">2021년 제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2022')" class="nav-item">2022년 제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2023')" class="nav-item">2023년 제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2024')" class="nav-item">2024년 제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2025')" class="nav-item">2025년 제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2026')" class="nav-item">2026년 제빵</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">제과제빵기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" class="nav-item">준비중입니다</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">복어기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" class="nav-item">준비중입니다</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">산업기사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" class="nav-item">준비중입니다</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">가정요리</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" class="nav-item">준비중입니다</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">브런치</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" class="nav-item">준비중입니다</a>
+                    </div>
+                </div>
+
+                <div class="nav-category">기타</div>
+                <a href="stats.html" class="nav-item">통계 및 납부</a>
+                <a href="monitor.html" target="_blank" class="nav-item highlight">키오스크 모니터</a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-wrapper">
+            <!-- Exam Board (Hidden by default) -->
+            <div id="examBoardContainer" class="hidden"
+                style="display: none; padding: 20px; background: white; border-radius: 12px; margin-bottom: 20px;">
+                <div class="exam-board-header" style="margin-bottom: 20px;">
+                    <h2 id="examBoardTitle" class="exam-board-title">시험지 보기</h2>
+                </div>
+                <div id="examQuestionList" class="exam-board-list">
+                    <!-- Questions populated by JS -->
+                </div>
+            </div>
+
+            <div id="memberListSection">
+                <header class="top-header">
+                <button class="hamburger-btn" onclick="toggleSidebar()">
+                    <span>MENU</span>
+                    <span class="material-icons">menu</span>
+                </button>
+                    <div class="page-title">
+                        <h1>피드 관리</h1>
+                    </div>
+                </header>
+
+                <div class="content-scroll">
+
+                    <!-- Filter Dropdown & Write Button Strip -->
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 24px;">
+                        <select style="padding: 10px; border-radius: 8px; border: 1px solid #ddd; min-width: 200px;">
+                            <option>전체 글 보기</option>
+                            <option>공지사항</option>
+                        </select>
+                        <button class="btn-primary" style="width: auto; padding: 10px 24px; font-size: 0.95rem;">
+                            새 피드 작성 <span class="material-icons"
+                                style="font-size: 16px; vertical-align: middle;">send</span>
+                        </button>
+                    </div>
+
+                    <div class="feed-layout">
+                        <!-- Feed Timeline (Left) -->
+                        <div class="feed-main">
+                            <div class="feed-tabs">
+                                <div class="tab-item active">피드</div>
+                                <div class="tab-item">임시저장</div>
+                            </div>
+
+                            <!-- Post 1 -->
+                            <div class="post-card">
+                                <div class="post-header">
+                                    <div class="post-author">
+                                        <div class="author-avatar" style="background-color: #ddd;"></div>
+                                        <!-- Placeholder -->
+                                        <div class="post-meta">
+                                            <span>세종요리 학원장</span>
+                                            <small>2024.10.15 14:30 · 전체 공개</small>
+                                        </div>
+                                    </div>
+                                    <span style="color: #00C240; font-size: 0.8rem; font-weight: 600;">초등부_취미반</span>
+                                </div>
+
+                                <div class="post-content">
+                                    <strong>오늘은 벽화 프로젝트의 날!</strong><br><br>
+                                    4번째 프로젝트의 주제는 지구입니다 🌍. 귀여운 동물 친구들을 그리며 모두와 함께 멋진 그림을 완성하고 있어요.<br>
+                                    예술이의 상상력이 가득한 작품, 기대해주세요!
+
+                                    <!-- Placeholder Image -->
+                                    <div
+                                        style="background-color: #eee; height: 250px; margin-top: 15px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #aaa;">
+                                        <span class="material-icons" style="font-size: 48px;">image</span>
+                                    </div>
+                                </div>
+
+                                <div
+                                    style="border-top: 1px solid #eee; padding-top: 15px; display: flex; gap: 15px; font-size: 0.9rem; color: #666;">
+                                    <span>좋아요 <strong>12</strong></span>
+                                    <span>댓글 <strong>1</strong></span>
+                                </div>
+                            </div>
+
+                            <!-- Post 2 (Text Only) -->
+                            <div class="post-card">
+                                <div class="post-header">
+                                    <div class="post-author">
+                                        <div class="post-meta">
+                                            <span>관리자</span>
+                                            <small>2024.10.14 09:00</small>
+                                        </div>
+                                    </div>
+                                    <span style="color: #00C240; font-size: 0.8rem; font-weight: 600;">초등부_취미반</span>
+                                </div>
+                                <div class="post-content">
+                                    안녕하세요 블루벨 미술학원 입니다.<br>
+                                    이번 주 금요일은 학원 내부 사정으로 휴강합니다. 확인 부탁드립니다.
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- Sidebar (Right) -->
+                        <div class="feed-sidebar">
+
+                            <!-- Read By -->
+                            <div class="reader-card">
+                                <h4>읽은 사람 (1)</h4>
+                                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                    <span class="tag">이예슬 수강생</span>
+                                    <span class="tag yellow">이예슬 보호자</span>
+                                </div>
+                            </div>
+
+                            <!-- Comments -->
+                            <div class="reader-card" style="flex: 1;">
+                                <h4 style="margin-bottom: 20px;">댓글 (1)</h4>
+
+                                <div class="comment-section">
+                                    <!-- Comment 1 -->
+                                    <div class="comment-item">
+                                        <div
+                                            style="width: 32px; height: 32px; background-color: #ddd; border-radius: 50%; border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                                        </div>
+                                        <div class="comment-content">
+                                            <div
+                                                style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                                <span style="font-weight: 700; font-size: 0.9rem;">이예슬 보호자</span>
+                                                <span class="tag yellow"
+                                                    style="font-size: 0.7rem; padding: 2px 6px;">학부모</span>
+                                            </div>
+                                            <p>오늘 예술이가 집에와서 너무 재밌었다고 자랑을 하더라구요~<br>벽화 프로젝트 할 때 마다 웃음이 가득해요. 다음 5번째 주제도
+                                                기대가
+                                                됩니다 :)</p>
+                                            <div class="comment-meta">
+                                                <span>55분 전</span>
+                                                <span class="reply-btn">답글 쓰기</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Admin Reply -->
+                                    <div class="comment-item">
+                                        <div
+                                            style="width: 32px; height: 32px; background-color: #ccc; border-radius: 50%;">
+                                        </div>
+                                        <div class="comment-content"
+                                            style="background-color: #fff; border: 1px solid #eee;">
+                                            <p>예술이가 친구들에게도 긍정적인 영향을 주는 모습이 정말 감동적이었어요! 😊<br>
+                                                덕분에 다 같이 웃으며 마무리할 수 있었답니다. 소중한 피드백 정말 감사합니다! 🙏</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Write Box -->
+                                <div class="write-comment">
+                                    <label
+                                        style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 0.9rem; color: #666;">
+                                        <input type="checkbox"> 비밀 댓글
+                                    </label>
+                                    <div class="input-row">
+                                        <input type="text" class="comment-input" placeholder="댓글을 입력하세요...">
+                                    </div>
+                                    <div class="action-btns">
+                                        <div class="util-btns">
+                                            <button>취소</button>
+                                            <button
+                                                style="background-color: #00C240; color: white; border-color: #00C240;">파일
+                                                업로드</button>
+                                        </div>
+                                        <button class="submit-btn">답글 등록</button>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="questions_data.js"></script>
+</body>
+
+</html>

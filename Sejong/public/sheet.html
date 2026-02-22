@@ -1,0 +1,2019 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>월간 출석부 - 세종요리</title>
+    <link rel="stylesheet" href="style.css?v=20260209_1">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="script.js?v=20260209_1" defer></script>
+    <style>
+        .sheet-container {
+            background: white;
+            padding: 32px;
+            max-width: 100%;
+            margin: 0 auto;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+            overflow-x: auto;
+        }
+
+        .sheet-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .month-nav {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+        }
+
+        .month-nav button {
+            background: none;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            padding: 2px 6px;
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        .sheet-title {
+            font-size: 1.1rem;
+            margin: 0;
+            font-weight: 700;
+            text-align: center;
+            color: #1e293b;
+        }
+
+        .legend {
+            display: flex;
+            gap: 12px;
+            font-size: 0.75rem;
+            color: #475569;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .symbol {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.7rem;
+            padding: 0;
+            width: 20px;
+            /* Match numeric circle size */
+            height: 20px;
+            line-height: 18px;
+            /* Match numeric circle line-height */
+            border-radius: 4px;
+            /* Keep square-ish for 'O' or change to 50% if user wants ALL circles? User said "원형의 빈원형 크기처럼" (like the empty circle size). The basic 'O' is a rounded square usually. Wait, the user said "6개다 원형의... 크기를 똑같이" (Make all 6 like the size of the empty circle). 
+            Actually, the basic 'Present' is currently 'O' inside a rounded square border. 
+            If the user wants them to look the SAME SIZE, I should make the .symbol dimensions match .stat-numeric. 
+            Let's update width/height to 20px. */
+            border: 1px solid #cbd5e1;
+        }
+
+        table.attendance-table {
+            width: max-content;
+            min-width: 100%;
+            margin: 0 auto;
+            border-collapse: collapse;
+            font-size: 0.75rem;
+            table-layout: fixed;
+            border: 1px solid #cbd5e1;
+        }
+
+        table.attendance-table th,
+        table.attendance-table td {
+            border: 1px solid #e2e8f0;
+            text-align: center;
+            padding: 0;
+            height: 28px;
+            vertical-align: middle;
+            color: #334155;
+        }
+
+        table.attendance-table th {
+            font-weight: 600;
+            color: #475569;
+            background-color: #f8fafc;
+            height: 38px;
+            line-height: 1.2;
+            border-bottom: 1px solid #cbd5e1;
+        }
+
+        /* Column Widths Compact */
+        .col-course {
+            width: 120px;
+        }
+
+        .col-name {
+            width: 80px;
+        }
+
+        .col-no {
+            width: 40px;
+        }
+
+        .col-day {
+            width: 22px;
+            min-width: 20px;
+            cursor: pointer;
+        }
+
+        .col-note {
+            width: 110px;
+        }
+
+        .col-day.is-sunday {
+            color: #EF4444;
+            background-color: #FEF2F2;
+        }
+
+        .col-day.is-saturday {
+            color: #3B82F6;
+            background-color: #EFF6FF;
+        }
+
+        .is-holiday-col {
+            background-color: #FEE2E2 !important;
+            color: #EF4444;
+        }
+
+        td.cell-disabled {
+            background-color: #f1f5f9 !important;
+            cursor: not-allowed !important;
+            pointer-events: auto;
+            /* Enable for Arrow/Eraser bypass logic */
+        }
+
+        .cell-check {
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.8rem;
+            transition: background 0.1s;
+            position: relative;
+            /* For tooltip */
+        }
+
+        .cell-check:hover {
+            background-color: #f0f9ff;
+        }
+
+        /* Tooltip (Note Preview Bubble) */
+        .cell-check[data-note]:hover::after {
+            content: attr(data-note);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e293b;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            white-space: pre-wrap;
+            z-index: 100;
+            margin-bottom: 8px;
+            pointer-events: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            min-width: 80px;
+            max-width: 200px;
+            text-align: center;
+        }
+
+        .cell-check[data-note]:hover::before {
+            content: '';
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: #1e293b;
+            z-index: 100;
+            margin-bottom: -4px;
+            pointer-events: none;
+        }
+
+        .cell-check:active {
+            background-color: rgba(255, 255, 255, 0.6) !important;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Status Styles */
+        .stat-present {
+            color: var(--status-success);
+        }
+
+        .stat-absent {
+            color: var(--status-error);
+        }
+
+        .stat-extension {
+            color: #FF0000 !important;
+            background-color: #E6C200;
+            /* Yellowish-brown "Poop" color */
+            font-weight: bold;
+        }
+
+        .stat-text {
+            color: #334155;
+        }
+
+        /* Brush Active State */
+        .legend-item {
+            padding: 8px 16px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            /* For dropdown positioning */
+        }
+
+        .legend-item:hover {
+            background-color: #f1f5f9;
+        }
+
+        .legend-item.active {
+            background-color: #e2e8f0;
+            box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+        }
+
+        .legend-item:active {
+            background-color: rgba(255, 255, 255, 0.4) !important;
+            transform: scale(0.97);
+        }
+
+        /* Numeric Status Styles */
+        .stat-numeric {
+            border-radius: 50%;
+            background-color: white;
+            color: var(--status-success);
+            border: 1.5px solid var(--status-success);
+            /* Slightly thinner than 2px to match small size */
+            font-size: 0.55rem;
+            /* Smaller text as requested */
+            width: 17px;
+            /* Match standard symbol size - slightly tighter */
+            height: 17px;
+            line-height: 15px;
+            /* Vertically centered accounting for 1.5px border approx */
+            text-align: center;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            /* Extra bold */
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Basic Symbol Styles (O, X, etc.) */
+        .symbol {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.6rem;
+            /* Smaller 'O' */
+            padding: 0;
+            width: 17px;
+            /* Match numeric circle size */
+            height: 17px;
+            line-height: 15px;
+            /* Match numeric circle line-height */
+            border-radius: 50%;
+            /* Make fully round to match numeric */
+            border: 1.5px solid #cbd5e1;
+            /* Match numeric 1.5px border thickness */
+        }
+
+
+
+        .stat-present {
+            color: var(--status-success);
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            z-index: 1000;
+            min-width: 120px;
+            padding: 4px 0;
+            margin-top: 4px;
+        }
+
+        .dropdown-menu.show {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 8px 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: #334155;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f8fafc;
+        }
+
+        .legend-item.active {
+            background-color: white;
+            border-color: #3b82f6;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+            color: #1e40af;
+        }
+
+        .legend-item.active .symbol {
+            transform: scale(1.15);
+            border-color: #3b82f6;
+        }
+
+        .col-stat-sum {
+            width: 32px;
+            font-size: 0.75rem;
+            background-color: #f8fafc;
+            color: #64748b;
+            font-weight: 700;
+            border-left: 1px solid #e2e8f0;
+        }
+
+        .sum-p {
+            background-color: #f0fdf4 !important;
+            color: #16a34a !important;
+        }
+
+        .sum-a {
+            background-color: #fef2f2 !important;
+            color: #dc2626 !important;
+        }
+
+        .sum-e {
+            background-color: #fffbeb !important;
+            color: #d97706 !important;
+        }
+
+        .attendance-table tr:hover td {
+            background-color: #f8fafc !important;
+        }
+
+        .cell-drag-selected {
+            background-color: #e0f2fe !important;
+            box-shadow: inset 0 0 0 1px #3b82f6 !important;
+        }
+
+        .cell-check {
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.85rem;
+            transition: all 0.15s;
+        }
+
+        @keyframes cell-pop {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .cell-check:active {
+            transform: scale(0.9);
+        }
+
+        @media print {
+            .col-stat-sum {
+                width: 3% !important;
+                background-color: white !important;
+                color: black !important;
+                border-left: 1px solid #000 !important;
+            }
+
+            .sum-p,
+            .sum-a,
+            .sum-e {
+                background-color: white !important;
+                color: black !important;
+            }
+        }
+
+        /* Tab Styles */
+        .course-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: white;
+            border: 1px solid #e2e8f0;
+            padding: 6px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            color: #64748b;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .tab-btn:hover {
+            background: #f8fafc;
+            color: #334155;
+        }
+
+        .tab-btn:active {
+            background-color: rgba(255, 255, 255, 0.4) !important;
+            transform: scale(0.95);
+        }
+
+        .tab-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .print-btn {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            border: none;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .help-tip {
+            margin-top: 8px;
+            font-size: 0.75rem;
+            color: #94a3b8;
+            text-align: left;
+        }
+
+        @media print {
+            @page {
+                size: landscape;
+                margin-top: 5mm;
+                margin-bottom: 5mm;
+                margin-left: 4.5mm;
+                /* 2mm + 2.5mm more */
+                margin-right: 5mm;
+            }
+
+            body {
+                background: white;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                font-size: 9pt;
+                margin: 0;
+                padding: 0;
+                /* Remove padding to allow full control via @page */
+            }
+
+            /* Hide UI Elements */
+            .sidebar,
+            .top-header,
+            .print-btn,
+            .month-nav button,
+            .help-tip,
+            .legend,
+            .course-tabs {
+                display: none !important;
+            }
+
+            /* Reset Containers */
+            .app-container,
+            .main-wrapper,
+            .content-scroll,
+            .sheet-container {
+                display: block !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                border: none !important;
+                box-shadow: none !important;
+                overflow: visible !important;
+                height: auto !important;
+            }
+
+            /* Header adjustments */
+            .sheet-header {
+                margin-bottom: 5px;
+                padding-bottom: 0;
+                border: none;
+                justify-content: center;
+            }
+
+            .header-left {
+                width: auto;
+            }
+
+            .sheet-title {
+                font-size: 1.1rem;
+                margin: 0;
+                font-weight: bold;
+                text-align: center;
+            }
+
+            /* Table Styles */
+            table.attendance-table {
+                width: 99% !important;
+                margin: 0 !important;
+                border-collapse: collapse;
+                border: 1px solid #000;
+                font-size: 8pt;
+                table-layout: fixed;
+            }
+
+            table.attendance-table th,
+            table.attendance-table td {
+                height: 18px;
+                padding: 0;
+                border: 1px solid #000;
+                text-align: center;
+                vertical-align: middle;
+            }
+
+            table.attendance-table th {
+                height: 28px;
+            }
+
+            /* Print Column Resets - Ensure they fit */
+            .col-course {
+                width: 7% !important;
+                min-width: 0 !important;
+            }
+
+            .col-name {
+                width: 7% !important;
+                min-width: 0 !important;
+            }
+
+            .col-no {
+                width: 2.5% !important;
+                min-width: 0 !important;
+            }
+
+            .col-note {
+                width: 8% !important;
+                min-width: 0 !important;
+            }
+
+            .col-day {
+                width: auto !important;
+                min-width: 0 !important;
+            }
+
+            /* Status Colors */
+            .stat-present {
+                color: #00C240 !important;
+            }
+
+            .stat-absent {
+                color: #EF4444 !important;
+            }
+
+            .stat-extension {
+                color: #FF0000 !important;
+                background-color: #E6C200 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .is-holiday-col {
+                background-color: #FEE2E2 !important;
+            }
+
+            td.cell-disabled {
+                background-color: #F3F4F6 !important;
+            }
+        }
+
+        /* Thin Arrow Styling */
+        .stat-arrow {
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background-color: transparent !important;
+        }
+
+        .stat-arrow::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background-color: #64748b;
+            z-index: 1;
+        }
+
+        /* Start of arrow: arrowhead pointing left */
+        .stat-arrow.arrow-start::before {
+            left: 50%;
+        }
+
+        .stat-arrow.arrow-start::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(45deg);
+            width: 4px;
+            height: 4px;
+            border-left: 1px solid #64748b;
+            border-bottom: 1px solid #64748b;
+            z-index: 2;
+            margin-left: 2px;
+        }
+
+        /* End of arrow: arrowhead pointing right */
+        .stat-arrow.arrow-end::before {
+            right: 50%;
+        }
+
+        .stat-arrow.arrow-end::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(45deg);
+            width: 4px;
+            height: 4px;
+            border-top: 1px solid #64748b;
+            border-right: 1px solid #64748b;
+            z-index: 2;
+            margin-left: -2px;
+        }
+
+        /* Middle of arrow: just the line */
+        .stat-arrow.arrow-mid::before {
+            left: 0;
+            right: 0;
+        }
+
+        .legend-item .symbol.stat-arrow {
+            border: none;
+            background: none;
+            font-size: 1rem;
+            width: auto;
+            height: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="brand-logo">
+                <span class="logo-text">세종요리</span>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-category">수강 관리</div>
+                <a href="register.html" class="nav-item">수강생 등록</a>
+                <a href="index.html" class="nav-item">수강생 대장</a>
+                <a href="sheet.html" class="nav-item active">월간 출석부</a>
+
+                <div class="nav-category">수강료</div>
+                <a href="tuition.html" class="nav-item">수강료 관리</a>
+                <a href="ledger.html" class="nav-item">수강료 납부대장</a>
+                <a href="paid_list.html" class="nav-item">납부완료 명단</a>
+
+                <div class="nav-category">소통</div>
+                <a href="#" class="nav-item">학원 공지</a>
+                <a href="feed.html" class="nav-item">피드 관리</a>
+                <a href="wagashi.html" class="nav-item">숙주나물 홍보</a>
+
+                <div class="nav-category toggle-category" onclick="toggleNavSub(this)">시험지</div>
+                <div class="nav-sub-menu">
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">한식기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('한식_2021')" class="nav-item">2021년 한식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('한식_2022')" class="nav-item">2022년 한식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('한식_2023')" class="nav-item">2023년 한식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('한식_2024')" class="nav-item">2024년 한식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('한식_2025')" class="nav-item">2025년 한식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('한식_2026')" class="nav-item">2026년 한식</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">양식기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('양식_2021')" class="nav-item">2021년 양식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('양식_2022')" class="nav-item">2022년 양식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('양식_2023')" class="nav-item">2023년 양식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('양식_2024')" class="nav-item">2024년 양식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('양식_2025')" class="nav-item">2025년 양식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('양식_2026')" class="nav-item">2026년 양식</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">일식기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('일식_2021')" class="nav-item">2021년 일식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('일식_2022')" class="nav-item">2022년 일식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('일식_2023')" class="nav-item">2023년 일식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('일식_2024')" class="nav-item">2024년 일식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('일식_2025')" class="nav-item">2025년 일식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('일식_2026')" class="nav-item">2026년 일식</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">중식기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('중식_2021')" class="nav-item">2021년 중식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('중식_2022')" class="nav-item">2022년 중식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('중식_2023')" class="nav-item">2023년 중식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('중식_2024')" class="nav-item">2024년 중식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('중식_2025')" class="nav-item">2025년 중식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('중식_2026')" class="nav-item">2026년 중식</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">제과기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('제과_2021')" class="nav-item">2021년 제과</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과_2022')" class="nav-item">2022년 제과</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과_2023')" class="nav-item">2023년 제과</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과_2024')" class="nav-item">2024년 제과</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과_2025')" class="nav-item">2025년 제과</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과_2026')" class="nav-item">2026년 제과</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">제빵기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2021')" class="nav-item">2021년 제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2022')" class="nav-item">2022년 제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2023')" class="nav-item">2023년 제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2024')" class="nav-item">2024년 제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2025')" class="nav-item">2025년 제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2026')" class="nav-item">2026년 제빵</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">제과제빵기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" class="nav-item">준비중입니다</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">복어기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" class="nav-item">준비중입니다</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">산업기사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" class="nav-item">준비중입니다</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">가정요리</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" class="nav-item">준비중입니다</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">브런치</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" class="nav-item">준비중입니다</a>
+                    </div>
+                </div>
+
+                <div class="nav-category">기타</div>
+                <a href="stats.html" class="nav-item">통계 및 납부</a>
+                <a href="monitor.html" target="_blank" class="nav-item highlight">키오스크 모니터</a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-wrapper">
+            <header class="top-header">
+                <div class="page-title">
+                    <h1>월간 출석부<span id="currentHeadcount"
+                            style="margin-left: 10px; font-size: 0.6em; font-weight: normal; color: #666; vertical-align: middle;"></span>
+                    </h1>
+                </div>
+            </header>
+
+            <div class="content-scroll">
+                <!-- Exam Board (Hidden by default) -->
+                <div id="examBoardContainer" class="hidden"
+                    style="display: none; padding: 20px; background: white; border-radius: 12px; margin-bottom: 20px;">
+                    <div class="exam-board-header" style="margin-bottom: 20px;">
+                        <h2 id="examBoardTitle" class="exam-board-title">시험지 보기</h2>
+                    </div>
+                    <div id="examQuestionList" class="exam-board-list">
+                        <!-- Questions populated by JS -->
+                    </div>
+                </div>
+
+                <div id="memberListSection">
+                    <div class="sheet-container">
+
+                        <div class="sheet-header">
+                            <div class="header-left">
+                                <div class="month-nav">
+                                    <button onclick="changeMonth(-1)">&lt;</button>
+                                    <div class="flex-center gap-5">
+                                        <select id="yearSelect" class="form-select transparent-select" title="연도 선택">
+                                            <!-- Populated by JS -->
+                                        </select>
+                                        <select id="monthSelect" class="form-select transparent-select" title="월 선택">
+                                            <option value="1">1월</option>
+                                            <option value="2">2월</option>
+                                            <option value="3">3월</option>
+                                            <option value="4">4월</option>
+                                            <option value="5">5월</option>
+                                            <option value="6">6월</option>
+                                            <option value="7">7월</option>
+                                            <option value="8">8월</option>
+                                            <option value="9">9월</option>
+                                            <option value="10">10월</option>
+                                            <option value="11">11월</option>
+                                            <option value="12">12월</option>
+                                        </select>
+                                    </div>
+                                    <button onclick="changeMonth(1)">&gt;</button>
+                                </div>
+                            </div>
+                            <div class="legend">
+                                <div class="legend-item" id="brush-present" onclick="togglePresentDropdown(event)">
+                                    <div class="flex-center gap-4">
+                                        <span class="symbol stat-present" id="current-present-symbol">O</span>
+                                        <span id="current-present-text">출석</span>
+                                        <span class="material-icons icon-muted">arrow_drop_down</span>
+                                    </div>
+                                    <!-- Dropdown Menu -->
+                                    <div class="dropdown-menu" id="present-dropdown">
+                                        <div class="dropdown-item" onclick="selectPresentType('present', event)">
+                                            <span class="symbol stat-present">O</span> 기본 출석
+                                        </div>
+                                        <div class="dropdown-item" onclick="selectPresentType('10', event)">
+                                            <span class="stat-numeric">10</span> 10시 출석
+                                        </div>
+                                        <div class="dropdown-item" onclick="selectPresentType('12', event)">
+                                            <span class="stat-numeric">12</span> 12시 출석
+                                        </div>
+                                        <div class="dropdown-item" onclick="selectPresentType('2', event)">
+                                            <span class="stat-numeric">2</span> 2시 출석
+                                        </div>
+                                        <div class="dropdown-item" onclick="selectPresentType('5', event)">
+                                            <span class="stat-numeric">5</span> 5시 출석
+                                        </div>
+                                        <div class="dropdown-item" onclick="selectPresentType('7', event)">
+                                            <span class="stat-numeric">7</span> 7시 출석
+                                        </div>
+                                        <div class="dropdown-item" onclick="selectPresentType('[', event)">
+                                            <span class="stat-numeric">[</span> [ 출석
+                                        </div>
+                                        <div class="dropdown-item" onclick="selectPresentType(']', event)">
+                                            <span class="stat-numeric">]</span> ] 출석
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="legend-item" id="brush-absent" onclick="setBrush('absent')"><span
+                                        class="symbol stat-absent">X</span> 결석</div>
+                                <div class="legend-item" id="brush-extension" onclick="setBrush('extension')"><span
+                                        class="symbol stat-extension">연</span> 연</div>
+                                <div class="legend-item" id="brush-arrow" onclick="setBrush('arrow')"><span
+                                        class="symbol stat-arrow">→</span> 살표</div>
+                                <div class="legend-item" id="brush-eraser" onclick="setBrush('unchecked')"><span
+                                        class="symbol"
+                                        style="border:none; background:none; font-size: 1.1rem; line-height:1;">🧹</span>
+                                    지우개</div>
+                                <div class="legend-item active text-muted-sm ml-10" id="brush-toggle"
+                                    onclick="setBrush(null)">
+                                    기본</div>
+                            </div>
+                        </div>
+
+                        <div class="course-tabs mb-10">
+                            <button class="tab-btn active" onclick="filterCourse('all')">전체</button>
+                            <button class="tab-btn" onclick="filterCourse('한식기능사')">한식기능사</button>
+                            <button class="tab-btn" onclick="filterCourse('양식기능사')">양식기능사</button>
+                            <button class="tab-btn" onclick="filterCourse('일식기능사')">일식기능사</button>
+                            <button class="tab-btn" onclick="filterCourse('중식기능사')">중식기능사</button>
+                            <button class="tab-btn" onclick="filterCourse('제과기능사')">제과기능사</button>
+                            <button class="tab-btn" onclick="filterCourse('제빵기능사')">제빵기능사</button>
+                            <button class="tab-btn" onclick="filterCourse('제과제빵기능사')">제과제빵기능사</button>
+                            <button class="tab-btn" onclick="filterCourse('복어기능사')">복어기능사</button>
+                            <button class="tab-btn" onclick="filterCourse('산업기사')">산업기사</button>
+                            <button class="tab-btn" onclick="filterCourse('가정요리')">가정요리</button>
+                            <button class="tab-btn" onclick="filterCourse('브런치')">브런치</button>
+                        </div>
+
+                        <!-- Time Tabs -->
+                        <div class="course-tabs time-tabs mb-15">
+                            <span class="bold mr-10">시간:</span>
+                            <button class="tab-btn active" onclick="filterTime('all')" data-time="all">전체</button>
+                            <button class="tab-btn" onclick="filterTime('10:00')" data-time="10:00">오전 10:00</button>
+                            <button class="tab-btn" onclick="filterTime('12:00')" data-time="12:00">오전 12:00</button>
+                            <button class="tab-btn" onclick="filterTime('17:00')" data-time="17:00">오후 05:00</button>
+                            <button class="tab-btn" onclick="filterTime('19:00')" data-time="19:00">오후 07:00</button>
+                        </div>
+
+                        <table class="attendance-table" id="sheetTable">
+                            <thead id="tableHead">
+                                <!-- JS Injected -->
+                            </thead>
+                            <tbody id="sheetBody">
+                                <!-- JS Injected -->
+                            </tbody>
+                        </table>
+
+                        <div class="help-tip">
+                            * 날짜 숫자 클릭: 휴일 지정 | 상단 범례 클릭: 해당 모드로 고정 | 셀 클릭: 상태 변경 | * 년월 클릭 시 달력 선택 가능
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <button class="print-btn" onclick="window.print()">
+        <span class="material-icons">print</span> 인쇄하기
+    </button>
+
+    <script>
+        let currentYear = new Date().getFullYear();
+        let currentMonth = new Date().getMonth() + 1;
+        let membersData = [];
+        let attendanceData = [];
+        let holidaysData = [];
+        let timetableData = {};
+        let currentFilter = 'all';
+        let currentTimeFilter = 'all';
+        let activeStatusBrush = null; // 'present', 'absent', 'extension', or null (toggle)
+
+        // Redundant toggleNavSub removed as it is now in script.js
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            const dropdown = document.getElementById('present-dropdown');
+            const button = document.getElementById('brush-present');
+            if (dropdown && button && !button.contains(e.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+
+        // Toggle Present Dropdown
+        window.togglePresentDropdown = function (e) {
+            e.stopPropagation();
+            const dropdown = document.getElementById('present-dropdown');
+            if (dropdown) {
+                dropdown.classList.toggle('show');
+            }
+        };
+
+        // Select Present Type
+        window.selectPresentType = function (type, e) {
+            e.stopPropagation();
+            const dropdown = document.getElementById('present-dropdown');
+            if (dropdown) dropdown.classList.remove('show');
+
+            // Update UI of the main button to reflect selection
+            const symbol = document.getElementById('current-present-symbol');
+            const text = document.getElementById('current-present-text');
+
+            // Allow all types as valid brush values
+            // 'present' is standard O
+            // '10', '12', '2', '5', '7' are numeric
+
+            if (type === 'present') {
+                symbol.className = 'symbol stat-present';
+                symbol.textContent = 'O';
+                text.textContent = '출석';
+            } else {
+                symbol.className = 'stat-numeric';
+                symbol.textContent = type;
+                if (['[', ']'].includes(type)) {
+                    text.textContent = type; // Just show [ or ]
+                    // Or maybe "[ 출석"? User said "dropdown add", didn't specify text. 
+                    // Let's stick to simple text or "[ 출석"
+                    text.textContent = type + ' 출석';
+                } else {
+                    text.textContent = `${type}시`;
+                }
+            }
+
+            setBrush(type);
+        };
+
+        function setBrush(status) {
+            activeStatusBrush = status;
+
+            // Update UI
+            document.querySelectorAll('.legend-item').forEach(item => item.classList.remove('active'));
+            if (status === 'present') document.getElementById('brush-present').classList.add('active');
+            else if (status === 'absent') document.getElementById('brush-absent').classList.add('active');
+            else if (status === 'extension') document.getElementById('brush-extension').classList.add('active');
+            else if (status === 'arrow') document.getElementById('brush-arrow').classList.add('active');
+            else if (status === 'unchecked' && status !== null) document.getElementById('brush-eraser').classList.add('active');
+            else document.getElementById('brush-toggle').classList.add('active');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initYearOptions();
+            initSheet();
+
+            // Select Listeners
+            document.getElementById('yearSelect').addEventListener('change', (e) => {
+                currentYear = parseInt(e.target.value);
+                renderSheet();
+            });
+            document.getElementById('monthSelect').addEventListener('change', (e) => {
+                currentMonth = parseInt(e.target.value);
+                renderSheet();
+            });
+        });
+
+        function initYearOptions() {
+            const yearSelect = document.getElementById('yearSelect');
+            if (!yearSelect) return;
+            yearSelect.innerHTML = '';
+            for (let y = 2025; y <= 3000; y++) {
+                const opt = document.createElement('option');
+                opt.value = y;
+                opt.textContent = `${y}년`;
+                if (y === currentYear) opt.selected = true;
+                yearSelect.appendChild(opt);
+            }
+            document.getElementById('monthSelect').value = currentMonth;
+        }
+
+        function openMonthPicker() {
+            const picker = document.getElementById('monthPicker');
+            // Set to 1st of current month to ensure calendar opens in right month
+            const mm = String(currentMonth).padStart(2, '0');
+            picker.value = `${currentYear}-${mm}`;
+
+            try {
+                picker.showPicker();
+            } catch (e) {
+                // Fallback
+                picker.style.visibility = 'visible';
+                picker.focus();
+                picker.click();
+                picker.style.visibility = 'hidden';
+            }
+        }
+
+        async function initSheet() {
+            await Promise.all([fetchMembers(), fetchAttendance(), fetchHolidays(), fetchTimetable()]);
+            renderSheet();
+        }
+
+        async function fetchMembers() {
+            const res = await fetch('/api/members');
+            membersData = await res.json();
+            // Sort by course then name
+            membersData.sort((a, b) => {
+                if (a.course !== b.course) return (a.course || '').localeCompare(b.course || '');
+                return a.name.localeCompare(b.name);
+            });
+        }
+
+        async function fetchAttendance() {
+            const res = await fetch('/api/attendance');
+            attendanceData = await res.json();
+        }
+
+        async function fetchHolidays() {
+            try {
+                const res = await fetch('/api/holidays');
+                if (res.ok) holidaysData = await res.json();
+            } catch (e) { console.error(e); }
+        }
+
+        async function fetchTimetable() {
+            try {
+                const res = await fetch('/api/timetable');
+                if (res.ok) timetableData = await res.json();
+            } catch (e) { console.error(e); }
+        }
+
+        function filterCourse(course) {
+            currentFilter = course;
+            // Update Course Tabs Only
+            const container = document.querySelector('.course-tabs:not(.time-tabs)');
+            if (container) {
+                container.querySelectorAll('.tab-btn').forEach(btn => {
+                    if (btn.textContent === course || (course === 'all' && btn.textContent === '전체')) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+            }
+            renderSheet();
+        }
+
+        function filterTime(time) {
+            currentTimeFilter = time;
+            // Update Time Tabs Only
+            const container = document.querySelector('.time-tabs');
+            if (container) {
+                container.querySelectorAll('.tab-btn').forEach(btn => {
+                    if (btn.dataset.time === time) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+            }
+            renderSheet();
+        }
+
+        function changeMonth(delta) {
+            currentMonth += delta;
+            if (currentMonth > 12) {
+                currentMonth = 1;
+                currentYear += 1;
+            } else if (currentMonth < 1) {
+                currentMonth = 12;
+                currentYear -= 1;
+            }
+
+            // Sync Selects
+            document.getElementById('yearSelect').value = currentYear;
+            document.getElementById('monthSelect').value = currentMonth;
+
+            renderSheet();
+        }
+
+        function renderSheet() {
+            // Updated to sync select value if needed, but changeMonth handles it.
+            // Just ensure yearSelect matches currentYear
+            document.getElementById('yearSelect').value = currentYear;
+            document.getElementById('monthSelect').value = currentMonth;
+
+
+            const daysInMonth = new Date(currentYear, currentMonth, 0).getDate();
+            const thead = document.getElementById('tableHead');
+            thead.innerHTML = '';
+
+            const trHead = document.createElement('tr');
+
+            // 1. Static Headers
+            // Custom first header for Course Name + Time + Registered Date
+            let courseNameDisplay = currentFilter === 'all' ? '전체과정' : currentFilter;
+            if (currentTimeFilter !== 'all') {
+                const timeLabel = currentTimeFilter === '10:00' ? '오전 10시' :
+                    currentTimeFilter === '12:00' ? '오전 12시' :
+                        currentTimeFilter === '17:00' ? '오후 5시' :
+                            currentTimeFilter === '19:00' ? '오후 7시' : currentTimeFilter;
+                courseNameDisplay += ` (${timeLabel})`;
+            }
+
+            const thCourse = document.createElement('th');
+            thCourse.className = 'col-course';
+            thCourse.innerHTML = `<div class="fs-0-9-em lh-1-2 bold c-000">${courseNameDisplay}</div><div class="fs-0-75-em fw-normal c-333">등록일</div>`;
+            trHead.appendChild(thCourse);
+
+            const headers = [
+                { text: '성 명', cls: 'col-name' },
+                { text: '순번', cls: 'col-no' }
+            ];
+
+            headers.forEach(h => {
+                const th = document.createElement('th');
+                th.textContent = h.text;
+                th.className = h.cls;
+                trHead.appendChild(th);
+            });
+
+            // 2. Day Headers (1 ~ 31)
+            const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+            for (let i = 1; i <= 31; i++) {
+                const th = document.createElement('th');
+                th.className = 'col-day';
+
+                if (i <= daysInMonth) {
+                    const dateObj = new Date(currentYear, currentMonth - 1, i);
+                    const dayOfWeek = dateObj.getDay();
+
+                    // Number + DayName
+                    th.innerHTML = `${i}<br><span class="fs-0-65-em fw-normal">${dayNames[dayOfWeek]}</span>`;
+
+                    if (dayOfWeek === 0) th.classList.add('is-sunday');
+                    if (dayOfWeek === 6) th.classList.add('is-saturday');
+
+                    const dateStr = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+                    const isHoliday = holidaysData.find(h => h.date === dateStr);
+                    if (isHoliday) th.classList.add('is-holiday-col');
+
+                    th.onclick = () => toggleHoliday(dateStr);
+                } else {
+                    // Invalid days (e.g. Feb 30)
+                    th.textContent = i;
+                    th.style.color = '#ccc';
+                    th.style.backgroundColor = '#fcfcfc';
+                }
+
+                trHead.appendChild(th);
+            }
+
+            // 2.5 summary headers
+            const statSumHeaders = [
+                { text: '재고출석', cls: 'col-stat-sum' },
+                { text: '출석', cls: 'col-stat-sum' },
+                { text: '결석', cls: 'col-stat-sum' },
+                { text: '연장', cls: 'col-stat-sum' }
+            ];
+            statSumHeaders.forEach(s => {
+                const th = document.createElement('th');
+                th.textContent = s.text;
+                th.className = s.cls;
+                trHead.appendChild(th);
+            });
+
+            // 3. Note Header
+            const thNote = document.createElement('th');
+            thNote.innerHTML = '비 고<br><span class="fs-0-7-em fw-normal"></span>';
+            thNote.className = 'col-note';
+            trHead.appendChild(thNote);
+
+            thead.appendChild(trHead);
+
+            // 1. Explode Data into Course Row Instances
+            let allCourseRows = [];
+            membersData.forEach(m => {
+                const courses = (m.course || '').split(',').map(c => c.trim()).filter(c => c !== '');
+                if (courses.length === 0) {
+                    allCourseRows.push({ member: m, courseFull: '', courseName: '' });
+                } else {
+                    courses.forEach(courseFull => {
+                        let courseName = courseFull.replace(/\([^)]*\)/g, '').trim();
+                        allCourseRows.push({ member: m, courseFull: courseFull, courseName: courseName });
+                    });
+                }
+            });
+
+            // 2. Filter Rows
+            let filteredRows = allCourseRows;
+            if (currentFilter !== 'all') {
+                const searchKey = currentFilter.replace(/\s/g, ''); // Normalize search key
+                filteredRows = filteredRows.filter(r => {
+                    const normalizedCourseName = r.courseName.replace(/\s/g, ''); // Normalize target name
+                    return normalizedCourseName.includes(searchKey);
+                });
+            }
+            if (currentTimeFilter !== 'all') {
+                filteredRows = filteredRows.filter(r => r.courseFull.includes(currentTimeFilter));
+            }
+
+            // Update Headcount
+            const uniqueHeadcount = new Set(filteredRows.map(r => r.member.id)).size;
+            const hcSpan = document.getElementById('currentHeadcount');
+            if (hcSpan) {
+                hcSpan.textContent = `(총 ${uniqueHeadcount}명)`;
+            }
+
+            // Body
+            // Body - Fixed 20 Rows
+            const tbody = document.getElementById('sheetBody');
+            tbody.innerHTML = '';
+
+            const renderedArrows = new Set(); // memberId_date
+
+            for (let r = 0; r < 20; r++) {
+                const tr = document.createElement('tr');
+                const rowData = filteredRows[r];
+                const m = rowData ? rowData.member : null;
+                const rowCourseNameScope = rowData ? rowData.courseName : null;
+
+                // Col 1: Registered Date
+                const tdCourse = document.createElement('td');
+                if (m && m.registeredDate) {
+                    // Try to parse YYYY-MM-DD
+                    const dateParts = m.registeredDate.split('-');
+                    if (dateParts.length === 3) {
+                        // YY.MM.DD
+                        tdCourse.textContent = `${dateParts[0].slice(2)}.${dateParts[1]}.${dateParts[2]}`;
+                    } else {
+                        tdCourse.textContent = m.registeredDate;
+                    }
+                } else {
+                    tdCourse.textContent = '';
+                }
+                tr.appendChild(tdCourse);
+
+                // Col 2: Name
+                const tdName = document.createElement('td');
+                tdName.textContent = m ? m.name : '';
+                if (m) tdName.style.fontWeight = 'bold';
+                tr.appendChild(tdName);
+
+                // Col 3: No
+                const tdNo = document.createElement('td');
+                tdNo.textContent = String(r + 1).padStart(2, '0');
+                tr.appendChild(tdNo);
+
+                // Days (Always 1-31)
+                for (let i = 1; i <= 31; i++) {
+                    const td = document.createElement('td');
+                    td.className = 'cell-check';
+
+                    if (i <= daysInMonth) {
+                        const dateStr = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+                        const isHoliday = holidaysData.find(h => h.date === dateStr);
+                        const dayOfWeek = new Date(currentYear, currentMonth - 1, i).getDay();
+
+                        if (dayOfWeek === 0 || isHoliday) {
+                            td.classList.add('cell-disabled');
+                        }
+
+                        if (m) {
+                            // Real Member Data
+                            const myCourses = (m.course || '').split(',').map(c => c.trim()).filter(c => c !== '');
+
+                            // Determine if CURRENT row course is restricted today
+                            let courseAllowedDays = null; // null means no schedule info
+                            if (rowCourseNameScope && timetableData && timetableData[rowCourseNameScope]) {
+                                courseAllowedDays = timetableData[rowCourseNameScope];
+                            }
+
+                            const isSundayOrHoliday = (dayOfWeek === 0 || isHoliday);
+                            let isRestricted = false;
+
+                            if (isSundayOrHoliday) {
+                                isRestricted = true;
+                            } else if (courseAllowedDays !== null) {
+                                // If we have a schedule for this course, check it strictly
+                                if (!courseAllowedDays.includes(dayOfWeek)) {
+                                    isRestricted = true;
+                                }
+                            }
+                            // If courseAllowedDays is null, we assume it's an unrestricted course or missing data (default to open if not Sunday/Holiday)
+
+                            if (isRestricted) {
+                                td.classList.add('cell-disabled');
+                                // Differentiate colors: Holiday/Sunday (Reddish) vs Non-class day (Gray)
+                                if (!isSundayOrHoliday) {
+                                    td.style.backgroundColor = '#f5f5f5';
+                                }
+                            } else {
+                                td.classList.remove('cell-disabled');
+                                td.style.backgroundColor = '';
+                            }
+
+                            // Interactive Cell Configuration
+                            td.dataset.mid = m.id;
+                            td.dataset.date = dateStr;
+                            td.dataset.course = rowCourseNameScope || '';
+
+                            const log = attendanceData.find(l => l.memberId === m.id && l.date === dateStr && (l.course === rowCourseNameScope || (!l.course && !rowCourseNameScope)));
+                            const globalArrowLog = attendanceData.find(l => l.memberId === m.id && l.date === dateStr && l.status === 'arrow');
+                            let status = globalArrowLog ? 'arrow' : (log ? log.status : 'unchecked');
+
+                            // Only show arrow on ONE row for the member
+                            if (status === 'arrow') {
+                                const arrowKey = `${m.id}_${dateStr}`;
+                                if (renderedArrows.has(arrowKey)) {
+                                    status = 'unchecked';
+                                } else {
+                                    renderedArrows.add(arrowKey);
+                                }
+                            }
+
+                            // Preview Bubble Logic
+                            if (log && log.status && !['present', 'absent', 'extension', 'arrow', 'unchecked'].includes(log.status)) {
+                                td.setAttribute('data-note', log.status);
+                            } else {
+                                td.removeAttribute('data-note');
+                            }
+
+                            // Visuals (Arrows/Symbols)
+                            const prevDate = new Date(currentYear, currentMonth - 1, i - 1);
+                            const prevDateStr = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, '0')}-${String(prevDate.getDate()).padStart(2, '0')}`;
+                            const nextDate = new Date(currentYear, currentMonth - 1, i + 1);
+                            const nextDateStr = `${nextDate.getFullYear()}-${String(nextDate.getMonth() + 1).padStart(2, '0')}-${String(nextDate.getDate()).padStart(2, '0')}`;
+
+                            if (status === 'extension') {
+                                const prevLog = attendanceData.find(l => l.memberId === m.id && l.date === prevDateStr && (l.course === rowCourseNameScope || (!l.course && !rowCourseNameScope)));
+                                const isPrevExt = prevLog && prevLog.status === 'extension';
+                                const nextLog = attendanceData.find(l => l.memberId === m.id && l.date === nextDateStr && (l.course === rowCourseNameScope || (!l.course && !rowCourseNameScope)));
+                                const isNextExt = nextLog && nextLog.status === 'extension';
+                                renderExtensionArrow(td, isPrevExt, isNextExt);
+                            } else if (status === 'arrow') {
+                                const isPrevArrow = !!attendanceData.find(l => l.memberId === m.id && l.date === prevDateStr && l.status === 'arrow');
+                                const isNextArrow = !!attendanceData.find(l => l.memberId === m.id && l.date === nextDateStr && l.status === 'arrow');
+                                renderThinArrow(td, isPrevArrow, isNextArrow);
+                            } else {
+                                setCellSymbol(td, status);
+                            }
+
+                            // Event Binding
+                            td.onmousedown = (e) => handleCellMouseDown(e, m.id, dateStr, td);
+                            td.onmouseover = (e) => handleCellMouseOver(e, m.id, dateStr, td);
+                            td.onmouseup = () => handleCellMouseUp();
+                            td.onclick = () => toggleCell(td, m.id, dateStr, rowCourseNameScope);
+                            td.oncontextmenu = (e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                e.stopImmediatePropagation();
+                                editCellText(td, m.id, dateStr, rowCourseNameScope);
+                            };
+
+                            // Check if this is the date when 재고출석 reaches 8
+                            // Calculate cumulative makeup attendance up to this date
+                            const isDualCourse = rowData && rowData.courseName && rowData.courseName.includes('제과제빵');
+                            const attendanceIncrement = isDualCourse ? 0.5 : 1;
+
+                            // Deduplicate records by date to prevent double counting
+                            const uniqueRecordsMap = new Map();
+                            attendanceData.forEach(a => {
+                                // Match both memberId and the specific course for this row
+                                const isSameCourse = a.course === rowCourseNameScope || (!a.course && !rowCourseNameScope);
+                                if (a.memberId === m.id && isSameCourse) {
+                                    uniqueRecordsMap.set(a.date, a);
+                                }
+                            });
+
+                            const recordsUpToThisDate = Array.from(uniqueRecordsMap.values()).filter(a => {
+                                const aDate = new Date(a.date);
+                                const thisDate = new Date(dateStr);
+                                return aDate <= thisDate && aDate.getFullYear() === currentYear;
+                            }).sort((a, b) => new Date(a.date) - new Date(b.date));
+
+                            let cumulativeMakeup = 0;
+                            let reachedEightOnThisDate = false;
+
+                            for (const record of recordsUpToThisDate) {
+                                const recDate = new Date(record.date);
+                                const recMonth = recDate.getMonth() + 1;
+
+                                const isMakeupMarker = ['[', ']'].includes(record.status);
+                                const isAbsent = record.status === 'absent' || (typeof record.status === 'string' && record.status.startsWith('X'));
+                                const isRegularAttendance = record.status === 'present' || ['10', '12', '2', '5', '7'].includes(record.status) || isAbsent;
+
+                                const prevMakeup = cumulativeMakeup;
+
+                                if (recMonth < currentMonth) {
+                                    if (isMakeupMarker || isRegularAttendance) {
+                                        cumulativeMakeup += attendanceIncrement;
+                                    }
+                                } else if (recMonth === currentMonth) {
+                                    // Current month: include Regular Attendance consistent with user expectation for "8th Day" highlight
+                                    if (isMakeupMarker || isRegularAttendance) {
+                                        cumulativeMakeup += attendanceIncrement;
+                                    }
+                                }
+
+                                // Check if we just reached exactly 8 on this date
+                                if (record.date === dateStr && prevMakeup < 8 && cumulativeMakeup === 8) {
+                                    reachedEightOnThisDate = true;
+                                }
+                            }
+
+                            // Apply red border if this is the 8th makeup attendance date
+                            if (reachedEightOnThisDate) {
+                                td.style.border = '3px solid red';
+                                td.style.boxShadow = '0 0 5px rgba(255, 0, 0, 0.5)';
+                            }
+                        } else {
+                            // Empty Row
+                            td.style.pointerEvents = 'none';
+                            td.classList.remove('cell-disabled');
+                            td.style.backgroundColor = '';
+                        }
+
+                        if (isHoliday) td.style.backgroundColor = '#FEE2E2';
+                        else if (dayOfWeek === 0) td.style.backgroundColor = '#FEF2F2';
+                    } else {
+                        // Invalid day cells (e.g. Feb 30)
+                        td.classList.add('cell-disabled');
+                        td.style.backgroundColor = '#fcfcfc';
+                    }
+
+                    tr.appendChild(td);
+                }
+
+                // Stats Sum Cells
+                let sumP = 0, sumA = 0, sumE = 0, sumMakeup = 0;
+                if (m) {
+                    // Check if this is a 제과제빵 student (dual-course, counts as 0.5)
+                    const isDualCourse = rowData && rowData.courseName && rowData.courseName.includes('제과제빵');
+                    const attendanceIncrement = isDualCourse ? 0.5 : 1;
+
+                    const rowLogsRaw = attendanceData.filter(l => l.memberId === m.id && (l.course === rowCourseNameScope || (!l.course && !rowCourseNameScope)));
+
+                    // Deduplicate row logs by date
+                    const uniqueRowLogsMap = new Map();
+                    rowLogsRaw.forEach(l => uniqueRowLogsMap.set(l.date, l));
+                    const rowLogs = Array.from(uniqueRowLogsMap.values());
+
+                    rowLogs.forEach(l => {
+                        const logDate = new Date(l.date);
+                        const logYear = logDate.getFullYear();
+                        const logMonth = logDate.getMonth() + 1;
+
+                        // For makeup attendance: count makeup markers ([, ]) from all previous months
+                        // PLUS regular attendance from previous months (not current month)
+                        const isMakeupMarker = ['[', ']'].includes(l.status);
+                        const isNumericPresent = ['10', '12', '2', '5', '7'].includes(l.status);
+                        const isAbsent = l.status === 'absent' || (typeof l.status === 'string' && l.status.startsWith('X'));
+                        const isRegularAttendance = l.status === 'present' || isNumericPresent || isAbsent;
+
+                        if (logYear === currentYear && logMonth < currentMonth) {
+                            // Previous months: count both makeup markers AND regular attendance
+                            if (isMakeupMarker || isRegularAttendance) {
+                                sumMakeup += attendanceIncrement;
+                            }
+                        } else if (logYear === currentYear && logMonth === currentMonth) {
+                            // Current month: Only count makeup markers towards 'base makeup'
+                            // Regular attendance is counted in sumP and then actively moved to makeup if needed
+                            if (isMakeupMarker) {
+                                sumMakeup += attendanceIncrement;
+                            }
+                        }
+
+                        // Only count for current month for other stats
+                        if (l.date.startsWith(`${currentYear}-${String(currentMonth).padStart(2, '0')}`)) {
+                            if (l.status === 'present' || isNumericPresent) sumP += attendanceIncrement;
+                            else if (l.status === 'absent' || (typeof l.status === 'string' && l.status.startsWith('X'))) sumA += attendanceIncrement;
+                            else if (l.status === 'extension' || (typeof l.status === 'string' && (l.status.startsWith('E') || l.status.includes('연장')))) sumE += attendanceIncrement;
+                        }
+                    });
+                }
+
+                // User Request: Combine Absence count with Attendance count
+                let displayP = sumP + sumA;
+
+                // NEW LOGIC: Prioritize filling 재고출석 to 8, then show remainder in 출석
+                // Example: Previous month makeup = 5, Current month attendance = 8
+                // Result: 재고출석 = 8 (5 from prev + 3 from current), 출석 = 5 (8 - 3)
+                let displayMakeup = sumMakeup;
+
+                if (sumMakeup < 8) {
+                    // If previous makeup is less than 8, use current attendance to fill it
+                    const spaceInMakeup = 8 - sumMakeup; // How much space left in makeup
+                    const toFillMakeup = Math.min(spaceInMakeup, displayP); // Use current attendance to fill
+
+                    displayMakeup = sumMakeup + toFillMakeup; // Fill makeup (max 8)
+                    displayP = displayP - toFillMakeup; // Remaining goes to attendance
+                } else if (sumMakeup > 8) {
+                    // If previous makeup exceeds 8, cap it and add overflow to attendance
+                    displayMakeup = 8;
+                    const overflow = sumMakeup - 8;
+                    displayP += overflow;
+                }
+
+                [displayMakeup, displayP, sumA, sumE].forEach((val, idx) => {
+                    const td = document.createElement('td');
+                    td.className = 'col-stat-sum ' + (idx === 0 ? 'sum-makeup' : idx === 1 ? 'sum-p' : idx === 2 ? 'sum-a' : 'sum-e');
+                    // Format decimal values (0.5, 1.5, etc.) for display
+                    td.textContent = m ? (val ? (val % 1 === 0 ? val : val.toFixed(1)) : '') : '';
+                    tr.appendChild(td);
+                });
+
+                // Note Col
+                const tdNote = document.createElement('td');
+                tdNote.className = 'col-note';
+                if (m && rowData) {
+                    const part = rowData.courseFull;
+                    let cName = part.replace(/\([^)]*\)/g, '').trim();
+                    let cTime = '';
+                    const match = part.match(/\(([^)]+)\)/);
+                    if (match) cTime = match[1];
+
+                    // Fallback time from m.timeSlot if single course
+                    if (!cTime && m.timeSlot) {
+                        cTime = m.timeSlot.split(',')[0]; // Simple fallback
+                    }
+
+                    // Format Time
+                    let cTimeDisplay = cTime;
+                    if (cTime === '10:00') cTimeDisplay = '오전 10:00';
+                    else if (cTime === '12:00') cTimeDisplay = '오전 12:00';
+                    else if (cTime === '17:00') cTimeDisplay = '오후 05:00';
+                    else if (cTime === '19:00') cTimeDisplay = '오후 07:00';
+
+                    // Formatting
+                    let finalHtml = `<div>${cName}<br><span class="primary-hover-bold">${cTimeDisplay}</span></div>`;
+
+                    tdNote.innerHTML = `<div class="fs-0-7 lh-1-2 break-all c-note">${finalHtml}</div>`;
+                }
+                tr.appendChild(tdNote);
+
+                tbody.appendChild(tr);
+            }
+        }
+
+        async function toggleHoliday(dateStr) {
+            const isHoliday = !!holidaysData.find(h => h.date === dateStr);
+            await saveHoliday(dateStr, !isHoliday);
+            await fetchHolidays();
+            renderSheet();
+        }
+
+        async function saveHoliday(dateStr, isHoliday) {
+            try {
+                await fetch('/api/holidays', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ date: dateStr, isHoliday })
+                });
+            } catch (e) { console.error(e); }
+        }
+
+        function setCellSymbol(td, status) {
+            td.textContent = '';
+            td.className = 'cell-check';
+            td.style.fontSize = '0.75rem';
+            td.title = '';
+            td.classList.remove('has-note');
+
+            if (!status || status === 'unchecked') return;
+
+            if (status === 'present') {
+                td.textContent = 'O';
+                td.classList.add('stat-present');
+            } else if (['10', '12', '2', '5', '7', '[', ']'].includes(status)) {
+                td.textContent = status;
+                td.classList.add('stat-numeric');
+            } else if (status === 'absent') {
+                td.textContent = 'X';
+                td.classList.add('stat-absent');
+            } else if (status === 'arrow') {
+                renderThinArrow(td, false, false);
+            } else {
+                // Extension or Custom
+                if (status === 'extension' || status === '연' || (typeof status === 'string' && status.includes)) {
+                    td.textContent = '연';
+                    td.classList.add('stat-extension');
+                } else if (typeof status === 'string' && status.startsWith('X')) {
+                    td.textContent = 'X';
+                    td.classList.add('stat-absent');
+                } else if (typeof status === 'string' && status.startsWith) {
+                    td.textContent = '연';
+                    td.classList.add('stat-extension');
+                } else {
+                    // Custom Memo - Preview Bubble
+                    if (status.length > 2) {
+                        td.textContent = status.substring(0, 1) + '..';
+                        td.style.fontSize = '0.65rem';
+                    } else {
+                        td.textContent = status;
+                    }
+                    td.classList.add('stat-text');
+                }
+            }
+        }
+
+        async function saveAttendance(memberId, dateStr, status, course) {
+            // Aggressively remove any existing record for this slot to prevent duplicates
+            attendanceData = attendanceData.filter(l => {
+                const sameMember = l.memberId === memberId;
+                const sameDate = l.date === dateStr;
+                // Normalize course comparison: treat null/undefined as empty string
+                const c1 = l.course || '';
+                const c2 = course || '';
+                const sameCourse = c1 === c2;
+                return !(sameMember && sameDate && sameCourse);
+            });
+
+            if (status && status !== 'unchecked') {
+                attendanceData.push({ memberId, date: dateStr, status: status, course: course });
+            }
+
+            // Re-render immediately
+            renderSheet();
+
+            try {
+                await fetch('/api/attendance', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ memberId, date: dateStr, status: status || 'unchecked', course: course })
+                });
+            } catch (e) {
+                console.error("Save failed", e);
+                alert('저장 실패 (Network Error)');
+            }
+        }
+
+        // ---- Drag Interaction Logic ----
+        let isDragging = false;
+        let dragStartMemberId = null;
+        let dragStartCourse = null;
+        let dragStartDay = null;
+        let dragSelection = new Set(); // Stores date strings
+
+        function handleCellMouseDown(e, memberId, dateStr, td) {
+            return; // Editing disabled
+            if (e.button !== 0) return; // Only left click
+
+            const hasGlobalArrow = !!attendanceData.find(l => l.memberId === memberId && l.date === dateStr && l.status === 'arrow');
+            const canBypass = activeStatusBrush === 'arrow' || (activeStatusBrush === 'unchecked' && hasGlobalArrow);
+
+            if (!canBypass && td.classList.contains('cell-disabled')) return;
+
+            isDragging = true;
+            dragStartMemberId = memberId;
+            dragStartCourse = td.dataset.course || null;
+            dragStartDay = parseInt(dateStr.split('-')[2]);
+            dragSelection.clear();
+            dragSelection.add(dateStr);
+            td.classList.add('cell-drag-selected');
+        }
+
+        function handleCellMouseOver(e, memberId, dateStr, td) {
+            if (!isDragging) return;
+            if (memberId !== dragStartMemberId) return;
+
+            const isGlobalBrush = activeStatusBrush === 'arrow' || activeStatusBrush === 'unchecked';
+            if (!isGlobalBrush && (td.dataset.course || null) !== dragStartCourse) return;
+
+            const currentDay = parseInt(dateStr.split('-')[2]);
+            const start = Math.min(dragStartDay, currentDay);
+            const end = Math.max(dragStartDay, currentDay);
+
+            const isArrowBrush = activeStatusBrush === 'arrow';
+            const isEraserBrush = activeStatusBrush === 'unchecked';
+
+            dragSelection.clear();
+            const row = td.parentElement;
+            row.querySelectorAll('.cell-check').forEach(cell => {
+                const cDate = cell.dataset.date;
+                if (!cDate) return;
+                const d = parseInt(cDate.split('-')[2]);
+
+                if (d >= start && d <= end) {
+                    const cellHasArrow = !!attendanceData.find(l => l.memberId === memberId && l.date === cDate && l.status === 'arrow');
+
+                    // Eraser Bypass: Only bypass if it has an arrow OR it's not a restricted day
+                    const canBypassCell = isArrowBrush || (isEraserBrush && cellHasArrow);
+
+                    if (canBypassCell || !cell.classList.contains('cell-disabled')) {
+                        dragSelection.add(cDate);
+                        cell.classList.add('cell-drag-selected');
+                    } else {
+                        cell.classList.remove('cell-drag-selected');
+                    }
+                } else {
+                    cell.classList.remove('cell-drag-selected');
+                }
+            });
+        }
+
+        async function handleCellMouseUp() {
+            if (!isDragging) return;
+            isDragging = false;
+
+            // Clean up visual highlights
+            document.querySelectorAll('.cell-drag-selected').forEach(el => el.classList.remove('cell-drag-selected'));
+
+            const statusToApply = activeStatusBrush || 'extension';
+
+            if (dragSelection.size > 1) {
+                if (statusToApply === 'unchecked') {
+                    // Master Eraser: Clear both the current course row AND global arrows
+                    const dates = Array.from(dragSelection);
+                    await applyStatusToBatch(dragStartMemberId, dates, 'unchecked', dragStartCourse);
+                    await applyStatusToBatch(dragStartMemberId, dates, 'unchecked', null);
+                } else {
+                    const isGlobal = statusToApply === 'arrow';
+                    const targetCourse = isGlobal ? null : dragStartCourse;
+                    await applyStatusToBatch(dragStartMemberId, Array.from(dragSelection), statusToApply, targetCourse);
+                }
+            }
+            dragSelection.clear();
+            dragStartMemberId = null;
+            dragStartCourse = null;
+            dragStartDay = null;
+        }
+
+        // Global mouseup to catch releases outside cells
+        document.addEventListener('mouseup', () => {
+            if (isDragging) handleCellMouseUp();
+        });
+
+        async function applyStatusToBatch(memberId, dates, status, course) {
+            // Update local state first for speed
+            if (status === 'unchecked') {
+                attendanceData = attendanceData.filter(l =>
+                    !(l.memberId === memberId && dates.includes(l.date) && (course === undefined || l.course === (course || null)))
+                );
+            } else {
+                dates.forEach(date => {
+                    // Check matches for specific course or null (arrow)
+                    const target = course || null;
+                    const idx = attendanceData.findIndex(l => l.memberId === memberId && l.date === date && (l.course === target || (!l.course && !target)));
+
+                    if (idx !== -1) {
+                        attendanceData[idx].status = status;
+                        attendanceData[idx].course = target;
+                    } else {
+                        attendanceData.push({ memberId, date, status, course: target });
+                    }
+                });
+            }
+            renderSheet(); // Re-render first to show arrow
+
+            // Send to server
+            try {
+                await fetch('/api/attendance/batch', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ memberId, dates, status: status || 'unchecked', course: course === undefined ? null : course })
+                });
+            } catch (e) {
+                console.error(e);
+                alert('저장에 실패했습니다. 다시 시도해 주세요.');
+            }
+        }
+
+        // ---- Visual Logic ----
+        function renderExtensionArrow(td, isPrevExt, isNextExt) {
+            td.innerHTML = '';
+            td.className = ''; // reset
+            td.classList.add('stat-extension');
+            td.style.position = 'relative';
+            td.style.color = 'transparent'; // Hide text if any
+
+            // Draw arrow using CSS or characters
+            // Simplest: use text content with lines
+            // Start: O--
+            // Mid: ---
+            // End: -->
+            // Single: 연장 (Just text)
+
+            if (!isPrevExt && !isNextExt) {
+                // Single cell extension
+                setCellSymbol(td, 'extension');
+                return;
+            }
+
+            // Continuous Arrow
+            const arrowContainer = document.createElement('div');
+            arrowContainer.style.width = '100%';
+            arrowContainer.style.height = '100%';
+            arrowContainer.style.display = 'flex';
+            arrowContainer.style.alignItems = 'center';
+            arrowContainer.style.justifyContent = 'center';
+            arrowContainer.style.fontWeight = 'bold';
+            arrowContainer.style.color = '#d97706'; // Extension color
+
+            if (!isPrevExt && isNextExt) {
+                // Start
+                arrowContainer.textContent = '● ──';
+            } else if (isPrevExt && isNextExt) {
+                // Mid
+                arrowContainer.textContent = '───';
+            } else if (isPrevExt && !isNextExt) {
+                // End
+                arrowContainer.textContent = '── ▶';
+            }
+            td.appendChild(arrowContainer);
+        }
+
+        function renderThinArrow(td, isPrev, isNext) {
+            td.innerHTML = '';
+            const arrow = document.createElement('div');
+            arrow.className = 'stat-arrow';
+            if (!isPrev && isNext) arrow.classList.add('arrow-start');
+            else if (isPrev && isNext) arrow.classList.add('arrow-mid');
+            else if (isPrev && !isNext) arrow.classList.add('arrow-end');
+            else {
+                // Single cell - just a small line or indicator?
+                // User said "long arrow", but if it's 1 cell, we show a dot or short line
+                arrow.classList.add('arrow-start');
+                arrow.classList.add('arrow-end');
+            }
+            td.appendChild(arrow);
+        }
+
+
+        function toggleCell(td, memberId, dateStr, course) {
+            const hasGlobalArrow = !!attendanceData.find(l => l.memberId === memberId && l.date === dateStr && l.status === 'arrow');
+            const canBypass = activeStatusBrush === 'arrow' || (activeStatusBrush === 'unchecked' && hasGlobalArrow);
+
+            if (!canBypass && td.classList.contains('cell-disabled')) return;
+
+            // 1. Brush Mode
+            if (activeStatusBrush !== null) {
+                // For Eraser, clear both global and local
+                if (activeStatusBrush === 'unchecked') {
+                    saveAttendance(memberId, dateStr, 'unchecked', null); // Clear arrow
+                    saveAttendance(memberId, dateStr, 'unchecked', course); // Clear course log
+                    return;
+                }
+
+                const targetCourse = activeStatusBrush === 'arrow' ? null : course;
+                const log = attendanceData.find(l => l.memberId === memberId && l.date === dateStr && (l.course === targetCourse || (!l.course && !targetCourse)));
+                const currentStatus = log ? log.status : 'unchecked';
+
+                // Toggle off if same brush
+                const nextStatus = (currentStatus === activeStatusBrush) ? 'unchecked' : activeStatusBrush;
+                saveAttendance(memberId, dateStr, nextStatus, targetCourse);
+                return;
+            }
+
+            // 2. Default Toggle Mode
+            const globalArrowLog = attendanceData.find(l => l.memberId === memberId && l.date === dateStr && l.status === 'arrow');
+
+            // If clicking an arrow in default mode, ask to delete it
+            if (globalArrowLog) {
+                if (confirm('이 화살표를 삭제하시겠습니까?')) {
+                    saveAttendance(memberId, dateStr, 'unchecked', null);
+                    return;
+                } else {
+                    return;
+                }
+            }
+
+            const log = attendanceData.find(l => l.memberId === memberId && l.date === dateStr && (l.course === course || (!l.course && !course)));
+            const currentStatus = log ? log.status : 'unchecked';
+
+            let nextStatus = 'present';
+            if (log) {
+                if (log.status === 'present') nextStatus = 'absent';
+                else if (log.status === 'absent') nextStatus = 'extension';
+                else if (log.status === 'extension') {
+                    if (confirm('출결 상태를 초기화(미체크)하시겠습니까?')) nextStatus = 'unchecked';
+                    else return;
+                }
+                else nextStatus = 'present';
+            }
+            saveAttendance(memberId, dateStr, nextStatus, course);
+        }
+
+
+
+        function editCellText(td, memberId, dateStr, course) {
+            if (td.classList.contains('cell-disabled')) return;
+
+            const globalArrowLog = attendanceData.find(l => l.memberId === memberId && l.date === dateStr && l.status === 'arrow');
+            const targetCourse = globalArrowLog ? null : course;
+
+            const currentText = td.textContent.trim();
+            const isExtension = td.classList.contains('stat-extension');
+            const isArrow = td.querySelector('.stat-arrow') || globalArrowLog;
+
+            let initial = '';
+            // Robust detection: if it's already a symbol or has the symbol style
+            if (isExtension || currentText.startsWith('연')) {
+                initial = '연 ';
+            } else if (td.classList.contains('stat-absent') || currentText.startsWith('X')) {
+                initial = 'X ';
+            } else {
+                initial = ['O', 'X'].includes(currentText) ? '' : currentText;
+            }
+
+            const newText = prompt('출결 상태 또는 짧은 메모를 입력하세요:', initial);
+
+            if (newText === null) return;
+
+            const finalStatus = newText.trim() === '' ? null : newText.trim();
+            setCellSymbol(td, finalStatus);
+            saveAttendance(memberId, dateStr, finalStatus, targetCourse);
+        }
+    </script>
+    <script src="questions_data.js"></script>
+</body>
+
+</html>

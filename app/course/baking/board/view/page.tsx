@@ -5,6 +5,7 @@ import BakingSubNav from "@/components/BakingSubNav";
 import Link from 'next/link';
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState, Suspense } from "react";
+import AlertModal from "@/components/AlertModal";
 
 interface Post {
     id: string;
@@ -22,6 +23,14 @@ function BakingPostDetailContent() {
     const [post, setPost] = useState<Post | null>(null);
     const [loading, setLoading] = useState(true);
 
+    // Alert Modal State
+    const [showAlert, setShowAlert] = useState(false);
+    const [alertConfig, setAlertConfig] = useState({
+        title: '알림',
+        message: '',
+        type: 'warning' as 'success' | 'warning' | 'error' | 'info'
+    });
+
     useEffect(() => {
         const fetchPost = async () => {
             if (!id) {
@@ -29,10 +38,13 @@ function BakingPostDetailContent() {
                 return;
             }
             try {
-                const res = await fetch('/data/baking_posts.json');
+                const url = process.env.NODE_ENV === 'production'
+                    ? '/api.php?board=baking'
+                    : '/data/baking_posts.json?t=' + Date.now();
+                const res = await fetch(url);
                 if (res.ok) {
                     const data: Post[] = await res.json();
-                    const found = data.find(p => p.id === id);
+                    const found = data.find(p => String(p.id) === String(id));
                     if (found) setPost(found);
                 }
             } catch (e) {
@@ -43,6 +55,15 @@ function BakingPostDetailContent() {
         };
         fetchPost();
     }, [id]);
+
+    const handleDelete = () => {
+        setAlertConfig({
+            title: '삭제 불가',
+            message: "기본 게시물은 삭제할 수 없습니다.\n(데이터 보호됨)",
+            type: 'warning'
+        });
+        setShowAlert(true);
+    };
 
     if (loading) return <div className="p-20 text-center">Loading...</div>;
     if (!post) return <div className="p-20 text-center">Post not found</div>;
@@ -124,11 +145,20 @@ function BakingPostDetailContent() {
                             <ActionButtons
                                 listLink="/course/baking/board"
                                 editLink={`/admin/baking-board/edit?id=${post.id}`}
+                                onDelete={handleDelete}
                             />
                         </div>
                     </div>
                 </div>
             </div>
+
+            <AlertModal
+                isOpen={showAlert}
+                onClose={() => setShowAlert(false)}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                type={alertConfig.type}
+            />
         </div>
     );
 }

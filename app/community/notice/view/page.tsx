@@ -20,7 +20,8 @@ function NoticeDetailContent() {
             }
 
             try {
-                const res = await fetch('/data/notice_data.json');
+                const url = process.env.NODE_ENV === 'production' ? '/api.php?board=notice' : '/data/notice_data.json';
+                const res = await fetch(url);
                 const data = await res.json();
 
                 if (Array.isArray(data)) {

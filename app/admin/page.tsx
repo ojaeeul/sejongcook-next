@@ -1,10 +1,31 @@
 
 'use client';
 
-import { FileText, MessageSquare, Briefcase, Image as ImageIcon, Wrench, ChevronRight, ClipboardList, Users } from 'lucide-react';
+import { FileText, MessageSquare, Briefcase, Image as ImageIcon, Wrench, ChevronRight, ClipboardList, Users, Layers, Activity } from 'lucide-react';
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 
 export default function AdminDashboard() {
+    const [visitors, setVisitors] = useState({ today: 0, total: 0 });
+
+    useEffect(() => {
+        const fetchVisitors = async () => {
+            try {
+                let url = '/api/visitors';
+                if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
+                    url = '/api.php?board=visitors';
+                }
+                const res = await fetch(url);
+                if (res.ok) {
+                    const data = await res.json();
+                    setVisitors(data);
+                }
+            } catch (e) {
+                console.error('Failed to load visitors', e);
+            }
+        };
+        fetchVisitors();
+    }, []);
     const stats = [
         { name: '총 공지사항', value: '12', icon: FileText, color: 'text-blue-600', bg: 'bg-blue-100', href: '/admin/notice' },
         { name: '수강후기', value: '8', icon: MessageSquare, color: 'text-emerald-600', bg: 'bg-emerald-100', href: '/admin/review' },
@@ -20,6 +41,28 @@ export default function AdminDashboard() {
             <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-bold text-gray-800">대시보드</h1>
                 <div className="text-sm text-gray-500">세종요리제과기술학원 관리자 페이지에 오신 것을 환영합니다.</div>
+            </div>
+
+            {/* Visitor Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-6 text-white shadow-md flex items-center justify-between">
+                    <div>
+                        <p className="text-blue-100 font-medium text-sm mb-1">오늘 방문자</p>
+                        <h3 className="text-3xl font-bold">{visitors.today.toLocaleString()}명</h3>
+                    </div>
+                    <div className="bg-white/20 p-3 rounded-lg">
+                        <Activity className="w-8 h-8 text-white" />
+                    </div>
+                </div>
+                <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-xl p-6 text-white shadow-md flex items-center justify-between">
+                    <div>
+                        <p className="text-emerald-100 font-medium text-sm mb-1">총 방문자</p>
+                        <h3 className="text-3xl font-bold">{visitors.total.toLocaleString()}명</h3>
+                    </div>
+                    <div className="bg-white/20 p-3 rounded-lg">
+                        <Users className="w-8 h-8 text-white" />
+                    </div>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -95,6 +138,68 @@ export default function AdminDashboard() {
                             </div>
                         </div>
                     </Link>
+                    {/* Card 3: Baking Board Management */}
+                    <Link href="/admin/baking-board" className="group block bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+                        <div className="flex items-stretch">
+                            <div className="w-1.5 bg-amber-500"></div>
+                            <div className="p-5 flex-1 flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 bg-gray-100 rounded-lg">
+                                        <ImageIcon className="w-8 h-8 text-gray-600" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-gray-800 text-lg">제과제빵 갤러리 관리</h3>
+                                        <p className="text-gray-500 text-sm">갤러리 글쓰기/수정</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center text-amber-600 font-medium text-sm group-hover:underline">
+                                    이동 <ChevronRight className="w-4 h-4 ml-1" />
+                                </div>
+                            </div>
+                        </div>
+                    </Link>
+
+                    {/* Card 4: Cooking Board Management */}
+                    <Link href="/admin/cooking-board" className="group block bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+                        <div className="flex items-stretch">
+                            <div className="w-1.5 bg-rose-500"></div>
+                            <div className="p-5 flex-1 flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 bg-gray-100 rounded-lg">
+                                        <FileText className="w-8 h-8 text-gray-600" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-gray-800 text-lg">조리 게시판 관리</h3>
+                                        <p className="text-gray-500 text-sm">수업뉴스 글쓰기/수정</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center text-rose-600 font-medium text-sm group-hover:underline">
+                                    이동 <ChevronRight className="w-4 h-4 ml-1" />
+                                </div>
+                            </div>
+                        </div>
+                    </Link>
+
+                    {/* Card 5: Popup Management (Moved down) */}
+                    <Link href="/admin/popups" className="group block bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+                        <div className="flex items-stretch">
+                            <div className="w-1.5 bg-purple-500"></div>
+                            <div className="p-5 flex-1 flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 bg-gray-100 rounded-lg">
+                                        <Layers className="w-8 h-8 text-gray-600" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-gray-800 text-lg">팝업 관리</h3>
+                                        <p className="text-gray-500 text-sm">메인 팝업/배너 관리</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center text-purple-600 font-medium text-sm group-hover:underline">
+                                    이동 <ChevronRight className="w-4 h-4 ml-1" />
+                                </div>
+                            </div>
+                        </div>
+                    </Link>
                 </div>
             </div>
 
@@ -105,8 +210,8 @@ export default function AdminDashboard() {
                         <Link href="/admin/notice/new" className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 text-center transition-colors">
                             <span className="font-medium text-gray-700">공지사항 작성</span>
                         </Link>
-                        <Link href="/admin/gallery/new" className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 text-center transition-colors">
-                            <span className="font-medium text-gray-700">이미지 업로드</span>
+                        <Link href="/admin/gallery" className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 text-center transition-colors">
+                            <span className="font-medium text-gray-700">이미지 관리</span>
                         </Link>
                         <Link href="/admin/links" className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 text-center transition-colors">
                             <span className="font-medium text-gray-700">링크 관리</span>
@@ -135,6 +240,6 @@ export default function AdminDashboard() {
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }

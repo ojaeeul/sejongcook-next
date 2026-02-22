@@ -4,8 +4,6 @@
 import { useEffect, useState, Suspense } from 'react';
 import DataEditor from '../../components/DataEditor';
 import { useSearchParams } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
-
 function EditLinkContent() {
     const searchParams = useSearchParams();
     const id = searchParams.get('id');
@@ -17,14 +15,13 @@ function EditLinkContent() {
         if (!id) return;
         const fetchData = async () => {
             try {
-                const { data: post, error } = await supabase
-                    .from('posts')
-                    .select('*')
-                    .eq('id', id)
-                    .single();
-
-                if (error) throw error;
-                setData(post);
+                const url = process.env.NODE_ENV === 'production' ? '/api.php?board=links' : '/api/admin/data/links';
+                const res = await fetch(url);
+                if (res.ok) {
+                    const links = await res.json();
+                    const found = links.find((p: { id: string | number }) => String(p.id) === String(id));
+                    if (found) setData(found);
+                }
             } catch (error) {
                 console.error('Failed to fetch link', error);
             } finally {

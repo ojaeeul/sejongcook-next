@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import Image from 'next/image';
 import { DEFAULT_HERO_DATA } from '../app/data/defaultHeroData';
 
 interface HeroBackgroundProps {
@@ -85,9 +86,18 @@ export default function HeroBackground({ images }: HeroBackgroundProps) {
             {safeImages.map((img: string, index: number) => (
                 <div
                     key={`${img}-${index}`}
-                    className={`absolute inset-0 bg-cover bg-center bg-fixed transition-opacity duration-1000 ${index === currentSlide ? 'opacity-100' : 'opacity-0'}`}
-                    style={{ backgroundImage: `url('${img}')` }}
-                />
+                    className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide ? 'opacity-100' : 'opacity-0'}`}
+                >
+                    <Image
+                        src={img}
+                        alt={`Hero slide ${index + 1}`}
+                        fill
+                        priority={index === 0}
+                        quality={75}
+                        className="object-cover object-center"
+                        sizes="100vw"
+                    />
+                </div>
             ))}
             <div className="absolute inset-0 bg-black/50 z-10 pointer-events-none" />
 

@@ -1,36 +1,58 @@
 [
   {
-    "id": "1769308717006",
-    "name": "1212121212",
-    "phone": "010-1212-1212",
+    "id": "1770467109124",
+    "name": "이만기",
+    "phone": "010-8211-4485",
+    "courses": [
+      "제과제빵기능사"
+    ],
+    "visitDate": "2026-02-08",
+    "visitTime": "9:00",
+    "content": "연락주세요",
+    "date": "2026-02-07T12:25:09.124Z",
+    "marketingAgree": true,
+    "isRead": false
+  },
+  {
+    "id": "1770466640267",
+    "name": "ManualTest",
+    "phone": "010-7777-8888",
+    "courses": [
+      "한식조리"
+    ],
+    "visitDate": "202512-03-01",
+    "visitTime": "",
+    "content": "Manual bidirectional test.",
+    "date": "2026-02-07T12:17:20.267Z",
+    "marketingAgree": true,
+    "isRead": false
+  },
+  {
+    "id": "1770466407193",
+    "name": "dh",
+    "phone": "010-3212-3221",
     "courses": [
       "브런치"
     ],
-    "date": "2026-01-25T02:38:37.006Z",
-    "marketingAgree": false,
+    "visitDate": "",
+    "visitTime": "9:00",
+    "content": "32r21r",
+    "date": "2026-02-07T12:13:27.193Z",
+    "marketingAgree": true,
     "isRead": false
   },
   {
-    "id": "1769308695383",
-    "name": "121112",
-    "phone": "010-1212-1212",
+    "id": "1738928810237",
+    "name": "오재을",
+    "phone": "010-3333-3333",
     "courses": [
-      "브런치",
-      "가정요리"
+      "제과제빵기능사"
     ],
-    "date": "2026-01-25T02:38:15.383Z",
-    "marketingAgree": false,
-    "isRead": false
-  },
-  {
-    "id": "1769248228128",
-    "name": "123",
-    "phone": "010-6757-0979",
-    "courses": [
-      "한식조리",
-      "제과기능사"
-    ],
-    "date": "2026-01-24T09:50:28.128Z",
+    "visitDate": "2025-02-14",
+    "visitTime": "13:00",
+    "content": "상담신청 테스트 입니다. ",
+    "date": "2025-02-07T11:46:50.237Z",
+    "marketingAgree": true,
     "isRead": false
   }
 ]

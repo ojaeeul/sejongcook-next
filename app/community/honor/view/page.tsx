@@ -3,7 +3,6 @@
 import BoardView from "@/components/BoardView";
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState, Suspense } from 'react';
-import { supabase } from '@/lib/supabase';
 
 function HonorViewContent() {
     const searchParams = useSearchParams();
@@ -19,13 +18,13 @@ function HonorViewContent() {
         }
         const fetchPost = async () => {
             try {
-                const { data, error } = await supabase
-                    .from('posts')
-                    .select('*')
-                    .eq('id', idx)
-                    .single();
+                // Fetch from PHP bridge in production, local JSON otherwise
+                const url = process.env.NODE_ENV === 'production' ? '/api.php?board=honor' : '/data/honor_data.json';
+                const res = await fetch(url);
+                const list = await res.json();
+                const data = list.find((i: { id: string | number }) => String(i.id) === String(idx));
 
-                if (error) throw error;
+                if (!data) throw new Error('Post not found');
                 setPost(data);
             } catch (e) {
                 console.error("Failed to load honor post:", e);

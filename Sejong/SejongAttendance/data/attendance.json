@@ -1,0 +1,97 @@
+[
+  {
+    "memberId": "1769666245375",
+    "date": "2026-01-04",
+    "status": "extension"
+  },
+  {
+    "memberId": "1769666245375",
+    "date": "2026-01-02",
+    "status": "absent"
+  },
+  {
+    "memberId": "1769750865408",
+    "date": "2026-01-14",
+    "status": "present"
+  },
+  {
+    "memberId": "1769750865408",
+    "date": "2026-01-20",
+    "status": "present"
+  },
+  {
+    "memberId": "1769666245375",
+    "date": "2026-01-03",
+    "status": "extension"
+  },
+  {
+    "memberId": "1769750865408",
+    "date": "2026-01-02",
+    "status": "present"
+  },
+  {
+    "memberId": "1769666245375",
+    "date": "2026-01-13",
+    "status": "present"
+  },
+  {
+    "memberId": "1769750865408",
+    "date": "2026-01-16",
+    "status": "present"
+  },
+  {
+    "memberId": "1769750865408",
+    "date": "2026-01-17",
+    "status": "present"
+  },
+  {
+    "memberId": "1769750865408",
+    "date": "2026-01-07",
+    "status": "extension"
+  },
+  {
+    "memberId": "1769750865408",
+    "date": "2026-01-05",
+    "status": "present"
+  },
+  {
+    "memberId": "1769756681840",
+    "date": "2026-01-05",
+    "status": "present"
+  },
+  {
+    "memberId": "1769756681840",
+    "date": "2026-01-07",
+    "status": "present"
+  },
+  {
+    "memberId": "1769666245375",
+    "date": "2026-01-15",
+    "status": "present"
+  },
+  {
+    "memberId": "1769767328754",
+    "date": "2026-01-30",
+    "status": "present"
+  },
+  {
+    "memberId": "1769756681840",
+    "date": "2026-01-01",
+    "status": "extension"
+  },
+  {
+    "memberId": "1769756681840",
+    "date": "2026-01-02",
+    "status": "extension"
+  },
+  {
+    "memberId": "1769756681840",
+    "date": "2026-01-03",
+    "status": "extension"
+  },
+  {
+    "memberId": "1769666245375",
+    "date": "2026-02-01",
+    "status": null
+  }
+]
