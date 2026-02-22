@@ -29,7 +29,7 @@ function CookingPostDetailContent() {
                 return;
             }
             try {
-                const url = '/api/admin/data/cooking' + Date.now();
+                const url = '/api/admin/data/cooking?_t=' + Date.now();
                 const res = await fetch(url);
                 if (res.ok) {
                     const data: Post[] = await res.json();
