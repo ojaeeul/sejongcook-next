@@ -1,7 +1,7 @@
 // Force API Calls to port 8000 API for Bidirectional Sync
 const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     ? 'http://localhost:8000/api'
-    : '/api';
+    : 'https://thin-bags-listen.loca.lt/api';
 
 
 

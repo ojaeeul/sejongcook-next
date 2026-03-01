@@ -1,7 +1,7 @@
 // Main Configuration
 const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     ? 'http://localhost:8000/api'
-    : '/api'; // Falls back to relative path for Vercel/Domain proxying
+    : 'https://thin-bags-listen.loca.lt/api';
 let currentInput = "";
 let stream = null;
 let currentMode = 'home';
