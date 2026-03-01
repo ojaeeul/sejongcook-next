@@ -137,6 +137,131 @@
             color: #ccc;
             font-size: 0.9rem;
         }
+
+        /* Responsive Media Queries */
+        @media (max-width: 1024px) {
+            #homeScreen {
+                padding: 10px !important;
+            }
+
+            #homeScreen>div:first-child {
+                margin-bottom: 15px !important;
+            }
+
+            #homeScreen h1 {
+                font-size: 1.8rem !important;
+            }
+
+            #homeScreen h2 {
+                font-size: 1.3rem !important;
+                margin-top: 10px !important;
+            }
+
+            #homeScreen p:nth-child(3) {
+                font-size: 0.8rem !important;
+            }
+
+            #homeScreen>div:nth-child(2) {
+                flex-direction: column !important;
+                gap: 10px !important;
+            }
+
+            .mode-card {
+                width: 100% !important;
+                height: 140px !important;
+                /* Shorter cards */
+                border-radius: 20px !important;
+            }
+
+            .mode-card h3 {
+                font-size: 1.4rem !important;
+                margin-bottom: 5px !important;
+            }
+
+            .mode-card p {
+                font-size: 0.8rem !important;
+            }
+
+            .mode-card .icon-circle {
+                width: 50px !important;
+                height: 50px !important;
+                margin-bottom: 5px !important;
+            }
+
+            .mode-card .icon-circle span {
+                font-size: 24px !important;
+            }
+
+            .register-btn {
+                margin-top: 5px !important;
+                padding: 6px 12px !important;
+            }
+
+            .register-btn span {
+                font-size: 0.75rem !important;
+            }
+
+            #homeScreen div[style*="margin-top: 60px"] {
+                margin-top: 15px !important;
+            }
+
+            #homeTime {
+                font-size: 1.8rem !important;
+            }
+
+            #homeDate {
+                font-size: 0.9rem !important;
+            }
+
+            .kiosk-container {
+                flex-direction: column !important;
+                height: 100dvh;
+                overflow: hidden !important;
+            }
+
+            #workspace {
+                flex-direction: column !important;
+                height: 100dvh !important;
+                overflow: hidden !important;
+            }
+
+            .kiosk-left {
+                padding: 10px;
+                height: 38dvh !important;
+                min-height: auto !important;
+                flex: none !important;
+                justify-content: flex-end !important;
+                padding-bottom: 0px !important;
+            }
+
+            .kiosk-right {
+                width: 100% !important;
+                padding: 10px;
+                height: 62dvh !important;
+                min-height: auto !important;
+                flex: none !important;
+                border-left: none !important;
+                border-top: none !important;
+                justify-content: flex-start !important;
+                padding-top: 5px !important;
+            }
+
+            .key-btn {
+                font-size: 1.2rem !important;
+            }
+
+            .input-display {
+                height: 40px !important;
+                font-size: 1.6rem !important;
+                line-height: 40px !important;
+                margin-bottom: 10px !important;
+            }
+
+            .keypad-grid {
+                gap: 5px !important;
+                max-width: 280px !important;
+            }
+        }
     </style>
 </head>
 

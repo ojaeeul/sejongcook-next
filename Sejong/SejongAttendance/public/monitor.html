@@ -143,12 +143,75 @@
             .home-mode-container {
                 flex-direction: column-reverse !important;
                 align-items: center;
-                gap: 15px !important;
+                gap: 5px !important;
+                padding: 0 10px !important;
             }
 
             .mode-card {
                 width: 100% !important;
-                height: 250px !important;
+                height: 140px !important;
+                /* Shorter cards */
+                border-radius: 20px !important;
+            }
+
+            .mode-card h3 {
+                font-size: 1.4rem !important;
+                margin-bottom: 5px !important;
+            }
+
+            .mode-card p {
+                font-size: 0.8rem !important;
+            }
+
+            .mode-card .icon-circle {
+                width: 50px !important;
+                height: 50px !important;
+                margin-bottom: 5px !important;
+            }
+
+            .mode-card .icon-circle span {
+                font-size: 24px !important;
+            }
+
+            #homeScreen>div:first-child {
+                margin-bottom: 15px !important;
+                /* Smaller top margin */
+            }
+
+            #homeScreen h1 {
+                font-size: 1.8rem !important;
+            }
+
+            #homeScreen h2 {
+                font-size: 1.3rem !important;
+                margin-top: 10px !important;
+            }
+
+            #homeScreen p:nth-child(3) {
+                /* SEJONG CULINARY ACADEMY */
+                font-size: 0.8rem !important;
+            }
+
+            #homeScreen div[style*="margin-top: 60px"] {
+                margin-top: 15px !important;
+                /* Smaller bottom margin */
+            }
+
+            #homeTime {
+                font-size: 1.8rem !important;
+            }
+
+            #homeDate {
+                font-size: 0.9rem !important;
+            }
+
+            .register-btn {
+                margin-top: 8px !important;
+                padding: 8px 16px !important;
+            }
+
+            .register-btn span {
+                font-size: 0.8rem !important;
             }
 
             .kiosk-container {
@@ -183,6 +246,7 @@
                 justify-content: flex-start !important;
                 padding-top: 5px !important;
             }
+
 
             .kiosk-right button[onclick="switchMode('home')"] {
                 position: absolute !important;
