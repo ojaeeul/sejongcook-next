@@ -115,7 +115,10 @@ async function submitAttendance() {
         showStatus("번호 8자리를 입력해주세요.", "red");
         return;
     }
+    if (mainSubmitBtn) { mainSubmitBtn.disabled = true; mainSubmitBtn.textContent = "처리중..."; mainSubmitBtn.style.opacity = "0.7"; }
+    showStatus("출석 처리 중입니다...", "#3b82f6");
     await processAttendance(currentInput);
+    if (mainSubmitBtn) { mainSubmitBtn.disabled = false; mainSubmitBtn.textContent = "출석"; mainSubmitBtn.style.opacity = "1"; }
 }
 
 async function recognizeAndAttend() {
@@ -124,17 +127,30 @@ async function recognizeAndAttend() {
         return;
     }
 
-    showStatus("얼굴을 인식하는 중입니다...", "#94a3b8");
+    const btn = document.querySelector('#faceOnlyPanel button');
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = "AI 분석 대기중...";
+        btn.style.opacity = "0.7";
+    }
+
+    showStatus("얼굴 특징을 분석 중입니다. 가만히 바라봐주세요...", "#3b82f6");
     if (shutter) shutter.style.opacity = '1';
     setTimeout(() => { if (shutter) shutter.style.opacity = '0'; }, 150);
+
+    // Give browser time to paint the UI text updates before heavy ML block
+    await new Promise(r => setTimeout(r, 50));
 
     try {
         const detection = await faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor();
 
         if (!detection) {
-            showStatus("카메라에서 얼굴이 감지되지 않았습니다. 정면을 바라보세요.", "red");
+            showStatus("얼굴이 감지되지 않았습니다. 밝은 곳에서 시도하세요.", "red");
             return;
         }
+
+        showStatus("서버 데이터를 불러오는 중...", "#059669");
+        await new Promise(r => setTimeout(r, 20));
 
         const res = await fetch(`${API_BASE}/members?t=` + Date.now());
         const rawMembers = await res.json();
@@ -166,14 +182,13 @@ async function recognizeAndAttend() {
             const phone8 = phoneStr.length >= 8 ? phoneStr.slice(-8) : phoneStr;
             await processAttendance(phone8, captureData);
         } else {
-            showStatus("등록된 얼굴을 찾을 수 없습니다.", "red");
-            setTimeout(() => {
-                showStatus("출석 전 '신규 등록 (처음)' 버튼을 통해 얼굴을 등록해보세요.", "orange");
-            }, 2500);
+            showStatus("등록된 얼굴을 찾을 수 없습니다. 신규 등록을 이용해보세요.", "red");
         }
     } catch (e) {
         showStatus("인식 시스템 오류!", "red");
         console.error(e);
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = "얼굴로 출석하기"; btn.style.opacity = "1"; }
     }
 }
 
@@ -188,15 +203,25 @@ async function capturePhoto() {
         return;
     }
 
-    showStatus("사진 촬영 및 얼굴 분석 등록 중...", "#4ade80");
+    if (faceSubmitBtn) {
+        faceSubmitBtn.disabled = true;
+        faceSubmitBtn.innerHTML = "AI 분석 대기중...<br>잠시 대기!";
+        faceSubmitBtn.style.background = "#94a3b8";
+    }
+
+    showStatus("사진 촬영 및 얼굴 특징을 추출 중입니다...", "#3b82f6");
     if (shutter) shutter.style.opacity = '1';
     setTimeout(() => { if (shutter) shutter.style.opacity = '0'; }, 150);
+
+    // Yield for UI paint
+    await new Promise(r => setTimeout(r, 50));
 
     try {
         const context = canvas.getContext('2d');
         context.drawImage(video, 0, 0, 640, 480);
         const photoDataUrl = canvas.toDataURL('image/jpeg', 0.7);
 
+        showStatus("회원 정보를 조회 중입니다...", "#3b82f6");
         const res = await fetch(`${API_BASE}/members?t=` + Date.now());
         const rawMembers = await res.json();
         const members = Array.isArray(rawMembers) ? rawMembers.filter(m => !['delete', 'trash', 'hold', 'completed'].includes(m.status)) : [];
@@ -207,12 +232,17 @@ async function capturePhoto() {
             return;
         }
 
+        showStatus("얼굴 데이터를 병합 분석 중입니다. 가만히 계세요...", "#3b82f6");
+        await new Promise(r => setTimeout(r, 50));
+
         const detection = await faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor();
 
         if (!detection) {
             showStatus("얼굴이 명확히 인식되지 않았습니다. 밝은 곳에서 시도해주세요.", "red");
             return;
         }
+
+        showStatus("신규 얼굴 데이터를 서버에 등록 중입니다...", "#059669");
 
         member.photo = photoDataUrl;
         member.faceDescriptor = Array.from(detection.descriptor); // Store for euclidean comparison
@@ -223,19 +253,31 @@ async function capturePhoto() {
             body: JSON.stringify(member)
         });
 
-        await processAttendance(currentInput, photoDataUrl);
+        showStatus("얼굴 등록 완료! 자동으로 출석 체크를 진행합니다...", "#059669");
+        await processAttendance(member, photoDataUrl);
     } catch (e) {
         showStatus("저장 오류!", "red");
         console.error(e);
+    } finally {
+        if (faceSubmitBtn) {
+            faceSubmitBtn.disabled = false;
+            faceSubmitBtn.innerHTML = "얼굴 촬영<br>및 출석";
+            faceSubmitBtn.style.background = "#059669";
+        }
     }
 }
 
-async function processAttendance(inputNum, overridePhoto = null) {
+async function processAttendance(inputNumOrObj, overridePhoto = null) {
     try {
-        const res = await fetch(`${API_BASE}/members?t=` + Date.now());
-        const rawMembers = await res.json();
-        const members = Array.isArray(rawMembers) ? rawMembers.filter(m => !['delete', 'trash', 'hold', 'completed'].includes(m.status)) : [];
-        const member = members.find(m => m.phone && m.phone.replace(/-/g, '').endsWith(inputNum));
+        let member = null;
+        if (typeof inputNumOrObj === 'object' && inputNumOrObj !== null) {
+            member = inputNumOrObj;
+        } else {
+            const res = await fetch(`${API_BASE}/members?t=` + Date.now());
+            const rawMembers = await res.json();
+            const members = Array.isArray(rawMembers) ? rawMembers.filter(m => !['delete', 'trash', 'hold', 'completed'].includes(m.status)) : [];
+            member = members.find(m => m.phone && m.phone.replace(/-/g, '').endsWith(inputNumOrObj));
+        }
 
         if (!member) {
             showStatus("등록되지 않은 번호입니다.", "red");
