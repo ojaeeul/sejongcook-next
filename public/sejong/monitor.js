@@ -269,6 +269,31 @@ async function capturePhoto() {
     }
 }
 
+function determineAttendanceStatus(member) {
+    if (!member || !member.timeSlot) return 'present';
+
+    const now = new Date();
+    const currentMins = now.getHours() * 60 + now.getMinutes();
+
+    const slots = member.timeSlot.split(',').map(s => {
+        const parts = s.trim().split(':');
+        if (parts.length < 2) return -1;
+        return parseInt(parts[0]) * 60 + parseInt(parts[1]);
+    }).filter(m => m !== -1);
+
+    for (const slotMins of slots) {
+        if (currentMins >= (slotMins - 80) && currentMins <= (slotMins + 30)) {
+            const h = Math.floor(slotMins / 60);
+            if (h === 10) return '10';
+            if (h === 12) return '12';
+            if (h === 14 || h === 2) return '2';
+            if (h === 17 || h === 5) return '5';
+            if (h === 19 || h === 7) return '7';
+        }
+    }
+    return 'present';
+}
+
 async function processAttendance(inputNumOrObj, overridePhoto = null) {
     try {
         let member = null;
@@ -287,10 +312,12 @@ async function processAttendance(inputNumOrObj, overridePhoto = null) {
         }
 
         const today = new Date().toISOString().split('T')[0];
+        const status = determineAttendanceStatus(member);
+
         const postRes = await fetch(`${API_BASE}/attendance`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ memberId: member.id, date: today, status: 'present' })
+            body: JSON.stringify({ memberId: member.id, date: today, status: status })
         });
 
         if (postRes.ok) {
