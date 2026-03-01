@@ -1,0 +1,78 @@
+127.0.0.1 - - [25/Feb/2026 08:55:06] "GET /ledger.html HTTP/1.1" 200 -
+127.0.0.1 - - [25/Feb/2026 08:55:06] "GET /style.css?v=20260220_11 HTTP/1.1" 304 -
+127.0.0.1 - - [25/Feb/2026 08:55:06] "GET /ledger.js?v=20260222_1 HTTP/1.1" 304 -
+127.0.0.1 - - [25/Feb/2026 08:55:06] "GET /questions_data.js?v=20260209_1 HTTP/1.1" 304 -
+127.0.0.1 - - [25/Feb/2026 08:55:06] "GET /api/members?t=1771977306747 HTTP/1.1" 200 -
+127.0.0.1 - - [25/Feb/2026 08:55:06] "GET /api/payments?t=1771977306747 HTTP/1.1" 200 -
+127.0.0.1 - - [25/Feb/2026 08:55:06] "GET /api/attendance?t=1771977306747 HTTP/1.1" 200 -
+127.0.0.1 - - [25/Feb/2026 08:55:06] "GET /api/admin/data/settings?t=1771977306747 HTTP/1.1" 200 -
+127.0.0.1 - - [25/Feb/2026 08:55:06] "GET /api/holidays?t=1771977306747 HTTP/1.1" 200 -
+127.0.0.1 - - [25/Feb/2026 08:55:06] "GET /api/timetable?t=1771977306747 HTTP/1.1" 200 -
+127.0.0.1 - - [25/Feb/2026 08:55:36] "GET /index.html HTTP/1.1" 304 -
+----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 63461)
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/socketserver.py", line 318, in _handle_request_noblock
+    self.process_request(request, client_address)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/socketserver.py", line 349, in process_request
+    self.finish_request(request, client_address)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/socketserver.py", line 362, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/http/server.py", line 672, in __init__
+    super().__init__(*args, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/socketserver.py", line 766, in __init__
+    self.handle()
+    ~~~~~~~~~~~^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/http/server.py", line 436, in handle
+    self.handle_one_request()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/http/server.py", line 404, in handle_one_request
+    self.raw_requestline = self.rfile.readline(65537)
+                           ~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/socket.py", line 719, in readinto
+    return self._sock.recv_into(b)
+           ~~~~~~~~~~~~~~~~~~~~^^^
+ConnectionResetError: [Errno 54] Connection reset by peer
+----------------------------------------
+----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 63462)
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/socketserver.py", line 318, in _handle_request_noblock
+    self.process_request(request, client_address)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/socketserver.py", line 349, in process_request
+    self.finish_request(request, client_address)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/socketserver.py", line 362, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/http/server.py", line 672, in __init__
+    super().__init__(*args, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/socketserver.py", line 766, in __init__
+    self.handle()
+    ~~~~~~~~~~~^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/http/server.py", line 436, in handle
+    self.handle_one_request()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/http/server.py", line 404, in handle_one_request
+    self.raw_requestline = self.rfile.readline(65537)
+                           ~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/socket.py", line 719, in readinto
+    return self._sock.recv_into(b)
+           ~~~~~~~~~~~~~~~~~~~~^^^
+ConnectionResetError: [Errno 54] Connection reset by peer
+----------------------------------------
+127.0.0.1 - - [25/Feb/2026 08:55:36] code 404, message File not found
+127.0.0.1 - - [25/Feb/2026 08:55:36] "HEAD /api/members HTTP/1.1" 404 -
+127.0.0.1 - - [25/Feb/2026 08:55:36] "GET /exam_view.css?v=20260210_3 HTTP/1.1" 304 -
+127.0.0.1 - - [25/Feb/2026 08:55:36] "GET /questions_data.js?v=20260210_3 HTTP/1.1" 304 -
+127.0.0.1 - - [25/Feb/2026 08:55:36] "GET /script.js?v=20260212_DEBUG_5 HTTP/1.1" 304 -
+127.0.0.1 - - [25/Feb/2026 08:55:36] code 404, message File not found
+127.0.0.1 - - [25/Feb/2026 08:55:36] "GET /sejong/questions_data.js?v=1771977336624 HTTP/1.1" 404 -
+127.0.0.1 - - [25/Feb/2026 08:55:36] "GET /api/members HTTP/1.1" 200 -
+127.0.0.1 - - [25/Feb/2026 08:55:36] "GET /api/attendance?date=2026-02-24 HTTP/1.1" 200 -

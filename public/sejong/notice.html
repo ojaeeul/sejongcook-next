@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>학원 공지 - 세종요리</title>
+    <link rel="stylesheet" href="style.css?v=20260228_6">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="script.js?v=20260228_9" defer></script>
+    <style>
+        .notice-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            padding: 24px;
+            margin-top: 20px;
+        }
+
+        .notice-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #3b82f6;
+            padding-bottom: 15px;
+        }
+
+        .notice-title-main {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .notice-write-btn {
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .notice-write-btn:hover {
+            background-color: #2563eb;
+        }
+
+        .notice-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .notice-table th {
+            background-color: #f8fafc;
+            color: #64748b;
+            font-weight: 600;
+            text-align: center;
+            padding: 15px 10px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .notice-table td {
+            padding: 16px 10px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #475569;
+            text-align: center;
+        }
+
+        .notice-table tr:hover td {
+            background-color: #f8fafc;
+            cursor: pointer;
+        }
+
+        .notice-table .col-title {
+            text-align: left;
+            font-weight: 500;
+            color: #1e293b;
+            width: 50%;
+        }
+
+        .notice-badge {
+            background-color: #ef4444;
+            color: white;
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 12px;
+            margin-right: 8px;
+            font-weight: 700;
+        }
+
+        .notice-badge-info {
+            background-color: #10b981;
+            color: white;
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 12px;
+            margin-right: 8px;
+            font-weight: 700;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .page-btn {
+            padding: 8px 14px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            color: #64748b;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .page-btn:hover {
+            background: #f1f5f9;
+        }
+
+        .page-btn.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+
+        .search-bar-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+
+        .search-select {
+            padding: 8px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            outline: none;
+            color: #475569;
+        }
+
+        .search-input {
+            padding: 8px 16px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            outline: none;
+            width: 250px;
+        }
+
+        .search-btn {
+            background: #64748b;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Mobile Sidebar Overlay -->
+        <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="brand-logo">
+                <span class="logo-text">세종요리</span>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">수강 관리</div>
+                <div class="nav-sub-menu show">
+                    <a href="register.html" class="nav-item">수강생 등록</a>
+                    <a href="index.html" class="nav-item">수강생 대장</a>
+                    <a href="index.html?filter=phonebook" class="nav-item">전화번호부</a>
+                    <a href="sheet.html" class="nav-item">월간 출석부</a>
+                </div>
+                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">수강료</div>
+                <div class="nav-sub-menu show">
+                    <a href="tuition.html" class="nav-item">수강료 관리</a>
+                    <a href="ledger.html" class="nav-item">수강료 납부대장</a>
+                    <a href="paid_list.html" class="nav-item">납부완료 명단</a>
+                </div>
+                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">소통</div>
+                <div class="nav-sub-menu show">
+                    <a href="notice.html" class="nav-item active">학원 공지</a>
+                    <a href="feed.html" class="nav-item">피드 관리</a>
+                    <a href="wagashi.html" class="nav-item">학원 홍보</a>
+                </div>
+                <div class="nav-category toggle-category" onclick="toggleNavSub(this)">시험지</div>
+                <div class="nav-sub-menu">
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">한식기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('한식_2021')" class="nav-item">2021년 한식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('한식_2022')" class="nav-item">2022년 한식</a>
+                    </div>
+                </div>                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">기타</div>
+                <div class="nav-sub-menu show">
+                    <a href="javascript:void(0)" onclick="openSettingsModal()" class="nav-item">
+                        <span class="material-icons" style="font-size: 1.2rem; margin-right: 8px;">settings</span>
+                        수업 요일 설정
+                    </a>
+                    <a href="index.html?filter=archive" class="nav-item">수료생 보관함</a>
+                    <a href="index.html?filter=trash" class="nav-item">휴지통</a>
+                    <a href="stats.html" class="nav-item">통계 및 납부</a>
+                </div>
+                <a href="monitor.html" target="_blank" class="nav-item highlight">키오스크 모니터</a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-wrapper">
+            <header class="top-header">
+                <button class="hamburger-btn" onclick="toggleSidebar()">
+                    <span>MENU</span>
+                    <span class="material-icons">menu</span>
+                </button>
+                <div class="page-title-container">
+                    <h1 id="pageTitle" class="page-title-text">학 원 공 지</h1>
+                </div>
+                <div class="header-actions"></div>
+            </header>
+
+            <div class="content-scroll">
+                <div class="notice-container">
+                    <div class="notice-header">
+                        <div class="notice-title-main">공지사항</div>
+                        <button class="notice-write-btn" onclick="openWriteModal()">
+                            <span class="material-icons">edit</span> 글쓰기
+                        </button>
+                    </div>
+
+                    <div class="search-bar-container">
+                        <select class="search-select">
+                            <option value="title">제목</option>
+                            <option value="content">내용</option>
+                            <option value="author">작성자</option>
+                        </select>
+                        <input type="text" class="search-input" placeholder="검색어를 입력하세요">
+                        <button class="search-btn">검색</button>
+                    </div>
+
+                    <table class="notice-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 80px;">번호</th>
+                                <th class="col-title">제목</th>
+                                <th style="width: 120px;">작성자</th>
+                                <th style="width: 150px;">등록일</th>
+                                <th style="width: 80px;">조회</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="background-color: #fff8f8;">
+                                <td><span class="material-icons"
+                                        style="color:#ef4444; font-size:1.1rem;">campaign</span></td>
+                                <td class="col-title" onclick="alert('내용 준비중입니다.')">
+                                    <span class="notice-badge">필독</span> [중요] 2026년 상반기 수강생 모집 안내 및 학원 등록 절차
+                                </td>
+                                <td>관리자</td>
+                                <td>2026-02-28</td>
+                                <td>1,423</td>
+                            </tr>
+                            <tr style="background-color: #f8fafc;">
+                                <td><span class="material-icons"
+                                        style="color:#3b82f6; font-size:1.1rem;">campaign</span></td>
+                                <td class="col-title" onclick="alert('내용 준비중입니다.')">
+                                    <span class="notice-badge-info">안내</span> 세종요리제과학원 주차장 이용 및 제휴 주차장 안내
+                                </td>
+                                <td>관리자</td>
+                                <td>2026-02-25</td>
+                                <td>856</td>
+                            </tr>
+                            <tr>
+                                <td>5</td>
+                                <td class="col-title" onclick="alert('내용 준비중입니다.')">
+                                    3월 제과/제빵 기능사 실기 시험 일정 및 유의사항 안내
+                                </td>
+                                <td>교무부</td>
+                                <td>2026-02-20</td>
+                                <td>320</td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td class="col-title" onclick="alert('내용 준비중입니다.')">
+                                    [합격자발표] 2026년 제1회 정기 기능사 합격자 안내 (한식/양식)
+                                </td>
+                                <td>관리자</td>
+                                <td>2026-02-15</td>
+                                <td>512</td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td class="col-title" onclick="alert('내용 준비중입니다.')">
+                                    코로나19 등 감염병 예방을 위한 학원 내 위생수칙 안내
+                                </td>
+                                <td>행정실</td>
+                                <td>2026-01-10</td>
+                                <td>1,024</td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td class="col-title" onclick="alert('내용 준비중입니다.')">
+                                    학원비 납부 방법 및 현금영수증 발행 안내
+                                </td>
+                                <td>관리자</td>
+                                <td>2025-12-05</td>
+                                <td>2,456</td>
+                            </tr>
+                            <tr>
+                                <td>1</td>
+                                <td class="col-title" onclick="alert('내용 준비중입니다.')">
+                                    세종요리제과학원 홈페이지 오픈 안내
+                                </td>
+                                <td>관리자</td>
+                                <td>2025-11-01</td>
+                                <td>3,102</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="pagination">
+                        <button class="page-btn"><span class="material-icons"
+                                style="font-size:16px;">chevron_left</span></button>
+                        <button class="page-btn active">1</button>
+                        <button class="page-btn">2</button>
+                        <button class="page-btn">3</button>
+                        <button class="page-btn">4</button>
+                        <button class="page-btn">5</button>
+                        <button class="page-btn"><span class="material-icons"
+                                style="font-size:16px;">chevron_right</span></button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Write Modal (Hidden) -->
+    <div id="writeModal" class="modal-overlay hidden"
+        style="display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center;">
+        <div style="background:white; padding:30px; border-radius:12px; width:600px; max-width:90%;">
+            <div
+                style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding-bottom:15px; margin-bottom:20px;">
+                <h2 style="margin:0; font-size:1.4rem;">공지사항 작성</h2>
+                <button onclick="closeWriteModal()"
+                    style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+            </div>
+            <div style="margin-bottom:15px;">
+                <label style="display:block; margin-bottom:5px; font-weight:600;">유형</label>
+                <select style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
+                    <option>일반</option>
+                    <option>필독(중요)</option>
+                    <option>안내</option>
+                </select>
+            </div>
+            <div style="margin-bottom:15px;">
+                <label style="display:block; margin-bottom:5px; font-weight:600;">제목</label>
+                <input type="text" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;"
+                    placeholder="제목을 입력하세요">
+            </div>
+            <div style="margin-bottom:20px;">
+                <label style="display:block; margin-bottom:5px; font-weight:600;">내용</label>
+                <textarea
+                    style="width:100%; height:200px; padding:10px; border:1px solid #ddd; border-radius:6px; resize:vertical;"
+                    placeholder="내용을 입력하세요"></textarea>
+            </div>
+            <div style="display:flex; justify-content:flex-end; gap:10px;">
+                <button onclick="closeWriteModal()"
+                    style="padding:10px 20px; border:1px solid #ddd; background:white; border-radius:6px; cursor:pointer;">취소</button>
+                <button onclick="alert('저장되었습니다.'); closeWriteModal();"
+                    style="padding:10px 20px; border:none; background:#3b82f6; color:white; border-radius:6px; cursor:pointer;">등록</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openWriteModal() {
+            const modal = document.getElementById('writeModal');
+            modal.style.display = 'flex';
+            modal.classList.remove('hidden');
+        }
+        function closeWriteModal() {
+            const modal = document.getElementById('writeModal');
+            modal.style.display = 'none';
+            modal.classList.add('hidden');
+        }
+    </script>
+</body>
+
+</html>

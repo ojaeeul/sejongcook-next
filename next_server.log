@@ -1,0 +1,23 @@
+
+> sejongcook-next@0.1.0 dev
+> next dev -p 3000
+
+▲ Next.js 16.1.4 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.219.100:3000
+- Environments: .env.local
+
+✓ Starting...
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+✓ Ready in 1897ms
+ GET / 200 in 1060ms (compile: 748ms, proxy.ts: 63ms, render: 249ms)
+ POST /api/visitors/ 200 in 157ms (compile: 132ms, render: 25ms)
+ GET /api/hero/?_t=1771977309159 200 in 343ms (compile: 300ms, render: 43ms)
+ GET /api/admin/data/settings/?_t=1771977309158 200 in 2.1s (compile: 327ms, render: 1751ms)
+ GET /api/admin/data/footer/?_t=1771977309160 200 in 1739ms (compile: 48ms, render: 1691ms)
+ GET /api/admin/popups/?t=1771977309255 200 in 1472ms (compile: 41ms, render: 1430ms)
+ GET /api/admin/data/qna/?_t=1771977309159 200 in 2.1s (compile: 234ms, render: 1882ms)
+ GET /api/admin/data/job-openings/?_t=1771977309159 200 in 2.1s (compile: 294ms, render: 1824ms)
+ GET /api/admin/data/notice/?_t=1771977309159 200 in 2.1s (compile: 265ms, render: 1864ms)
+ GET /api/admin/popups/?t=1771977309256 200 in 190ms (compile: 3ms, render: 188ms)
+ HEAD / 200 in 79ms (compile: 7ms, proxy.ts: 6ms, render: 66ms)
