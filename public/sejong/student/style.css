@@ -71,7 +71,7 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-bottom: 24px;
+    margin-bottom: 12px;
     padding: 0 8px;
 }
 
@@ -101,7 +101,7 @@ body {
     font-size: 0.7rem;
     color: var(--text-muted);
     font-weight: 600;
-    margin: 16px 8px 6px;
+    margin: 8px 8px 6px;
     text-transform: uppercase;
 }
 
@@ -148,7 +148,7 @@ body {
 .nav-item {
     display: flex;
     align-items: center;
-    padding: 8px 12px;
+    padding: 4px 12px;
     text-decoration: none;
     color: var(--text-secondary);
     border-radius: 8px;

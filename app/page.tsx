@@ -64,12 +64,13 @@ export default function Home() {
   const [latestQna, setLatestQna] = useState<BoardItem[]>([]); // Dynamic Q&A Data
   const [noticeData, setNoticeData] = useState<BoardItem[]>([]);
   const [jobData, setJobData] = useState<BoardItem[]>([]);
+  const [previewData, setPreviewData] = useState<BoardItem[]>([]);
 
   useEffect(() => {
     // Optional: Re-fetch to get any admin updates since build
     const fetchHeroData = async () => {
       try {
-        const url = '/api/admin/data/hero?_t=' + Date.now();
+        const url = '/api/hero?_t=' + Date.now();
         const res = await fetch(url, { cache: 'no-store' });
         if (res.ok) {
           const data = await res.json();
@@ -89,35 +90,32 @@ export default function Home() {
 
     // Load Q&A Data dynamically
     const fetchDashboardData = async () => {
-      try {
-        const isProd = process.env.NODE_ENV === 'production';
+      const endpoints = [
+        { url: '/api/admin/data/qna/', setter: setLatestQna },
+        { url: '/api/admin/data/notice/', setter: setNoticeData },
+        { url: '/api/admin/data/job-openings/', setter: setJobData },
+        { url: '/api/admin/popups/', setter: setPreviewData }
+      ];
 
-        // Fetch QnA
-        const qnaUrl = '/api/admin/data/qna';
-        const qnaRes = await fetch(qnaUrl);
-        if (qnaRes.ok) {
-          const data = await qnaRes.json();
-          if (Array.isArray(data)) setLatestQna([...data].reverse());
+      await Promise.allSettled(endpoints.map(async ({ url, setter }) => {
+        try {
+          const res = await fetch(url + '?_t=' + Date.now());
+          if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data)) {
+              // Sort by date descending (newest first)
+              const sorted = [...data].sort((a, b) => {
+                const dateA = new Date(a.date).getTime();
+                const dateB = new Date(b.date).getTime();
+                return dateB - dateA;
+              });
+              setter(sorted);
+            }
+          }
+        } catch (e) {
+          console.error(`Failed to load ${url}`, e);
         }
-
-        // Fetch Notice
-        const noticeUrl = '/api/admin/data/notice';
-        const noticeRes = await fetch(noticeUrl);
-        if (noticeRes.ok) {
-          const data = await noticeRes.json();
-          if (Array.isArray(data)) setNoticeData(data);
-        }
-
-        // Fetch Job
-        const jobUrl = '/api/admin/data/job-openings';
-        const jobRes = await fetch(jobUrl);
-        if (jobRes.ok) {
-          const data = await jobRes.json();
-          if (Array.isArray(data)) setJobData(data);
-        }
-      } catch (e) {
-        console.error("Failed to load dashboard data", e);
-      }
+      }));
     };
 
     fetchDashboardData();
@@ -396,7 +394,7 @@ export default function Home() {
             <p style={{ fontSize: '1.1rem', color: '#666' }}>세종요리제과기술학원의 새로운 소식입니다.</p>
           </div>
 
-          <div className="updates-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '30px', minHeight: '300px' }}>
+          <div className="updates-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', minHeight: '300px' }}>
             {/* Notice */}
             <div className="update-column" style={{ background: '#fff', padding: '30px', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
               <div className="column-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #f5a623', paddingBottom: '15px', marginBottom: '20px' }}>
@@ -448,6 +446,27 @@ export default function Home() {
                     <span className="text-xs text-gray-400 ml-2 whitespace-nowrap">{item.date}</span>
                   </li>
                 ))}
+              </ul>
+            </div>
+
+            {/* Preview (Popups) */}
+            <div className="update-column" style={{ background: '#fff', padding: '30px', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
+              <div className="column-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #f5a623', paddingBottom: '15px', marginBottom: '20px' }}>
+                <h3 style={{ fontSize: '1.3rem', fontWeight: 700, margin: 0 }}>미리보기</h3>
+                <Link href="/" className="more-link" style={{ color: '#f5a623', fontSize: '0.9rem', fontWeight: 600 }}>전체보기</Link>
+              </div>
+              <ul className="latest-list space-y-3">
+                {previewData.slice(0, 5).map(item => (
+                  <li key={item.id} className="flex justify-between items-center group cursor-pointer" style={{ borderBottom: '1px solid #f0f0f0', paddingBottom: '10px' }}>
+                    <div className="text-gray-700 hover:text-[#f5a623] transition-colors truncate flex-1 text-sm font-medium block">
+                      {item.title}
+                    </div>
+                    <span className="text-xs text-gray-400 ml-2 whitespace-nowrap">{item.date}</span>
+                  </li>
+                ))}
+                {previewData.length === 0 && (
+                  <li className="text-gray-400 text-sm italic py-2">활성 팝업이 없습니다.</li>
+                )}
               </ul>
             </div>
           </div>

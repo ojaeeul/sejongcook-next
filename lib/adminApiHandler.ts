@@ -33,9 +33,9 @@ export async function handleReplace(request: NextRequest, board: string) {
         }
 
         return NextResponse.json({ success: true });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Replace error:', error);
-        return NextResponse.json({ error: 'Failed to save data', details: error.message }, { status: 500 });
+        return NextResponse.json({ error: 'Failed to save data', details: error instanceof Error ? error.message : String(error) }, { status: 500 });
     }
 }
 
@@ -63,11 +63,11 @@ export async function handleGet(request: NextRequest, board: string) {
         });
 
         return NextResponse.json(mappedData);
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Read error:', error);
         return NextResponse.json({
             error: 'Failed to read data',
-            details: error.message
+            details: error instanceof Error ? error.message : String(error)
         }, { status: 500 });
     }
 }
@@ -110,9 +110,9 @@ export async function handlePost(request: NextRequest, board: string) {
         if (error) throw error;
 
         return NextResponse.json({ success: true, item: newItem });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Write error:', error);
-        return NextResponse.json({ error: 'Failed to save data', details: error.message }, { status: 500 });
+        return NextResponse.json({ error: 'Failed to save data', details: error instanceof Error ? error.message : String(error) }, { status: 500 });
     }
 }
 
@@ -149,9 +149,9 @@ export async function handlePut(request: NextRequest, board: string) {
         if (!data) return NextResponse.json({ error: 'Item not found' }, { status: 404 });
 
         return NextResponse.json({ success: true, item: data });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Update error:', error);
-        return NextResponse.json({ error: 'Failed to update data', details: error.message }, { status: 500 });
+        return NextResponse.json({ error: 'Failed to update data', details: error instanceof Error ? error.message : String(error) }, { status: 500 });
     }
 }
 
@@ -171,8 +171,8 @@ export async function handleDelete(request: NextRequest, board: string) {
         if (error) throw error;
 
         return NextResponse.json({ success: true });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Delete error:', error);
-        return NextResponse.json({ error: 'Failed to delete data', details: error.message }, { status: 500 });
+        return NextResponse.json({ error: 'Failed to delete data', details: error instanceof Error ? error.message : String(error) }, { status: 500 });
     }
 }

@@ -16,9 +16,32 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         self.send_header('Access-Control-Allow-Headers', 'Content-Type')
         super().end_headers()
 
+    def guess_type(self, path):
+        ext = os.path.splitext(path)[1].lower()
+        if ext in ['.html', '.htm']:
+            return 'text/html; charset=utf-8'
+        elif ext == '.css':
+            return 'text/css; charset=utf-8'
+        elif ext == '.js':
+            return 'application/javascript; charset=utf-8'
+        elif ext == '.json':
+            return 'application/json; charset=utf-8'
+        
+        mimetype = super().guess_type(path)
+        if mimetype and mimetype.startswith('text/'):
+            return mimetype + "; charset=utf-8"
+        return mimetype
+
     def do_OPTIONS(self):
         self.send_response(204)
         self.end_headers()
+
+    def _map_static_path(self):
+        parsed = urlparse(self.path)
+        if parsed.path == '/' or parsed.path == '/index.html':
+            self.path = '/public/index.html'
+        elif not parsed.path.startswith('/api') and not parsed.path.startswith('/data') and not parsed.path.startswith('/public'):
+            self.path = '/public' + self.path
 
     def do_GET(self):
         parsed = urlparse(self.path)
@@ -36,15 +59,23 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         elif parsed.path == '/api/payments':
             self.handle_get_payments()
             return
+        elif parsed.path == '/api/timetable':
+            self.handle_get_timetable()
+            return
+        elif parsed.path == '/api/admin/data/settings':
+            self.handle_get_settings()
+            return
             
-        # Serve static files from 'public' directory by default if not API
-        if self.path == '/' or self.path == '/index.html':
-            self.path = '/public/index.html'
-        elif not self.path.startswith('/api') and not self.path.startswith('/data'):
-            if os.path.exists(os.path.join(DIRECTORY, 'public', self.path.lstrip('/'))):
-                self.path = '/public' + self.path
-
+        self._map_static_path()
         super().do_GET()
+
+    def do_HEAD(self):
+        self._map_static_path()
+        super().do_HEAD()
+
+
+
+
 
     def do_POST(self):
         parsed = urlparse(self.path)
@@ -147,6 +178,23 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         self.send_header('Content-Type', 'application/json')
         self.end_headers()
         self.wfile.write(json.dumps(members).encode('utf-8'))
+
+    def handle_get_timetable(self):
+        timetable = self._read_json('timetable_data.json')
+        self.send_response(200)
+        self.send_header('Content-Type', 'application/json')
+        self.end_headers()
+        self.wfile.write(json.dumps(timetable).encode('utf-8'))
+
+    def handle_get_settings(self):
+        settings = self._read_json('settings.json')
+        # If empty, return a default structure
+        if not settings:
+            settings = {"courseFees": {}}
+        self.send_response(200)
+        self.send_header('Content-Type', 'application/json')
+        self.end_headers()
+        self.wfile.write(json.dumps(settings).encode('utf-8'))
 
     def handle_save_member(self):
         try:
@@ -347,5 +395,6 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self.send_error(500, str(e))
 
 print(f"Attendance Server running at http://localhost:{PORT}/")
+socketserver.TCPServer.allow_reuse_address = True
 with socketserver.TCPServer(("", PORT), Handler) as httpd:
     httpd.serve_forever()

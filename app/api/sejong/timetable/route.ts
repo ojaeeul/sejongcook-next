@@ -12,3 +12,20 @@ export async function GET() {
 
     return NextResponse.json(data?.value || {});
 }
+
+export async function POST(request: Request) {
+    try {
+        const body = await request.json();
+        const { error } = await supabase.from('settings').upsert(
+            { key: 'timetable', value: body },
+            { onConflict: 'key' }
+        );
+
+        if (error) throw error;
+        return NextResponse.json({ success: true });
+    } catch (e: unknown) {
+        const error = e as Error;
+        console.error("POST Timetable Error:", error);
+        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    }
+}

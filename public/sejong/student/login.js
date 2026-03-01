@@ -1,5 +1,5 @@
 // Main Configuration
-const API_BASE = '/api/sejong';
+const API_BASE = 'http://localhost:8000/api';
 let currentInput = "";
 let stream = null;
 let currentMode = 'home';

@@ -1,5 +1,5 @@
 // Main Configuration
-const API_BASE = '/api/sejong';
+const API_BASE = 'http://localhost:8000/api';
 let currentInput = "";
 let stream = null;
 let currentMode = 'home';
@@ -137,7 +137,8 @@ async function recognizeAndAttend() {
         }
 
         const res = await fetch(`${API_BASE}/members?t=` + Date.now());
-        const members = await res.json();
+        const rawMembers = await res.json();
+        const members = Array.isArray(rawMembers) ? rawMembers.filter(m => !['delete', 'trash', 'hold', 'completed'].includes(m.status)) : [];
 
         showStatus("매칭되는 회원을 찾는 중...", "#059669");
 
@@ -197,7 +198,8 @@ async function capturePhoto() {
         const photoDataUrl = canvas.toDataURL('image/jpeg', 0.7);
 
         const res = await fetch(`${API_BASE}/members?t=` + Date.now());
-        const members = await res.json();
+        const rawMembers = await res.json();
+        const members = Array.isArray(rawMembers) ? rawMembers.filter(m => !['delete', 'trash', 'hold', 'completed'].includes(m.status)) : [];
         const member = members.find(m => m.phone && m.phone.replace(/-/g, '').endsWith(currentInput));
 
         if (!member) {
@@ -231,7 +233,8 @@ async function capturePhoto() {
 async function processAttendance(inputNum, overridePhoto = null) {
     try {
         const res = await fetch(`${API_BASE}/members?t=` + Date.now());
-        const members = await res.json();
+        const rawMembers = await res.json();
+        const members = Array.isArray(rawMembers) ? rawMembers.filter(m => !['delete', 'trash', 'hold', 'completed'].includes(m.status)) : [];
         const member = members.find(m => m.phone && m.phone.replace(/-/g, '').endsWith(inputNum));
 
         if (!member) {

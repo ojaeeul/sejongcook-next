@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>세종요리 출석체크</title>
-    <link rel="stylesheet" href="style.css?v=20260220_11">
+    <link rel="stylesheet" href="style.css?v=20260228_6">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -153,29 +153,44 @@
 
             .kiosk-container {
                 flex-direction: column !important;
-                height: auto;
-                min-height: 100vh;
-                overflow-y: auto !important;
+                height: 100dvh;
+                overflow: hidden !important;
             }
 
             #workspace {
                 flex-direction: column !important;
-                min-height: 100dvh !important;
-                height: 100% !important;
-                overflow-y: auto !important;
+                height: 100dvh !important;
+                overflow: hidden !important;
             }
 
             .kiosk-left {
                 padding: 10px;
-                min-height: 50vh;
+                height: 38dvh !important;
+                min-height: auto !important;
+                flex: none !important;
+                justify-content: flex-end !important;
+                padding-bottom: 0px !important;
             }
 
             .kiosk-right {
                 width: 100% !important;
-                padding: 20px 10px;
-                min-height: 50dvh;
+                padding: 10px;
+                height: 62dvh !important;
+                min-height: auto !important;
+                flex: none !important;
                 border-left: none !important;
-                border-top: 1px solid rgba(255, 255, 255, 0.1);
+                border-top: none !important;
+                justify-content: flex-start !important;
+                padding-top: 5px !important;
+            }
+
+            .kiosk-right button[onclick="switchMode('home')"] {
+                position: absolute !important;
+                top: 5px !important;
+                left: 10px !important;
+                margin: 0 !important;
+                padding: 5px !important;
+                z-index: 10;
             }
 
             /* Mode Specific Adjustments */
@@ -184,102 +199,140 @@
             }
 
             #workspace.mode-number .kiosk-right {
-                min-height: 100dvh;
+                height: 100dvh !important;
                 border-top: none !important;
                 padding-top: 40px;
                 display: flex;
+                flex-direction: column;
+                justify-content: center !important;
             }
 
             #workspace.mode-face_only .kiosk-left,
             #workspace.mode-register .kiosk-left {
-                min-height: 55vh;
-                flex: none;
-                padding: 10px 10px;
+                height: 38dvh !important;
+                padding: 0px;
+                justify-content: flex-end !important;
             }
 
             #workspace.mode-face_only .camera-wrapper,
             #workspace.mode-register .camera-wrapper {
                 flex: 1;
                 height: 100% !important;
-                min-height: 250px;
+                min-height: unset !important;
                 width: 100% !important;
-                margin-top: 5px;
-                margin-bottom: 5px;
+                max-width: 250px !important;
+                margin: 0 auto !important;
             }
 
             #workspace.mode-face_only .kiosk-right,
             #workspace.mode-register .kiosk-right {
-                min-height: auto;
-                flex: none;
-                padding-top: 10px;
-                padding-bottom: 20px;
+                height: 62dvh !important;
+                padding-top: 20px !important;
+                /* give space for absolute back button */
+                padding-bottom: 0px;
             }
 
             #workspace.mode-face_only #rightHeader {
                 display: none !important;
             }
 
-            #workspace.mode-register #rightHeader h2 {
-                font-size: 1.8rem !important;
+            #workspace.mode-register #rightHeader {
+                margin-top: 0 !important;
                 margin-bottom: 5px !important;
+            }
+
+            #workspace.mode-register #rightHeader h2 {
+                font-size: 1.4rem !important;
+                margin-bottom: 2px !important;
                 letter-spacing: -1px;
             }
 
             #workspace.mode-register #rightHeader p {
-                font-size: 1rem !important;
-                margin-bottom: 10px !important;
+                font-size: 0.9rem !important;
+                margin-bottom: 2px !important;
             }
 
             #faceOnlyPanel>div {
-                width: 120px !important;
-                height: 120px !important;
-                margin: 0 auto 20px !important;
+                width: 80px !important;
+                height: 80px !important;
+                margin: 0 auto 5px !important;
             }
 
             #faceOnlyPanel>div>span {
-                font-size: 70px !important;
+                font-size: 40px !important;
             }
 
             #faceOnlyPanel>button {
-                width: 260px !important;
-                height: 70px !important;
-                font-size: 1.4rem !important;
+                width: 240px !important;
+                height: 50px !important;
+                font-size: 1.2rem !important;
+            }
+
+            #faceOnlyPanel>p {
+                margin-top: 5px !important;
+                font-size: 0.9rem !important;
             }
 
             .camera-frame {
-                border-radius: 20px !important;
+                border-radius: 15px !important;
             }
 
             .camera-frame>div {
-                border-radius: 16px !important;
+                border-radius: 11px !important;
             }
 
             #mirrorHeader {
                 position: static !important;
-                margin-bottom: 20px;
+                margin-bottom: 2px !important;
+            }
+
+            #mirrorHeader h2 {
+                font-size: 1.1rem !important;
+            }
+
+            #mirrorHeader div {
+                width: 25px !important;
+                height: 25px !important;
+            }
+
+            #mirrorHeader span {
+                font-size: 16px !important;
+            }
+
+            #scanStatus {
+                margin-top: 2px !important;
+                margin-bottom: 0 !important;
+                font-size: 0.9rem !important;
+            }
+
+            #statusMsg {
+                margin-top: 2px !important;
+                font-size: 1rem !important;
+                height: 20px !important;
             }
 
             .keypad-grid {
-                max-width: 100% !important;
-                gap: 10px !important;
+                max-width: 280px !important;
+                margin: 0 auto;
+                gap: 5px !important;
             }
 
             .kiosk-key {
-                aspect-ratio: 1.5;
-                font-size: 1.5rem;
-                padding: 10px;
+                aspect-ratio: 1.8;
+                font-size: 1.2rem;
+                padding: 0;
             }
 
             .input-display {
-                max-width: 100% !important;
-                height: 70px !important;
-                font-size: 2.5rem !important;
-                line-height: 70px !important;
-                margin-bottom: 20px !important;
+                max-width: 280px !important;
+                height: 40px !important;
+                font-size: 1.8rem !important;
+                line-height: 40px !important;
+                margin: 0 auto 5px !important;
             }
 
             body {
-                overflow: auto;
+                overflow: hidden !important;
             }
         }
     </style>

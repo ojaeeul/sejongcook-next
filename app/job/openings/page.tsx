@@ -16,18 +16,20 @@ export default function JobOpeningsPage() {
                 const res = await fetch(url);
                 const data = await res.json();
 
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const mappedPosts: Post[] = data.map((item: any) => ({
-                    id: item.id,
-                    title: item.title,
-                    author: item.author || '관리자',
-                    date: item.date,
-                    hit: item.hits || item.hit || 0,
-                    content: item.content
-                }));
-                // Sort by date DESCENDING (Newest -> Oldest)
-                mappedPosts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-                setPosts(mappedPosts);
+                if (Array.isArray(data)) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const mappedPosts: Post[] = data.map((item: any) => ({
+                        id: String(item.id),
+                        title: item.title,
+                        author: item.author || '관리자',
+                        date: item.date,
+                        hit: Number(item.hits || item.hit || 0),
+                        content: item.content
+                    }));
+                    // Sort by date DESCENDING (Newest -> Oldest)
+                    mappedPosts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+                    setPosts(mappedPosts);
+                }
 
             } catch (err) {
                 console.error('Error fetching openings:', err);

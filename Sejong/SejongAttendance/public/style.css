@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+﻿@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
 
 :root {
     /* Brand Colors */
@@ -63,13 +63,15 @@ body {
     flex-direction: column;
     padding: 16px;
     flex-shrink: 0;
+    overflow-y: auto;
+    /* Enable vertical scrolling */
 }
 
 .brand-logo {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-bottom: 24px;
+    margin-bottom: 12px;
     padding: 0 8px;
 }
 
@@ -99,14 +101,54 @@ body {
     font-size: 0.7rem;
     color: var(--text-muted);
     font-weight: 600;
-    margin: 16px 8px 6px;
+    margin: 8px 8px 6px;
     text-transform: uppercase;
+}
+
+.nav-category.toggle-category {
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: color 0.2s;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.nav-category.toggle-category:hover {
+    color: var(--primary-color);
+}
+
+.nav-category.toggle-category::after {
+    content: '▼';
+    font-size: 0.6rem;
+    transition: transform 0.3s;
+}
+
+.nav-category.toggle-category.active::after {
+    transform: rotate(-180deg);
+}
+
+.nav-sub-menu {
+    display: none;
+    flex-direction: column;
+    gap: 2px;
+    padding-left: 10px;
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    transform: translateY(-5px);
+}
+
+.nav-sub-menu.show {
+    display: flex;
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .nav-item {
     display: flex;
     align-items: center;
-    padding: 8px 12px;
+    padding: 4px 12px;
     text-decoration: none;
     color: var(--text-secondary);
     border-radius: 8px;
@@ -118,6 +160,11 @@ body {
 .nav-item:hover {
     background-color: var(--bg-body);
     color: var(--text-primary);
+}
+
+.nav-item:active {
+    background-color: rgba(255, 255, 255, 0.5) !important;
+    transform: scale(0.98);
 }
 
 .nav-item.active {
@@ -141,6 +188,15 @@ body {
     background-color: #F8FAFC;
 }
 
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    position: relative;
+    background-color: #F8FAFC;
+}
+
 .top-header {
     height: 56px;
     background-color: var(--bg-card);
@@ -152,10 +208,11 @@ body {
     flex-shrink: 0;
 }
 
-.page-title h1 {
-    font-size: 1.1rem;
-    font-weight: 700;
+.page-title {
+    font-size: 1.5rem;
+    font-weight: 800;
     color: var(--text-primary);
+    margin: 0;
 }
 
 .content-scroll {
@@ -220,6 +277,11 @@ body {
     white-space: nowrap;
     font-weight: 500;
     transition: all 0.2s;
+}
+
+.filter-btn:active {
+    background-color: rgba(255, 255, 255, 0.4) !important;
+    transform: scale(0.95);
 }
 
 .filter-btn.active {
@@ -293,6 +355,40 @@ body {
     min-height: 54px;
 }
 
+.course-grid-compact {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.course-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: white;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+}
+
+.course-item label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    color: var(--text-primary);
+    cursor: pointer;
+    line-height: 1;
+}
+
+.course-item label input[type="checkbox"] {
+    margin: 0;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
 .check-label {
     display: flex;
     align-items: center;
@@ -354,6 +450,31 @@ body {
     display: flex;
     gap: 12px;
     margin-bottom: 16px;
+    align-items: center;
+}
+
+.month-nav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: white;
+    padding: 8px 16px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.month-nav button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: var(--bg-body);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: var(--text-secondary);
 }
 
 .form-select {
@@ -418,33 +539,79 @@ body {
 
 .status-tabs-row {
     display: flex;
-    gap: 12px;
-    margin-bottom: 16px;
+    gap: 15px;
+    margin-bottom: 24px;
     align-items: center;
+    padding: 5px;
 }
 
 .status-tab {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 10px 20px;
-    border-radius: 8px;
-    border: none;
-    font-weight: 700;
+    gap: 10px;
+    padding: 12px 24px;
+    border-radius: 14px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    font-weight: 800;
     cursor: pointer;
-    font-size: 0.95rem;
+    font-size: 1rem;
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    top: 0;
+    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.08), 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.status-tab:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 rgba(0, 0, 0, 0.08), 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+.status-tab:active {
+    top: 3px;
+    transform: translateY(0);
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08);
+}
+
+.tab-enrolled {
+    background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+    color: #475569;
+    box-shadow: 0 4px 0 #cbd5e1, 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.tab-enrolled:hover {
+    box-shadow: 0 6px 0 #cbd5e1, 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+.tab-enrolled:active {
+    box-shadow: 0 1px 0 #cbd5e1;
 }
 
 .tab-unpaid {
-    background-color: #fcd34d;
-    /* Yellow */
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
     color: #92400e;
+    box-shadow: 0 4px 0 #d97706, 0 4px 10px rgba(217, 119, 6, 0.3);
+}
+
+.tab-unpaid:hover {
+    box-shadow: 0 6px 0 #d97706, 0 8px 15px rgba(217, 119, 6, 0.4);
+}
+
+.tab-unpaid:active {
+    box-shadow: 0 1px 0 #d97706;
 }
 
 .tab-paid {
-    background-color: white;
-    border: 1px solid #10b981;
-    color: #10b981;
+    background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+    color: white;
+    box-shadow: 0 4px 0 #059669, 0 4px 10px rgba(5, 150, 105, 0.3);
+}
+
+.tab-paid:hover {
+    box-shadow: 0 6px 0 #059669, 0 8px 15px rgba(5, 150, 105, 0.4);
+}
+
+.tab-paid:active {
+    box-shadow: 0 1px 0 #059669;
 }
 
 .tab-actions {
@@ -454,15 +621,82 @@ body {
 }
 
 .mini-btn {
-    width: 36px;
-    height: 36px;
-    border-radius: 6px;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
     border: none;
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
     cursor: pointer;
+    transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.15), 0 3px 6px rgba(0, 0, 0, 0.1);
+    position: relative;
+    top: 0;
+}
+
+.mini-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 7px 0 rgba(0, 0, 0, 0.1), 0 6px 12px rgba(0, 0, 0, 0.15);
+    filter: brightness(1.1);
+}
+
+.mini-btn:active {
+    top: 4px;
+    transform: translateY(0);
+    box-shadow: 0 0 0 rgba(0, 0, 0, 0.2);
+}
+
+/* Premium Tooltip Styling */
+.mini-btn::after,
+.status-tab::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 55px;
+    /* Adjust height based on element */
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    background: #1e293b;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    pointer-events: none;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    z-index: 1001;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.mini-btn::before,
+.status-tab::before {
+    content: '';
+    position: absolute;
+    bottom: 49px;
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid #1e293b;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+    pointer-events: none;
+    z-index: 1001;
+}
+
+.mini-btn:hover::after,
+.status-tab:hover::after,
+.mini-btn:hover::before,
+.status-tab:hover::before {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
 }
 
 .mini-btn.blue {
@@ -481,11 +715,120 @@ body {
     background-color: #10b981;
 }
 
+.mini-btn.emerald {
+    background-color: #059669;
+}
+
 .table-card {
     background: white;
     border-radius: 12px;
     border: 1px solid #e2e8f0;
     overflow: hidden;
+}
+
+.tuition-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+    padding: 20px;
+    background-color: #f8fafc;
+}
+
+.tuition-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+    transition: transform 0.2s, box-shadow 0.2s;
+    text-align: center;
+}
+
+.tuition-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.card-status {
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+}
+
+.tuition-card.paid .card-status {
+    background-color: #fdf6b2;
+    color: #9ca3af;
+}
+
+.tuition-card.unpaid .card-status {
+    background-color: #fee2e2;
+    color: #b91c1c;
+}
+
+.tuition-card.enrolled .card-status {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+.card-name {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #1e293b;
+    margin-bottom: 6px;
+}
+
+.card-course {
+    font-size: 0.9rem;
+    color: #059669;
+    font-weight: 700;
+    margin-bottom: 8px;
+    background: #ecfdf5;
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid #10b981;
+}
+
+.card-amount {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #475569;
+    margin-top: 5px;
+    margin-bottom: 10px;
+}
+
+.card-toggle-btn {
+    width: 100%;
+    padding: 8px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: opacity 0.2s;
+}
+
+.card-toggle-btn:hover {
+    opacity: 0.9;
+}
+
+.tuition-card.enrolled .card-toggle-btn {
+    background-color: #3b82f6;
+    color: white;
+}
+
+.tuition-card.unpaid .card-toggle-btn {
+    background-color: #3b82f6;
+    color: white;
+}
+
+.tuition-card.paid .card-toggle-btn {
+    background-color: #94a3b8;
+    color: white;
 }
 
 .tuition-table {
@@ -542,6 +885,44 @@ body {
 }
 
 /* Unissued */
+
+.status-dropdown {
+    padding: 6px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: white;
+    border: none;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    text-align: center;
+    width: 85px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    padding-right: 24px;
+}
+
+.status-dropdown.paid {
+    background-color: #f59e0b;
+    /* Yellow/Orange (matches original ?⑸??꾨즺 badge) */
+}
+
+.status-dropdown.unpaid {
+    background-color: #3b82f6;
+    /* Blue (matches original 誘몃궔 badge) */
+}
+
+.status-dropdown.enrolled {
+    background-color: #94a3b8;
+    /* Slate gray for 'In Course' */
+}
+
+.status-dropdown:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+}
 
 .student-cell {
     display: flex;
@@ -755,6 +1136,46 @@ input:checked+.slider:before {
 
 
 
+
+/* Member List Table Status Badges */
+.status-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    min-width: 50px;
+    text-align: center;
+}
+
+.status-taking {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+.status-completed {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.status-retaking {
+    background-color: #ffedd5;
+    color: #9a3412;
+}
+
+.status-delete {
+    background-color: #fce7f3;
+    color: #9d174d;
+    text-decoration: line-through;
+}
+
+.status-trash {
+    background-color: #f3f4f6;
+    color: #4b5563;
+    opacity: 0.7;
+}
+
 .status-text {
     font-weight: 600;
     padding: 4px 8px;
@@ -856,6 +1277,76 @@ input:checked+.slider:before {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
+}
+
+/* Mobile Adjustments */
+.hamburger-btn {
+    display: none !important;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-secondary);
+    padding: 8px;
+    border-radius: 8px;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #475569;
+}
+
+.hamburger-btn:hover {
+    background-color: var(--bg-body);
+}
+
+.hamburger-btn .material-icons {
+    font-size: 28px;
+}
+
+@media (max-width: 1024px) {
+    .hamburger-btn {
+        display: flex !important;
+    }
+
+    .sidebar {
+        transform: translateX(-100%);
+        position: fixed;
+        z-index: 1000;
+    }
+
+    .sidebar.active {
+        transform: translateX(0);
+    }
+
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+    }
+
+    .sidebar-overlay.active {
+        display: block;
+    }
+
+    .member-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .member-item>div {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .ledger-table {
+        font-size: 10pt;
+        width: 100%;
+    }
 }
 
 @media print {
@@ -1171,4 +1662,1678 @@ input:checked+.slider:before {
     color: var(--text-primary);
     min-width: 140px;
     cursor: pointer;
+}
+
+.exam-board-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.exam-q-card {
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+}
+
+.exam-q-card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.q-header {
+    padding: 16px 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    cursor: pointer;
+    background: #fff;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.q-header.active {
+    background: var(--primary-light);
+}
+
+.q-num {
+    font-weight: 800;
+    color: var(--primary-color);
+    font-size: 1.1rem;
+    min-width: 40px;
+}
+
+.q-text {
+    flex: 1;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.5;
+}
+
+.q-toggle-icon {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    transition: transform 0.3s;
+}
+
+.q-header.active .q-toggle-icon {
+    transform: rotate(180deg);
+}
+
+.q-content {
+    padding: 0 20px 20px 72px;
+    border-top: 1px dashed var(--border-color);
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.options-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 15px;
+}
+
+.q-option {
+    display: flex;
+    gap: 10px;
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+}
+
+.opt-num {
+    color: var(--primary-color);
+    font-weight: bold;
+}
+
+.q-answer-box {
+    margin-top: 20px;
+    padding: 10px 15px;
+    background: #fef3c7;
+    border-radius: 8px;
+    font-weight: 700;
+    color: #92400e;
+    display: inline-block;
+    border: 1px solid #fde68a;
+}
+
+.exam-board-list {
+    background: white;
+    padding: 15px;
+    /* Reduced for density */
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+/* PDF-like dense layout classes */
+.exam-pdf-layout {
+    column-count: 2;
+    column-gap: 20px;
+    column-rule: 1px dashed #cbd5e1;
+}
+
+.pdf-q-item {
+    break-inside: avoid;
+    margin-bottom: 8px;
+    /* Dense spacing */
+    padding: 5px 0;
+}
+
+.pdf-q-text {
+    font-weight: 700;
+    margin-bottom: 2px;
+    font-size: 0.85rem;
+    color: #1e293b;
+    display: flex;
+    line-height: 1.2;
+}
+
+.pdf-q-num {
+    margin-right: 5px;
+    white-space: nowrap;
+}
+
+.pdf-options {
+    padding-left: 10px;
+}
+
+.pdf-opt {
+    font-size: 0.8rem;
+    color: #334155;
+    line-height: 1.2;
+    margin-bottom: 1px;
+}
+
+.pdf-opt-num {
+    font-weight: 500;
+    margin-right: 2px;
+}
+
+/* Answer Grid Styles for Web View */
+.pdf-answer-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 2px;
+    text-align: center;
+}
+
+.pdf-answer-item {
+    border: 1px solid #e2e8f0;
+    padding: 5px;
+    background: #f8fafc;
+}
+
+.pdf-answer-item .num {
+    font-size: 0.6rem;
+    color: #64748b;
+    display: block;
+}
+
+.web-answer-key-section {
+    page-break-before: always;
+    break-before: page;
+    margin-top: 50px;
+}
+
+.pdf-answer-item .ans {
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: #ef4444;
+}
+
+/* New Web Exam Page Layout (Page > Col > Question) */
+.web-exam-page {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+    margin-bottom: 40px;
+    padding-bottom: 40px;
+    border-bottom: 4px double #ccc;
+    /* Visual separator */
+    background: white;
+}
+
+.exam-col-left,
+.exam-col-right {
+    width: 50%;
+    padding: 0 10px;
+    /* Reduced padding to let text fill the width */
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+
+.exam-col-left {
+    border-right: 1px dashed #eee;
+    /* Light separator */
+}
+
+@media print {
+
+    /* Reset screen-specific styles */
+    .web-exam-page {
+        margin-bottom: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+        height: 100%;
+        /* Fill page */
+        page-break-after: always;
+        break-after: page;
+        display: flex !important;
+        /* Ensure flex */
+    }
+
+    .exam-col-left,
+    .exam-col-right {
+        width: 50% !important;
+        padding: 0 10px !important;
+        /* Minimal padding for max text width */
+        border: none !important;
+        /* remove dashed line on print if preferred, or keep */
+        display: block !important;
+        /* Or flex column */
+    }
+}
+
+/* Remove old column-count approaches if they conflict, but id #examBoardContainer still has styles */
+.exam-pdf-layout {
+    display: none !important;
+    /* Disable old layout class if present */
+}
+
+@media print {
+    body {
+        margin: 0;
+        padding: 0;
+        background: white !important;
+    }
+
+    @page {
+        margin: 10mm;
+        /* Reduced margin to fill page */
+        size: A4 portrait;
+    }
+
+    .sidebar,
+    .top-header,
+    .filter-section,
+    .filter-btn,
+    .header-actions,
+    .print-btn,
+    aside {
+        display: none !important;
+    }
+
+    .app-container {
+        display: block !important;
+        width: 100% !important;
+        height: auto !important;
+        overflow: visible !important;
+        background: white !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .main-wrapper,
+    .content-scroll {
+        display: block !important;
+        width: 100% !important;
+        height: auto !important;
+        overflow: visible !important;
+        background: white !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    #examBoardContainer {
+        display: block !important;
+        width: 100% !important;
+        max-width: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    /* Column Layout: 2 Columns of 8 Questions Each */
+    .exam-pdf-layout {
+        display: block !important;
+        column-count: 2 !important;
+        column-gap: 15px !important;
+        column-fill: auto !important;
+        width: 100% !important;
+        height: auto !important;
+    }
+
+    .pdf-q-item {
+        break-inside: avoid-column !important;
+        page-break-inside: avoid !important;
+        margin-bottom: 8px !important;
+        padding: 2px 0 !important;
+        width: 100% !important;
+    }
+
+    .pdf-q-text {
+        font-size: 10pt !important;
+        font-weight: 700 !important;
+        line-height: 1.3 !important;
+        margin-bottom: 3px !important;
+    }
+
+    .pdf-options {
+        padding-left: 10px !important;
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 2px 8px !important;
+    }
+
+    .pdf-opt {
+        font-size: 9.5pt !important;
+        line-height: 1.2 !important;
+        margin-bottom: 2px !important;
+    }
+
+    /* Column Break Logic */
+    .pdf-column-break {
+        display: block !important;
+        break-after: column !important;
+        -webkit-column-break-after: always !important;
+        height: 0 !important;
+        margin: 0 !important;
+        visibility: hidden !important;
+    }
+
+    /* Page Break Logic */
+    .pdf-page-break {
+        display: block !important;
+        clear: both !important;
+        break-before: page !important;
+        page-break-before: always !important;
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        column-span: all !important;
+        visibility: hidden !important;
+    }
+
+    /* Separate Answer Key Page */
+    .web-answer-key-section {
+        display: block !important;
+        page-break-before: always !important;
+        break-before: page !important;
+        width: 100% !important;
+        margin-top: 0 !important;
+        padding-top: 30px !important;
+        column-span: all !important;
+    }
+
+    .pdf-answer-header {
+        font-size: 16pt !important;
+        margin-bottom: 20px !important;
+    }
+
+    .pdf-answer-item {
+        border: 1px solid #ccc !important;
+        padding: 6px !important;
+    }
+
+    .pdf-answer-item .num {
+        font-size: 9pt !important;
+    }
+
+    .pdf-answer-item .ans {
+        font-size: 11pt !important;
+    }
+}
+
+/* Lint Fix Additions */
+.page-title-container {
+    text-align: center;
+    width: 100%;
+}
+
+.page-title-text {
+    font-family: 'Batang', serif;
+    font-size: 2rem;
+    border-bottom: none;
+    display: inline-block;
+}
+
+.header-actions {
+    position: absolute;
+    right: 20px;
+}
+
+
+
+.exam-board-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.exam-board-title {
+    font-family: 'Batang', serif;
+}
+
+/* Status Dropdown Styling */
+.status-select {
+    padding: 6px 10px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    text-align: center;
+    -webkit-appearance: none;
+    appearance: none;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.status-select option {
+    background-color: white;
+    color: #333;
+    font-weight: 500;
+}
+
+.status-hold {
+    background-color: #e5e7eb;
+    color: #374151;
+}
+
+/* --- Compact Registration Form Styles --- */
+
+.compact-form {
+    max-width: 800px;
+    margin: 0 auto;
+    background: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.form-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 2px;
+    /* Tight vertical spacing */
+}
+
+.form-row .form-group {
+    margin-bottom: 12px;
+    /* Tighter than default */
+}
+
+.form-group.half {
+    flex: 1;
+}
+
+.form-group.third {
+    flex: 1;
+}
+
+.form-group.two-thirds {
+    flex: 2;
+}
+
+.input-group {
+    display: flex;
+    gap: 8px;
+}
+
+.input-group input,
+.input-group select {
+    flex: 1;
+}
+
+/* Modern Input Styles */
+input[type="text"],
+input[type="tel"],
+input[type="date"],
+select,
+textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+    background-color: #f8fafc;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #475569;
+    font-size: 0.9rem;
+}
+
+.required {
+    color: #ef4444;
+    margin-left: 2px;
+}
+
+/* Address Group */
+.address-group {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-small-outline {
+    white-space: nowrap;
+    padding: 0 16px;
+    border: 1px solid #cbd5e1;
+    background: white;
+    border-radius: 8px;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-small-outline:hover {
+    background: #f1f5f9;
+    border-color: #94a3b8;
+}
+
+.mt-2 {
+    margin-top: 8px;
+}
+
+.form-divider {
+    border: 0;
+    border-top: 1px dashed #e2e8f0;
+    margin: 20px 0;
+}
+
+/* Compact Course Grid */
+.course-grid-compact {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+}
+
+.course-item {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 8px 12px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.course-item label {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #334155;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+.course-item select {
+    padding: 4px 8px;
+    font-size: 0.85rem;
+    height: 30px;
+    background: white;
+}
+
+.full-width {
+    width: 100%;
+}
+
+.btn-primary.full-width {
+    width: 100%;
+    padding: 14px;
+    font-size: 1.1rem;
+    margin-top: 10px;
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3);
+}
+
+.btn-primary.full-width:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 8px -1px rgba(37, 99, 235, 0.4);
+}
+
+@media (max-width: 600px) {
+    .form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .form-group.half,
+    .form-group.third,
+    .form-group.two-thirds {
+        flex: auto;
+    }
+
+    .compact-form {
+        padding: 20px;
+    }
+}
+
+/* --- Refined Course Grid (User Request: 2 Lines, ~5cm height) --- */
+.course-grid-compact {
+    display: grid;
+    /* Force 6 columns to fit ~11 items in 2 rows on desktop */
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+    margin-top: 5px;
+}
+
+.course-item {
+    padding: 6px;
+    /* Reduced padding */
+    font-size: 0.85rem;
+    /* Smaller font */
+    min-height: 0;
+}
+
+.course-item label {
+    font-size: 0.85rem;
+    white-space: nowrap;
+    /* Prevent wrap */
+    justify-content: center;
+    /* Center align */
+}
+
+.course-item select {
+    padding: 2px 4px;
+    height: 26px;
+    /* Compact select */
+    font-size: 0.8rem;
+    text-align: center;
+    width: 100%;
+    /* Fill the small box */
+}
+
+/* Tablet/Mobile Adjustments */
+@media (max-width: 900px) {
+    .course-grid-compact {
+        grid-template-columns: repeat(4, 1fr);
+        /* 3 rows */
+    }
+}
+
+@media (max-width: 600px) {
+    .course-grid-compact {
+        grid-template-columns: repeat(3, 1fr);
+        /* 4 rows */
+    }
+}
+
+@media (max-width: 400px) {
+    .course-grid-compact {
+        grid-template-columns: repeat(2, 1fr);
+        /* 6 rows */
+    }
+}
+
+@media (max-width: 768px) {
+    .course-grid-compact {
+        grid-template-columns: repeat(3, 1fr);
+        /* 3 cols on tablet */
+    }
+}
+
+@media (max-width: 480px) {
+    .course-grid-compact {
+        grid-template-columns: repeat(2, 1fr);
+        /* 2 cols on mobile */
+    }
+}
+
+/* Success Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
+}
+
+.modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    border: 1px solid #e0e0e0;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.ledger-table tbody tr {
+    cursor: pointer;
+}
+
+.ledger-table tbody tr:hover {
+    background-color: #f5f5f5;
+}
+
+/* Notes Tooltip */
+.notes-indicator {
+    cursor: help;
+    margin-left: 5px;
+    position: relative;
+    display: inline-block;
+}
+
+.notes-indicator::after {
+    content: attr(data-notes);
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    white-space: pre-wrap;
+    width: 250px;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    text-align: left;
+    line-height: 1.4;
+}
+
+.notes-indicator:hover::after {
+    opacity: 1;
+    visibility: visible;
+}
+
+.notes-indicator::before {
+    content: "";
+    position: absolute;
+    bottom: 115%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: #333;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s;
+}
+
+.notes-indicator:hover::before {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* UI Utilities */
+.text-center {
+    text-align: center;
+}
+
+.text-success {
+    color: #4CAF50;
+}
+
+.max-w-400 {
+    max-width: 400px;
+}
+
+.mt-0 {
+    margin-top: 0;
+}
+
+.mt-20 {
+    margin-top: 20px;
+}
+
+.flex-group {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.flex-1 {
+    flex: 1;
+}
+
+/* Utility spacing classes - removed redundant .hidden definition here */
+
+.show {
+    display: block !important;
+}
+
+.show-flex {
+    display: flex !important;
+}
+
+.flex-center {
+    display: flex;
+    align-items: center;
+}
+
+.gap-4 {
+    gap: 4px;
+}
+
+.gap-5 {
+    gap: 5px;
+}
+
+/* Spacing Utilities */
+.mb-10 {
+    margin-bottom: 10px;
+}
+
+.mb-15 {
+    margin-bottom: 15px;
+}
+
+.ml-10 {
+    margin-left: 10px;
+}
+
+.mr-10 {
+    margin-right: 10px;
+}
+
+/* Typography Utilities */
+.text-muted-sm {
+    font-size: 0.7rem;
+    color: #94a3b8;
+}
+
+.bold {
+    font-weight: bold;
+}
+
+.fw-700 {
+    font-weight: 700;
+}
+
+.fs-0-7 {
+    font-size: 0.7rem;
+}
+
+.fs-1-1 {
+    font-size: 1.1rem;
+}
+
+.lh-1-2 {
+    line-height: 1.2;
+}
+
+/* Icon Utilities */
+.icon-muted {
+    font-size: 1rem;
+    color: #94a3b8;
+}
+
+/* Injected Content Utilities */
+.fs-0-9-em {
+    font-size: 0.9em;
+}
+
+.fs-0-75-em {
+    font-size: 0.75em;
+}
+
+.fs-0-7-em {
+    font-size: 0.7em;
+}
+
+.fs-0-65-em {
+    font-size: 0.65em;
+}
+
+.fw-normal {
+    font-weight: normal;
+}
+
+.c-000 {
+    color: #000;
+}
+
+.c-333 {
+    color: #333;
+}
+
+.c-note {
+    color: #334155;
+}
+
+.break-all {
+    word-break: break-all;
+}
+
+.primary-hover-bold {
+    color: var(--primary-hover);
+    font-weight: bold;
+}
+
+
+.transparent-select {
+    border: none !important;
+    font-weight: 700 !important;
+    font-size: 1.1rem !important;
+    padding: 0 10px !important;
+    width: auto !important;
+    cursor: pointer !important;
+    background: transparent !important;
+}
+
+/* Layout & Alignment Utilities */
+.flex-end {
+    justify-content: flex-end;
+}
+
+.flex-center-all {
+    justify-content: center;
+    align-items: center;
+}
+
+.flex-2 {
+    flex: 2;
+}
+
+.flex-3 {
+    flex: 3;
+}
+
+.text-center {
+    text-align: center;
+}
+
+/* Spacing Utilities */
+.mt-0 {
+    margin-top: 0;
+}
+
+.mt-2 {
+    margin-top: 2px;
+}
+
+.mt-5 {
+    margin-top: 5px;
+}
+
+.mt-20 {
+    margin-top: 20px;
+}
+
+.mb-5 {
+    margin-bottom: 5px;
+}
+
+.mb-10 {
+    margin-bottom: 10px;
+}
+
+.mb-20 {
+    margin-bottom: 20px;
+}
+
+.my-15 {
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.p-5 {
+    padding: 5px;
+}
+
+.p-8 {
+    padding: 8px;
+}
+
+.p-10-24 {
+    padding: 10px 24px;
+}
+
+.px-20 {
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+.py-10 {
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+/* Dimension Utilities */
+.w-50 {
+    width: 50px;
+}
+
+.max-w-350 {
+    max-width: 350px;
+}
+
+.max-w-400 {
+    max-width: 400px;
+}
+
+.max-w-500 {
+    max-width: 500px;
+}
+
+.h-80 {
+    height: 80px;
+}
+
+/* Typography */
+.fs-1-1-em {
+    font-size: 1.1em;
+}
+
+.fs-40 {
+    font-size: 40px;
+}
+
+/* Form Control Extensions */
+.resize-v {
+    resize: vertical;
+}
+
+.border-light {
+    border: 1px solid #ddd;
+}
+
+.rounded {
+    border-radius: 4px;
+}
+
+/* --- Modal Visibility & Navigation Fixes --- */
+
+/* Ensure .hidden ALWAYS overrides other display states like .modal-overlay */
+.hidden {
+    display: none !important;
+}
+
+/* Standardized Secondary Button to prevent squishing and provide clear UI */
+.btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 20px;
+    background-color: #f8fafc;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+    background-color: #f1f5f9;
+    border-color: #94a3b8;
+}
+
+.btn-secondary:active {
+    background-color: #e2e8f0;
+    transform: translateY(1px);
+}
+
+/* Modal specific button layout adjustments */
+.modal-content .flex-group button {
+    min-width: 100px;
+}
+
+/* Width Utilities for Table Headers */
+.w-40-px {
+    width: 40px !important;
+}
+
+.w-100-px {
+    width: 100px !important;
+}
+
+.w-150-px {
+    width: 150px !important;
+}
+
+/* No Data Message Utilities */
+.no-data-cell {
+    text-align: center;
+    padding: 30px;
+    font-weight: 500;
+    color: #94a3b8;
+}
+
+.no-data-card {
+    grid-column: 1/-1;
+    text-align: center;
+    padding: 40px;
+    color: #94a3b8;
+}
+
+/* Annual Ledger Styles */
+.ledger-container {
+    padding: 24px;
+    background: white;
+    min-height: 100vh;
+}
+
+.ledger-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.ledger-header h1 {
+    font-size: 2.2rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+    color: #000;
+}
+
+.ledger-table-wrapper {
+    overflow-x: auto;
+    border: 1.5px solid #000;
+}
+
+.ledger-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    background: white;
+}
+
+.ledger-table th,
+.ledger-table td {
+    border: 1px solid #000;
+    padding: 2px;
+    text-align: center;
+    font-size: 0.8rem;
+    height: 32px;
+    color: #000;
+}
+
+.ledger-table th {
+    font-weight: 700;
+    background: #fff;
+}
+
+.ledger-table .sub-label {
+    font-size: 0.7rem;
+    display: inline-block;
+    width: 45%;
+    text-align: center;
+}
+
+.ledger-table .sub-label:first-child {
+    border-right: 1px dotted #000;
+}
+
+.ledger-table .month-th {
+    padding: 0;
+}
+
+.ledger-table .month-title {
+    border-bottom: 1px solid #000;
+    padding: 4px 0;
+}
+
+.ledger-table .sub-headers {
+    display: flex;
+}
+
+.ledger-table .sub-headers div {
+    flex: 1;
+    font-size: 0.7rem;
+    padding: 2px 0;
+}
+
+.ledger-table .sub-headers div:first-child {
+    border-right: 1px solid #000;
+}
+
+.ledger-table td div.dual-cell {
+    display: flex;
+    height: 100%;
+}
+
+.ledger-table td div.dual-cell div {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ledger-table td div.dual-cell div:first-child {
+    border-right: 1px dotted #000;
+}
+
+.col-no {
+    width: 35px;
+}
+
+.col-name {
+    width: 130px;
+}
+
+.col-month {
+    width: 55px;
+}
+
+.col-note {
+    width: 100px;
+}
+
+.header-row-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.header-row-actions .left-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.ledger-table hr {
+    border: none;
+    border-top: 1px dotted #000;
+}
+
+.ledger-table .name-cell {
+    text-align: left;
+    padding-left: 8px;
+}
+
+.ledger-table .name-title {
+    font-weight: 700;
+}
+
+.ledger-table .phone-sub {
+    font-size: 0.75rem;
+    color: #666;
+    border-top: 1px dotted #ccc;
+    margin-top: 2px;
+    padding-top: 2px;
+}
+
+/* Print Styles for Ledger */
+@media print {
+    body {
+        overflow: visible !important;
+        height: auto !important;
+    }
+
+    .sidebar,
+    .top-header,
+    .filter-card,
+    .status-tabs-row,
+    .header-row-actions {
+        display: none !important;
+    }
+
+    .main-content {
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+    }
+
+    .ledger-container {
+        padding: 0 !important;
+        width: 100% !important;
+    }
+
+    .ledger-table {
+        font-size: 0.65rem;
+    }
+
+    .ledger-table th,
+    .ledger-table td {
+        height: 24px;
+        padding: 1px;
+    }
+
+    @page {
+        size: landscape;
+        margin: 0.5cm;
+    }
+}
+
+/* =========================================
+   Exam PDF View Styles (Added via Script Fix)
+   ========================================= */
+
+.exam-pdf-layout {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 20px;
+    background: white;
+    max-width: 100%;
+}
+
+.pdf-q-item {
+    width: 48%;
+    /* 2 Column Layout */
+    margin-bottom: 20px;
+    box-sizing: border-box;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    background: #fff;
+}
+
+/* On mobile, stack them */
+@media (max-width: 768px) {
+    .pdf-q-item {
+        width: 100%;
+    }
+}
+
+.pdf-q-text {
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 10px;
+    line-height: 1.5;
+    color: #1a1a1a;
+    display: flex;
+}
+
+.pdf-q-num {
+    margin-right: 6px;
+    white-space: nowrap;
+    color: #2563eb;
+    /* Blue number */
+}
+
+.pdf-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    /* 2 Columns for options */
+    gap: 8px 12px;
+    padding-left: 10px;
+}
+
+.pdf-opt {
+    font-size: 0.9rem;
+    color: #334155;
+    display: flex;
+    align-items: flex-start;
+    line-height: 1.4;
+}
+
+.pdf-opt-num {
+    margin-right: 4px;
+    color: #64748b;
+    font-weight: 600;
+}
+
+/* Page Break Line (Visible on Web) */
+.pdf-page-break {
+    flex-basis: 100%;
+    height: 1px;
+    margin: 30px 0;
+    border-bottom: 2px dashed #e2e8f0;
+    position: relative;
+}
+
+.pdf-page-break::after {
+    content: '페이지 구분선';
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #f8fafc;
+    padding: 0 10px;
+    color: #94a3b8;
+    font-size: 0.8rem;
+}
+
+/* Answer Key Section */
+.web-answer-key-section {
+    width: 100%;
+    margin-top: 50px;
+    border-top: 3px solid #334155;
+    padding-top: 30px;
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.pdf-answer-header {
+    text-align: center;
+    font-weight: 800;
+    font-size: 1.4rem;
+    margin-bottom: 20px;
+    color: #0f172a;
+}
+
+.pdf-answer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    gap: 4px;
+}
+
+.pdf-answer-item {
+    background: white;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    padding: 6px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.pdf-answer-item .num {
+    font-size: 0.7rem;
+    color: #64748b;
+    margin-bottom: 2px;
+}
+
+.pdf-answer-item .ans {
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: #e11d48;
+}
+
+/* Print Specific Overrides */
+@media print {
+    body {
+        background: white;
+        height: auto;
+        overflow: visible;
+    }
+
+    .app-container,
+    .main-wrapper,
+    .content-scroll {
+        display: block;
+        height: auto;
+        overflow: visible;
+        padding: 0;
+        margin: 0;
+    }
+
+    /* Hide UI Elements */
+    .sidebar,
+    .top-header,
+    .filter-section,
+    .card-grid,
+    .member-list-container,
+    .exam-board-header button,
+    .pdf-page-break::after {
+        display: none !important;
+    }
+
+    /* Reset Layout for Print */
+    .exam-pdf-layout {
+        display: block;
+        padding: 0;
+        width: 100%;
+    }
+
+    .pdf-q-item {
+        display: inline-block;
+        width: 48%;
+        margin-bottom: 15px;
+        vertical-align: top;
+        /* margin-right: 2%; */
+    }
+
+    /* Simulate columns using CSS columns? Or just float? 
+       Using inline-block is safer than multi-column for breaking
+    */
+
+    .pdf-page-break {
+        display: block;
+        border: none;
+        margin: 0;
+        height: 0;
+        page-break-after: always;
+        break-after: always;
+        clear: both;
+    }
+
+    .web-answer-key-section {
+        page-break-before: always;
+        break-before: always;
+        background: none;
+        border: none;
+        padding: 0;
+        margin-top: 0;
+    }
+
+    .pdf-answer-grid {
+        grid-template-columns: repeat(10, 1fr);
+        border: 1px solid #000;
+        gap: 0;
+    }
+
+    .pdf-answer-item {
+        border: 1px solid #000;
+        border-radius: 0;
+    }
+
+    /* Tuition Ledger Print Optimization */
+    @page {
+        margin: 0;
+    }
+
+    body,
+    html,
+    .app-container,
+    .main-wrapper,
+    .main-content,
+    .ledger-container,
+    #memberListSection {
+        padding: 0 !important;
+        margin: 0 !important;
+        height: auto !important;
+        overflow: visible !important;
+    }
+
+    .sidebar,
+    .top-header,
+    .header-row-actions,
+    .no-scrollbar,
+    .ledger-tabs-wrapper,
+    #examBoardContainer,
+    .nav-scroll-container,
+    .ledger-nav-tabs {
+        display: none !important;
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        visibility: hidden !important;
+    }
+
+    .ledger-header {
+        display: none !important;
+    }
+
+    .ledger-course-section {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        page-break-after: always;
+        break-after: page;
+    }
+
+    .course-header {
+        margin-top: 0 !important;
+        margin-bottom: 2px !important;
+        padding: 0 !important;
+        border-bottom: 2px solid #000 !important;
+    }
+
+    .course-header h2 {
+        font-size: 1.0rem !important;
+        margin: 0 !important;
+        padding: 2px 0 !important;
+    }
+
+    .ledger-table-wrapper {
+        margin-top: 0 !important;
+        overflow: visible !important;
+        border: none !important;
+    }
+
+    .ledger-table-wrapper table {
+        width: 100% !important;
+        min-width: 0 !important;
+        /* Remove min-width to allow shrinking */
+        table-layout: fixed !important;
+        border: 1.5px solid #000 !important;
+    }
+
+    /* Repeat header on each page */
+    thead {
+        display: table-header-group !important;
+    }
+
+    tr {
+        page-break-inside: avoid !important;
+    }
+
+    /* Shrink fonts for horizontal fit */
+    th,
+    td {
+        font-size: 0.65rem !important;
+        padding: 2px !important;
+        border: 1px solid #000 !important;
+    }
+
+    /* Column specific widths for print to ensure 100% fit */
+    th:nth-child(1),
+    td:nth-child(1) {
+        width: 30px !important;
+    }
+
+    /* NO */
+    th:nth-child(2),
+    td:nth-child(2) {
+        width: 110px !important;
+    }
+
+    /* Name/Phone */
+    /* Months take remaining space */
+    /* Remarks */
+    th:last-child,
+    td:last-child {
+        width: 80px !important;
+    }
+}
+
+
+.hidden {
+    display: none !important;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.print-hide {
+    display: none !important;
+}
+
+@media print {
+    .print-hide {
+        display: none !important;
+    }
 }

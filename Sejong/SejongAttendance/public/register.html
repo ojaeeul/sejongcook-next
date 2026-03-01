@@ -3,16 +3,22 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>회원등록 - 세종요리</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>수강생 등록 - 세종요리</title>
+    <link rel="stylesheet" href="style.css?v=20260228_6">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
         rel="stylesheet">
-    <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="script.js?v=20260228_9" defer></script>
+    <script src="questions_data.js?v=20260209_1" defer></script>
+    <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 </head>
 
 <body>
     <div class="app-container">
+        <!-- Mobile Sidebar Overlay -->
+        <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
         <!-- Sidebar Navigation -->
         <aside class="sidebar">
             <div class="brand-logo">
@@ -20,254 +26,391 @@
             </div>
 
             <nav class="sidebar-nav">
-                <div class="nav-category">수강 관리</div>
-                <a href="index.html" class="nav-item">
-                    수강생 관리
-                </a>
-                <a href="register.html" class="nav-item active">
-                    회원 등록
-                </a>
-                <a href="sheet.html" class="nav-item">
-                    월간 출석부
-                </a>
-                <a href="tuition.html" class="nav-item">
-                    수강료 관리
-                </a>
+                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">수강 관리</div>
+                <div class="nav-sub-menu show">
+                    <a href="register.html" class="nav-item active">수강생 등록</a>
+                    <a href="index.html" class="nav-item">수강생 대장</a>
+                    <a href="index.html?filter=phonebook" class="nav-item">전화번호부</a>
+                    <a href="sheet.html" class="nav-item">월간 출석부</a>
+                </div>
+<div class="nav-category toggle-category active" onclick="toggleNavSub(this)">수강료</div>
+                <div class="nav-sub-menu show">
+                    <a href="tuition.html" class="nav-item">수강료 관리</a>
+                    <a href="ledger.html" class="nav-item">수강료 납부대장</a>
+                    <a href="paid_list.html" class="nav-item">납부완료 명단</a>
+                </div>
+<div class="nav-category toggle-category active" onclick="toggleNavSub(this)">소통</div>
+                <div class="nav-sub-menu show">
+                    <a href="notice.html" class="nav-item">학원 공지</a>
+                    <a href="feed.html" class="nav-item">피드 관리</a>
+                    <a href="wagashi.html" class="nav-item">학원 홍보</a>
+                </div>
+<div class="nav-category toggle-category" onclick="toggleNavSub(this)">시험지</div>
+                <div class="nav-sub-menu">
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">한식기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('한식_2021')" class="nav-item">2021년 한식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('한식_2022')" class="nav-item">2022년 한식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('한식_2023')" class="nav-item">2023년 한식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('한식_2024')" class="nav-item">2024년 한식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('한식_2025')" class="nav-item">2025년 한식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('한식_2026')" class="nav-item">2026년 한식</a>
+                    </div>
 
-                <div class="nav-category">소통</div>
-                <a href="#" class="nav-item">학원 공지</a>
-                <a href="feed.html" class="nav-item">피드 관리</a>
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">양식기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('양식_2021')" class="nav-item">2021년 양식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('양식_2022')" class="nav-item">2022년 양식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('양식_2023')" class="nav-item">2023년 양식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('양식_2024')" class="nav-item">2024년 양식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('양식_2025')" class="nav-item">2025년 양식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('양식_2026')" class="nav-item">2026년 양식</a>
+                    </div>
 
-                <div class="nav-category">기타</div>
-                <a href="stats.html" class="nav-item">
-                    통계 및 납부
-                </a>
-                <a href="monitor.html" target="_blank" class="nav-item highlight">
-                    키오스크 모니터
-                </a>
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">일식기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('일식_2021')" class="nav-item">2021년 일식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('일식_2022')" class="nav-item">2022년 일식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('일식_2023')" class="nav-item">2023년 일식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('일식_2024')" class="nav-item">2024년 일식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('일식_2025')" class="nav-item">2025년 일식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('일식_2026')" class="nav-item">2026년 일식</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">중식기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('중식_2021')" class="nav-item">2021년 중식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('중식_2022')" class="nav-item">2022년 중식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('중식_2023')" class="nav-item">2023년 중식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('중식_2024')" class="nav-item">2024년 중식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('중식_2025')" class="nav-item">2025년 중식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('중식_2026')" class="nav-item">2026년 중식</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">제과기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('제과_2021')" class="nav-item">2021년 제과</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과_2022')" class="nav-item">2022년 제과</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과_2023')" class="nav-item">2023년 제과</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과_2024')" class="nav-item">2024년 제과</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과_2025')" class="nav-item">2025년 제과</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과_2026')" class="nav-item">2026년 제과</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">제빵기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2021')" class="nav-item">2021년 제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2022')" class="nav-item">2022년 제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2023')" class="nav-item">2023년 제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2024')" class="nav-item">2024년 제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2025')" class="nav-item">2025년 제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2026')" class="nav-item">2026년 제빵</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">제과제빵기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" class="nav-item">준비중입니다</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">복어기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" class="nav-item">준비중입니다</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">산업기사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" class="nav-item">준비중입니다</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">가정요리</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" class="nav-item">준비중입니다</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">브런치</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" class="nav-item">준비중입니다</a>
+                    </div>
+                </div>                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">기타</div>
+                <div class="nav-sub-menu show">
+                    <a href="javascript:void(0)" onclick="openSettingsModal()" class="nav-item">
+                        <span class="material-icons" style="font-size: 1.2rem; margin-right: 8px;">settings</span>
+                        수업 요일 설정
+                    </a>
+                    <a href="index.html?filter=archive" class="nav-item">수료생 보관함</a>
+                    <a href="index.html?filter=trash" class="nav-item">휴지통</a>
+                    <a href="stats.html" class="nav-item">통계 및 납부</a>
+                </div>
+                <a href="monitor.html" target="_blank" class="nav-item highlight">키오스크 모니터</a>
             </nav>
         </aside>
 
         <!-- Main Content -->
         <main class="main-wrapper">
             <header class="top-header">
+                <button class="hamburger-btn" onclick="toggleSidebar()">
+                    <span>MENU</span>
+                    <span class="material-icons">menu</span>
+                </button>
                 <div class="page-title">
-                    <h1>회원 등록</h1>
+                    <h1>수강생 등록</h1>
                 </div>
+                <div class="header-actions"></div>
             </header>
 
             <div class="content-scroll">
                 <div class="form-container">
-                    <form id="regForm">
-                        <div class="form-group">
-                            <label for="name">이름</label>
-                            <input type="text" id="name" name="name" required placeholder="이름을 입력하세요">
-                        </div>
+                    <form id="regForm" class="compact-form">
 
-                        <div class="form-group">
-                            <label class="section-label">수강 과목 및 시간 선택</label>
-                            <div class="course-time-grid">
-                                <!-- Helper: Generating items -->
-                                <div class="course-unit">
-                                    <label class="check-label">
-                                        <input type="checkbox" name="course_select" value="한식기능사">
-                                        <span>한식</span>
-                                    </label>
-                                    <select name="time_select" class="mini-time-select">
-                                        <option value="10:00">10:00</option>
-                                        <option value="11:00">11:00</option>
-                                        <option value="14:00">14:00</option>
-                                        <option value="17:00">17:00</option>
-                                        <option value="19:00">19:00</option>
-                                    </select>
-                                </div>
-                                <div class="course-unit">
-                                    <label class="check-label">
-                                        <input type="checkbox" name="course_select" value="양식기능사">
-                                        <span>양식</span>
-                                    </label>
-                                    <select name="time_select" class="mini-time-select">
-                                        <option value="10:00">10:00</option>
-                                        <option value="11:00">11:00</option>
-                                        <option value="14:00">14:00</option>
-                                        <option value="17:00">17:00</option>
-                                        <option value="19:00">19:00</option>
-                                    </select>
-                                </div>
-                                <div class="course-unit">
-                                    <label class="check-label">
-                                        <input type="checkbox" name="course_select" value="일식기능사">
-                                        <span>일식</span>
-                                    </label>
-                                    <select name="time_select" class="mini-time-select">
-                                        <option value="10:00">10:00</option>
-                                        <option value="11:00">11:00</option>
-                                        <option value="14:00">14:00</option>
-                                        <option value="17:00">17:00</option>
-                                        <option value="19:00">19:00</option>
-                                    </select>
-                                </div>
-                                <div class="course-unit">
-                                    <label class="check-label">
-                                        <input type="checkbox" name="course_select" value="중식기능사">
-                                        <span>중식</span>
-                                    </label>
-                                    <select name="time_select" class="mini-time-select">
-                                        <option value="10:00">10:00</option>
-                                        <option value="11:00">11:00</option>
-                                        <option value="14:00">14:00</option>
-                                        <option value="17:00">17:00</option>
-                                        <option value="19:00">19:00</option>
-                                    </select>
-                                </div>
-                                <div class="course-unit">
-                                    <label class="check-label">
-                                        <input type="checkbox" name="course_select" value="제과기능사">
-                                        <span>제과</span>
-                                    </label>
-                                    <select name="time_select" class="mini-time-select">
-                                        <option value="10:00">10:00</option>
-                                        <option value="11:00">11:00</option>
-                                        <option value="14:00">14:00</option>
-                                        <option value="17:00">17:00</option>
-                                        <option value="19:00">19:00</option>
-                                    </select>
-                                </div>
-                                <div class="course-unit">
-                                    <label class="check-label">
-                                        <input type="checkbox" name="course_select" value="제빵기능사">
-                                        <span>제빵</span>
-                                    </label>
-                                    <select name="time_select" class="mini-time-select">
-                                        <option value="10:00">10:00</option>
-                                        <option value="11:00">11:00</option>
-                                        <option value="14:00">14:00</option>
-                                        <option value="17:00">17:00</option>
-                                        <option value="19:00">19:00</option>
-                                    </select>
-                                </div>
-                                <div class="course-unit">
-                                    <label class="check-label">
-                                        <input type="checkbox" name="course_select" value="제과+제빵">
-                                        <span>제과+제빵</span>
-                                    </label>
-                                    <select name="time_select" class="mini-time-select">
-                                        <option value="10:00">10:00</option>
-                                        <option value="11:00">11:00</option>
-                                        <option value="14:00">14:00</option>
-                                        <option value="17:00">17:00</option>
-                                        <option value="19:00">19:00</option>
-                                    </select>
-                                </div>
-                                <div class="course-unit">
-                                    <label class="check-label">
-                                        <input type="checkbox" name="course_select" value="복어기능사">
-                                        <span>복어</span>
-                                    </label>
-                                    <select name="time_select" class="mini-time-select">
-                                        <option value="10:00">10:00</option>
-                                        <option value="11:00">11:00</option>
-                                        <option value="14:00">14:00</option>
-                                        <option value="17:00">17:00</option>
-                                        <option value="19:00">19:00</option>
-                                    </select>
-                                </div>
-                                <div class="course-unit">
-                                    <label class="check-label">
-                                        <input type="checkbox" name="course_select" value="산업기사">
-                                        <span>산업기사</span>
-                                    </label>
-                                    <select name="time_select" class="mini-time-select">
-                                        <option value="10:00">10:00</option>
-                                        <option value="11:00">11:00</option>
-                                        <option value="14:00">14:00</option>
-                                        <option value="17:00">17:00</option>
-                                        <option value="19:00">19:00</option>
-                                    </select>
-                                </div>
-                                <div class="course-unit">
-                                    <label class="check-label">
-                                        <input type="checkbox" name="course_select" value="가정요리">
-                                        <span>가정요리</span>
-                                    </label>
-                                    <select name="time_select" class="mini-time-select">
-                                        <option value="10:00">10:00</option>
-                                        <option value="11:00">11:00</option>
-                                        <option value="14:00">14:00</option>
-                                        <option value="17:00">17:00</option>
-                                        <option value="19:00">19:00</option>
-                                    </select>
-                                </div>
-                                <div class="course-unit">
-                                    <label class="check-label">
-                                        <input type="checkbox" name="course_select" value="브런치">
-                                        <span>브런치</span>
-                                    </label>
-                                    <select name="time_select" class="mini-time-select">
-                                        <option value="10:00">10:00</option>
-                                        <option value="11:00">11:00</option>
-                                        <option value="14:00">14:00</option>
-                                        <option value="17:00">17:00</option>
-                                        <option value="19:00">19:00</option>
-                                    </select>
-                                </div>
+                        <!-- 1. Name & Resident Num Row -->
+                        <div class="form-row">
+                            <div class="form-group half">
+                                <label for="name">이름 <span class="required">*</span></label>
+                                <input type="text" id="name" name="name" required placeholder="이름 입력">
+                            </div>
+                            <div class="form-group half">
+                                <label for="resident_num">주민등록번호 <span class="required">*</span></label>
+                                <input type="text" id="resident_num" name="resident_num" placeholder="000000-0000000">
                             </div>
                         </div>
 
-                        <div class="form-group">
-                            <label for="resident_num">주민등록번호</label>
-                            <input type="text" id="resident_num" name="resident_num" placeholder="000000-0000000">
+                        <!-- 2. Phone Numbers Row -->
+                        <div class="form-row">
+                            <div class="form-group third">
+                                <label for="phone">본인 연락처</label>
+                                <input type="tel" id="phone" name="phone" placeholder="010-0000-0000">
+                            </div>
+                            <div class="form-group third">
+                                <label for="phone_home">자택 연락처</label>
+                                <input type="tel" id="phone_home" name="phone_home" placeholder="02-0000-0000">
+                            </div>
+                            <div class="form-group third">
+                                <label for="phone_guardian">보호자 연락처</label>
+                                <input type="tel" id="phone_guardian" name="phone_guardian" placeholder="010-0000-0000">
+                            </div>
                         </div>
 
+                        <!-- 3. Address Row -->
                         <div class="form-group">
                             <label for="address">주소</label>
-                            <div style="display: flex; flex-direction: column; gap: 8px;">
-                                <div style="display: flex; gap: 8px;">
-                                    <input type="text" id="address" name="address" readonly placeholder="주소 검색"
-                                        style="flex: 1;">
-                                    <button type="button" class="btn-primary" style="width: auto; padding: 0 20px;"
-                                        onclick="execDaumPostcode('address', 'address_detail')">주소 검색</button>
+                            <div class="address-group">
+                                <input type="text" id="address" name="address" readonly placeholder="주소 검색 버튼을 눌러주세요">
+                                <button type="button" class="btn-small-outline"
+                                    onclick="execDaumPostcode('address', 'address_detail')">검색</button>
+                            </div>
+                            <input type="text" id="address_detail" name="address_detail" placeholder="상세 주소 입력"
+                                class="mt-2">
+                        </div>
+
+                        <hr class="form-divider">
+
+                        <!-- 4. Member Type & Dynamic Fields -->
+                        <div class="form-row">
+                            <div class="form-group half">
+                                <label for="type">회원 구분</label>
+                                <select id="type" name="type" onchange="toggleMemberType()" title="회원 구분">
+                                    <option value="student">학생</option>
+                                    <option value="general">일반인</option>
+                                </select>
+                            </div>
+
+                            <!-- Student Dynamic -->
+                            <div id="student-fields" class="form-group two-thirds">
+                                <label>학교 / 학년</label>
+                                <div class="input-group">
+                                    <input type="text" id="school" name="school" placeholder="학교명">
+                                    <select id="school_level" name="school_level" title="학교 구분">
+                                        <option value="">구분</option>
+                                        <option value="고등학교">고등학교</option>
+                                        <option value="중학교">중학교</option>
+                                        <option value="초등학교">초등학교</option>
+                                        <option value="대학교">대학교</option>
+                                    </select>
+                                    <select id="grade" name="grade" title="학년">
+                                        <option value="">학년</option>
+                                        <option value="1">1</option>
+                                        <option value="2">2</option>
+                                        <option value="3">3</option>
+                                        <option value="4">4</option>
+                                        <option value="5">5</option>
+                                        <option value="6">6</option>
+                                    </select>
                                 </div>
-                                <input type="text" id="address_detail" name="address_detail" placeholder="상세 주소를 입력하세요">
+                            </div>
+
+                            <!-- General Dynamic -->
+                            <div id="general-fields" class="form-group two-thirds hidden">
+                                <label for="job">직업</label>
+                                <select id="job" name="job" class="full-width" title="직업 선택">
+                                    <option value="">선택하세요</option>
+                                    <option value="회사원">회사원</option>
+                                    <option value="주부">주부</option>
+                                    <option value="사업가">사업가</option>
+                                    <option value="공무원">공무원</option>
+                                    <option value="무직">무직</option>
+                                    <option value="기타">기타</option>
+                                </select>
                             </div>
                         </div>
 
-                        <div class="form-group">
-                            <label for="type">회원 구분</label>
-                            <select id="type" name="type">
-                                <option value="student">학생</option>
-                                <option value="general">일반인</option>
-                            </select>
+                        <!-- 5. Start Date -->
+                        <div class="form-row">
+                            <div class="form-group half">
+                                <label for="start_date">수강 시작일</label>
+                                <input type="date" id="start_date" name="start_date">
+                            </div>
+                            <div class="form-group half"></div> <!-- Spacer to keep it 50% -->
                         </div>
 
+                        <hr class="form-divider">
+
+                        <!-- 6. Course Selection (Compact Grid: 2 Lines) -->
                         <div class="form-group">
-                            <label>연락처</label>
-                            <div style="display: flex; flex-direction: column; gap: 8px;">
-                                <input type="tel" id="phone" name="phone" placeholder="본인 (010-0000-0000)">
-                                <input type="tel" id="phone_home" name="phone_home" placeholder="자택 (02-000-0000)">
-                                <input type="tel" id="phone_guardian" name="phone_guardian"
-                                    placeholder="보호자 (010-0000-0000)">
+                            <label class="section-label">수강 과목 및 시간</label>
+                            <div class="course-grid-compact">
+                                <div class="course-item">
+                                    <label><input type="checkbox" name="course_select" value="한식기능사"> 한식</label>
+                                    <select name="time_select" title="시간 선택">
+                                        <option value="10:00">오전 10:00</option>
+                                        <option value="12:00">오전 12:00</option>
+                                        <option value="17:00">오후 05:00</option>
+                                        <option value="19:00">오후 07:00</option>
+                                    </select>
+                                </div>
+                                <div class="course-item">
+                                    <label><input type="checkbox" name="course_select" value="양식기능사"> 양식</label>
+                                    <select name="time_select" title="시간 선택">
+                                        <option value="10:00">오전 10:00</option>
+                                        <option value="12:00">오전 12:00</option>
+                                        <option value="17:00">오후 05:00</option>
+                                        <option value="19:00">오후 07:00</option>
+                                    </select>
+                                </div>
+                                <div class="course-item">
+                                    <label><input type="checkbox" name="course_select" value="일식기능사"> 일식</label>
+                                    <select name="time_select" title="시간 선택">
+                                        <option value="10:00">오전 10:00</option>
+                                        <option value="12:00">오전 12:00</option>
+                                        <option value="17:00">오후 05:00</option>
+                                        <option value="19:00">오후 07:00</option>
+                                    </select>
+                                </div>
+                                <div class="course-item">
+                                    <label><input type="checkbox" name="course_select" value="중식기능사"> 중식</label>
+                                    <select name="time_select" title="시간 선택">
+                                        <option value="10:00">오전 10:00</option>
+                                        <option value="12:00">오전 12:00</option>
+                                        <option value="17:00">오후 05:00</option>
+                                        <option value="19:00">오후 07:00</option>
+                                    </select>
+                                </div>
+                                <div class="course-item">
+                                    <label><input type="checkbox" name="course_select" value="복어기능사"> 복어</label>
+                                    <select name="time_select" title="시간 선택">
+                                        <option value="10:00">오전 10:00</option>
+                                        <option value="12:00">오전 12:00</option>
+                                        <option value="17:00">오후 05:00</option>
+                                        <option value="19:00">오후 07:00</option>
+                                    </select>
+                                </div>
+                                <div class="course-item">
+                                    <label><input type="checkbox" name="course_select" value="산업기사"> 산업기사</label>
+                                    <select name="time_select" title="시간 선택">
+                                        <option value="10:00">오전 10:00</option>
+                                        <option value="12:00">오전 12:00</option>
+                                        <option value="17:00">오후 05:00</option>
+                                        <option value="19:00">오후 07:00</option>
+                                    </select>
+                                </div>
+                                <div class="course-item">
+                                    <label><input type="checkbox" name="course_select" value="제과제빵기능사"> 제과제빵기능사</label>
+                                    <select name="time_select" title="시간 선택">
+                                        <option value="10:00">오전 10:00</option>
+                                        <option value="12:00">오전 12:00</option>
+                                        <option value="17:00">오후 05:00</option>
+                                        <option value="19:00">오후 07:00</option>
+                                    </select>
+                                </div>
+                                <div class="course-item">
+                                    <label><input type="checkbox" name="course_select" value="제과기능사"> 제과</label>
+                                    <select name="time_select" title="시간 선택">
+                                        <option value="10:00">오전 10:00</option>
+                                        <option value="12:00">오전 12:00</option>
+                                        <option value="17:00">오후 05:00</option>
+                                        <option value="19:00">오후 07:00</option>
+                                    </select>
+                                </div>
+                                <div class="course-item">
+                                    <label><input type="checkbox" name="course_select" value="제빵기능사"> 제빵</label>
+                                    <select name="time_select" title="시간 선택">
+                                        <option value="10:00">오전 10:00</option>
+                                        <option value="12:00">오전 12:00</option>
+                                        <option value="17:00">오후 05:00</option>
+                                        <option value="19:00">오후 07:00</option>
+                                    </select>
+                                </div>
+                                <div class="course-item">
+                                    <label><input type="checkbox" name="course_select" value="가정요리"> 가정요리</label>
+                                    <select name="time_select" title="시간 선택">
+                                        <option value="10:00">오전 10:00</option>
+                                        <option value="12:00">오전 12:00</option>
+                                        <option value="17:00">오후 05:00</option>
+                                        <option value="19:00">오후 07:00</option>
+                                    </select>
+                                </div>
+                                <div class="course-item">
+                                    <label><input type="checkbox" name="course_select" value="브런치"> 브런치</label>
+                                    <select name="time_select" title="시간 선택">
+                                        <option value="10:00">오전 10:00</option>
+                                        <option value="12:00">오전 12:00</option>
+                                        <option value="17:00">오후 05:00</option>
+                                        <option value="19:00">오후 07:00</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="form-group">
-                            <label for="start_date">수강 시작일</label>
-                            <input type="date" id="start_date" name="start_date">
-                        </div>
-
+                        <!-- 7. Notes & Submit -->
                         <div class="form-group">
                             <label for="notes">비고</label>
-                            <textarea id="notes" name="notes" placeholder="특이사항 입력"></textarea>
+                            <textarea id="notes" name="notes" placeholder="특이사항 입력" rows="2"></textarea>
                         </div>
 
-                        <button type="submit" class="btn-primary">등록하기</button>
+                        <button type="submit" class="btn-primary full-width">등록하기</button>
                     </form>
                 </div>
             </div>
         </main>
     </div>
 
-    <script src="script.js"></script>
+    <!-- Register Confirmation Modal -->
+    <div id="registerConfirmModal" class="modal-overlay hidden">
+        <div class="modal-content text-center max-w-400">
+            <h3 class="mt-0">📝 등록 확인</h3>
+            <p id="confirmMessage">수강생을 등록하시겠습니까?</p>
+            <div class="mt-20 flex-group gap-10">
+                <button onclick="document.getElementById('registerConfirmModal').classList.add('hidden')"
+                    class="btn-secondary flex-1">취소</button>
+                <button id="confirmRegisterBtn" class="btn-primary flex-1">등록하기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="modal-overlay hidden">
+        <div class="modal-content text-center max-w-400">
+            <h3 class="mt-0 text-success">✅ 등록 완료</h3>
+            <p>수강생 등록이 완료되었습니다.</p>
+            <div class="mt-20 flex-group">
+                <button onclick="location.href='index.html'" class="btn-primary flex-1">목록으로 이동</button>
+                <button onclick="document.getElementById('successModal').classList.add('hidden')"
+                    class="btn-secondary flex-1">
+                    계속 등록하기
+                </button>
+            </div>
+        </div>
+    </div>
+
 </body>
 
 </html>

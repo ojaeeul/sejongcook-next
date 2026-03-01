@@ -15,7 +15,7 @@
     "course": "양식기능사(17:00)",
     "start_date": "2026-01-01",
     "type": "student",
-    "status": "taking",
+    "status": "completed",
     "timeSlot": "17:00"
   },
   {
@@ -34,7 +34,7 @@
     "start_date": "2026-01-01",
     "type": "general",
     "notes": "\n[보류 2026. 2. 8.] 개인 사정으로 인한 보류 테스트",
-    "status": "retaking",
+    "status": "taking",
     "timeSlot": "17:00"
   },
   {
@@ -110,7 +110,8 @@
     "start_date": "2026-12-24",
     "type": "student",
     "timeSlot": "10:00,12:00",
-    "registeredDate": ""
+    "registeredDate": "2026-02-22",
+    "status": "taking"
   },
   {
     "name": "김삼이",
@@ -133,7 +134,7 @@
     "timeSlot": "10:00,10:00,10:00,10:00",
     "id": "1770551100795",
     "registeredDate": "2026-02-08",
-    "status": "retaking"
+    "status": "completed"
   },
   {
     "id": "1770551214556",
@@ -148,8 +149,8 @@
     "grade": "",
     "job": "",
     "notes": "",
-    "course": "일식기능사(19:00), 중식기능사(19:00), 복어기능사(19:00), 산업기사(17:00), 제빵기능사(19:00), 가정요리(17:00), 브런치(17:00)",
-    "timeSlot": "19:00,19:00,19:00,17:00,19:00,17:00,17:00",
+    "course": "일식기능사(19:00), 가정요리(17:00), 브런치(17:00)",
+    "timeSlot": "19:00,17:00,17:00",
     "start_date": "2026-04-30",
     "type": "general"
   },

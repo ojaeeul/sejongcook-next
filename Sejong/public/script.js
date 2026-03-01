@@ -1,4 +1,16 @@
-const API_BASE = '/api';
+// Force API Calls to port 8000 API for Bidirectional Sync
+const API_BASE = 'http://localhost:8000/api';
+
+
+
+// Control Test: Fetch a static file to check server reachability
+fetch(`${window.location.origin}/sejong/questions_data.js?v=${Date.now()}`)
+    .then(res => {
+
+    })
+    .catch(err => {
+
+    });
 
 // Daum Postcode Search Function
 function execDaumPostcode(targetId, detailId) {
@@ -30,10 +42,10 @@ let attendanceLogs = [];
 let currentFilter = 'all';
 
 // DOM Elements
-const currentDateEl = document.getElementById('currentDate');
-const memberListEl = document.getElementById('memberList');
-const totalMembersEl = document.getElementById('totalMembers');
-const presentCountEl = document.getElementById('presentCount');
+let currentDateEl;
+let memberListEl;
+let totalMembersEl;
+let presentCountEl;
 
 // Function to format date to YYYY.MM.DD
 function formatDateDisplay(dateStr) {
@@ -43,7 +55,16 @@ function formatDateDisplay(dateStr) {
 
 // Init
 document.addEventListener('DOMContentLoaded', () => {
-    // Determine page
+
+    // Determine page & Init elements
+    currentDateEl = document.getElementById('currentDate');
+    memberListEl = document.getElementById('memberList');
+    totalMembersEl = document.getElementById('totalMembers');
+    presentCountEl = document.getElementById('presentCount');
+
+    console.log('DOMContentLoaded: memberListEl found?', !!memberListEl);
+
+
     if (memberListEl) initDashboard();
 
     // Filter logic
@@ -120,13 +141,37 @@ document.addEventListener('DOMContentLoaded', () => {
             renderMembers();
         });
     }
+    // --- Responsive Sidebar Logic ---
+    const overlay = document.querySelector('.sidebar-overlay');
+    if (overlay) {
+        overlay.addEventListener('click', toggleSidebar);
+    }
+
+    // Close sidebar when clicking a nav item on mobile
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => {
+        item.addEventListener('click', () => {
+            if (window.innerWidth <= 768) {
+                toggleSidebar();
+            }
+        });
+    });
 });
+
+// Global Sidebar Toggle Function
+window.toggleSidebar = function () {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+    if (sidebar) sidebar.classList.toggle('active');
+    if (overlay) overlay.classList.toggle('active');
+};
 
 // Global search term
 window.memberSearchTerm = '';
 
 // New Function: handleModalRegister
 async function handleModalRegister(e) {
+    console.log('handleModalRegister called');
     e.preventDefault();
     const fd = new FormData(e.target);
     const data = Object.fromEntries(fd.entries());
@@ -145,8 +190,34 @@ async function handleModalRegister(e) {
     data.course = courses.join(', ');
 
     // Basic Validation
-    if (!data.name) return alert;
+    if (!data.name) return alert("이름을 입력해주세요.");
 
+    // Custom Confirmation Modal
+    const confirmModal = document.getElementById('registerConfirmModal');
+    const msgEl = document.getElementById('confirmMessage');
+    const confirmBtn = document.getElementById('confirmRegisterBtn');
+
+    if (confirmModal && msgEl && confirmBtn) {
+        msgEl.textContent = `${data.name} 수강생을 등록하시겠습니까?`;
+        confirmModal.classList.remove('hidden');
+        confirmModal.style.display = 'flex';
+
+        // One-time listener for the confirm button
+        confirmBtn.onclick = async () => {
+            confirmModal.classList.add('hidden');
+            confirmModal.style.display = 'none';
+            await submitRegistration(data, true, e.target);
+        };
+    } else {
+        // Fallback to native if modal missing
+        if (confirm(`${data.name} 수강생을 등록하시겠습니까?`)) {
+            submitRegistration(data, true, e.target);
+        }
+    }
+}
+
+// Separated submit logic for reusability
+async function submitRegistration(data, isModal, formEl) {
     try {
         const res = await fetch(`${API_BASE}/members`, {
             method: 'POST',
@@ -155,13 +226,22 @@ async function handleModalRegister(e) {
         });
         const json = await res.json();
         if (json.success) {
-            alert("등록되었습니다.");
-            const modal = document.getElementById('registerModal');
-            if (modal) {
-                modal.style.display = 'none';
-                modal.classList.add('hidden');
+            const successModal = document.getElementById('successModal');
+            if (successModal) {
+                successModal.classList.remove('hidden');
+                successModal.style.display = 'flex';
+            } else {
+                alert("등록되었습니다.");
             }
-            e.target.reset();
+
+            if (isModal) {
+                const registerModal = document.getElementById('registerModal');
+                if (registerModal) {
+                    registerModal.style.display = 'none';
+                    registerModal.classList.add('hidden');
+                }
+            }
+            formEl.reset();
             // Refresh data
             fetchData().then(() => {
                 renderMembers();
@@ -183,10 +263,12 @@ function changeDate(delta) {
 }
 
 async function initDashboard() {
+
     updateDateDisplay();
     await fetchData();
     renderMembers();
     updateSummary();
+
 }
 
 function updateDateDisplay() {
@@ -195,14 +277,46 @@ function updateDateDisplay() {
 
 async function fetchData() {
     try {
-        const [mRes, aRes] = await Promise.all([
-            fetch(`${API_BASE}/members`),
-            fetch(`${API_BASE}/attendance?date=${currentDate}`)
-        ]);
+
+        console.log('Fetching data from API:', API_BASE);
+
+        // Fetch Members
+        let mRes;
+        try {
+            mRes = await fetch(`${API_BASE}/members`, { cache: 'no-store' });
+            if (!mRes.ok) throw new Error(`Status ${mRes.status}`);
+
+        } catch (mErr) {
+
+            throw mErr; // Re-throw to stop
+        }
+
+        // Fetch Attendance
+        let aRes;
+        try {
+            aRes = await fetch(`${API_BASE}/attendance?date=${currentDate}`, { cache: 'no-store' });
+            if (!aRes.ok) throw new Error(`Status ${aRes.status}`);
+
+        } catch (aErr) {
+
+            // Don't throw, maybe we can render members without attendance?
+            // But current logic expects both. Let's throw for now to keep behavior consistent but known.
+            throw aErr;
+        }
+
         members = await mRes.json();
         attendanceLogs = await aRes.json();
+        console.log('Fetch success: ', members.length, 'members');
+
+
+        // Removed Debug Banner
+
     } catch (e) {
         console.error('Failed to fetch data', e);
+
+        if (memberListEl) {
+            memberListEl.innerHTML = `<div style="text-align:center; padding:20px; color:red;">데이터 로드 실패: ${e.message}</div>`;
+        }
     }
 }
 
@@ -378,27 +492,75 @@ function addCourseInput(value = '') {
     const container = document.getElementById('edit_course_container');
     if (!container) return;
 
+    let courseName = '';
+    let courseTime = '';
+
+    // Parse '과정명(시간)' format
+    const match = value.match(/(.*?)(?:\((.*?)\))?$/);
+    if (match) {
+        courseName = match[1] ? match[1].trim() : '';
+        courseTime = match[2] ? match[2].trim() : '';
+    }
+
     const div = document.createElement('div');
     div.className = 'course-input-row';
     div.style.cssText = 'display: flex; gap: 5px; margin-bottom: 5px;';
 
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.name = 'course_item';
-    input.value = value.trim();
-    input.placeholder = '한식(10:00)';
-    input.style.flex = '1';
+    const courseSelect = document.createElement('select');
+    courseSelect.className = 'course-edit-name full-width p-8 border-light rounded';
+    courseSelect.style.flex = '2';
+
+    const courses = ['', '한식기능사', '양식기능사', '일식기능사', '중식기능사', '제과기능사', '제빵기능사', '제과제빵기능사', '복어기능사', '산업기사', '가정요리', '브런치'];
+    courses.forEach(c => {
+        const option = document.createElement('option');
+        option.value = c;
+        option.textContent = c || '과정 선택';
+        if (c === courseName) option.selected = true;
+        courseSelect.appendChild(option);
+    });
+
+    if (courseName && !courses.includes(courseName)) {
+        const option = document.createElement('option');
+        option.value = courseName;
+        option.textContent = courseName;
+        option.selected = true;
+        courseSelect.appendChild(option);
+    }
+
+    const timeSelect = document.createElement('select');
+    timeSelect.className = 'course-edit-time full-width p-8 border-light rounded';
+    timeSelect.style.flex = '1';
+
+    const times = ['', '10:00', '12:00', '17:00', '19:00'];
+    const timeLabels = { '10:00': '오전 10:00', '12:00': '오전 12:00', '17:00': '오후 05:00', '19:00': '오후 07:00' };
+    times.forEach(t => {
+        const option = document.createElement('option');
+        option.value = t;
+        option.textContent = t ? timeLabels[t] || t : '시간 선택';
+        if (t === courseTime) option.selected = true;
+        timeSelect.appendChild(option);
+    });
+
+    if (courseTime && !times.includes(courseTime)) {
+        const option = document.createElement('option');
+        option.value = courseTime;
+        option.textContent = courseTime;
+        option.selected = true;
+        timeSelect.appendChild(option);
+    }
 
     const delBtn = document.createElement('button');
     delBtn.type = 'button';
     delBtn.textContent = '-';
-    delBtn.style.cssText = 'padding: 0 10px; cursor: pointer; background: #ff4444; color: white; border: none; border-radius: 4px;';
-    delBtn.onclick = function () {
-        container.removeChild(div);
+    delBtn.style.cssText = 'padding: 0 15px; cursor: pointer; background: #ff4444; color: white; border: none; border-radius: 4px; font-weight: bold; font-size: 1.2rem;';
+    delBtn.onclick = () => {
+        div.remove();
     };
 
-    div.appendChild(input);
+    div.appendChild(courseSelect);
+    div.appendChild(timeSelect);
     div.appendChild(delBtn);
+
     container.appendChild(div);
 }
 
@@ -479,9 +641,15 @@ async function handleEditSubmit(e) {
     const data = Object.fromEntries(fd.entries());
 
     // Combine course items for 'course' field
-    const courseInputs = document.querySelectorAll('#edit_course_container input[name="course_item"]');
-    const courseValues = Array.from(courseInputs)
-        .map(input => input.value.trim())
+    const courseRows = document.querySelectorAll('#edit_course_container .course-input-row');
+    const courseValues = Array.from(courseRows)
+        .map(row => {
+            const name = row.querySelector('.course-edit-name')?.value.trim();
+            const time = row.querySelector('.course-edit-time')?.value.trim();
+            if (name && time) return `${name}(${time})`;
+            if (name) return name;
+            return '';
+        })
         .filter(v => v !== '');
 
     // --- Automatic Merging Exception Logic ---
@@ -618,12 +786,15 @@ if (document.getElementById('editConfirmYesBtn')) {
 
 
 function updateSummary() {
+    const activeMembers = members.filter(m => m.status !== 'completed' && m.status !== 'trash' && m.status !== 'delete' && m.status !== 'hold');
+    const activeMemberIds = new Set(activeMembers.map(m => String(m.id)));
+
     if (totalMembersEl) {
-        // Exclude 'completed' (Archive) and 'trash'/'delete' (Trash) from total count
-        const activeMembers = members.filter(m => m.status !== 'completed' && m.status !== 'trash' && m.status !== 'delete');
         totalMembersEl.textContent = activeMembers.length;
     }
-    if (presentCountEl) presentCountEl.textContent = attendanceLogs.filter(l => l.status === 'present').length;
+    if (presentCountEl) {
+        presentCountEl.textContent = attendanceLogs.filter(l => l.status === 'present' && activeMemberIds.has(String(l.memberId))).length;
+    }
 }
 
 async function handleStatusChange_OLD(e, memberId) {
@@ -714,6 +885,7 @@ async function updateMemberStatus_OLD(member, status) {
 // Registration
 // Registration
 async function handleRegister(e) {
+    console.log('handleRegister called');
     e.preventDefault();
     const fd = new FormData(e.target);
     const data = Object.fromEntries(fd.entries());
@@ -753,8 +925,8 @@ async function handleRegister(e) {
     }
 
     // --- Automatic Merging Exception Logic ---
-    const jevaIdx = selectedCourses.findIndex;
-    const jepangIdx = selectedCourses.findIndex;
+    const jevaIdx = selectedCourses.findIndex(c => c.name === '제과기능사');
+    const jepangIdx = selectedCourses.findIndex(c => c.name === '제빵기능사');
 
     if (jevaIdx !== -1 && jepangIdx !== -1) {
         // Both selected individualy -> Merge to 제과제빵기능사
@@ -779,9 +951,33 @@ async function handleRegister(e) {
     data.course = selectedCourses.map(c => `${c.name}(${c.time})`).join(', ');
     data.timeSlot = selectedTimes.join(','); // Keep all selected times for filtering
 
-    // Basic validation
     if (!data.name) return alert("이름을 입력해주세요.");
 
+    // Custom Confirmation Modal
+    const confirmModal = document.getElementById('registerConfirmModal');
+    const msgEl = document.getElementById('confirmMessage');
+    const confirmBtn = document.getElementById('confirmRegisterBtn');
+
+    if (confirmModal && msgEl && confirmBtn) {
+        msgEl.textContent = `${data.name} 수강생을 등록하시겠습니까?`;
+        confirmModal.classList.remove('hidden');
+        confirmModal.style.display = 'flex';
+
+        // One-time listener
+        confirmBtn.onclick = async () => {
+            confirmModal.classList.add('hidden');
+            confirmModal.style.display = 'none';
+            await performRegistration(data, e.target);
+        };
+    } else {
+        // Fallback
+        if (confirm(`${data.name} 수강생을 등록하시겠습니까?`)) {
+            performRegistration(data, e.target);
+        }
+    }
+}
+
+async function performRegistration(data, formEl) {
     try {
         const res = await fetch(`${API_BASE}/members`, {
             method: 'POST',
@@ -791,24 +987,20 @@ async function handleRegister(e) {
         const json = await res.json();
 
         if (json.success) {
-            // UX Fix: Use custom modal instead of native confirm/alert
             const modal = document.getElementById('successModal');
             if (modal) {
+                modal.classList.remove('hidden');
                 modal.style.display = 'flex';
             } else {
-                // Fallback just in case
-                if (confirm) {
-                    window.location.href = 'index.html';
-                }
+                alert("등록되었습니다.");
+                window.location.href = 'index.html';
             }
-
-            // Clear form for next entry
-            e.target.reset();
+            formEl.reset();
         } else {
             alert("등록 실패");
         }
-    } catch (e) {
-        alert("서버 오류");
+    } catch (err) {
+        alert("통신 오류");
     }
 }
 
@@ -900,18 +1092,6 @@ window.toggleMemberType = function () {
 // Sidebar Toggle Logic
 window.toggleNavSub = function (el) {
     const isAlreadyActive = el.classList.contains('active');
-    const parentContainer = el.parentElement;
-
-    // Close only SIBLING sub menus (keep parents open)
-    Array.from(parentContainer.children).forEach(child => {
-        if (child !== el && child.classList.contains('nav-category') && child.classList.contains('toggle-category')) {
-            child.classList.remove('active');
-            const menu = child.nextElementSibling;
-            if (menu && menu.classList.contains('nav-sub-menu')) {
-                menu.classList.remove('show');
-            }
-        }
-    });
 
     // Toggle current one
     if (!isAlreadyActive) {
@@ -921,7 +1101,7 @@ window.toggleNavSub = function (el) {
             subMenu.classList.add('show');
         }
     } else {
-        // [FIX] If already active, close it
+        // If already active, close it
         el.classList.remove('active');
         const subMenu = el.nextElementSibling;
         if (subMenu && subMenu.classList.contains('nav-sub-menu')) {
@@ -1147,6 +1327,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (viewYear) {
         setTimeout(() => loadExamView(viewYear), 500);
     }
+    const filter = params.get('filter');
+    if (filter === 'archive') {
+        setTimeout(() => loadArchive(), 500);
+    } else if (filter === 'phonebook') {
+        setTimeout(() => loadPhoneBook(), 500);
+    } else if (filter === 'trash') {
+        setTimeout(() => loadTrash(), 500);
+    }
 });
 
 // Archive View Helper
@@ -1227,7 +1415,7 @@ async function handleStatusChange(e, memberId) {
         openStatusModal(
             "보류 사유 입력",
             `<textarea id="holdReason" style="width:100%; height:100px; padding:10px; border-radius:8px; border:1px solid #ddd;" placeholder="보류 사유를 입력하세요..."></textarea>
-             <button type="button" id="moveToArchiveBtn" class="btn-secondary" style="width:100%; margin-top:10px; background-color:#f0f9ff; color:#0369a1; border-color:#0369a1;">보관함으로 이동</button>`,
+             <button type="button" id="moveToArchiveBtn" class="btn-secondary" style="width:100%; margin-top:10px; background-color:#f0f9ff; color:#0369a1; border-color:#0369a1;">수료생 보관함으로 이동</button>`,
             () => {
                 const reason = document.getElementById('holdReason').value;
                 if (reason.trim()) {
@@ -1254,6 +1442,7 @@ async function handleStatusChange(e, memberId) {
                 member.status = 'completed';
                 await updateMemberStatus(member, 'completed');
                 closeStatusModal();
+                loadArchive();
             };
         }
 
@@ -1269,11 +1458,12 @@ async function handleStatusChange(e, memberId) {
         openStatusModal(
             "수료 처리 확인",
             `<p style="margin:0;">수료 처리하시겠습니까?</p>
-             <p style="font-size:0.85rem; color:#666; margin-top:10px;">• 확인: 수료 상태로 파일 보관<br>• 아래 버튼: 휴지통으로 이동</p>
+             <p style="font-size:0.85rem; color:#666; margin-top:10px;">• 확인: 수료 상태로 <span style="font-weight:bold;">수료생 보관함</span>에 보관<br>• 아래 버튼: 휴지통으로 이동</p>
              <button type="button" id="moveToTrashBtn" class="btn-secondary" style="width:100%; margin-top:15px; border-color:#ef4444; color:#ef4444;">휴지통으로 이동</button>`,
-            () => {
-                updateMemberStatus(member, 'completed');
+            async () => {
+                await updateMemberStatus(member, 'completed');
                 closeStatusModal();
+                loadArchive();
             }
         );
 
@@ -1374,158 +1564,180 @@ async function updateMemberStatus(member, status) {
 
 // Fixed Render Members (Appended)
 function renderMembers() {
-    memberListEl.innerHTML = '';
 
-    let displayMembers = members;
+    try {
+        console.log('Rendering members...', members.length);
+        if (!memberListEl) {
+            console.error('memberListEl is missing in renderMembers');
 
-    // 1. Filter by Status (Archive vs Trash vs Active)
-    if (currentFilter === 'archive') {
-        // Show ONLY completed
-        displayMembers = members.filter(m => m.status === 'completed');
-        if (document.getElementById('pageTitle')) document.getElementById('pageTitle').textContent = '파 일 보 관 함';
-    } else if (currentFilter === 'trash') {
-        // Show ONLY trash
-        displayMembers = members.filter(m => m.status === 'trash');
-        if (document.getElementById('pageTitle')) document.getElementById('pageTitle').textContent = '휴 지 통';
-    } else {
-        // Show Active (exclude completed/trash/delete)
-        displayMembers = members.filter(m => m.status !== 'completed' && m.status !== 'trash' && m.status !== 'delete');
-
-        // Dynamic Title based on course filter
-        let title = '수 강 생 대 장';
-        if (currentFilter !== 'all') {
-            const courseTitles = {
-                '한식기능사': '한식기능사 수강생 목록',
-                '양식기능사': '양식기능사 수강생 목록',
-                '일식기능사': '일식기능사 수강생 목록',
-                '중식기능사': '중식기능사 수강생 목록',
-                '제과기능사': '제과기능사 수강생 목록',
-                '제빵기능사': '제빵기능사 수강생 목록',
-                '제과+제빵': '제과제빵기능사 수강생 목록',
-                '제과제빵기능사': '제과제빵기능사 수강생 목록',
-                '제과제빵 기능사': '제과제빵기능사 수강생 목록',
-                '복어기능사': '복어기능사 수강생 목록',
-                '산업기사': '산업기사 수강생 목록',
-                '가정요리': '가정요리 수강생 목록',
-                '브런치': '브런치 수강생 목록'
-            };
-            title = courseTitles[currentFilter] || '수 강 생 대 장';
+            return;
         }
-        if (document.getElementById('pageTitle')) document.getElementById('pageTitle').textContent = title;
-    }
+        memberListEl.innerHTML = '';
 
-    // 2. Filter by Course (if not archive/trash mode, or apply to all?)
-    if (currentFilter !== 'all' && currentFilter !== 'archive' && currentFilter !== 'trash') {
-        displayMembers = displayMembers.filter(m => m.course && m.course.includes(currentFilter));
-    }
+        let displayMembers = members;
 
-    // 3. Filter by Search Term
-    if (window.memberSearchTerm) {
-        displayMembers = displayMembers.filter(m => (m.name || '').toLowerCase().includes(window.memberSearchTerm));
-    }
-
-    if (displayMembers.length === 0) {
-        memberListEl.innerHTML = '<div style="text-align:center; padding:20px; color:#888;">표시할 회원이 없습니다.</div>';
-        return;
-    }
-
-    // Create Table Structure for Ledger View
-    const table = document.createElement('table');
-    table.className = 'ledger-table';
-    table.innerHTML = `
-        <thead>
-            <tr>
-                <th rowspan="2">성명</th>
-                <th rowspan="2">주민등록번호</th>
-                <th rowspan="2">주소</th>
-                <th colspan="2">연락처</th>
-                <th rowspan="2">과정</th>
-                <th rowspan="2">수강<br>시작일</th>
-                <th rowspan="2">비고<br></th>
-                <th rowspan="2">상태</th>
-            </tr>
-            <tr>
-                <th>본인</th>
-                <th>보호자</th>
-            </tr>
-        </thead>
-        <tbody id="ledgerBody"></tbody>
-    `;
-
-    const tbody = table.querySelector('tbody');
-
-    displayMembers.forEach(member => {
-        const status = member.status || 'taking';
-        // Reuse statusText logic if needed, but we use select primarily now
-
-        const statusClass = {
-            'taking': 'status-taking',
-            'completed': 'status-completed',
-            'retaking': 'status-retaking',
-            'delete': 'status-delete',
-            'hold': 'status-hold'
-        }[status] || 'status-taking';
-
-        // Remarks
-        let remarks = '';
-        if (member.type === 'student') {
-            const schoolName = member.school || '';
-            const schoolLevel = member.school_level ? `(${member.school_level})` : '';
-            const grade = member.grade ? `${member.grade}학년` : '';
-            remarks = `${schoolName} ${grade}`.trim();
+        // 1. Filter by Status (Archive vs Trash vs Active)
+        if (currentFilter === 'archive') {
+            // Show ONLY completed or hold
+            displayMembers = members.filter(m => m.status === 'completed' || m.status === 'hold');
+            if (document.getElementById('pageTitle')) document.getElementById('pageTitle').textContent = '수 료 생 및 보 류 명 단';
+        } else if (currentFilter === 'trash') {
+            // Show ONLY trash or delete
+            displayMembers = members.filter(m => m.status === 'trash' || m.status === 'delete');
+            if (document.getElementById('pageTitle')) document.getElementById('pageTitle').textContent = '휴 지 통';
         } else {
-            remarks = member.job || '';
+            // Show Active (exclude completed/trash/delete/hold)
+            displayMembers = members.filter(m => m.status !== 'completed' && m.status !== 'trash' && m.status !== 'delete' && m.status !== 'hold');
+
+            // Dynamic Title based on course filter
+            let title = '수 강 생 대 장';
+            if (currentFilter !== 'all') {
+                const courseTitles = {
+                    '한식기능사': '한식기능사 수강생 목록',
+                    '양식기능사': '양식기능사 수강생 목록',
+                    '일식기능사': '일식기능사 수강생 목록',
+                    '중식기능사': '중식기능사 수강생 목록',
+                    '제과기능사': '제과기능사 수강생 목록',
+                    '제빵기능사': '제빵기능사 수강생 목록',
+                    '제과+제빵': '제과제빵기능사 수강생 목록',
+                    '제과제빵기능사': '제과제빵기능사 수강생 목록',
+                    '제과제빵 기능사': '제과제빵기능사 수강생 목록',
+                    '복어기능사': '복어기능사 수강생 목록',
+                    '산업기사': '산업기사 수강생 목록',
+                    '가정요리': '가정요리 수강생 목록',
+                    '브런치': '브런치 수강생 목록'
+                };
+                title = courseTitles[currentFilter] || '수 강 생 대 장';
+            }
+            if (document.getElementById('pageTitle')) document.getElementById('pageTitle').textContent = title;
         }
 
-        const tr = document.createElement('tr');
+        console.log(`Filter: ${currentFilter}, Display Count: ${displayMembers.length}`);
 
-        // Add click event to open edit modal with confirmation
-        tr.onclick = (e) => {
-            // Prevent triggering when clicking interactive elements
-            if (e.target.tagName === 'SELECT' || e.target.tagName === 'BUTTON' || e.target.closest('select') || e.target.closest('button')) {
-                return;
-            }
 
-            // Use Custom Modal instead of Native Confirm
-            openEditConfirmModal(member.id);
-        };
+        // 2. Filter by Course (if not archive/trash mode, or apply to all?)
+        if (currentFilter !== 'all' && currentFilter !== 'archive' && currentFilter !== 'trash') {
+            displayMembers = displayMembers.filter(m => m.course && m.course.includes(currentFilter));
+        }
 
-        // Status Select Options
-        const statuses = [
-            { val: 'taking', text: '수강중' },
-            { val: 'completed', text: '수료' },
-            { val: 'retaking', text: '재수강' },
-            { val: 'hold', text: '보류' },
-            { val: 'trash', text: '휴지통' }
-        ];
+        // 3. Filter by Search Term
+        if (window.memberSearchTerm) {
+            displayMembers = displayMembers.filter(m => (m.name || '').toLowerCase().includes(window.memberSearchTerm));
+        }
 
-        const optionsHtml = statuses.map(s =>
-            `<option value="${s.val}" ${status === s.val ? 'selected' : ''}>${s.text}</option>`
-        ).join('');
+        if (displayMembers.length === 0) {
+            memberListEl.innerHTML = '<div style="text-align:center; padding:20px; color:#888;">표시할 회원이 없습니다.</div>';
 
-        tr.innerHTML = `
-            <td>${member.name}${member.notes ? `<span class="notes-indicator" data-notes="${member.notes.replace(/"/g, '&quot;')}">🗒️</span>` : ''}</td>
-            <td>${member.resident_num || ''}</td>
-            <td>${member.address || ''} ${member.address_detail || ''}</td>
-            <td>${member.phone || ''}</td>
-            <td>${member.phone_guardian || ''}</td>
-            <td>${member.course || ''}</td>
-            <td>${member.start_date || ''}</td>
-            <td>${remarks}</td>
-            <td>
-                <select class="status-select ${statusClass}" onchange="handleStatusChange(event, '${member.id}')">
-                    ${optionsHtml}
-                </select>
-            </td>
+            return;
+        }
+
+        // Create Table Structure for Ledger View
+        const table = document.createElement('table');
+        table.className = 'ledger-table';
+        table.innerHTML = `
+            <thead>
+                <tr>
+                    <th rowspan="2">성명</th>
+                    <th rowspan="2">주민등록번호</th>
+                    <th rowspan="2">주소</th>
+                    <th colspan="2">연락처</th>
+                    <th rowspan="2">과정</th>
+                    <th rowspan="2">수강<br>시작일</th>
+                    <th rowspan="2">비고<br></th>
+                    <th rowspan="2">상태</th>
+                </tr>
+                <tr>
+                    <th>본인</th>
+                    <th>보호자</th>
+                </tr>
+            </thead>
+            <tbody id="ledgerBody"></tbody>
         `;
 
-        const selectEl = tr.querySelector('.status-select');
-        selectEl.dataset.prev = status;
+        const tbody = table.querySelector('tbody');
 
-        tbody.appendChild(tr);
-    });
+        displayMembers.forEach(member => {
+            const status = member.status || 'taking';
+            // Reuse statusText logic if needed, but we use select primarily now
 
-    memberListEl.appendChild(table);
+            const statusClass = {
+                'taking': 'status-taking',
+                'completed': 'status-completed',
+                'retaking': 'status-retaking',
+                'delete': 'status-delete',
+                'hold': 'status-hold'
+            }[status] || 'status-taking';
+
+            // Remarks
+            let remarks = '';
+            if (member.type === 'student') {
+                const schoolName = member.school || '';
+                const schoolLevel = member.school_level ? `(${member.school_level})` : '';
+                const grade = member.grade ? `${member.grade}학년` : '';
+                remarks = `${schoolName} ${grade}`.trim();
+            } else {
+                remarks = member.job || '';
+            }
+
+            const tr = document.createElement('tr');
+
+            // Add click event to open edit modal with confirmation
+            tr.onclick = (e) => {
+                // Prevent triggering when clicking interactive elements
+                if (e.target.tagName === 'SELECT' || e.target.tagName === 'BUTTON' || e.target.closest('select') || e.target.closest('button')) {
+                    return;
+                }
+
+                // Use Custom Modal instead of Native Confirm
+                openEditConfirmModal(member.id);
+            };
+
+            // Status Select Options
+            const statuses = [
+                { val: 'taking', text: '수강중' },
+                { val: 'completed', text: '수료' },
+                { val: 'retaking', text: '재수강' },
+                { val: 'hold', text: '보류' },
+                { val: 'trash', text: '휴지통' }
+            ];
+
+            const optionsHtml = statuses.map(s =>
+                `<option value="${s.val}" ${status === s.val ? 'selected' : ''}>${s.text}</option>`
+            ).join('');
+
+            // Safe notes handling
+            const safeNotes = (member.notes || '').replace(/"/g, '&quot;');
+            const nameHtml = `${member.name}${safeNotes ? `<span class="notes-indicator" data-notes="${safeNotes}">🗒️</span>` : ''}`;
+
+            tr.innerHTML = `
+                <td>${nameHtml}</td>
+                <td>${member.resident_num || ''}</td>
+                <td>${member.address || ''} ${member.address_detail || ''}</td>
+                <td>${member.phone || ''}</td>
+                <td>${member.phone_guardian || ''}</td>
+                <td>${member.course || ''}</td>
+                <td>${member.start_date || ''}</td>
+                <td>${remarks}</td>
+                <td>
+                    <select class="status-select ${statusClass}" onchange="handleStatusChange(event, '${member.id}')">
+                        ${optionsHtml}
+                    </select>
+                </td>
+            `;
+
+            const selectEl = tr.querySelector('.status-select');
+            selectEl.dataset.prev = status;
+
+            tbody.appendChild(tr);
+        });
+
+        memberListEl.appendChild(table);
+
+    } catch (e) {
+        console.error('Render Members Error:', e);
+
+        if (memberListEl) memberListEl.innerHTML = `<div style="color:red; text-align:center; padding:20px;">Rendering Error: ${e.message}</div>`;
+    }
 }
 
 // Phone Book View Helper
@@ -1553,7 +1765,7 @@ renderMembers = function () {
     }
 
     memberListEl.innerHTML = '';
-    let displayMembers = members.filter(m => m.status !== 'trash' && m.status !== 'delete');
+    let displayMembers = members.filter(m => m.status !== 'trash' && m.status !== 'delete' && m.status !== 'hold' && m.status !== 'completed');
 
     // Apply Search Term if exists
     if (window.memberSearchTerm) {
@@ -1653,3 +1865,13 @@ renderMembers = function () {
 
     memberListEl.appendChild(phoneBookContainer);
 };
+
+// Global Fallback for openSettingsModal (수업 요일 설정)
+// If the user clicks this sidebar menu on any page other than sheet.html, navigate there.
+if (typeof window.openSettingsModal === 'undefined') {
+    window.openSettingsModal = function() {
+        if (!window.location.pathname.includes('sheet.html')) {
+            window.location.href = 'sheet.html?openSettings=true';
+        }
+    };
+}

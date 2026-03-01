@@ -8,8 +8,7 @@ let currentState = {
     year: new Date().getFullYear(),
     month: new Date().getMonth() + 1,
     course: 'all', // 'all', '한식', '양식', ...
-    statusFilter: 'all', // 'all', 'unpaid', 'paid' (for dropdown)
-    tab: 'unpaid' // 'unpaid', 'paid'
+    statusFilter: 'unpaid' // 'all', 'unpaid', 'paid', 'enrolled'
 };
 
 const DEFAULT_PRICE = 200000;
@@ -17,7 +16,6 @@ const DEFAULT_PRICE = 200000;
 document.addEventListener('DOMContentLoaded', () => {
     handleUrlParams();
     initFilters();
-    initTabs();
     loadData();
 });
 
@@ -97,6 +95,7 @@ function openMonthPicker() {
     try {
         picker.showPicker();
     } catch (e) {
+        console.warn("Picker fallback triggered", e);
         picker.style.visibility = 'visible';
         picker.focus();
         picker.click();
@@ -105,62 +104,29 @@ function openMonthPicker() {
 }
 
 
-function initTabs() {
-    const btnUnpaid = document.querySelector('.tab-unpaid');
-    const btnPaid = document.querySelector('.tab-paid');
 
-    btnUnpaid.addEventListener('click', () => {
-        currentState.tab = 'unpaid';
-        updateTabStyles();
-        renderTable();
-    });
-
-    btnPaid.addEventListener('click', () => {
-        currentState.tab = 'paid';
-        updateTabStyles();
-        renderTable();
-    });
-
-    // Initial style update
-    updateTabStyles();
-}
-
-function updateTabStyles() {
-    const btnUnpaid = document.querySelector('.tab-unpaid');
-    const btnPaid = document.querySelector('.tab-paid');
-
-    if (currentState.tab === 'unpaid') {
-        btnUnpaid.style.opacity = '1';
-        btnUnpaid.style.border = '2px solid #b45309'; // Highlight
-        btnPaid.style.opacity = '0.6';
-        btnPaid.style.border = '1px solid #10b981';
-    } else {
-        btnPaid.style.opacity = '1';
-        btnPaid.style.border = '2px solid #059669'; // Highlight
-        btnUnpaid.style.opacity = '0.6';
-        btnUnpaid.style.border = 'none';
-    }
-}
 
 async function loadData() {
     try {
         const [mRes, pRes, aRes] = await Promise.all([
-            fetch('/api/members'),
-            fetch('/api/payments'),
-            fetch('/api/attendance')
+            fetch('http://localhost:8000/api/members'),
+            fetch('http://localhost:8000/api/payments'),
+            fetch('http://localhost:8000/api/attendance')
         ]);
-        membersData = await mRes.json();
+        const rawMembers = await mRes.json();
+        membersData = Array.isArray(rawMembers) ? rawMembers.filter(m => !['delete', 'trash', 'hold', 'completed'].includes(m.status)) : [];
         paymentsData = await pRes.json();
         attendanceData = await aRes.json();
 
         processAttendanceData();
 
-        // [신규] 특정 학생(targetMemberId)이 지정된 경우 해당 학생의 납부 상태에 맞게 탭 자동 전환
+        // [신규] 특정 학생(targetMemberId)이 지정된 경우 해당 학생의 납부 상태에 맞게 필터 자동 전환
         if (currentState.targetMemberId) {
             const mId = currentState.targetMemberId;
             const pm = paymentsData.find(p => p.memberId == mId && p.year == currentState.year && p.month == currentState.month);
-            currentState.tab = (pm && pm.status === 'paid') ? 'paid' : 'unpaid';
-            updateTabStyles();
+            currentState.statusFilter = (pm && pm.status === 'paid') ? 'paid' : 'unpaid';
+            const statusSelect = document.getElementById('statusFilter');
+            if (statusSelect) statusSelect.value = currentState.statusFilter;
         }
 
         renderTable();
@@ -268,22 +234,20 @@ function renderTable() {
             }
         }
 
-        // '예' 날짜(8회차)가 이 달에 없는 사람은 목록에서 제외
-        if (!isDueThisMonth) return;
+        // '예' 날짜(8회차)가 이 달에 없는 사람은 목록에서 제외 (수강중 필터 제외)
+        if (currentState.statusFilter !== 'enrolled' && !isDueThisMonth) return;
 
         // Find payment record
+        const normalizeCourse = (c) => (!c || c === 'null') ? null : String(c).trim();
         const payment = paymentsData.find(p =>
             p.memberId == m.id &&
             p.year == currentState.year &&
-            p.month == currentState.month
+            p.month == currentState.month &&
+            normalizeCourse(p.course) === normalizeCourse(currentState.course === 'all' ? null : currentState.course)
         );
 
         const isPaid = payment && payment.status === 'paid';
         const amount = DEFAULT_PRICE;
-
-        // Tab Filter
-        if (currentState.tab === 'unpaid' && isPaid) return;
-        if (currentState.tab === 'paid' && !isPaid) return;
 
         // Dropdown Filter (Status)
         if (currentState.statusFilter === 'unpaid' && isPaid) return;
@@ -299,11 +263,7 @@ function renderTable() {
 
     rows.forEach(row => {
         const m = row.member;
-        const p = row.payment;
         const paidAmount = row.isPaid ? row.amount : 0;
-        const statusBadge = row.isPaid
-            ? '<span class="badge badge-yellow">납부완료</span>'
-            : '<span class="badge badge-blue">미납</span>'; // Using '미납' text map to badge-blue
 
         // Let's match image: 
         // Unpaid -> "발송전" (Before sending bill) -> Blue
@@ -351,24 +311,20 @@ function renderTable() {
     // -> 여기서는 주석 처리하거나 필요시 제거. 일단 유지해도 무방.
 }
 
-function getCourseShort(courseStr) {
-    if (!courseStr) return '';
-    // "한식(10:00), 양식..." -> "한식, 양식"
-    return courseStr.split(',').map(s => s.split('(')[0]).join(', ');
-}
-
 async function togglePayment(memberId) {
     // Determine current status to toggle
+    const normalizeCourse = (c) => (!c || c === 'null') ? null : String(c).trim();
     const payment = paymentsData.find(p =>
         p.memberId == memberId &&
         p.year == currentState.year &&
-        p.month == currentState.month
+        p.month == currentState.month &&
+        normalizeCourse(p.course) === normalizeCourse(currentState.course === 'all' ? null : currentState.course)
     );
     const isPaid = payment && payment.status === 'paid';
     const newStatus = isPaid ? 'unpaid' : 'paid';
 
     try {
-        await fetch('/api/payments', {
+        await fetch('http://localhost:8000/api/payments', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -376,6 +332,7 @@ async function togglePayment(memberId) {
                 year: currentState.year,
                 month: currentState.month,
                 status: newStatus,
+                course: normalizeCourse(currentState.course === 'all' ? null : currentState.course),
                 amount: DEFAULT_PRICE, // should be dynamic, but fixed for now
                 updatedAt: new Date().toISOString()
             })

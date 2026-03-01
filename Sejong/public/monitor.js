@@ -1,5 +1,5 @@
 // Main Configuration
-const API_BASE = '/api';
+const API_BASE = 'http://localhost:8000/api';
 let currentInput = "";
 let stream = null;
 let currentMode = 'home';
@@ -41,7 +41,10 @@ function switchMode(mode) {
         stopCamera();
     } else {
         if (homeScreen) homeScreen.style.display = 'none';
-        if (workspace) workspace.style.display = 'flex';
+        if (workspace) {
+            workspace.style.display = 'flex';
+            workspace.className = 'mode-' + mode;
+        }
 
         if (mode === 'number') {
             setupUI("번호 출석", "휴대폰 뒷번호 8자리를 입력하세요", true, false, false);
@@ -52,6 +55,7 @@ function switchMode(mode) {
             setupUI("얼굴 출석", "카메라를 바라보고 아래 버튼을 누르세요", false, true, true);
             if (mirrorSection) mirrorSection.style.opacity = '1';
             startCamera();
+            loadFaceModels(); // Preload ML
         }
         else if (mode === 'register') {
             setupUI("신규 얼굴 등록", "번호 입력 후 얼굴을 촬영하세요", true, false, true);
@@ -59,7 +63,34 @@ function switchMode(mode) {
             if (faceSubmitBtn) faceSubmitBtn.style.display = 'block';
             if (mainSubmitBtn) mainSubmitBtn.style.display = 'none';
             startCamera();
+            loadFaceModels(); // Preload ML
         }
+    }
+}
+
+let modelsLoaded = false;
+let modelsLoading = false;
+
+async function loadFaceModels() {
+    if (modelsLoaded || modelsLoading) return;
+    modelsLoading = true;
+    showStatus("AI 얼굴 인식 엔진 준비 중...", "#3b82f6");
+
+    try {
+        const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models';
+        await Promise.all([
+            faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
+            faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+            faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+        ]);
+        modelsLoaded = true;
+        showStatus("AI 인식 준비 완료", "#059669");
+        setTimeout(() => showStatus("", ""), 1500);
+    } catch (e) {
+        showStatus("AI 엔진 로드 실패. 관리자에게 문의하세요.", "red");
+        console.error("Face API load error:", e);
+    } finally {
+        modelsLoading = false;
     }
 }
 
@@ -88,39 +119,76 @@ async function submitAttendance() {
 }
 
 async function recognizeAndAttend() {
+    if (!modelsLoaded) {
+        showStatus("AI 엔진 모델 로딩 중입니다. 잠시 후 10초 뒤 시도해주세요.", "orange");
+        return;
+    }
+
     showStatus("얼굴을 인식하는 중입니다...", "#94a3b8");
     if (shutter) shutter.style.opacity = '1';
     setTimeout(() => { if (shutter) shutter.style.opacity = '0'; }, 150);
 
     try {
+        const detection = await faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor();
+
+        if (!detection) {
+            showStatus("카메라에서 얼굴이 감지되지 않았습니다. 정면을 바라보세요.", "red");
+            return;
+        }
+
+        const res = await fetch(`${API_BASE}/members?t=` + Date.now());
+        const rawMembers = await res.json();
+        const members = Array.isArray(rawMembers) ? rawMembers.filter(m => !['delete', 'trash', 'hold', 'completed'].includes(m.status)) : [];
+
+        showStatus("매칭되는 회원을 찾는 중...", "#059669");
+
+        let bestMatch = null;
+        let smallestDistance = 0.65; // Confidence matching threshold - increased for better recognition
+
+        // Save current frame for the popup overlay instead of stored photo
         const context = canvas.getContext('2d');
         context.drawImage(video, 0, 0, 640, 480);
         const captureData = canvas.toDataURL('image/jpeg', 0.5);
 
-        const res = await fetch(`${API_BASE}/members?t=` + Date.now());
-        const members = await res.json();
+        for (const m of members) {
+            if (m.faceDescriptor) {
+                const desc = new Float32Array(m.faceDescriptor);
+                const distance = faceapi.euclideanDistance(detection.descriptor, desc);
+                if (distance < smallestDistance) {
+                    smallestDistance = distance;
+                    bestMatch = m;
+                }
+            }
+        }
 
-        // In a real app we'd compare base64 here. 
-        // For this kiosk, we'll suggest using Registration if they aren't recognized.
-        showStatus("매칭되는 회원을 찾는 중...", "#059669");
-
-        // This is where real Face API logic would go.
-        // For now, we'll inform them this requires an advanced matching library.
-        setTimeout(() => {
-            showStatus("인식 실패: 얼굴을 먼저 등록하거나 번호로 등록해주세요.", "orange");
-        }, 1500);
+        if (bestMatch) {
+            const phoneStr = bestMatch.phone.replace(/-/g, '');
+            const phone8 = phoneStr.length >= 8 ? phoneStr.slice(-8) : phoneStr;
+            await processAttendance(phone8, captureData);
+        } else {
+            showStatus("등록된 얼굴을 찾을 수 없습니다.", "red");
+            setTimeout(() => {
+                showStatus("출석 전 '신규 등록 (처음)' 버튼을 통해 얼굴을 등록해보세요.", "orange");
+            }, 2500);
+        }
     } catch (e) {
         showStatus("인식 시스템 오류!", "red");
+        console.error(e);
     }
 }
 
 async function capturePhoto() {
     if (currentInput.length !== 8) {
-        showStatus("먼저 번호 8자리를 입력해주세요.", "red");
+        showStatus("먼저 뒷번호 8자리를 입력해주세요.", "red");
         return;
     }
 
-    showStatus("사진 촬영 및 등록 중...", "#4ade80");
+    if (!modelsLoaded) {
+        showStatus("AI 엔진 대기중... 10초 뒤 다시 시도해주세요.", "orange");
+        return;
+    }
+
+    showStatus("사진 촬영 및 얼굴 분석 등록 중...", "#4ade80");
     if (shutter) shutter.style.opacity = '1';
     setTimeout(() => { if (shutter) shutter.style.opacity = '0'; }, 150);
 
@@ -130,15 +198,25 @@ async function capturePhoto() {
         const photoDataUrl = canvas.toDataURL('image/jpeg', 0.7);
 
         const res = await fetch(`${API_BASE}/members?t=` + Date.now());
-        const members = await res.json();
+        const rawMembers = await res.json();
+        const members = Array.isArray(rawMembers) ? rawMembers.filter(m => !['delete', 'trash', 'hold', 'completed'].includes(m.status)) : [];
         const member = members.find(m => m.phone && m.phone.replace(/-/g, '').endsWith(currentInput));
 
         if (!member) {
-            showStatus("일치하는 회원이 없습니다.", "red");
+            showStatus("뒷번호 8자리와 일치하는 수강생 대장 회원이 없습니다.", "red");
+            return;
+        }
+
+        const detection = await faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor();
+
+        if (!detection) {
+            showStatus("얼굴이 명확히 인식되지 않았습니다. 밝은 곳에서 시도해주세요.", "red");
             return;
         }
 
         member.photo = photoDataUrl;
+        member.faceDescriptor = Array.from(detection.descriptor); // Store for euclidean comparison
+
         await fetch(`${API_BASE}/members`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -148,13 +226,15 @@ async function capturePhoto() {
         await processAttendance(currentInput, photoDataUrl);
     } catch (e) {
         showStatus("저장 오류!", "red");
+        console.error(e);
     }
 }
 
 async function processAttendance(inputNum, overridePhoto = null) {
     try {
         const res = await fetch(`${API_BASE}/members?t=` + Date.now());
-        const members = await res.json();
+        const rawMembers = await res.json();
+        const members = Array.isArray(rawMembers) ? rawMembers.filter(m => !['delete', 'trash', 'hold', 'completed'].includes(m.status)) : [];
         const member = members.find(m => m.phone && m.phone.replace(/-/g, '').endsWith(inputNum));
 
         if (!member) {

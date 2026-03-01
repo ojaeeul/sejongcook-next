@@ -1,14 +1,10 @@
 [
   {
-    "date": "2026-02-28",
+    "date": "2026-01-05",
     "isHoliday": true
   },
   {
-    "date": "2026-02-06",
-    "isHoliday": true
-  },
-  {
-    "date": "2026-02-19",
+    "date": "2026-01-04",
     "isHoliday": true
   }
 ]

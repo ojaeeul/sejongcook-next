@@ -1,4 +1,5 @@
-const API_BASE = '/api/sejong';
+// Force API Calls to port 8000 API for Bidirectional Sync
+const API_BASE = 'http://localhost:8000/api';
 
 
 
@@ -170,6 +171,7 @@ window.memberSearchTerm = '';
 
 // New Function: handleModalRegister
 async function handleModalRegister(e) {
+    console.log('handleModalRegister called');
     e.preventDefault();
     const fd = new FormData(e.target);
     const data = Object.fromEntries(fd.entries());
@@ -188,8 +190,34 @@ async function handleModalRegister(e) {
     data.course = courses.join(', ');
 
     // Basic Validation
-    if (!data.name) return alert;
+    if (!data.name) return alert("이름을 입력해주세요.");
 
+    // Custom Confirmation Modal
+    const confirmModal = document.getElementById('registerConfirmModal');
+    const msgEl = document.getElementById('confirmMessage');
+    const confirmBtn = document.getElementById('confirmRegisterBtn');
+
+    if (confirmModal && msgEl && confirmBtn) {
+        msgEl.textContent = `${data.name} 수강생을 등록하시겠습니까?`;
+        confirmModal.classList.remove('hidden');
+        confirmModal.style.display = 'flex';
+
+        // One-time listener for the confirm button
+        confirmBtn.onclick = async () => {
+            confirmModal.classList.add('hidden');
+            confirmModal.style.display = 'none';
+            await submitRegistration(data, true, e.target);
+        };
+    } else {
+        // Fallback to native if modal missing
+        if (confirm(`${data.name} 수강생을 등록하시겠습니까?`)) {
+            submitRegistration(data, true, e.target);
+        }
+    }
+}
+
+// Separated submit logic for reusability
+async function submitRegistration(data, isModal, formEl) {
     try {
         const res = await fetch(`${API_BASE}/members`, {
             method: 'POST',
@@ -198,13 +226,22 @@ async function handleModalRegister(e) {
         });
         const json = await res.json();
         if (json.success) {
-            alert("등록되었습니다.");
-            const modal = document.getElementById('registerModal');
-            if (modal) {
-                modal.style.display = 'none';
-                modal.classList.add('hidden');
+            const successModal = document.getElementById('successModal');
+            if (successModal) {
+                successModal.classList.remove('hidden');
+                successModal.style.display = 'flex';
+            } else {
+                alert("등록되었습니다.");
             }
-            e.target.reset();
+
+            if (isModal) {
+                const registerModal = document.getElementById('registerModal');
+                if (registerModal) {
+                    registerModal.style.display = 'none';
+                    registerModal.classList.add('hidden');
+                }
+            }
+            formEl.reset();
             // Refresh data
             fetchData().then(() => {
                 renderMembers();
@@ -749,12 +786,15 @@ if (document.getElementById('editConfirmYesBtn')) {
 
 
 function updateSummary() {
+    const activeMembers = members.filter(m => m.status !== 'completed' && m.status !== 'trash' && m.status !== 'delete' && m.status !== 'hold');
+    const activeMemberIds = new Set(activeMembers.map(m => String(m.id)));
+
     if (totalMembersEl) {
-        // Exclude 'completed' (Archive) and 'trash'/'delete' (Trash) from total count
-        const activeMembers = members.filter(m => m.status !== 'completed' && m.status !== 'trash' && m.status !== 'delete');
         totalMembersEl.textContent = activeMembers.length;
     }
-    if (presentCountEl) presentCountEl.textContent = attendanceLogs.filter(l => l.status === 'present').length;
+    if (presentCountEl) {
+        presentCountEl.textContent = attendanceLogs.filter(l => l.status === 'present' && activeMemberIds.has(String(l.memberId))).length;
+    }
 }
 
 async function handleStatusChange_OLD(e, memberId) {
@@ -845,6 +885,7 @@ async function updateMemberStatus_OLD(member, status) {
 // Registration
 // Registration
 async function handleRegister(e) {
+    console.log('handleRegister called');
     e.preventDefault();
     const fd = new FormData(e.target);
     const data = Object.fromEntries(fd.entries());
@@ -910,9 +951,33 @@ async function handleRegister(e) {
     data.course = selectedCourses.map(c => `${c.name}(${c.time})`).join(', ');
     data.timeSlot = selectedTimes.join(','); // Keep all selected times for filtering
 
-    // Basic validation
     if (!data.name) return alert("이름을 입력해주세요.");
 
+    // Custom Confirmation Modal
+    const confirmModal = document.getElementById('registerConfirmModal');
+    const msgEl = document.getElementById('confirmMessage');
+    const confirmBtn = document.getElementById('confirmRegisterBtn');
+
+    if (confirmModal && msgEl && confirmBtn) {
+        msgEl.textContent = `${data.name} 수강생을 등록하시겠습니까?`;
+        confirmModal.classList.remove('hidden');
+        confirmModal.style.display = 'flex';
+
+        // One-time listener
+        confirmBtn.onclick = async () => {
+            confirmModal.classList.add('hidden');
+            confirmModal.style.display = 'none';
+            await performRegistration(data, e.target);
+        };
+    } else {
+        // Fallback
+        if (confirm(`${data.name} 수강생을 등록하시겠습니까?`)) {
+            performRegistration(data, e.target);
+        }
+    }
+}
+
+async function performRegistration(data, formEl) {
     try {
         const res = await fetch(`${API_BASE}/members`, {
             method: 'POST',
@@ -922,24 +987,20 @@ async function handleRegister(e) {
         const json = await res.json();
 
         if (json.success) {
-            // UX Fix: Use custom modal instead of native confirm/alert
             const modal = document.getElementById('successModal');
             if (modal) {
+                modal.classList.remove('hidden');
                 modal.style.display = 'flex';
             } else {
-                // Fallback just in case
-                if (confirm) {
-                    window.location.href = 'index.html';
-                }
+                alert("등록되었습니다.");
+                window.location.href = 'index.html';
             }
-
-            // Clear form for next entry
-            e.target.reset();
+            formEl.reset();
         } else {
             alert("등록 실패");
         }
-    } catch (e) {
-        alert("서버 오류");
+    } catch (err) {
+        alert("통신 오류");
     }
 }
 
@@ -1031,18 +1092,6 @@ window.toggleMemberType = function () {
 // Sidebar Toggle Logic
 window.toggleNavSub = function (el) {
     const isAlreadyActive = el.classList.contains('active');
-    const parentContainer = el.parentElement;
-
-    // Close only SIBLING sub menus (keep parents open)
-    Array.from(parentContainer.children).forEach(child => {
-        if (child !== el && child.classList.contains('nav-category') && child.classList.contains('toggle-category')) {
-            child.classList.remove('active');
-            const menu = child.nextElementSibling;
-            if (menu && menu.classList.contains('nav-sub-menu')) {
-                menu.classList.remove('show');
-            }
-        }
-    });
 
     // Toggle current one
     if (!isAlreadyActive) {
@@ -1052,7 +1101,7 @@ window.toggleNavSub = function (el) {
             subMenu.classList.add('show');
         }
     } else {
-        // [FIX] If already active, close it
+        // If already active, close it
         el.classList.remove('active');
         const subMenu = el.nextElementSibling;
         if (subMenu && subMenu.classList.contains('nav-sub-menu')) {
@@ -1280,8 +1329,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     const filter = params.get('filter');
     if (filter === 'archive') {
-        // Wait slightly for data to be loaded before switching
         setTimeout(() => loadArchive(), 500);
+    } else if (filter === 'phonebook') {
+        setTimeout(() => loadPhoneBook(), 500);
+    } else if (filter === 'trash') {
+        setTimeout(() => loadTrash(), 500);
     }
 });
 
@@ -1526,16 +1578,16 @@ function renderMembers() {
 
         // 1. Filter by Status (Archive vs Trash vs Active)
         if (currentFilter === 'archive') {
-            // Show ONLY completed
-            displayMembers = members.filter(m => m.status === 'completed');
-            if (document.getElementById('pageTitle')) document.getElementById('pageTitle').textContent = '수 료 생 목 록';
+            // Show ONLY completed or hold
+            displayMembers = members.filter(m => m.status === 'completed' || m.status === 'hold');
+            if (document.getElementById('pageTitle')) document.getElementById('pageTitle').textContent = '수 료 생 및 보 류 명 단';
         } else if (currentFilter === 'trash') {
-            // Show ONLY trash
-            displayMembers = members.filter(m => m.status === 'trash');
+            // Show ONLY trash or delete
+            displayMembers = members.filter(m => m.status === 'trash' || m.status === 'delete');
             if (document.getElementById('pageTitle')) document.getElementById('pageTitle').textContent = '휴 지 통';
         } else {
-            // Show Active (exclude completed/trash/delete)
-            displayMembers = members.filter(m => m.status !== 'completed' && m.status !== 'trash' && m.status !== 'delete');
+            // Show Active (exclude completed/trash/delete/hold)
+            displayMembers = members.filter(m => m.status !== 'completed' && m.status !== 'trash' && m.status !== 'delete' && m.status !== 'hold');
 
             // Dynamic Title based on course filter
             let title = '수 강 생 대 장';
@@ -1713,7 +1765,7 @@ renderMembers = function () {
     }
 
     memberListEl.innerHTML = '';
-    let displayMembers = members.filter(m => m.status !== 'trash' && m.status !== 'delete');
+    let displayMembers = members.filter(m => m.status !== 'trash' && m.status !== 'delete' && m.status !== 'hold' && m.status !== 'completed');
 
     // Apply Search Term if exists
     if (window.memberSearchTerm) {
@@ -1813,3 +1865,13 @@ renderMembers = function () {
 
     memberListEl.appendChild(phoneBookContainer);
 };
+
+// Global Fallback for openSettingsModal (수업 요일 설정)
+// If the user clicks this sidebar menu on any page other than sheet.html, navigate there.
+if (typeof window.openSettingsModal === 'undefined') {
+    window.openSettingsModal = function() {
+        if (!window.location.pathname.includes('sheet.html')) {
+            window.location.href = 'sheet.html?openSettings=true';
+        }
+    };
+}
