@@ -1,5 +1,7 @@
 // Force API Calls to port 8000 API for Bidirectional Sync
-const API_BASE = 'http://localhost:8000/api';
+const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:8000/api'
+    : '/api';
 
 
 
@@ -1869,7 +1871,7 @@ renderMembers = function () {
 // Global Fallback for openSettingsModal (수업 요일 설정)
 // If the user clicks this sidebar menu on any page other than sheet.html, navigate there.
 if (typeof window.openSettingsModal === 'undefined') {
-    window.openSettingsModal = function() {
+    window.openSettingsModal = function () {
         if (!window.location.pathname.includes('sheet.html')) {
             window.location.href = 'sheet.html?openSettings=true';
         }
