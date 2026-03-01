@@ -258,8 +258,8 @@ async function capturePhoto() {
         showStatus("얼굴 등록 완료! 자동으로 출석 체크를 진행합니다...", "#059669");
         await processAttendance(member, photoDataUrl);
     } catch (e) {
-        showStatus("저장 오류!", "red");
-        console.error(e);
+        console.error('Registration Error:', e);
+        showStatus(`저장 오류! (${e.message || '통신 실패'})`, "red");
     } finally {
         if (faceSubmitBtn) {
             faceSubmitBtn.disabled = false;
