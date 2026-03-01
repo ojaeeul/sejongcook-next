@@ -77,7 +77,9 @@ async function loadFaceModels() {
     showStatus("AI 얼굴 인식 엔진 준비 중...", "#3b82f6");
 
     try {
-        const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models';
+        const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/';
+        try { await faceapi.tf.setBackend('webgl'); } catch (e) { console.log('WebGL backend not supported, fallback to default'); }
+
         await Promise.all([
             faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
             faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
