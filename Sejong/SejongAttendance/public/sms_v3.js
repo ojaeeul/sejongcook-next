@@ -620,27 +620,34 @@ function sendSms() {
     selectedTargets.forEach(t => {
         let msg = text.replace(/%%%/g, t.name);
 
-        // If tuition date logic is requested (assuming t.reg_date or similar holds billing date)
+        // If tuition date logic is requested
         const tuitionDate = t.reg_date ? new Date(t.reg_date).getDate() + '일' : '지정일';
         msg = msg.replace(/@@@/g, tuitionDate);
 
-        personalizedMessages.push(`[${t.name}님] : ${msg.substring(0, 20)}...`);
+        personalizedMessages.push({ name: t.name, text: msg });
     });
 
-    const previewOutput = personalizedMessages.slice(0, 3).map(msg => `<div style="background:#f1f5f9; padding:10px; border-radius:6px; margin-bottom:8px; font-size:0.9rem;">${msg.replace(/\\n/g, '<br>')}</div>`).join('');
-    const extraCount = personalizedMessages.length > 3 ? `<div style="text-align:center; color:#64748b; font-size:0.85rem; margin-top:5px;">...외 ${personalizedMessages.length - 3}명</div>` : '';
+    const previewOutput = personalizedMessages.slice(0, 2).map(item => `
+        <div style="background:#e0f2fe; border:1px solid #bae6fd; padding:12px; border-radius:8px; margin-bottom:10px; font-size:0.9rem; color:#1e293b; text-align:left; word-break:keep-all;">
+            <div style="font-weight:700; color:#0369a1; margin-bottom:5px;">[${item.name}님에게 수신될 화면]</div>
+            ${item.text.replace(/\\n/g, '<br>')}
+        </div>
+    `).join('');
+    const extraCount = personalizedMessages.length > 2 ? `<div style="text-align:center; color:#64748b; font-size:0.85rem; margin-top:5px; font-weight:700;">...외 ${personalizedMessages.length - 2}명에게도 동일한 형식으로 전송됩니다.</div>` : '';
 
     const title = `[${currentMsgType}] 전송 확인`;
 
     const bodyHTML = `
-        <div style="margin-bottom:15px;">
-            <strong style="color:#2563eb; font-size:1.1rem;">총 ${selectedTargets.length}명</strong>에게 문자를 발송합니다.
+        <div style="margin-bottom:15px; text-align:center;">
+            발송 대상: <strong style="color:#2563eb; font-size:1.2rem;">총 ${selectedTargets.length}명</strong>
         </div>
-        <div style="font-weight:700; margin-bottom:8px; color:#475569; border-bottom:2px solid #e2e8f0; padding-bottom:5px;">전송 내용 미리보기 (최대 3건)</div>
-        ${previewOutput}
-        ${extraCount}
-        <div style="margin-top:20px; font-weight:700; color:#ef4444; text-align:center;">
-            발송하시겠습니까?
+        <div style="font-weight:700; margin-bottom:10px; color:#475569; border-bottom:2px solid #e2e8f0; padding-bottom:5px; text-align:center;">전송 내용 전체 미리보기</div>
+        <div style="max-height: 250px; overflow-y: auto; padding:5px 10px;">
+            ${previewOutput}
+            ${extraCount}
+        </div>
+        <div style="margin-top:20px; font-weight:700; color:#ef4444; text-align:center; font-size:1.1rem;">
+            정말 발송하시겠습니까?
         </div>
     `;
 
