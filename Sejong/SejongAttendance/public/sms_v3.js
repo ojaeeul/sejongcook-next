@@ -1,10 +1,9 @@
 const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:8000/api' : '/api/sejong';
 
 let allMembers = [];
-let groupedCourses = {};
 let selectedTargets = []; // Array of member objects
 let currentMsgType = 'SMS';
-let selectedTemplateIndex = -1;
+let editingTemplateIndex = -1;
 
 let myTemplates = JSON.parse(localStorage.getItem('sejongSmsTemplates')) || [
     '반갑습니다.',
@@ -307,28 +306,63 @@ function renderTemplates() {
         div.style.display = 'flex';
         div.style.justifyContent = 'space-between';
         div.style.alignItems = 'center';
-        if (selectedTemplateIndex === i) {
-            div.style.background = '#eff6ff';
-            div.style.fontWeight = '700';
-            div.style.borderLeft = '3px solid #3b82f6';
+
+        if (editingTemplateIndex === i) {
+            div.style.background = '#f8fafc';
+            div.style.padding = '8px 10px';
+            div.innerHTML = `
+                <div style="display:flex; flex-direction:column; width:100%; gap:5px;">
+                    <textarea id="editTpl_${i}" style="width:100%; height:80px; padding:8px; font-size:0.85rem; border:1px solid #3b82f6; border-radius:4px; resize:none;" onclick="event.stopPropagation()">${text}</textarea>
+                    <div style="display:flex; justify-content:flex-end; gap:5px;">
+                        <button onclick="event.stopPropagation(); saveEditTemplate(${i})" style="padding:4px 10px; background:#10b981; color:white; border:none; border-radius:3px; cursor:pointer;">저장</button>
+                        <button onclick="event.stopPropagation(); cancelEditTemplate()" style="padding:4px 10px; background:#94a3b8; color:white; border:none; border-radius:3px; cursor:pointer;">취소</button>
+                    </div>
+                </div>
+            `;
+        } else {
+            div.innerHTML = `
+                <div style="cursor:pointer; flex:1; padding-left: 5px;" onclick="loadTemplateByIndex(${i})" ondblclick="editTemplateInline(${i})">
+                    <span class="type-badge" style="color:${color}; border-color:${color};">${type}</span> 
+                    ${shortText}
+                </div>
+                <i class="material-icons" style="font-size:1.1rem; color:#cbd5e1; cursor:pointer;" title="삭제" onclick="deleteTemplate(${i}, event)">close</i>
+            `;
         }
 
-        div.innerHTML = `
-            <div style="cursor:pointer; flex:1; padding-left: ${selectedTemplateIndex === i ? '5px' : '8px'};" onclick="loadTemplateByIndex(${i})">
-                <span class="type-badge" style="color:${color}; border-color:${color};">${type}</span> 
-                ${shortText}
-            </div>
-            <i class="material-icons" style="font-size:1.1rem; color:#cbd5e1; cursor:pointer;" title="삭제" onclick="deleteTemplate(${i}, event)">close</i>
-        `;
         box.appendChild(div);
     });
     filterTemplates();
 }
 
 function loadTemplateByIndex(i) {
-    selectedTemplateIndex = i;
+    if (editingTemplateIndex !== -1) return; // Prevent loading while editing
     document.getElementById('messageInput').value = myTemplates[i];
     updateMockup();
+}
+
+function editTemplateInline(i) {
+    editingTemplateIndex = i;
+    renderTemplates();
+}
+
+function saveEditTemplate(i) {
+    const editArea = document.getElementById(`editTpl_${i}`);
+    if (!editArea) return;
+    const newText = editArea.value.trim();
+    if (!newText) {
+        alert('내용을 입력해주세요.');
+        return;
+    }
+    myTemplates[i] = newText;
+    localStorage.setItem('sejongSmsTemplates', JSON.stringify(myTemplates));
+    editingTemplateIndex = -1;
+    renderTemplates();
+    loadTemplateByIndex(i);
+    alert('수정되었습니다.');
+}
+
+function cancelEditTemplate() {
+    editingTemplateIndex = -1;
     renderTemplates();
 }
 
@@ -352,28 +386,9 @@ function saveNewTemplate() {
         return;
     }
     myTemplates.unshift(text); // Add to top
-    selectedTemplateIndex = 0;
     localStorage.setItem('sejongSmsTemplates', JSON.stringify(myTemplates));
     renderTemplates();
     alert('새로운 자동글이 등록되었습니다.');
-}
-
-function updateSelectedTemplate() {
-    if (selectedTemplateIndex === -1) {
-        alert('수정할 항목을 위 목록에서 먼저 선택(클릭)해주세요.');
-        return;
-    }
-    const text = document.getElementById('messageInput').value.trim();
-    if (!text) {
-        alert('내용을 입력해주세요.');
-        return;
-    }
-    if (confirm('선택한 자동글(템플릿)의 내용을 현재 작성된 내용으로 덮어쓰시겠습니까?')) {
-        myTemplates[selectedTemplateIndex] = text;
-        localStorage.setItem('sejongSmsTemplates', JSON.stringify(myTemplates));
-        renderTemplates();
-        alert('수정되었습니다.');
-    }
 }
 
 function loadTemplate(text) {

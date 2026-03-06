@@ -5,11 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>문자 발송 - 세종요리</title>
-    <link rel="stylesheet" href="style.css?v=20260307_8">
+    <link rel="stylesheet" href="style.css?v=20260307_9">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="sms_v3.js?v=20260307_8" defer></script>
+    <script src="sms_v3.js?v=20260307_9" defer></script>
     <style>
         .sms-container {
             display: flex;
@@ -556,9 +556,9 @@
                                 <button onclick="saveNewTemplate()"
                                     style="padding:4px 8px; font-size:0.75rem; background:#3b82f6; border:none; border-radius:4px; cursor:pointer; color:white;">새로
                                     등록</button>
-                                <button onclick="updateSelectedTemplate()"
-                                    style="padding:4px 8px; font-size:0.75rem; background:#10b981; border:none; border-radius:4px; cursor:pointer; color:white;">선택
-                                    항목 덮어쓰기(수정)</button>
+                                <span style="font-size:0.75rem; color:#ef4444; font-weight:bold;">(수정: 항목 짧게 2번
+                                    클릭)</span>
+                                <div style="flex:1;"></div>
                                 <button onclick="document.getElementById('localFileInput').click()"
                                     style="padding:4px 8px; font-size:0.75rem; background:white; border:1px solid #cbd5e1; border-radius:4px; cursor:pointer; color:#475569;">파일
                                     불러오기</button>
