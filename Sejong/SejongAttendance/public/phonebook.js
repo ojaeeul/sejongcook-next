@@ -154,9 +154,9 @@ function renderPhonebook() {
 
             card.innerHTML = `
                 <div class="card-left">
-                    <div style="display: flex; flex-direction: column; min-width: 85px;">
-                        <div class="member-name">${m.name}</div>
-                        <div class="member-reg-date">${regDateText}</div>
+                    <div style="display: flex; align-items: center; gap: 8px; min-width: 110px;">
+                        <span class="member-name" style="margin: 0; padding: 0;">${m.name}</span>
+                        <span class="member-reg-date" style="margin: 0; padding: 0;">${regDateText}</span>
                     </div>
                     <div class="contact-info">
                         <div class="contact-box" style="flex-wrap: wrap;">

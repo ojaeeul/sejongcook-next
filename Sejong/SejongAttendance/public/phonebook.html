@@ -5,11 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>전화번호부 - 세종요리</title>
-    <link rel="stylesheet" href="style.css?v=20260307_3">
+    <link rel="stylesheet" href="style.css?v=20260307_5">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="phonebook.js?v=20260307_4" defer></script>
+    <script src="phonebook.js?v=20260307_5" defer></script>
     <style>
         .phone-grid {
             display: flex;
@@ -45,8 +45,8 @@
         .phone-card {
             background: white;
             border-radius: 4px;
-            padding: 2px 5px;
-            /* ultra thin padding to make the white box as small as possible */
+            padding: 0 4px;
+            /* almost 0 padding */
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -56,8 +56,8 @@
             border: 1px solid #e2e8f0;
             /* standard border */
             font-size: 0.75rem;
-            min-height: 38px;
-            /* severely restrict minimum height */
+            min-height: auto;
+            /* fit exactly to text height */
         }
 
         .phone-card:hover {
@@ -74,17 +74,17 @@
         }
 
         .member-name {
-            font-size: 0.95rem;
+            font-size: 0.85rem;
             font-weight: 700;
             color: #1e293b;
-            min-width: 70px;
+            min-width: 40px;
         }
 
         .member-reg-date {
-            font-size: 0.75rem;
+            font-size: 0.65rem;
             color: #64748b;
-            margin-top: 2px;
             font-weight: 400;
+            margin-left: 2px;
         }
 
         .contact-info {
