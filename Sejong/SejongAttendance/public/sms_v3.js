@@ -476,9 +476,31 @@ function sendSms() {
         personalizedMessages.push(`[${t.name}님] : ${msg.substring(0, 20)}...`);
     });
 
-    const previewOutput = personalizedMessages.slice(0, 3).join('\\n');
-    const extraCount = personalizedMessages.length > 3 ? `\\n...외 ${personalizedMessages.length - 3}명` : '';
+    const previewOutput = personalizedMessages.slice(0, 3).map(msg => `<div style="background:#f1f5f9; padding:10px; border-radius:6px; margin-bottom:8px; font-size:0.9rem;">${msg.replace(/\\n/g, '<br>')}</div>`).join('');
+    const extraCount = personalizedMessages.length > 3 ? `<div style="text-align:center; color:#64748b; font-size:0.85rem; margin-top:5px;">...외 ${personalizedMessages.length - 3}명</div>` : '';
 
-    // Implementation for actual API call goes here
-    alert(`[${currentMsgType}] 총 ${selectedTargets.length}명에게 전송을 요청합니다.\\n\\n[전송 예시]\\n${previewOutput}${extraCount}`);
+    const modalTitle = document.getElementById('smsModalTitle');
+    const modalBody = document.getElementById('smsModalBody');
+    const modal = document.getElementById('smsModal');
+
+    modalTitle.textContent = `[${currentMsgType}] 전송 확인`;
+
+    modalBody.innerHTML = `
+        <div style="margin-bottom:15px;">
+            <strong style="color:#2563eb; font-size:1.1rem;">총 ${selectedTargets.length}명</strong>에게 문자를 발송합니다.
+        </div>
+        <div style="font-weight:700; margin-bottom:8px; color:#475569; border-bottom:2px solid #e2e8f0; padding-bottom:5px;">전송 내용 미리보기 (최대 3건)</div>
+        ${previewOutput}
+        ${extraCount}
+        <div style="margin-top:20px; font-weight:700; color:#ef4444; text-align:center;">
+            발송하시겠습니까?
+        </div>
+    `;
+
+    modal.style.display = 'flex';
+}
+
+function confirmSmsSend() {
+    document.getElementById('smsModal').style.display = 'none';
+    alert('전송이 완료되었습니다. (테스트)');
 }
