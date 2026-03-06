@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="sms_v3.js?v=20260307_15" defer></script>
+    <script src="sms_v3.js?v=20260307_21" defer></script>
     <style>
         .sms-container {
             display: flex;
@@ -353,6 +353,12 @@
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            transition: all 0.3s ease;
+        }
+
+        .modal-content.large {
+            max-width: 900px !important;
+            height: 80% !important;
         }
 
         .modal-header {
@@ -738,9 +744,28 @@
         </div>
     </div>
 
+    <!-- Full Preview Modal (Larger) -->
+    <div class="modal-overlay" id="fullPreviewModal">
+        <div class="modal-content large">
+            <div class="modal-header" style="background:#0369a1;">
+                <span>전체 수신인별 미리보기 (최대 100건)</span>
+                <i class="material-icons" style="cursor:pointer;" onclick="closeFullPreviewModal()">close</i>
+            </div>
+            <div class="modal-body" id="fullPreviewBody" style="background:#f8fafc; overflow-y:auto;">
+                <!-- Full list goes here -->
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-cancel" onclick="closeFullPreviewModal()">닫기</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         function closeSmsModal() {
             document.getElementById('smsModal').style.display = 'none';
+        }
+        function closeFullPreviewModal() {
+            document.getElementById('fullPreviewModal').style.display = 'none';
         }
         function toggleSidebar() {
             document.querySelector('.sidebar').classList.toggle('active');

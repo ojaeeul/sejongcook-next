@@ -6,6 +6,7 @@ let selectedTargets = storedTargets ? JSON.parse(storedTargets) : []; // Array o
 let currentMsgType = 'SMS';
 let editingTemplateIndex = -1;
 let isAddingNewTemplate = false;
+let lastGeneratedPreviews = []; // Store for full preview modal
 
 let defaultTemplates = [
     { text: '반갑습니다.', type: 'SMS' },
@@ -28,16 +29,40 @@ let myTemplates = parsed.map(t => {
 localStorage.setItem('sejongSmsTemplates', JSON.stringify(myTemplates));
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Restore settings
+    const savedType = localStorage.getItem('sejongSmsTargetType');
+    if (savedType) {
+        const radio = document.querySelector(`input[name="targetType"][value="${savedType}"]`);
+        if (radio) radio.checked = true;
+    }
+    const savedInactive = localStorage.getItem('sejongSmsIncludeInactive');
+    if (savedInactive !== null) {
+        document.getElementById('includeInactive').checked = savedInactive === 'true';
+    }
+
     fetchMembers();
     renderTemplates(); // Initialize templates
     filterTemplates(); // Apply filter initially
 
     // Event listeners
     document.querySelectorAll('input[name="targetType"]').forEach(radio => {
-        radio.addEventListener('change', renderTargetList);
+        radio.addEventListener('change', () => {
+            saveSettings();
+            renderTargetList();
+        });
     });
-    document.getElementById('includeInactive').addEventListener('change', renderTargetList);
+    document.getElementById('includeInactive').addEventListener('change', () => {
+        saveSettings();
+        renderTargetList();
+    });
 });
+
+function saveSettings() {
+    const type = document.querySelector('input[name="targetType"]:checked').value;
+    const inactive = document.getElementById('includeInactive').checked;
+    localStorage.setItem('sejongSmsTargetType', type);
+    localStorage.setItem('sejongSmsIncludeInactive', inactive);
+}
 
 // Custom Modal Helpers
 function openModal(title, bodyHTML, onConfirm = null, confirmBtnText = '확인', confirmBtnColor = '#3b82f6') {
@@ -100,6 +125,7 @@ async function fetchMembers() {
         allMembers = await res.json();
         processCourses();
         renderTargetList();
+        updateSelectedTags();
     } catch (err) {
         console.error('Failed to fetch members for SMS:', err);
     }
@@ -184,7 +210,7 @@ function renderTargetList() {
             mDiv.style.justifyContent = 'space-between';
             mDiv.style.borderBottom = '1px solid #f1f5f9';
 
-            const isSelected = selectedTargets.some(t => t.id === m.id && t.phone === phone);
+            const isSelected = selectedTargets.some(t => String(t.id) === String(m.id) && t.phone === phone);
             if (isSelected) mDiv.style.color = '#3b82f6';
 
             mDiv.innerHTML = `
@@ -240,7 +266,7 @@ function toggleTarget(member, phone, courseName) {
         return;
     }
 
-    const index = selectedTargets.findIndex(t => t.id === member.id && t.phone === phone);
+    const index = selectedTargets.findIndex(t => String(t.id) === String(member.id) && t.phone === phone);
     if (index > -1) {
         selectedTargets.splice(index, 1);
     } else {
@@ -299,6 +325,7 @@ function selectAllCourses() {
 
     updateCheckmarks();
     updateSelectedTags();
+    saveSelectedTargets();
 }
 
 function deselectAllCourses() {
@@ -634,20 +661,21 @@ function sendSms() {
     let personalizedMessages = [];
     selectedTargets.forEach(t => {
         let msg = text.replace(/%%%/g, t.name);
-
-        // Tuition date logic (using start_date)
         const tuitionDate = t.start_date ? new Date(t.start_date).getDate() : '지정';
         msg = msg.replace(/@@@/g, tuitionDate);
-
         personalizedMessages.push({ name: t.name, text: msg });
     });
 
-    const previewOutput = personalizedMessages.slice(0, 2).map(item => `
+    lastGeneratedPreviews = personalizedMessages; // Save for full view window
+
+    // Slice first 2 for the small confirmation modal
+    const smallPreviewOutput = personalizedMessages.slice(0, 2).map(item => `
         <div style="background:#e0f2fe; border:1px solid #bae6fd; padding:12px; border-radius:8px; margin-bottom:10px; font-size:0.9rem; color:#1e293b; text-align:left; word-break:keep-all;">
             <div style="font-weight:700; color:#0369a1; margin-bottom:5px;">[${item.name}님에게 수신될 화면]</div>
             ${item.text.replace(/\\n/g, '<br>')}
         </div>
     `).join('');
+
     const extraCount = personalizedMessages.length > 2 ? `<div style="text-align:center; color:#64748b; font-size:0.85rem; margin-top:5px; font-weight:700;">...외 ${personalizedMessages.length - 2}명에게도 동일한 형식으로 전송됩니다.</div>` : '';
 
     const title = `[${currentMsgType}] 전송 확인`;
@@ -657,33 +685,60 @@ function sendSms() {
             발송 대상: <strong style="color:#2563eb; font-size:1.2rem;">총 ${selectedTargets.length}명</strong>
         </div>
         
-        <div style="text-align:center; margin-bottom:15px;">
+        <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:15px; align-items:center;">
             <button onclick="
                 const d = document.getElementById('smsPreviewContent');
                 if (d.style.display === 'none') {
                     d.style.display = 'block';
-                    this.innerHTML = '<i class=\\'material-icons\\' style=\\'font-size:1rem; vertical-align:middle;\\'>visibility_off</i> 미리보기 닫기';
+                    this.innerHTML = '<i class=\\'material-icons\\' style=\\'font-size:1rem; vertical-align:middle;\\'>visibility_off</i> 간단 미리보기 닫기';
                 } else {
                     d.style.display = 'none';
-                    this.innerHTML = '<i class=\\'material-icons\\' style=\\'font-size:1rem; vertical-align:middle;\\'>visibility</i> 미리보기 열기';
+                    this.innerHTML = '<i class=\\'material-icons\\' style=\\'font-size:1rem; vertical-align:middle;\\'>visibility</i> 간단 미리보기 열기';
                 }
-            " style="padding:6px 15px; font-size:0.9rem; background:#f8fafc; border:1px solid #cbd5e1; border-radius:5px; cursor:pointer; color:#475569; font-weight:700;">
-                <i class="material-icons" style="font-size:1rem; vertical-align:middle;">visibility</i> 미리보기 열기
+            " style="width:200px; padding:6px 15px; font-size:0.9rem; background:#f8fafc; border:1px solid #cbd5e1; border-radius:5px; cursor:pointer; color:#475569; font-weight:700;">
+                <i class="material-icons" style="font-size:1rem; vertical-align:middle;">visibility</i> 간단 미리보기 열기
+            </button>
+            <button onclick="showFullPreview()" style="width:200px; padding:6px 15px; font-size:0.9rem; background:#0369a1; border:none; border-radius:5px; cursor:pointer; color:white; font-weight:700; box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+                <i class="material-icons" style="font-size:1rem; vertical-align:middle;">open_in_new</i> 전체 상세 미리보기 (대화면)
             </button>
         </div>
 
-        <div id="smsPreviewContent" style="display:none; max-height:220px; overflow-y:auto; padding:10px; background:#f1f5f9; border-radius:8px; margin-bottom:15px; box-shadow:inset 0 2px 4px rgba(0,0,0,0.05);">
-            <div style="font-weight:700; margin-bottom:10px; color:#475569; border-bottom:2px solid #e2e8f0; padding-bottom:5px; text-align:center;">전송 내용 전체 미리보기</div>
-            ${previewOutput}
+        <div id="smsPreviewContent" style="display:none; max-height:200px; overflow-y:auto; padding:10px; background:#f1f5f9; border-radius:8px; margin-bottom:15px; box-shadow:inset 0 2px 4px rgba(0,0,0,0.05);">
+            <div style="font-weight:700; margin-bottom:10px; color:#475569; border-bottom:2px solid #e2e8f0; padding-bottom:5px; text-align:center;">전송 내용 (상단 2건 샘플)</div>
+            ${smallPreviewOutput}
             ${extraCount}
         </div>
         
         <div style="margin-top:15px; font-weight:700; color:#ef4444; text-align:center; font-size:1.1rem;">
-            정말 발송하시겠습니까?
+            위의 수신인들에게 정말로 발송하시겠습니까?
         </div>
     `;
 
     openModal(title, bodyHTML, confirmSmsSend, '발송하기', '#3b82f6');
+}
+
+function showFullPreview() {
+    const listHtml = lastGeneratedPreviews.map((item, idx) => `
+        <div style="background:white; border:1px solid #e2e8f0; padding:15px; border-radius:10px; margin-bottom:15px; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid #f1f5f9; padding-bottom:5px;">
+                <span style="font-weight:800; color:#1e3a8a;">[${idx + 1}] 수신인: ${item.name}님</span>
+                <span style="font-size:0.75rem; color:#94a3b8;">${currentMsgType} 전송예정</span>
+            </div>
+            <div style="padding:10px; background:#f8fafc; border-radius:6px; font-size:0.95rem; line-height:1.5; color:#334155; word-break:break-all;">
+                ${item.text.replace(/\\n/g, '<br>')}
+            </div>
+        </div>
+    `).join('');
+
+    document.getElementById('fullPreviewBody').innerHTML = `
+        <div style="padding:10px;">
+            <div style="background:#fff7ed; border:1px solid #ffedd5; color:#c2410c; padding:10px; border-radius:6px; margin-bottom:20px; font-size:0.85rem; text-align:center;">
+                <i class="material-icons" style="font-size:1rem; vertical-align:middle;">info</i> 수신인 100명에 대한 개별 치환 메시지 전체 목록입니다.
+            </div>
+            ${listHtml}
+        </div>
+    `;
+    document.getElementById('fullPreviewModal').style.display = 'flex';
 }
 
 function confirmSmsSend() {
