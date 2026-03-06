@@ -3,6 +3,8 @@ const API_BASE = window.location.hostname === 'localhost' || window.location.hos
 let currentInput = "";
 let stream = null;
 let currentMode = 'home';
+let autoDetectInterval = null;
+let isDetecting = false;
 
 const video = document.getElementById('video');
 const canvas = document.getElementById('canvas');
@@ -33,6 +35,7 @@ const mirrorSection = document.getElementById('mirrorSection');
 function switchMode(mode) {
     currentMode = mode;
     clearNum();
+    stopAutoDetection();
     if (statusMsg) statusMsg.textContent = "";
 
     if (mode === 'home') {
@@ -52,10 +55,18 @@ function switchMode(mode) {
             stopCamera();
         }
         else if (mode === 'face_only') {
-            setupUI("얼굴 출석", "카메라를 바라보고 아래 버튼을 누르세요", false, true, true);
+            setupUI("얼굴 출석", "카메라를 정면으로 바라봐주세요 (자동으로 출석됩니다)", false, true, true);
             if (mirrorSection) mirrorSection.style.opacity = '1';
+            const btn = document.querySelector('#faceOnlyPanel button');
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = "AI 카메라 준비 중...";
+                btn.style.opacity = "0.7";
+            }
             startCamera();
-            loadFaceModels(); // Preload ML
+            loadFaceModels().then(() => {
+                if (currentMode === 'face_only') startAutoDetection();
+            });
         }
         else if (mode === 'register') {
             setupUI("신규 얼굴 등록", "번호 입력 후 얼굴을 촬영하세요", true, false, true);
@@ -123,16 +134,51 @@ async function submitAttendance() {
     if (mainSubmitBtn) { mainSubmitBtn.disabled = false; mainSubmitBtn.textContent = "출석"; mainSubmitBtn.style.opacity = "1"; }
 }
 
-async function recognizeAndAttend() {
+function startAutoDetection() {
+    stopAutoDetection();
+    if (currentMode !== 'face_only') return;
+
+    showStatus("카메라 중앙을 바라봐주시면 자동으로 출석됩니다...", "#059669");
+    const btn = document.querySelector('#faceOnlyPanel button');
+    if (btn) {
+        btn.textContent = "자동으로 얼굴을 인식 중입니다...";
+    }
+
+    autoDetectInterval = setInterval(async () => {
+        if (currentMode !== 'face_only' || isDetecting || !modelsLoaded) return;
+
+        isDetecting = true;
+        try {
+            const detection = await faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor();
+            if (detection) {
+                stopAutoDetection();
+                recognizeAndAttend(detection); // Proceed directly
+            }
+        } catch (e) {
+            // ignore
+        } finally {
+            if (currentMode === 'face_only') {
+                isDetecting = false;
+            }
+        }
+    }, 1000);
+}
+
+function stopAutoDetection() {
+    if (autoDetectInterval) clearInterval(autoDetectInterval);
+    isDetecting = false;
+}
+
+async function recognizeAndAttend(preDetection = null) {
     if (!modelsLoaded) {
-        showStatus("AI 엔진 모델 로딩 중입니다. 잠시 후 10초 뒤 시도해주세요.", "orange");
+        showStatus("AI 엔진 모델 로딩 중입니다. 잠시 후 시도해주세요.", "orange");
         return;
     }
 
     const btn = document.querySelector('#faceOnlyPanel button');
     if (btn) {
         btn.disabled = true;
-        btn.textContent = "AI 분석 대기중...";
+        btn.textContent = "AI 분석 처리 중...";
         btn.style.opacity = "0.7";
     }
 
@@ -151,12 +197,13 @@ async function recognizeAndAttend() {
 
         // API 연동(멤버 정보 가져오기)과 ML 모델 인식을 병렬로 동시에 실행하여 체감속도 2배 이상 향상
         const [detection, rawMembers] = await Promise.all([
-            faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor(),
+            preDetection ? Promise.resolve(preDetection) : faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor(),
             fetch(`${API_BASE}/members?t=` + Date.now()).then(res => res.json())
         ]);
 
         if (!detection) {
             showStatus("얼굴이 감지되지 않았습니다. 밝은 곳에서 시도하세요.", "red");
+            setTimeout(() => { if (currentMode === 'face_only') startAutoDetection(); }, 2000);
             return;
         }
 
@@ -184,12 +231,14 @@ async function recognizeAndAttend() {
             await processAttendance(phone8, captureData);
         } else {
             showStatus("등록된 얼굴을 찾을 수 없습니다. 신규 등록을 이용해보세요.", "red");
+            setTimeout(() => { if (currentMode === 'face_only') startAutoDetection(); }, 3000);
         }
     } catch (e) {
         showStatus("인식 시스템 오류!", "red");
         console.error(e);
+        setTimeout(() => { if (currentMode === 'face_only') startAutoDetection(); }, 3000);
     } finally {
-        if (btn) { btn.disabled = false; btn.textContent = "얼굴로 출석하기"; btn.style.opacity = "1"; }
+        if (btn) { btn.disabled = true; btn.textContent = "자동 인식 중..."; }
     }
 }
 
@@ -333,9 +382,15 @@ function updateDisplay() { if (inputDisplay) inputDisplay.textContent = currentI
 
 async function startCamera() {
     try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 } });
+        stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+                width: { ideal: 1280 },
+                height: { ideal: 720 },
+                facingMode: "user"
+            }
+        });
         if (video) video.srcObject = stream;
-    } catch (e) { showStatus("카메라 에러", "red"); }
+    } catch (e) { showStatus("카메라 속성 에러! 접근 권한을 확인하세요.", "red"); console.log("Camera error", e); }
 }
 
 function stopCamera() {
