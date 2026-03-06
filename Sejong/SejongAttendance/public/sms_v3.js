@@ -441,8 +441,26 @@ function updateMockup() {
 }
 
 function sendSms() {
+    const modalTitle = document.getElementById('smsModalTitle');
+    const modalBody = document.getElementById('smsModalBody');
+    const modal = document.getElementById('smsModal');
+    const confirmBtn = document.querySelector('.modal-btn-confirm');
+    const cancelBtn = document.querySelector('.modal-btn-cancel');
+
+    const showAlert = (msg) => {
+        modalTitle.textContent = '알림';
+        modalBody.innerHTML = `<div style="text-align:center; padding: 30px 0; font-size:1.1rem; color:#ef4444; font-weight:700; display:flex; flex-direction:column; align-items:center; gap:10px;"><i class="material-icons" style="font-size:3rem;">error_outline</i>${msg}</div>`;
+        if (confirmBtn) confirmBtn.style.display = 'none';
+        if (cancelBtn) {
+            cancelBtn.textContent = '확인';
+            cancelBtn.style.background = '#3b82f6';
+            cancelBtn.style.color = 'white';
+        }
+        modal.style.display = 'flex';
+    };
+
     if (selectedTargets.length === 0) {
-        alert('전송 대상을 선택해주세요.');
+        showAlert('전송 대상을 먼저 추가해주세요.');
         return;
     }
     let text = document.getElementById('messageInput').value;
@@ -458,8 +476,16 @@ function sendSms() {
     }
 
     if (text.trim() === '') {
-        alert('메시지 내용을 입력해주세요.');
+        showAlert('메시지 내용을 입력해주세요.');
         return;
+    }
+
+    // Reset buttons for sending flow
+    if (confirmBtn) confirmBtn.style.display = 'block';
+    if (cancelBtn) {
+        cancelBtn.textContent = '취소';
+        cancelBtn.style.background = '#e2e8f0';
+        cancelBtn.style.color = '#475569';
     }
 
     // Build personalized examples
@@ -478,10 +504,6 @@ function sendSms() {
 
     const previewOutput = personalizedMessages.slice(0, 3).map(msg => `<div style="background:#f1f5f9; padding:10px; border-radius:6px; margin-bottom:8px; font-size:0.9rem;">${msg.replace(/\\n/g, '<br>')}</div>`).join('');
     const extraCount = personalizedMessages.length > 3 ? `<div style="text-align:center; color:#64748b; font-size:0.85rem; margin-top:5px;">...외 ${personalizedMessages.length - 3}명</div>` : '';
-
-    const modalTitle = document.getElementById('smsModalTitle');
-    const modalBody = document.getElementById('smsModalBody');
-    const modal = document.getElementById('smsModal');
 
     modalTitle.textContent = `[${currentMsgType}] 전송 확인`;
 
