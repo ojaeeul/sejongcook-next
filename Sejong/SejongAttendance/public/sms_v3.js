@@ -497,12 +497,16 @@ function deleteTemplate(i, e) {
 function openNewTemplateEditor() {
     isAddingNewTemplate = true;
     editingTemplateIndex = -1; // close any open edit
+    const currentMsgText = document.getElementById('messageInput').value.trim();
     renderTemplates();
 
-    // Focus the new input
+    // Focus the new input and carry over the typed text
     setTimeout(() => {
         const input = document.getElementById('newTplInput');
-        if (input) input.focus();
+        if (input) {
+            if (currentMsgText) input.value = currentMsgText;
+            input.focus();
+        }
     }, 50);
 }
 
