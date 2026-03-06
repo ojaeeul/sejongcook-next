@@ -7,26 +7,24 @@ let editingTemplateIndex = -1;
 let isAddingNewTemplate = false;
 
 let defaultTemplates = [
-    '반갑습니다.',
-    '[세종요리제과학원] 안녕하세요! %%% 학생 오늘 수업 안내드립니다.',
-    '[세종요리제과학원] 안녕하세요! %%% 학생, 이번 주 수업 일정 및 학원 안내입니다. 항상 저희 학원을 이용해 주셔서 진심으로 감사드리며 편안한 하루 되시길 바랍니다.'
+    { text: '반갑습니다.', type: 'SMS' },
+    { text: '[세종요리제과학원] 안녕하세요! %%% 학생 오늘 수업 안내드립니다.', type: 'SMS' },
+    { text: '[세종요리제과학원] 안녕하세요! %%% 학생, 이번 주 수업 일정 및 학원 안내입니다. 항상 저희 학원을 이용해 주셔서 진심으로 감사드리며 편안한 하루 되시길 바랍니다.', type: 'LMS' }
 ];
 
 let storedTemplates = localStorage.getItem('sejongSmsTemplates');
-let myTemplates = storedTemplates ? JSON.parse(storedTemplates) : defaultTemplates;
+let parsed = storedTemplates ? JSON.parse(storedTemplates) : defaultTemplates;
 
-// 강제 마이그레이션: 만약 LMS 템플릿(90바이트 초과)이 하나도 없다면 기본 LMS를 하나 추가해줍니다.
-let hasLMS = false;
-myTemplates.forEach(t => {
-    let bytes = 0;
-    for (let j = 0; j < t.length; j++) bytes += t.charCodeAt(j) > 128 ? 2 : 1;
-    if (bytes > 90) hasLMS = true;
+// Convert any legacy string templates into objects
+let myTemplates = parsed.map(t => {
+    if (typeof t === 'string') {
+        let bytes = 0;
+        for (let j = 0; j < t.length; j++) bytes += t.charCodeAt(j) > 128 ? 2 : 1;
+        return { text: t, type: bytes > 90 ? 'LMS' : 'SMS' };
+    }
+    return t;
 });
-
-if (!hasLMS) {
-    myTemplates.push('[세종요리제과학원] 안녕하세요! %%% 학생, 이번 주 수업 일정 및 학원 안내입니다. 항상 저희 학원을 이용해 주셔서 진심으로 감사드리며 편안한 하루 되시길 바랍니다.');
-    localStorage.setItem('sejongSmsTemplates', JSON.stringify(myTemplates));
-}
+localStorage.setItem('sejongSmsTemplates', JSON.stringify(myTemplates));
 
 document.addEventListener('DOMContentLoaded', () => {
     fetchMembers();
@@ -328,13 +326,10 @@ function filterTemplates() {
     const items = document.querySelectorAll('.template-item');
 
     items.forEach((item, index) => {
-        const templateText = myTemplates[index] || '';
-        const text = templateText.toLowerCase();
-
-        // Calculate byte type logically rather than looking for a DOM badge
-        let bytes = 0;
-        for (let j = 0; j < templateText.length; j++) bytes += templateText.charCodeAt(j) > 128 ? 2 : 1;
-        const typeBadge = bytes > 90 ? 'lms' : 'sms';
+        const tmpl = myTemplates[index];
+        if (!tmpl) return;
+        const text = tmpl.text.toLowerCase();
+        const typeBadge = tmpl.type.toLowerCase();
 
         let matchesTab = true;
         if (currentTab === 'sms' && typeBadge !== 'sms') matchesTab = false;
@@ -379,7 +374,13 @@ function renderTemplates() {
         div.style.marginBottom = '10px';
 
         div.innerHTML = `
-            <div style="font-weight:700; font-size:0.85rem; color:#1e3a8a; margin-bottom:5px;">새 템플릿 등록</div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                <div style="font-weight:700; font-size:0.85rem; color:#1e3a8a;">새 템플릿 등록</div>
+                <select id="newTplType" style="padding:2px 5px; font-size:0.8rem; border-color:#93c5fd; border-radius:4px; outline:none;" onclick="event.stopPropagation()">
+                    <option value="SMS" ${currentTab === 'lms' ? '' : 'selected'}>SMS (단문설정)</option>
+                    <option value="LMS" ${currentTab === 'lms' ? 'selected' : ''}>LMS (장문설정)</option>
+                </select>
+            </div>
             <div style="display:flex; flex-direction:column; width:100%; gap:5px;">
                 <textarea id="newTplInput" placeholder="여기에 내용을 입력하세요..." style="width:100%; height:80px; padding:8px; font-size:0.85rem; border:1px solid #93c5fd; border-radius:4px; resize:none;" onclick="event.stopPropagation()"></textarea>
                 <div style="display:flex; justify-content:flex-end; gap:5px;">
@@ -391,13 +392,11 @@ function renderTemplates() {
         box.appendChild(div);
     }
 
-    myTemplates.forEach((text, i) => {
-        let bytes = 0;
-        for (let j = 0; j < text.length; j++) bytes += text.charCodeAt(j) > 128 ? 2 : 1;
-
-        const type = bytes > 90 ? 'LMS' : 'SMS';
+    myTemplates.forEach((tmpl, i) => {
+        const text = tmpl.text;
+        const type = tmpl.type;
         const color = type === 'LMS' ? '#ef4444' : '#3b82f6';
-        let shortText = text.replace(/\n/g, ' ');
+        let shortText = text.replace(/\\n/g, ' ');
         if (shortText.length > 25) shortText = shortText.substring(0, 25) + '...';
 
         const div = document.createElement('div');
@@ -410,6 +409,13 @@ function renderTemplates() {
             div.style.background = '#f8fafc';
             div.style.padding = '8px 10px';
             div.innerHTML = `
+                <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                    <div style="font-weight:700; font-size:0.85rem; color:#475569;">템플릿 수정</div>
+                    <select id="editTplType_${i}" style="padding:2px 5px; font-size:0.8rem; border-color:#cbd5e1; border-radius:4px; outline:none;" onclick="event.stopPropagation()">
+                        <option value="SMS" ${type === 'SMS' ? 'selected' : ''}>SMS 설정</option>
+                        <option value="LMS" ${type === 'LMS' ? 'selected' : ''}>LMS 설정</option>
+                    </select>
+                </div>
                 <div style="display:flex; flex-direction:column; width:100%; gap:5px;">
                     <textarea id="editTpl_${i}" style="width:100%; height:80px; padding:8px; font-size:0.85rem; border:1px solid #3b82f6; border-radius:4px; resize:none;" onclick="event.stopPropagation()">${text}</textarea>
                     <div style="display:flex; justify-content:flex-end; gap:5px;">
@@ -438,7 +444,7 @@ function renderTemplates() {
 
 function loadTemplateByIndex(i) {
     if (editingTemplateIndex !== -1) return; // Prevent loading while editing
-    document.getElementById('messageInput').value = myTemplates[i];
+    document.getElementById('messageInput').value = myTemplates[i].text;
     updateMockup();
 }
 
