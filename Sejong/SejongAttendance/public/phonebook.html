@@ -5,21 +5,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>전화번호부 - 세종요리</title>
-    <link rel="stylesheet" href="style.css?v=20260307_1">
+    <link rel="stylesheet" href="style.css?v=20260307_2">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="phonebook.js?v=20260307_1" defer></script>
+    <script src="phonebook.js?v=20260307_2" defer></script>
     <style>
         .phone-grid {
             display: flex;
             flex-direction: column;
-            gap: 30px;
-            padding: 20px 0;
+            gap: 10px;
+            /* drastically reduced from 30px */
+            padding: 10px 0;
             max-height: 80vh;
-            /* limit height for many rows */
             overflow-y: auto;
-            /* enable scrolling */
         }
 
         .chosung-group {
@@ -39,19 +38,24 @@
         .phone-card-list {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 6px;
+            /* reduced from 12px */
         }
 
         .phone-card {
             background: white;
-            border-radius: 8px;
-            padding: 6px 10px;
+            border-radius: 6px;
+            /* smaller radius */
+            padding: 4px 8px;
+            /* severely reduced padding to make box thin */
             display: flex;
             align-items: center;
             justify-content: space-between;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            /* smaller shadow */
             transition: all 0.2s ease;
-            border: 1.5px solid #f1f5f9;
+            border: 1px solid #f1f5f9;
+            /* thinner border */
             font-size: 0.8rem;
         }
 
