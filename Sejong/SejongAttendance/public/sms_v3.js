@@ -4,9 +4,16 @@ let allMembers = [];
 let groupedCourses = {};
 let selectedTargets = []; // Array of member objects
 let currentMsgType = 'SMS';
+let selectedTemplateIndex = -1;
+
+let myTemplates = JSON.parse(localStorage.getItem('sejongSmsTemplates')) || [
+    '반갑습니다.',
+    '[세종요리제과학원] 안녕하세요! %%% 학생 오늘 수업 안내드립니다.'
+];
 
 document.addEventListener('DOMContentLoaded', () => {
     fetchMembers();
+    renderTemplates(); // Initialize templates
 
     // Event listeners
     document.querySelectorAll('input[name="targetType"]').forEach(radio => {
@@ -259,7 +266,7 @@ function filterTemplates() {
         let matchesSearch = text.includes(searchTerm);
 
         if (matchesTab && matchesSearch) {
-            item.style.display = '';
+            item.style.display = 'flex'; // Use flex since the new items are flex containers
         } else {
             item.style.display = 'none';
         }
@@ -279,6 +286,94 @@ function loadLocalFile(event) {
         event.target.value = '';
     };
     reader.readAsText(file);
+}
+
+function renderTemplates() {
+    const box = document.getElementById('templateBox');
+    if (!box) return;
+    box.innerHTML = '';
+
+    myTemplates.forEach((text, i) => {
+        let bytes = 0;
+        for (let j = 0; j < text.length; j++) bytes += text.charCodeAt(j) > 128 ? 2 : 1;
+
+        const type = bytes > 90 ? 'LMS' : 'SMS';
+        const color = type === 'LMS' ? '#ef4444' : '#3b82f6';
+        let shortText = text.replace(/\n/g, ' ');
+        if (shortText.length > 25) shortText = shortText.substring(0, 25) + '...';
+
+        const div = document.createElement('div');
+        div.className = 'template-item';
+        div.style.display = 'flex';
+        div.style.justifyContent = 'space-between';
+        div.style.alignItems = 'center';
+        if (selectedTemplateIndex === i) {
+            div.style.background = '#eff6ff';
+            div.style.fontWeight = '700';
+            div.style.borderLeft = '3px solid #3b82f6';
+        }
+
+        div.innerHTML = `
+            <div style="cursor:pointer; flex:1; padding-left: ${selectedTemplateIndex === i ? '5px' : '8px'};" onclick="loadTemplateByIndex(${i})">
+                <span class="type-badge" style="color:${color}; border-color:${color};">${type}</span> 
+                ${shortText}
+            </div>
+            <i class="material-icons" style="font-size:1.1rem; color:#cbd5e1; cursor:pointer;" title="삭제" onclick="deleteTemplate(${i}, event)">close</i>
+        `;
+        box.appendChild(div);
+    });
+    filterTemplates();
+}
+
+function loadTemplateByIndex(i) {
+    selectedTemplateIndex = i;
+    document.getElementById('messageInput').value = myTemplates[i];
+    updateMockup();
+    renderTemplates();
+}
+
+function deleteTemplate(i, e) {
+    e.stopPropagation();
+    if (confirm('이 템플릿을 삭제하시겠습니까?')) {
+        myTemplates.splice(i, 1);
+        localStorage.setItem('sejongSmsTemplates', JSON.stringify(myTemplates));
+        renderTemplates();
+    }
+}
+
+function saveNewTemplate() {
+    const text = document.getElementById('messageInput').value.trim();
+    if (!text) {
+        alert('등록할 내용을 아래 입력창에 작성해주세요.');
+        return;
+    }
+    if (myTemplates.includes(text)) {
+        alert('이미 동일한 내용의 템플릿이 있습니다.');
+        return;
+    }
+    myTemplates.unshift(text); // Add to top
+    selectedTemplateIndex = 0;
+    localStorage.setItem('sejongSmsTemplates', JSON.stringify(myTemplates));
+    renderTemplates();
+    alert('새로운 자동글이 등록되었습니다.');
+}
+
+function updateSelectedTemplate() {
+    if (selectedTemplateIndex === -1) {
+        alert('수정할 항목을 위 목록에서 먼저 선택(클릭)해주세요.');
+        return;
+    }
+    const text = document.getElementById('messageInput').value.trim();
+    if (!text) {
+        alert('내용을 입력해주세요.');
+        return;
+    }
+    if (confirm('선택한 자동글(템플릿)의 내용을 현재 작성된 내용으로 덮어쓰시겠습니까?')) {
+        myTemplates[selectedTemplateIndex] = text;
+        localStorage.setItem('sejongSmsTemplates', JSON.stringify(myTemplates));
+        renderTemplates();
+        alert('수정되었습니다.');
+    }
 }
 
 function loadTemplate(text) {
