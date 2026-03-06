@@ -151,7 +151,7 @@ async function recognizeAndAttend() {
 
         // API 연동(멤버 정보 가져오기)과 ML 모델 인식을 병렬로 동시에 실행하여 체감속도 2배 이상 향상
         const [detection, rawMembers] = await Promise.all([
-            faceapi.detectSingleFace(canvas).withFaceLandmarks().withFaceDescriptor(),
+            faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor(),
             fetch(`${API_BASE}/members?t=` + Date.now()).then(res => res.json())
         ]);
 
@@ -225,7 +225,7 @@ async function capturePhoto() {
         // API 연동과 ML 모델 얼굴 분석을 동시 병렬로 실행
         const [rawMembers, detection] = await Promise.all([
             fetch(`${API_BASE}/members?t=` + Date.now()).then(res => res.json()),
-            faceapi.detectSingleFace(canvas).withFaceLandmarks().withFaceDescriptor()
+            faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor()
         ]);
 
         const members = Array.isArray(rawMembers) ? rawMembers.filter(m => !['delete', 'trash', 'hold', 'completed'].includes(m.status)) : [];
