@@ -16,6 +16,10 @@
             flex-direction: column;
             gap: 30px;
             padding: 20px 0;
+            max-height: 80vh;
+            /* limit height for many rows */
+            overflow-y: auto;
+            /* enable scrolling */
         }
 
         .chosung-group {
@@ -40,14 +44,15 @@
 
         .phone-card {
             background: white;
-            border-radius: 12px;
-            padding: 16px 24px;
+            border-radius: 8px;
+            padding: 6px 10px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
             transition: all 0.2s ease;
             border: 1.5px solid #f1f5f9;
+            font-size: 0.8rem;
         }
 
         .phone-card:hover {
@@ -88,10 +93,10 @@
         .contact-box {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 4px;
             background: #f8fafc;
-            padding: 6px 14px;
-            border-radius: 8px;
+            padding: 2px 4px;
+            border-radius: 4px;
             border: 1px solid #edf2f7;
             justify-content: space-between;
         }
@@ -104,13 +109,13 @@
         }
 
         .contact-label {
-            font-size: 0.7rem;
+            font-size: 0.6rem;
             font-weight: 800;
             color: #1e40af;
             background: #ebf2ff;
-            padding: 2px 5px;
+            padding: 1px 4px;
             border-radius: 50px;
-            min-width: 40px;
+            min-width: 32px;
             text-align: center;
         }
 
@@ -123,7 +128,7 @@
             font-family: 'Inter', sans-serif;
             font-weight: 600;
             color: #334155;
-            font-size: 0.85rem;
+            font-size: 0.7rem;
             letter-spacing: -0.01em;
         }
 
@@ -133,9 +138,9 @@
         }
 
         .action-icon-btn {
-            width: 28px;
-            height: 28px;
-            border-radius: 6px;
+            width: 22px;
+            height: 22px;
+            border-radius: 4px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -165,7 +170,7 @@
         }
 
         .action-icon-btn i {
-            font-size: 0.9rem;
+            font-size: 0.75rem;
         }
 
         .course-badge-list {
@@ -179,7 +184,7 @@
         }
 
         .course-badge {
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             color: #475569;
             background: #f8fafc;
             padding: 2px 6px;
