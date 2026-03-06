@@ -462,6 +462,23 @@ function sendSms() {
         return;
     }
 
+    // Build personalized examples
+    let personalizedMessages = [];
+    selectedTargets.forEach(t => {
+        let msg = text.replace(/%%%/g, t.name);
+
+        // If tuition date logic is requested (assuming t.reg_date or similar holds billing date)
+        // If an explicit placeholder like ### is used for date, we replace it.
+        // We will replace @@@ with payment date just in case, or show how it works.
+        const tuitionDate = t.reg_date ? new Date(t.reg_date).getDate() + '일' : '지정일';
+        msg = msg.replace(/@@@/g, tuitionDate);
+
+        personalizedMessages.push(`[${t.name}님] : ${msg.substring(0, 20)}...`);
+    });
+
+    const previewOutput = personalizedMessages.slice(0, 3).join('\\n');
+    const extraCount = personalizedMessages.length > 3 ? `\\n...외 ${personalizedMessages.length - 3}명` : '';
+
     // Implementation for actual API call goes here
-    alert(`[${currentMsgType}] ${selectedTargets.length}명에게 전송을 요청합니다.\\n\\n내용:\\n${text}`);
+    alert(`[${currentMsgType}] 총 ${selectedTargets.length}명에게 전송을 요청합니다.\\n\\n[전송 예시]\\n${previewOutput}${extraCount}`);
 }
