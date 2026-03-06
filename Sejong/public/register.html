@@ -30,10 +30,10 @@
             <nav class="sidebar-nav">
                 <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">수강 관리</div>
                 <div class="nav-sub-menu show">
-                    <a href="register.html" class="nav-item active">수강생 등록</a>
-                    <a href="index.html" class="nav-item">수강생 대장</a>
-                    <a href="index.html?filter=phonebook" class="nav-item">전화번호부</a>
-                    <a href="sheet.html" class="nav-item">월간 출석부</a>
+                    <a href="register.html" id="navRegister" class="nav-item active">수강생 등록</a>
+                    <a href="index.html" id="navIndex" class="nav-item">수강생 대장</a>
+                    <a href="phonebook.html" id="navPhoneBook" class="nav-item">전화번호부</a>
+                    <a href="sheet.html" id="navSheet" class="nav-item">월간 출석부</a>
                 </div>
                 <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">수강료</div>
                 <div class="nav-sub-menu show">
@@ -111,12 +111,22 @@
 
                     <div class="nav-category toggle-category" onclick="toggleNavSub(this)">제과제빵기능사</div>
                     <div class="nav-sub-menu">
-                        <a href="javascript:void(0)" class="nav-item">준비중입니다</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과제빵_2021')" class="nav-item">2021년 제과제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과제빵_2022')" class="nav-item">2022년 제과제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과제빵_2023')" class="nav-item">2023년 제과제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과제빵_2024')" class="nav-item">2024년 제과제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과제빵_2025')" class="nav-item">2025년 제과제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과제빵_2026')" class="nav-item">2026년 제과제빵</a>
                     </div>
 
                     <div class="nav-category toggle-category" onclick="toggleNavSub(this)">복어기능사</div>
                     <div class="nav-sub-menu">
-                        <a href="javascript:void(0)" class="nav-item">준비중입니다</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('복어_2021')" class="nav-item">2021년 복어</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('복어_2022')" class="nav-item">2022년 복어</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('복어_2023')" class="nav-item">2023년 복어</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('복어_2024')" class="nav-item">2024년 복어</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('복어_2025')" class="nav-item">2025년 복어</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('복어_2026')" class="nav-item">2026년 복어</a>
                     </div>
 
                     <div class="nav-category toggle-category" onclick="toggleNavSub(this)">산업기사</div>
@@ -140,11 +150,16 @@
                         <span class="material-icons" style="font-size: 1.2rem; margin-right: 8px;">settings</span>
                         수업 요일 설정
                     </a>
-                    <a href="index.html?filter=archive" class="nav-item">수료생 보관함</a>
-                    <a href="index.html?filter=trash" class="nav-item">휴지통</a>
+                    <a href="index.html?filter=archive" id="navArchive" class="nav-item">수료생 보관함</a>
+                    <a href="index.html?filter=trash" id="navTrash" class="nav-item">휴지통</a>
                     <a href="stats.html" class="nav-item">통계 및 납부</a>
                 </div>
-                <a href="monitor.html" target="_blank" class="nav-item highlight">키오스크 모니터</a>
+                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">학원문자</div>
+                <div class="nav-sub-menu show">
+                    <a href="attendance_daily.html" id="navDailyAttendance" class="nav-item">일일 출석부</a>
+                    <a href="sms.html" id="navSms" class="nav-item">문자 발송</a>
+                </div>
+                <a href="monitor.html?v=20260301_03" target="_blank" class="nav-item highlight">키오스크 모니터</a>
             </nav>
         </aside>
 

@@ -1,11 +1,12 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Upload, Trash2, ExternalLink, Copy } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import AlertModal from '@/components/AlertModal';
+import { useAdminData } from '@/lib/hooks/useAdminData';
 
 interface ImageItem {
     id: string; // Added id property
@@ -15,8 +16,7 @@ interface ImageItem {
 }
 
 export default function GalleryPage() {
-    const [images, setImages] = useState<ImageItem[]>([]);
-    const [loading, setLoading] = useState(true);
+    const { data: images, loading, mutate } = useAdminData<ImageItem[]>('/api/admin/data/gallery');
 
     // Alert Modal State
     const [showAlert, setShowAlert] = useState(false);
@@ -31,25 +31,6 @@ export default function GalleryPage() {
         setShowAlert(true);
     };
 
-
-    const fetchImages = async () => {
-        try {
-            const url = '/api/admin/data/gallery?_t=' + Date.now();
-            const res = await fetch(url);
-            if (!res.ok) throw new Error('Failed to fetch images');
-            const json = await res.json();
-            setImages(json);
-        } catch {
-            console.error('Failed to fetch images');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchImages();
-    }, []);
-
     const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!e.target.files?.length) return;
         alert('이미지 업로드 기능은 현재 서버 설정상 제한되어 있습니다. public/data/gallery_data.json 파일을 직접 편집해주세요.');
@@ -62,7 +43,9 @@ export default function GalleryPage() {
             const url = `/api/admin/data/gallery?id=${id}`;
             const res = await fetch(url, { method: 'DELETE' });
             if (res.ok) {
-                setImages(prev => prev.filter(img => img.id !== id));
+                if (images) {
+                    mutate(images.filter(img => img.id !== id));
+                }
                 triggerAlert('삭제되었습니다.', 'success');
             } else {
                 triggerAlert('삭제 실패', 'error');
@@ -132,12 +115,12 @@ export default function GalleryPage() {
                 <div className="text-center p-8 text-gray-500">이미지 로딩 중...</div>
             ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                    {images.length === 0 ? (
+                    {(images || []).length === 0 ? (
                         <div className="col-span-full text-center p-8 text-gray-400 bg-gray-50 rounded-xl border border-dashed border-gray-200">
                             이미지가 없습니다. 이미지를 업로드하세요.
                         </div>
                     ) : (
-                        images.map((img, index) => (
+                        (images || []).map((img, index) => (
                             <div key={img.id || `${img.name}-${index}`} className="group bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col hover:shadow-md transition-shadow">
                                 <div className="relative aspect-square bg-gray-100">
                                     <Image

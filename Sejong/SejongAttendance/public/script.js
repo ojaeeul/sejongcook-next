@@ -1,7 +1,5 @@
 // Force API Calls to port 8000 API for Bidirectional Sync
-const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    ? 'http://localhost:8000/api'
-    : 'https://thin-bags-listen.loca.lt/api';
+const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:8000/api' : '/api/sejong';
 
 
 
@@ -282,29 +280,13 @@ async function fetchData() {
 
         console.log('Fetching data from API:', API_BASE);
 
-        // Fetch Members
-        let mRes;
-        try {
-            mRes = await fetch(`${API_BASE}/members`, { cache: 'no-store' });
-            if (!mRes.ok) throw new Error(`Status ${mRes.status}`);
+        const [mRes, aRes] = await Promise.all([
+            fetch(`${API_BASE}/members`, { cache: 'no-store' }),
+            fetch(`${API_BASE}/attendance?date=${currentDate}`, { cache: 'no-store' })
+        ]);
 
-        } catch (mErr) {
-
-            throw mErr; // Re-throw to stop
-        }
-
-        // Fetch Attendance
-        let aRes;
-        try {
-            aRes = await fetch(`${API_BASE}/attendance?date=${currentDate}`, { cache: 'no-store' });
-            if (!aRes.ok) throw new Error(`Status ${aRes.status}`);
-
-        } catch (aErr) {
-
-            // Don't throw, maybe we can render members without attendance?
-            // But current logic expects both. Let's throw for now to keep behavior consistent but known.
-            throw aErr;
-        }
+        if (!mRes.ok) throw new Error(`Members fetch failed with ${mRes.status}`);
+        if (!aRes.ok) throw new Error(`Attendance fetch failed with ${aRes.status}`);
 
         members = await mRes.json();
         attendanceLogs = await aRes.json();
@@ -1329,13 +1311,33 @@ document.addEventListener('DOMContentLoaded', () => {
     if (viewYear) {
         setTimeout(() => loadExamView(viewYear), 500);
     }
+
+    // Reset all nav items first
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+
+    // Default Highlights based on filename
+    let filename = window.location.pathname.split('/').pop() || 'index.html';
+    if (filename === '') filename = 'index.html'; // Extra safety for root
     const filter = params.get('filter');
-    if (filter === 'archive') {
-        setTimeout(() => loadArchive(), 500);
-    } else if (filter === 'phonebook') {
-        setTimeout(() => loadPhoneBook(), 500);
-    } else if (filter === 'trash') {
-        setTimeout(() => loadTrash(), 500);
+
+    if (filename === 'index.html') {
+        if (filter === 'archive') {
+            setTimeout(() => loadArchive(), 500);
+        } else if (filter === 'trash') {
+            setTimeout(() => loadTrash(), 500);
+        } else if (!filter) {
+            document.getElementById('navIndex')?.classList.add('active');
+        }
+    } else if (filename === 'register.html') {
+        document.getElementById('navRegister')?.classList.add('active');
+    } else if (filename === 'sheet.html') {
+        document.getElementById('navSheet')?.classList.add('active');
+    } else if (filename === 'phonebook.html') {
+        document.getElementById('navPhoneBook')?.classList.add('active');
+    } else if (filename === 'sms.html') {
+        document.getElementById('navSms')?.classList.add('active');
+    } else if (filename === 'attendance_daily.html') {
+        document.getElementById('navDailyAttendance')?.classList.add('active');
     }
 });
 

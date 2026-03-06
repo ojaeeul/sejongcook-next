@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import AdminTable from '@/app/admin/components/AdminTable';
+import { useAdminData } from '@/lib/hooks/useAdminData';
 
 interface BakingPost {
     id: string | number;
@@ -14,36 +15,16 @@ interface BakingPost {
 }
 
 export default function BakingBoardList() {
-    const [data, setData] = useState<BakingPost[]>([]);
-    const [loading, setLoading] = useState(true);
+    const { data: rawData, loading, mutate } = useAdminData<BakingPost[]>('/api/admin/data/baking');
 
-    const fetchData = async () => {
-        try {
-            setLoading(true);
-            const url = '/api/admin/data/baking?_t=' + Date.now();
-            const res = await fetch(url);
-            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-            const json = await res.json();
-            if (Array.isArray(json)) {
-                setData(json.sort((a: BakingPost, b: BakingPost) => {
-                    const idA = Number(a.id) || 0;
-                    const idB = Number(b.id) || 0;
-                    return idB - idA;
-                }));
-            } else {
-                setData([]);
-            }
-        } catch (error) {
-            console.error('Failed to fetch baking posts', error);
-            setData([]);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchData();
-    }, []);
+    const data = useMemo(() => {
+        if (!Array.isArray(rawData)) return [];
+        return [...rawData].sort((a: BakingPost, b: BakingPost) => {
+            const idA = Number(a.id) || 0;
+            const idB = Number(b.id) || 0;
+            return idB - idA;
+        });
+    }, [rawData]);
 
     const handleDelete = async (id: string | number) => {
         if (!confirm('정말 삭제하시겠습니까?')) return;
@@ -55,7 +36,9 @@ export default function BakingBoardList() {
 
             if (!res.ok) throw new Error('Delete failed');
 
-            setData(prev => prev.filter((item: BakingPost) => String(item.id) !== String(id)));
+            if (rawData) {
+                mutate(rawData.filter((item: BakingPost) => String(item.id) !== String(id)));
+            }
         } catch {
             alert('삭제에 실패했습니다');
         }

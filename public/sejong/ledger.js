@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:8000/api';
+const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:8000/api' : '/api/sejong';
 
 let COURSE_SCHEDULES = {
     '한식기능사': [1, 3],
@@ -46,12 +46,12 @@ let courseFees = {};
 let attendanceByMember = {}; // Optimized lookup
 window.targetMemberId = null;
 
-let currentYear = new Date().getFullYear();
+let currentYear = parseInt(sessionStorage.getItem('sejong_ledger_currentYear')) || new Date().getFullYear();
 
 document.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
     const targetId = params.get('memberId');
-    const targetYear = params.get('year') || new Date().getFullYear();
+    const targetYear = params.get('year') || sessionStorage.getItem('sejong_ledger_currentYear') || new Date().getFullYear();
     currentYear = parseInt(targetYear);
 
     if (typeof initializeYearSelect === 'function') {
@@ -141,13 +141,7 @@ function processAttendanceData() {
 
 
 // sheet.html과 동일한 수동 보정 데이터
-const GLOBAL_DATA_ADJUSTMENTS = {
-    "1770517017920": { // 오재을
-        "2026-02": { carryOverride: 8.0, forceRedBoxDates: ["2026-02-03"] },
-        "2026-04": { carryOverride: 8.0, forceRedBoxDates: ["2026-04-30"] },
-        "2026-06": { forceRedBoxDates: ["2026-06-02"] }
-    }
-};
+const GLOBAL_DATA_ADJUSTMENTS = {};
 
 function getLedgerMonthStats(memberId, year, month, courseFilter = null) {
     // [신규 기믹]: User request to strictly mirror sheet.html dates instead of computing separately
@@ -190,13 +184,6 @@ function getLedgerMonthStats(memberId, year, month, courseFilter = null) {
     }
 
 
-    // [특수 하드코딩 보정] sheet.html과 100% 동일하게 맞춤
-    if (String(memberId) === '1770517017920' && year === 2026) {
-        if (month === 2) rollingTotal = 7.0;
-        else if (month === 3) rollingTotal = 4.0;
-        else if (month === 4) rollingTotal = 5.0;
-        else if (month === 6) rollingTotal = 6.0;
-    }
 
 
 
@@ -362,6 +349,7 @@ function initializeYearSelect() {
     }
     select.onchange = (e) => {
         currentYear = parseInt(e.target.value);
+        sessionStorage.setItem('sejong_ledger_currentYear', currentYear);
         renderLedger();
     };
 }
@@ -702,8 +690,8 @@ window.loadExamView = function (key) { window.location.href = `index.html?viewEx
 
 // [신규 - 즉각 동기화] 다른 탭에서 예정일이 변경되면 즉시 반영
 window.addEventListener('storage', (e) => {
-    if (e.key === 'sejong_ledger_sync') {
-        renderLedger();
+    if (e.key === 'sejong_ledger_sync' || e.key === 'sejong_timetable_sync') {
+        loadData(window.targetMemberId, currentYear);
     }
 });
 

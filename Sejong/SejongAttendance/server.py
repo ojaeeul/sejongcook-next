@@ -90,6 +90,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         if path == '/api/attendance/batch':
             self.handle_batch_attendance()
             return
+        if path == '/api/timetable':
+            self.handle_save_timetable()
             return
         if path == '/api/payments':
             self.handle_save_payment()
@@ -249,8 +251,10 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             # Optimization: check if exists
             
             existing_idx = -1
+            data_course = data.get('course') or ''
             for i, log in enumerate(logs):
-                if log['memberId'] == data['memberId'] and log['date'] == data['date']:
+                log_course = log.get('course') or ''
+                if log['memberId'] == data['memberId'] and log['date'] == data['date'] and log_course == data_course:
                     existing_idx = i
                     break
             
@@ -386,6 +390,20 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 holidays.append(data)
                 
             self._write_json('holidays.json', holidays)
+            
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({'success': True}).encode('utf-8'))
+        except Exception as e:
+            self.send_error(500, str(e))
+
+    def handle_save_timetable(self):
+        try:
+            body = self.get_body()
+            data = json.loads(body) # Expecting a dict of course schedules
+            
+            self._write_json('timetable_data.json', data)
             
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')

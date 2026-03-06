@@ -1,44 +1,28 @@
 
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import AdminTable from '../components/AdminTable';
 import SuccessModal from '@/components/SuccessModal';
 import ConfirmModal from '@/components/ConfirmModal';
+import { useAdminData } from '@/lib/hooks/useAdminData';
 
-
+interface NoticeItem {
+    id: string | number;
+    title: string;
+    author: string;
+    date: string;
+    hit: string | number;
+}
 
 export default function NoticeList() {
-    interface NoticeItem {
-        id: string | number;
-        title: string;
-        author: string;
-        date: string;
-        hit: string | number;
-    }
-    const [data, setData] = useState<NoticeItem[]>([]);
-    const [loading, setLoading] = useState(true);
+    const { data: rawData, loading, mutate } = useAdminData<NoticeItem[]>('/api/admin/data/notice');
 
-    const fetchData = useCallback(async () => {
-        try {
-            const url = '/api/admin/data/notice?_t=' + Date.now();
-            const res = await fetch(url);
-            if (!res.ok) throw new Error('Failed to fetch');
-            const data = await res.json();
-            // Sort by ID desc if needed, or date
-            const sorted = Array.isArray(data) ? data.sort((a: NoticeItem, b: NoticeItem) => Number(b.id) - Number(a.id)) : [];
-            setData(sorted);
-        } catch (error) {
-            console.error('Failed to fetch notices', error);
-        } finally {
-            setLoading(false);
-        }
-    }, []);
-
-    useEffect(() => {
-        fetchData();
-    }, [fetchData]);
+    const data = useMemo(() => {
+        if (!Array.isArray(rawData)) return [];
+        return [...rawData].sort((a: NoticeItem, b: NoticeItem) => Number(b.id) - Number(a.id));
+    }, [rawData]);
 
     const [confirmModal, setConfirmModal] = useState({ isOpen: false, id: '' as string | number });
     const [successModal, setSuccessModal] = useState({ isOpen: false, message: '' });
@@ -58,7 +42,9 @@ export default function NoticeList() {
             });
             if (!res.ok) throw new Error('Delete failed');
 
-            setData(prev => prev.filter((item: NoticeItem) => String(item.id) !== String(id)));
+            if (rawData) {
+                mutate(rawData.filter((item: NoticeItem) => String(item.id) !== String(id)));
+            }
             setSuccessModal({ isOpen: true, message: '공지사항이 삭제되었습니다.' });
         } catch {
             alert('삭제에 실패했습니다');

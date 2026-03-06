@@ -1,78 +1,187 @@
-127.0.0.1 - - [25/Feb/2026 08:55:06] "GET /ledger.html HTTP/1.1" 200 -
-127.0.0.1 - - [25/Feb/2026 08:55:06] "GET /style.css?v=20260220_11 HTTP/1.1" 304 -
-127.0.0.1 - - [25/Feb/2026 08:55:06] "GET /ledger.js?v=20260222_1 HTTP/1.1" 304 -
-127.0.0.1 - - [25/Feb/2026 08:55:06] "GET /questions_data.js?v=20260209_1 HTTP/1.1" 304 -
-127.0.0.1 - - [25/Feb/2026 08:55:06] "GET /api/members?t=1771977306747 HTTP/1.1" 200 -
-127.0.0.1 - - [25/Feb/2026 08:55:06] "GET /api/payments?t=1771977306747 HTTP/1.1" 200 -
-127.0.0.1 - - [25/Feb/2026 08:55:06] "GET /api/attendance?t=1771977306747 HTTP/1.1" 200 -
-127.0.0.1 - - [25/Feb/2026 08:55:06] "GET /api/admin/data/settings?t=1771977306747 HTTP/1.1" 200 -
-127.0.0.1 - - [25/Feb/2026 08:55:06] "GET /api/holidays?t=1771977306747 HTTP/1.1" 200 -
-127.0.0.1 - - [25/Feb/2026 08:55:06] "GET /api/timetable?t=1771977306747 HTTP/1.1" 200 -
-127.0.0.1 - - [25/Feb/2026 08:55:36] "GET /index.html HTTP/1.1" 304 -
-----------------------------------------
-Exception occurred during processing of request from ('127.0.0.1', 63461)
-Traceback (most recent call last):
-  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/socketserver.py", line 318, in _handle_request_noblock
-    self.process_request(request, client_address)
-    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/socketserver.py", line 349, in process_request
-    self.finish_request(request, client_address)
-    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/socketserver.py", line 362, in finish_request
-    self.RequestHandlerClass(request, client_address, self)
-    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/http/server.py", line 672, in __init__
-    super().__init__(*args, **kwargs)
-    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
-  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/socketserver.py", line 766, in __init__
-    self.handle()
-    ~~~~~~~~~~~^^
-  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/http/server.py", line 436, in handle
-    self.handle_one_request()
-    ~~~~~~~~~~~~~~~~~~~~~~~^^
-  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/http/server.py", line 404, in handle_one_request
-    self.raw_requestline = self.rfile.readline(65537)
-                           ~~~~~~~~~~~~~~~~~~~^^^^^^^
-  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/socket.py", line 719, in readinto
-    return self._sock.recv_into(b)
-           ~~~~~~~~~~~~~~~~~~~~^^^
-ConnectionResetError: [Errno 54] Connection reset by peer
-----------------------------------------
-----------------------------------------
-Exception occurred during processing of request from ('127.0.0.1', 63462)
-Traceback (most recent call last):
-  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/socketserver.py", line 318, in _handle_request_noblock
-    self.process_request(request, client_address)
-    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/socketserver.py", line 349, in process_request
-    self.finish_request(request, client_address)
-    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/socketserver.py", line 362, in finish_request
-    self.RequestHandlerClass(request, client_address, self)
-    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/http/server.py", line 672, in __init__
-    super().__init__(*args, **kwargs)
-    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
-  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/socketserver.py", line 766, in __init__
-    self.handle()
-    ~~~~~~~~~~~^^
-  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/http/server.py", line 436, in handle
-    self.handle_one_request()
-    ~~~~~~~~~~~~~~~~~~~~~~~^^
-  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/http/server.py", line 404, in handle_one_request
-    self.raw_requestline = self.rfile.readline(65537)
-                           ~~~~~~~~~~~~~~~~~~~^^^^^^^
-  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/socket.py", line 719, in readinto
-    return self._sock.recv_into(b)
-           ~~~~~~~~~~~~~~~~~~~~^^^
-ConnectionResetError: [Errno 54] Connection reset by peer
-----------------------------------------
-127.0.0.1 - - [25/Feb/2026 08:55:36] code 404, message File not found
-127.0.0.1 - - [25/Feb/2026 08:55:36] "HEAD /api/members HTTP/1.1" 404 -
-127.0.0.1 - - [25/Feb/2026 08:55:36] "GET /exam_view.css?v=20260210_3 HTTP/1.1" 304 -
-127.0.0.1 - - [25/Feb/2026 08:55:36] "GET /questions_data.js?v=20260210_3 HTTP/1.1" 304 -
-127.0.0.1 - - [25/Feb/2026 08:55:36] "GET /script.js?v=20260212_DEBUG_5 HTTP/1.1" 304 -
-127.0.0.1 - - [25/Feb/2026 08:55:36] code 404, message File not found
-127.0.0.1 - - [25/Feb/2026 08:55:36] "GET /sejong/questions_data.js?v=1771977336624 HTTP/1.1" 404 -
-127.0.0.1 - - [25/Feb/2026 08:55:36] "GET /api/members HTTP/1.1" 200 -
-127.0.0.1 - - [25/Feb/2026 08:55:36] "GET /api/attendance?date=2026-02-24 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:39:57] "GET /api/members?t=1772753996997 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:39:57] "GET /api/payments?t=1772753996997 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:39:57] "GET /api/attendance?t=1772753996997 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:39:57] "GET /api/admin/data/settings?t=1772753996997 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:39:57] "GET /api/holidays?t=1772753996997 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:39:57] "GET /api/timetable?t=1772753996997 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:39:57] "GET /api/members?t=1772753997002 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:39:57] "GET /api/payments?t=1772753997002 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:39:57] "GET /api/attendance?t=1772753997002 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:39:57] "GET /api/admin/data/settings?t=1772753997002 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:39:57] "GET /api/holidays?t=1772753997002 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:39:57] "GET /api/timetable?t=1772753997002 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:39:57] "GET /api/members?t=1772753997086 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:39:57] "GET /api/payments?t=1772753997086 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:39:57] "GET /api/attendance?t=1772753997086 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:39:57] "GET /api/admin/data/settings?t=1772753997086 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:39:57] "GET /api/holidays?t=1772753997086 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:39:57] "GET /api/timetable?t=1772753997086 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:39:57] "GET /api/members?t=1772753997087 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:39:57] "GET /api/payments?t=1772753997087 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:39:57] "GET /api/attendance?t=1772753997087 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:39:57] "GET /api/admin/data/settings?t=1772753997087 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:39:57] "GET /api/holidays?t=1772753997087 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:39:57] "GET /api/timetable?t=1772753997087 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:39:57] code 404, message File not found
+127.0.0.1 - - [06/Mar/2026 08:39:57] "GET /sejong/questions_data.js?v=1772753997316 HTTP/1.1" 404 -
+127.0.0.1 - - [06/Mar/2026 08:39:57] "GET /api/members HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:39:57] "GET /ledger.html HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:39:57] "GET /ledger.js?v=20260306_3 HTTP/1.1" 304 -
+127.0.0.1 - - [06/Mar/2026 08:39:57] "GET /api/attendance?date=2026-03-05 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:39:57] "GET /api/members?t=1772753997928 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:39:57] "GET /api/payments?t=1772753997928 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:39:57] "GET /api/attendance?t=1772753997928 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:39:57] "GET /api/admin/data/settings?t=1772753997928 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:39:57] "GET /api/holidays?t=1772753997928 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:39:57] "GET /api/timetable?t=1772753997928 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:09] "GET /api/members?t=1772754009896 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:10] "GET /ledger.html HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:10] "GET /api/payments?t=1772754009896 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:10] "GET /api/attendance?t=1772754009896 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:10] "GET /api/admin/data/settings?t=1772754009896 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:10] "GET /api/holidays?t=1772754009896 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:10] "GET /api/timetable?t=1772754009896 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:10] "GET /style.css?v=20260228_6 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:10] "GET /questions_data.js?v=20260209_1 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:10] "GET /ledger.js?v=20260306_3 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:10] "GET /api/members?t=1772754010754 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:10] "GET /api/payments?t=1772754010754 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:10] "GET /api/attendance?t=1772754010754 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:10] "GET /api/admin/data/settings?t=1772754010754 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:10] "GET /api/holidays?t=1772754010754 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:10] "GET /api/timetable?t=1772754010754 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:21] "GET /sheet.html HTTP/1.1" 304 -
+127.0.0.1 - - [06/Mar/2026 08:40:21] code 404, message File not found
+127.0.0.1 - - [06/Mar/2026 08:40:21] "GET /sejong/questions_data.js?v=1772754021920 HTTP/1.1" 404 -
+127.0.0.1 - - [06/Mar/2026 08:40:21] "GET /api/members?t=1772754021931 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:21] "GET /api/attendance?t=1772754021931 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:21] "GET /api/holidays?t=1772754021932 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:21] "GET /api/timetable?t=1772754021932 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:33] "GET /sheet.html HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:33] code 404, message File not found
+127.0.0.1 - - [06/Mar/2026 08:40:33] "GET /sejong/questions_data.js?v=1772754033315 HTTP/1.1" 404 -
+127.0.0.1 - - [06/Mar/2026 08:40:33] "GET /api/members?t=1772754033325 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:33] "GET /api/attendance?t=1772754033325 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:33] "GET /api/holidays?t=1772754033325 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:33] "GET /api/timetable?t=1772754033326 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:34] "GET /sheet.html HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:34] code 404, message File not found
+127.0.0.1 - - [06/Mar/2026 08:40:34] "GET /sejong/questions_data.js?v=1772754034260 HTTP/1.1" 404 -
+127.0.0.1 - - [06/Mar/2026 08:40:34] "GET /api/members?t=1772754034264 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:34] "GET /api/attendance?t=1772754034265 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:34] "GET /api/holidays?t=1772754034265 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:34] "GET /api/timetable?t=1772754034265 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:37] "GET /sheet.html HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:37] code 404, message File not found
+127.0.0.1 - - [06/Mar/2026 08:40:37] "GET /sejong/questions_data.js?v=1772754037338 HTTP/1.1" 404 -
+127.0.0.1 - - [06/Mar/2026 08:40:37] "GET /api/members?t=1772754037343 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:37] "GET /api/attendance?t=1772754037343 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:37] "GET /api/holidays?t=1772754037343 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:37] "GET /api/timetable?t=1772754037343 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:37] "GET /sheet.html HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:38] code 404, message File not found
+127.0.0.1 - - [06/Mar/2026 08:40:38] "GET /sejong/questions_data.js?v=1772754038105 HTTP/1.1" 404 -
+127.0.0.1 - - [06/Mar/2026 08:40:38] "GET /api/members?t=1772754038109 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:38] "GET /api/attendance?t=1772754038110 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:38] "GET /api/holidays?t=1772754038110 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:38] "GET /api/timetable?t=1772754038110 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:38] "GET /sheet.html HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:38] code 404, message File not found
+127.0.0.1 - - [06/Mar/2026 08:40:38] "GET /sejong/questions_data.js?v=1772754038861 HTTP/1.1" 404 -
+127.0.0.1 - - [06/Mar/2026 08:40:38] "GET /api/members?t=1772754038866 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:38] "GET /api/attendance?t=1772754038867 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:38] "GET /api/holidays?t=1772754038867 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:38] "GET /api/timetable?t=1772754038867 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:40] "GET /paid_list.html HTTP/1.1" 304 -
+127.0.0.1 - - [06/Mar/2026 08:40:40] "GET /paid_list.js?v=20260306_3 HTTP/1.1" 304 -
+127.0.0.1 - - [06/Mar/2026 08:40:40] code 404, message File not found
+127.0.0.1 - - [06/Mar/2026 08:40:40] "GET /sejong/questions_data.js?v=1772754040288 HTTP/1.1" 404 -
+127.0.0.1 - - [06/Mar/2026 08:40:40] "GET /api/members?t=1772754040334 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:40] "GET /api/payments?t=1772754040334 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:41] "GET /api/members?t=1772754041464 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:41] "GET /api/payments?t=1772754041464 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:41] "GET /api/attendance?t=1772754041464 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:41] "GET /api/admin/data/settings?t=1772754041464 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:41] "GET /api/holidays?t=1772754041464 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:41] "GET /api/timetable?t=1772754041464 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:42] code 404, message File not found
+127.0.0.1 - - [06/Mar/2026 08:40:42] "GET /sejong/questions_data.js?v=1772754042800 HTTP/1.1" 404 -
+127.0.0.1 - - [06/Mar/2026 08:40:42] "GET /api/members?t=1772754042801 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:42] "GET /api/payments?t=1772754042801 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:47] "GET /paid_list.html HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:47] code 404, message File not found
+127.0.0.1 - - [06/Mar/2026 08:40:47] "GET /sejong/questions_data.js?v=1772754047637 HTTP/1.1" 404 -
+127.0.0.1 - - [06/Mar/2026 08:40:47] "GET /api/members?t=1772754047637 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:47] "GET /api/payments?t=1772754047638 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:48] "GET /paid_list.html HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:48] code 404, message File not found
+127.0.0.1 - - [06/Mar/2026 08:40:48] "GET /sejong/questions_data.js?v=1772754048317 HTTP/1.1" 404 -
+127.0.0.1 - - [06/Mar/2026 08:40:48] "GET /api/members?t=1772754048318 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:48] "GET /api/payments?t=1772754048318 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:49] code 404, message File not found
+127.0.0.1 - - [06/Mar/2026 08:40:49] "GET /sejong/questions_data.js?v=1772754049730 HTTP/1.1" 404 -
+127.0.0.1 - - [06/Mar/2026 08:40:49] "GET /api/members?t=1772754049739 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:49] "GET /api/attendance?t=1772754049739 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:49] "GET /api/holidays?t=1772754049739 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:49] "GET /api/timetable?t=1772754049739 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:51] "POST /api/attendance HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:52] "POST /api/attendance HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:54] "GET /sheet.html HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:54] code 404, message File not found
+127.0.0.1 - - [06/Mar/2026 08:40:54] "GET /sejong/questions_data.js?v=1772754054379 HTTP/1.1" 404 -
+127.0.0.1 - - [06/Mar/2026 08:40:54] "GET /api/members?t=1772754054383 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:54] "GET /api/attendance?t=1772754054383 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:54] "GET /api/holidays?t=1772754054383 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:54] "GET /api/timetable?t=1772754054383 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:55] "GET /sheet.html HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:55] code 404, message File not found
+127.0.0.1 - - [06/Mar/2026 08:40:55] "GET /sejong/questions_data.js?v=1772754055326 HTTP/1.1" 404 -
+127.0.0.1 - - [06/Mar/2026 08:40:55] "GET /api/members?t=1772754055331 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:55] "GET /api/attendance?t=1772754055331 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:55] "GET /api/holidays?t=1772754055331 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:55] "GET /api/timetable?t=1772754055331 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:55] "GET /sheet.html HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:56] code 404, message File not found
+127.0.0.1 - - [06/Mar/2026 08:40:56] "GET /sejong/questions_data.js?v=1772754056149 HTTP/1.1" 404 -
+127.0.0.1 - - [06/Mar/2026 08:40:56] "GET /api/members?t=1772754056154 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:56] "GET /api/attendance?t=1772754056155 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:56] "GET /api/holidays?t=1772754056155 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:40:56] "GET /api/timetable?t=1772754056155 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:41:01] "POST /api/attendance HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:41:02] "POST /api/attendance HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:41:03] "GET /sheet.html HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:41:03] code 404, message File not found
+127.0.0.1 - - [06/Mar/2026 08:41:03] "GET /sejong/questions_data.js?v=1772754063483 HTTP/1.1" 404 -
+127.0.0.1 - - [06/Mar/2026 08:41:03] "GET /api/members?t=1772754063517 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:41:03] "GET /api/attendance?t=1772754063517 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:41:03] "GET /api/holidays?t=1772754063517 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:41:03] "GET /api/timetable?t=1772754063517 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:41:04] "GET /sheet.html HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:41:04] code 404, message File not found
+127.0.0.1 - - [06/Mar/2026 08:41:04] "GET /sejong/questions_data.js?v=1772754064438 HTTP/1.1" 404 -
+127.0.0.1 - - [06/Mar/2026 08:41:04] "GET /api/members?t=1772754064443 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:41:04] "GET /api/attendance?t=1772754064443 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:41:04] "GET /api/holidays?t=1772754064443 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:41:04] "GET /api/timetable?t=1772754064443 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:47:05] "GET /ledger.html HTTP/1.1" 304 -
+127.0.0.1 - - [06/Mar/2026 08:47:05] "GET /ledger.js?v=20260306_3 HTTP/1.1" 304 -
+127.0.0.1 - - [06/Mar/2026 08:47:05] code 404, message File not found
+127.0.0.1 - - [06/Mar/2026 08:47:05] "GET /sejong/questions_data.js?v=1772754425778 HTTP/1.1" 404 -
+127.0.0.1 - - [06/Mar/2026 08:47:05] "GET /api/members HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:47:05] "GET /api/members?t=1772754425820 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:47:05] "GET /api/payments?t=1772754425820 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:47:05] "GET /api/attendance?t=1772754425820 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:47:05] "GET /api/admin/data/settings?t=1772754425820 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:47:05] "GET /api/holidays?t=1772754425820 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:47:05] "GET /api/timetable?t=1772754425820 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:47:06] "GET /api/attendance?date=2026-03-05 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:47:30] "GET /api/members?t=1772754450007 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:47:30] "GET /api/payments?t=1772754450007 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:47:30] "GET /api/attendance?t=1772754450007 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:47:30] "GET /api/admin/data/settings?t=1772754450007 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:47:30] "GET /api/holidays?t=1772754450007 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:47:30] "GET /api/timetable?t=1772754450007 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:47:30] code 404, message File not found
+127.0.0.1 - - [06/Mar/2026 08:47:30] "GET /sejong/questions_data.js?v=1772754450114 HTTP/1.1" 404 -
+127.0.0.1 - - [06/Mar/2026 08:47:30] "GET /api/members HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 08:47:30] "GET /api/attendance?date=2026-03-05 HTTP/1.1" 200 -

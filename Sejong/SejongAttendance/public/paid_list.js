@@ -1,8 +1,9 @@
 
 let membersData = [];
 let paymentsData = [];
-let currentYear = new Date().getFullYear();
-let currentMonth = new Date().getMonth() + 1;
+let currentYear = parseInt(sessionStorage.getItem('sejong_paidlist_currentYear')) || new Date().getFullYear();
+let savedMonth = sessionStorage.getItem('sejong_paidlist_currentMonth');
+let currentMonth = savedMonth === 'all' ? 'all' : (parseInt(savedMonth) || new Date().getMonth() + 1);
 
 async function loadData() {
     const container = document.getElementById('paidListContainer');
@@ -42,6 +43,7 @@ function initYearSelect() {
     }
     select.onchange = (e) => {
         currentYear = parseInt(e.target.value);
+        sessionStorage.setItem('sejong_paidlist_currentYear', currentYear);
         renderPaidList();
     };
 }
@@ -64,6 +66,7 @@ function initMonthSelect() {
     }
     select.onchange = (e) => {
         currentMonth = e.target.value === 'all' ? 'all' : parseInt(e.target.value);
+        sessionStorage.setItem('sejong_paidlist_currentMonth', currentMonth);
         renderPaidList();
     };
 }
@@ -76,6 +79,12 @@ function renderPaidList() {
         const member = membersData.find(m => String(m.id) === String(p.memberId));
         return member && String(p.year) === String(currentYear) && (currentMonth === 'all' || String(p.month) === String(currentMonth)) && p.status === 'paid';
     }).sort((a, b) => new Date(b.updatedAt || b.date) - new Date(a.updatedAt || a.date));
+
+    // Load Sync Data for Expected Dates
+    let syncData = {};
+    try {
+        syncData = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
+    } catch (e) { }
 
     const monthText = currentMonth === 'all' ? '전체 월' : `${currentMonth}월`;
     let html = `
@@ -91,8 +100,9 @@ function renderPaidList() {
                         <th style="padding:15px; font-size:0.9rem; color:#065f46; border-right:1px solid #d1fae5; text-align:left;">수강생 이름</th>
                         <th style="padding:15px; font-size:0.9rem; color:#065f46; border-right:1px solid #d1fae5; text-align:left;">납부 과목 (과정)</th>
                         <th style="padding:15px; font-size:0.9rem; color:#065f46; border-right:1px solid #d1fae5; width:100px;">해당 월</th>
-                        <th style="padding:15px; font-size:0.9rem; color:#065f46; border-right:1px solid #d1fae5; text-align:right; width:150px;">납부 금액</th>
-                        <th style="padding:15px; font-size:0.9rem; color:#065f46; border-right:1px solid #d1fae5; width:180px;">납부 일시</th>
+                        <th style="padding:15px; font-size:0.9rem; color:#065f46; border-right:1px solid #d1fae5; text-align:right; width:120px;">납부 금액</th>
+                        <th style="padding:15px; font-size:0.9rem; color:#065f46; border-right:1px solid #d1fae5; width:100px;">예정일</th>
+                        <th style="padding:15px; font-size:0.9rem; color:#065f46; border-right:1px solid #d1fae5; width:180px;">실제 납부 일시</th>
                         <th style="padding:15px; font-size:0.9rem; color:#065f46; width:120px;">관리</th>
                     </tr>
                 </thead>
@@ -100,12 +110,18 @@ function renderPaidList() {
     `;
 
     if (paidPayments.length === 0) {
-        html += `<tr><td colspan="7" style="padding:60px; text-align:center; color:#64748b; font-size:1.1rem; font-weight:500;">해당 연도의 납부 완료 내역이 존재하지 않습니다.</td></tr>`;
+        html += `<tr><td colspan="8" style="padding:60px; text-align:center; color:#64748b; font-size:1.1rem; font-weight:500;">해당 연도의 납부 완료 내역이 존재하지 않습니다.</td></tr>`;
     } else {
         paidPayments.forEach((p, idx) => {
             const member = membersData.find(m => String(m.id) === String(p.memberId));
             const date = p.updatedAt ? new Date(p.updatedAt).toLocaleDateString() : (p.date || '-');
             const time = p.updatedAt ? new Date(p.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+
+            // Get Expected Date from Sync
+            const courseNameOnly = (p.course || '').split('(')[0].trim();
+            const syncKey = `${p.memberId}_${p.year}_${p.month}_${courseNameOnly || 'all'}`;
+            const expectedDay = syncData[syncKey];
+            const expectedDisplay = expectedDay ? `<span style="color:#d946ef; font-weight:900;">${expectedDay}일</span>` : '-';
 
             html += `
                 <tr style="border-bottom:1px solid #d1fae5; transition: background 0.2s;">
@@ -113,7 +129,8 @@ function renderPaidList() {
                     <td style="padding:15px; font-weight:800; color:#1e293b; border-right:1px solid #f0fdf4; font-size:1rem;">${member ? member.name : 'Unknown Member'}</td>
                     <td style="padding:15px; color:#059669; font-weight:700; border-right:1px solid #f0fdf4;">${p.course || '전체 교육 과정'}</td>
                     <td style="padding:15px; text-align:center; font-weight:800; color:#1e293b; border-right:1px solid #f0fdf4; font-size:1rem;">${p.month}월</td>
-                    <td style="padding:15px; text-align:right; font-weight:900; color:#059669; border-right:1px solid #f0fdf4; font-family:'Roboto Mono', monospace; font-size:1.1rem;">${p.amount?.toLocaleString() || 0}원</td>
+                    <td style="padding:15px; text-align:right; font-weight:900; color:#059669; border-right:1px solid #f0fdf4; font-family:'Roboto Mono', monospace; font-size: 1rem;">${p.amount?.toLocaleString() || 0}원</td>
+                    <td style="padding:15px; text-align:center; border-right:1px solid #f0fdf4;">${expectedDisplay}</td>
                     <td style="padding:15px; text-align:center; color:#64748b; border-right:1px solid #f0fdf4;">
                         <div style="font-weight:700; color:#475569; font-size:0.95rem;">${date}</div>
                         <div style="font-size:0.8rem; margin-top:2px;">${time}</div>
@@ -253,7 +270,7 @@ window.loadExamView = function (key) { window.location.href = `index.html?viewEx
 
 // Listen for payment sync updates from other tabs
 window.addEventListener('storage', (e) => {
-    if (e.key === 'sejong_payment_sync') {
-        loadData();
+    if (e.key === 'sejong_payment_sync' || e.key === 'sejong_ledger_sync') {
+        renderPaidList(); // Re-render to show updated expected dates
     }
 });

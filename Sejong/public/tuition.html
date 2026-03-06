@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="tuition_v3.js?v=20260301_2" defer></script>
+    <script src="tuition_v3.js?v=20260306_3" defer></script>
 </head>
 
 <body>
@@ -24,10 +24,10 @@
             <nav class="sidebar-nav">
                 <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">수강 관리</div>
                 <div class="nav-sub-menu show">
-                    <a href="register.html" class="nav-item">수강생 등록</a>
-                    <a href="index.html" class="nav-item">수강생 대장</a>
-                    <a href="index.html?filter=phonebook" class="nav-item">전화번호부</a>
-                    <a href="sheet.html" class="nav-item">월간 출석부</a>
+                    <a href="register.html" id="navRegister" class="nav-item">수강생 등록</a>
+                    <a href="index.html" id="navIndex" class="nav-item">수강생 대장</a>
+                    <a href="phonebook.html" id="navPhoneBook" class="nav-item">전화번호부</a>
+                    <a href="sheet.html" id="navSheet" class="nav-item">월간 출석부</a>
                 </div>
                 <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">수강료</div>
                 <div class="nav-sub-menu show">
@@ -105,12 +105,22 @@
 
                     <div class="nav-category toggle-category" onclick="toggleNavSub(this)">제과제빵기능사</div>
                     <div class="nav-sub-menu">
-                        <a href="javascript:void(0)" class="nav-item">준비중입니다</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과제빵_2021')" class="nav-item">2021년 제과제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과제빵_2022')" class="nav-item">2022년 제과제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과제빵_2023')" class="nav-item">2023년 제과제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과제빵_2024')" class="nav-item">2024년 제과제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과제빵_2025')" class="nav-item">2025년 제과제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과제빵_2026')" class="nav-item">2026년 제과제빵</a>
                     </div>
 
                     <div class="nav-category toggle-category" onclick="toggleNavSub(this)">복어기능사</div>
                     <div class="nav-sub-menu">
-                        <a href="javascript:void(0)" class="nav-item">준비중입니다</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('복어_2021')" class="nav-item">2021년 복어</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('복어_2022')" class="nav-item">2022년 복어</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('복어_2023')" class="nav-item">2023년 복어</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('복어_2024')" class="nav-item">2024년 복어</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('복어_2025')" class="nav-item">2025년 복어</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('복어_2026')" class="nav-item">2026년 복어</a>
                     </div>
 
                     <div class="nav-category toggle-category" onclick="toggleNavSub(this)">산업기사</div>
@@ -134,11 +144,16 @@
                         <span class="material-icons" style="font-size: 1.2rem; margin-right: 8px;">settings</span>
                         수업 요일 설정
                     </a>
-                    <a href="index.html?filter=archive" class="nav-item">수료생 보관함</a>
-                    <a href="index.html?filter=trash" class="nav-item">휴지통</a>
+                    <a href="index.html?filter=archive" id="navArchive" class="nav-item">수료생 보관함</a>
+                    <a href="index.html?filter=trash" id="navTrash" class="nav-item">휴지통</a>
                     <a href="stats.html" class="nav-item">통계 및 납부</a>
                 </div>
-                <a href="monitor.html" target="_blank" class="nav-item highlight">키오스크 모니터</a>
+                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">학원문자</div>
+                <div class="nav-sub-menu show">
+                    <a href="attendance_daily.html" id="navDailyAttendance" class="nav-item">일일 출석부</a>
+                    <a href="sms.html" id="navSms" class="nav-item">문자 발송</a>
+                </div>
+                <a href="monitor.html?v=20260301_03" target="_blank" class="nav-item highlight">키오스크 모니터</a>
             </nav>
         </aside>
 
@@ -224,6 +239,19 @@
                                 <button id="btnViewTotal" class="btn-toggle active">전체 목록</button>
                                 <button id="btnViewCard" class="btn-toggle">상태별 카드</button>
                                 <button id="btnViewGrouped" class="btn-toggle">상태별 목록</button>
+
+                                <div class="tab-actions" style="margin-left: 10px; display: flex; gap: 5px;">
+                                    <button id="btnViewPaidList" class="mini-btn emerald" title="납부 완료 명단"><span
+                                            class="material-icons">receipt_long</span></button>
+                                    <button id="btnSaveExcel" class="mini-btn blue" title="엑셀 저장"><span
+                                            class="material-icons">save</span></button>
+                                    <button id="btnPrint" class="mini-btn yellow" title="인쇄"><span
+                                            class="material-icons">print</span></button>
+                                    <button id="btnMail" class="mini-btn pink" title="메일 발송"><span
+                                            class="material-icons">mail</span></button>
+                                    <button id="btnSMS" class="mini-btn green" title="SMS/카톡 발송"><span
+                                            class="material-icons">sms</span></button>
+                                </div>
                             </div>
                             <div class="right-group">
                                 <button id="btnAutoSendSettings" class="btn-secondary-outline icon-btn">
@@ -236,19 +264,17 @@
                         </div>
                     </div>
 
+
                     <!-- Tabs -->
-                    <div class="status-tabs-row" style="justify-content: flex-end;">
-                        <div class="tab-actions">
-                            <button id="btnViewPaidList" class="mini-btn emerald" title="납부 완료 명단"><span
-                                    class="material-icons">receipt_long</span></button>
-                            <button id="btnSaveExcel" class="mini-btn blue" title="엑셀 저장"><span
-                                    class="material-icons">save</span></button>
-                            <button id="btnPrint" class="mini-btn yellow" title="인쇄"><span
-                                    class="material-icons">print</span></button>
-                            <button id="btnMail" class="mini-btn pink" title="메일 발송"><span
-                                    class="material-icons">mail</span></button>
-                            <button id="btnSMS" class="mini-btn green" title="SMS/카톡 발송"><span
-                                    class="material-icons">sms</span></button>
+                    <div class="status-tabs-row" style="margin-top: 10px;">
+                        <div class="status-tab tab-enrolled active" title="수강 중인 학생">
+                            <span class="material-icons">person</span> 수강중
+                        </div>
+                        <div class="status-tab tab-unpaid" title="수납이 지연된 학생">
+                            <span class="material-icons">priority_high</span> 미납
+                        </div>
+                        <div class="status-tab tab-paid" title="이번 달 납부 완료">
+                            <span class="material-icons">check_circle</span> 납부완료
                         </div>
                     </div>
 

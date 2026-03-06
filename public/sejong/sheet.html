@@ -319,6 +319,11 @@
             color: var(--status-success);
         }
 
+        .stat-makeup {
+            color: #2563eb !important;
+            border-color: #2563eb !important;
+        }
+
         .dropdown-menu {
             display: none;
             position: absolute;
@@ -833,10 +838,10 @@
             <nav class="sidebar-nav">
                 <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">수강 관리</div>
                 <div class="nav-sub-menu show">
-                    <a href="register.html" class="nav-item">수강생 등록</a>
-                    <a href="index.html" class="nav-item">수강생 대장</a>
-                    <a href="index.html?filter=phonebook" class="nav-item">전화번호부</a>
-                    <a href="sheet.html" class="nav-item active">월간 출석부</a>
+                    <a href="register.html" id="navRegister" class="nav-item">수강생 등록</a>
+                    <a href="index.html" id="navIndex" class="nav-item">수강생 대장</a>
+                    <a href="phonebook.html" id="navPhoneBook" class="nav-item">전화번호부</a>
+                    <a href="sheet.html" id="navSheet" class="nav-item active">월간 출석부</a>
                 </div>
                 <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">수강료</div>
                 <div class="nav-sub-menu show">
@@ -914,12 +919,22 @@
 
                     <div class="nav-category toggle-category" onclick="toggleNavSub(this)">제과제빵기능사</div>
                     <div class="nav-sub-menu">
-                        <a href="javascript:void(0)" class="nav-item">준비중입니다</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과제빵_2021')" class="nav-item">2021년 제과제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과제빵_2022')" class="nav-item">2022년 제과제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과제빵_2023')" class="nav-item">2023년 제과제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과제빵_2024')" class="nav-item">2024년 제과제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과제빵_2025')" class="nav-item">2025년 제과제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과제빵_2026')" class="nav-item">2026년 제과제빵</a>
                     </div>
 
                     <div class="nav-category toggle-category" onclick="toggleNavSub(this)">복어기능사</div>
                     <div class="nav-sub-menu">
-                        <a href="javascript:void(0)" class="nav-item">준비중입니다</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('복어_2021')" class="nav-item">2021년 복어</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('복어_2022')" class="nav-item">2022년 복어</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('복어_2023')" class="nav-item">2023년 복어</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('복어_2024')" class="nav-item">2024년 복어</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('복어_2025')" class="nav-item">2025년 복어</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('복어_2026')" class="nav-item">2026년 복어</a>
                     </div>
 
                     <div class="nav-category toggle-category" onclick="toggleNavSub(this)">산업기사</div>
@@ -943,11 +958,16 @@
                         <span class="material-icons" style="font-size: 1.2rem; margin-right: 8px;">settings</span>
                         수업 요일 설정
                     </a>
-                    <a href="index.html?filter=archive" class="nav-item">수료생 보관함</a>
-                    <a href="index.html?filter=trash" class="nav-item">휴지통</a>
+                    <a href="index.html?filter=archive" id="navArchive" class="nav-item">수료생 보관함</a>
+                    <a href="index.html?filter=trash" id="navTrash" class="nav-item">휴지통</a>
                     <a href="stats.html" class="nav-item">통계 및 납부</a>
                 </div>
-                <a href="monitor.html" target="_blank" class="nav-item highlight">키오스크 모니터</a>
+                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">학원문자</div>
+                <div class="nav-sub-menu show">
+                    <a href="attendance_daily.html" id="navDailyAttendance" class="nav-item">일일 출석부</a>
+                    <a href="sms.html" id="navSms" class="nav-item">문자 발송</a>
+                </div>
+                <a href="monitor.html?v=20260301_03" target="_blank" class="nav-item highlight">키오스크 모니터</a>
             </nav>
         </aside>
 
@@ -1008,6 +1028,20 @@
                             style="padding: 10px 20px; font-size: 1rem;">취소</button>
                         <button class="btn-save" onclick="submitCustomPrompt()"
                             style="padding: 10px 20px; font-size: 1rem;">확인</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Custom Alert Modal -->
+            <div id="customAlertModal" class="modal-overlay"
+                style="display:none; z-index:10001; align-items:center; justify-content:center;">
+                <div class="modal-content"
+                    style="max-width: 400px; text-align: center; padding: 30px; border-top: 4px solid #2563eb;">
+                    <h3 id="alertMsg" style="margin-bottom: 25px; font-size: 1.1rem; color: #333; line-height: 1.5;">메시지
+                        내용</h3>
+                    <div style="display: flex; justify-content: center;">
+                        <button class="btn-save" onclick="closeCustomAlert()"
+                            style="padding: 10px 30px; font-size: 1rem; min-width: 100px;">확인</button>
                     </div>
                 </div>
             </div>
@@ -1080,12 +1114,6 @@
                                         <div class="dropdown-item" onclick="selectPresentType('7', event)">
                                             <span class="stat-numeric">7</span> 7시 출석
                                         </div>
-                                        <div class="dropdown-item" onclick="selectPresentType('[', event)">
-                                            <span class="stat-numeric">[</span> [ 출석
-                                        </div>
-                                        <div class="dropdown-item" onclick="selectPresentType(']', event)">
-                                            <span class="stat-numeric">]</span> ] 출석
-                                        </div>
                                     </div>
                                 </div>
                                 <div class="legend-item" id="brush-absent" onclick="setBrush('absent')"><span
@@ -1094,10 +1122,32 @@
                                         class="symbol stat-extension">연</span> 장</div>
                                 <div class="legend-item" id="brush-arrow" onclick="setBrush('arrow')"><span
                                         class="symbol stat-arrow">→</span> 살표</div>
+                                <div class="legend-item" id="brush-makeup" onclick="toggleMakeupDropdown(event)">
+                                    <div class="flex-center gap-4">
+                                        <span class="symbol stat-makeup" id="current-makeup-symbol">[</span>
+                                        <span id="current-makeup-text">진입출석</span>
+                                        <span class="material-icons icon-muted">arrow_drop_down</span>
+                                    </div>
+                                    <!-- Makeup Dropdown Menu -->
+                                    <div class="dropdown-menu" id="makeup-dropdown">
+                                        <div class="dropdown-item" onclick="selectPresentType('[', event)">
+                                            <span class="symbol stat-makeup">[</span> 첫수업
+                                        </div>
+                                        <div class="dropdown-item" onclick="selectPresentType(']', event)">
+                                            <span class="symbol stat-makeup">]</span> 마지막
+                                        </div>
+                                    </div>
+                                </div>
                                 <div class="legend-item" id="brush-eraser" onclick="setBrush('unchecked')"><span
                                         class="symbol"
                                         style="border:none; background:none; font-size: 1.1rem; line-height:1;">🧹</span>
                                     지우개</div>
+                                <div class="legend-item" id="btn-reset-view" onclick="handleResetCurrentView()"
+                                    title="현재 화면의 출석 데이터를 모두 초기화합니다.">
+                                    <span class="symbol"
+                                        style="border:none; background:none; font-size: 1.1rem; line-height:1;">🔄</span>
+                                    초기화
+                                </div>
                                 <div class="legend-item active text-muted-sm ml-10" id="brush-toggle"
                                     onclick="setBrush(null)">
                                     기본</div>
@@ -1153,7 +1203,7 @@
 
     <script>
         // Force API Calls to port 8000 API for Bidirectional Sync
-        const SHEET_API_BASE = 'http://localhost:8000/api';
+        const SHEET_API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:8000/api' : '/api/sejong';
 
         // Custom Modals Logic
         let customConfirmResolve = null;
@@ -1194,6 +1244,19 @@
             closeCustomPrompt(document.getElementById('promptInput').value);
         };
 
+        let customAlertResolve = null;
+        window.showCustomAlert = function (msg) {
+            return new Promise(resolve => {
+                document.getElementById('alertMsg').textContent = msg;
+                document.getElementById('customAlertModal').style.display = 'flex';
+                customAlertResolve = resolve;
+            });
+        };
+        window.closeCustomAlert = function () {
+            document.getElementById('customAlertModal').style.display = 'none';
+            if (customAlertResolve) customAlertResolve();
+        };
+
         // Simple Toast for error/info messages
         function showToast(msg) {
             const t = document.createElement('div');
@@ -1220,8 +1283,8 @@
 
         let lastCellClickTime = 0;
         // Debouncer to prevent Safari modal glitching on rapid clicks
-        let currentYear = new Date().getFullYear();
-        let currentMonth = new Date().getMonth() + 1;
+        let currentYear = parseInt(sessionStorage.getItem('sejong_currentYear')) || new Date().getFullYear();
+        let currentMonth = parseInt(sessionStorage.getItem('sejong_currentMonth')) || new Date().getMonth() + 1;
         let membersData = [];
         let attendanceData = [];
         let holidaysData = [];
@@ -1249,14 +1312,7 @@
             "2027-12-25": "성탄절"
         };
 
-        // [데이터 보정] 전역 스코프로 이동 - 특정 수강생/기간에 대한 수동 보정값 정의
-        const GLOBAL_DATA_ADJUSTMENTS = {
-            "1770517017920": { // 오재을
-                "2026-02": { carryOverride: 8.0, forceRedBoxDates: ["2026-02-03"] },
-                "2026-04": { carryOverride: 8.0, forceRedBoxDates: ["2026-04-30"] },
-                "2026-06": { forceRedBoxDates: ["2026-06-02"] }
-            }
-        };
+        const GLOBAL_DATA_ADJUSTMENTS = {};
         let timetableData = {
             '한식기능사': [1, 3],
             '양식기능사': [2, 4],
@@ -1278,10 +1334,18 @@
 
         // Close dropdown when clicking outside
         document.addEventListener('click', (e) => {
-            const dropdown = document.getElementById('present-dropdown');
-            const button = document.getElementById('brush-present');
-            if (dropdown && button && !button.contains(e.target)) {
-                dropdown.classList.remove('show');
+            // Present Dropdown
+            const pDropdown = document.getElementById('present-dropdown');
+            const pButton = document.getElementById('brush-present');
+            if (pDropdown && pButton && !pButton.contains(e.target)) {
+                pDropdown.classList.remove('show');
+            }
+
+            // Makeup Dropdown
+            const mDropdown = document.getElementById('makeup-dropdown');
+            const mButton = document.getElementById('brush-makeup');
+            if (mDropdown && mButton && !mButton.contains(e.target)) {
+                mDropdown.classList.remove('show');
             }
         });
 
@@ -1290,6 +1354,23 @@
             e.stopPropagation();
             const dropdown = document.getElementById('present-dropdown');
             if (dropdown) {
+                // Close other dropdowns
+                const makeupDropdown = document.getElementById('makeup-dropdown');
+                if (makeupDropdown) makeupDropdown.classList.remove('show');
+
+                dropdown.classList.toggle('show');
+            }
+        };
+
+        // Toggle Makeup Dropdown
+        window.toggleMakeupDropdown = function (e) {
+            e.stopPropagation();
+            const dropdown = document.getElementById('makeup-dropdown');
+            if (dropdown) {
+                // Close other dropdowns
+                const presentDropdown = document.getElementById('present-dropdown');
+                if (presentDropdown) presentDropdown.classList.remove('show');
+
                 dropdown.classList.toggle('show');
             }
         };
@@ -1297,8 +1378,8 @@
         // Select Present Type
         window.selectPresentType = function (type, e) {
             e.stopPropagation();
-            const dropdown = document.getElementById('present-dropdown');
-            if (dropdown) dropdown.classList.remove('show');
+            // Close all dropdowns
+            document.querySelectorAll('.dropdown-menu').forEach(d => d.classList.remove('show'));
 
             // Update UI of the main button to reflect selection
             const symbol = document.getElementById('current-present-symbol');
@@ -1312,16 +1393,17 @@
                 symbol.className = 'symbol stat-present';
                 symbol.textContent = 'O';
                 text.textContent = '출석';
+            } else if (type === '[' || type === ']') {
+                const mSymbol = document.getElementById('current-makeup-symbol');
+                const mText = document.getElementById('current-makeup-text');
+                if (mSymbol) {
+                    mSymbol.textContent = type;
+                    mText.textContent = type === '[' ? '첫수업' : '마지막';
+                }
             } else {
                 symbol.className = 'stat-numeric';
                 symbol.textContent = type;
-                if (['[', ']'].includes(type)) {
-                    // For bracket types
-                    if (type === '[') text.textContent = '[ 출석';
-                    else text.textContent = '] 출석';
-                } else {
-                    text.textContent = `${type}시`;
-                }
+                text.textContent = `${type}시`;
             }
 
             setBrush(type);
@@ -1344,9 +1426,46 @@
             else if (status === 'absent') document.getElementById('brush-absent').classList.add('active');
             else if (status === 'extension') document.getElementById('brush-extension').classList.add('active');
             else if (status === 'arrow') document.getElementById('brush-arrow').classList.add('active');
-
+            else if (status === '[' || status === ']') document.getElementById('brush-makeup').classList.add('active');
             else if (status === 'unchecked' && status !== null) document.getElementById('brush-eraser').classList.add('active');
             else document.getElementById('brush-toggle').classList.add('active');
+        }
+
+        async function handleResetCurrentView() {
+            const currentFilterDesc = sheetFilter === 'all' ? '전체 과정' : sheetFilter;
+            const confirmed = await showCustomConfirm(`${currentFilterDesc} 학생들의 ${currentMonth}월 출석 데이터를 모두 초기화하시겠습니까?\n(삭제된 데이터는 복구할 수 없습니다.)`);
+            if (!confirmed) return;
+
+            // Target filtered students
+            const targetMembers = [...new Set(window.lastRenderedMembers || [])];
+            if (targetMembers.length === 0) {
+                showToast('초기화할 대상이 없습니다.');
+                return;
+            }
+
+            const daysInMonth = new Date(currentYear, currentMonth, 0).getDate();
+            const dates = [];
+            for (let d = 1; d <= daysInMonth; d++) {
+                dates.push(`${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(d).padStart(2, '0')}`);
+            }
+
+            let successCount = 0;
+            for (const memberId of targetMembers) {
+                try {
+                    await fetch(`${SHEET_API_BASE}/attendance/batch`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ memberId, dates, status: 'unchecked', course: null })
+                    });
+                    successCount++;
+                } catch (e) {
+                    console.error(`Clear failed for ${memberId}`, e);
+                }
+            }
+
+            await fetchAttendance();
+            renderSheet();
+            await showCustomAlert(`${successCount}명의 출석 데이터를 초기화했습니다.`);
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -1358,10 +1477,12 @@
             // Select Listeners
             document.getElementById('yearSelect').addEventListener('change', (e) => {
                 currentYear = parseInt(e.target.value);
+                sessionStorage.setItem('sejong_currentYear', currentYear);
                 renderSheet();
             });
             document.getElementById('monthSelect').addEventListener('change', (e) => {
                 currentMonth = parseInt(e.target.value);
+                sessionStorage.setItem('sejong_currentMonth', currentMonth);
                 renderSheet();
             });
         });
@@ -1555,23 +1676,22 @@
         }
 
         async function initSheet() {
-            // Fetch Members with retry
             try {
-                await fetchMembers();
+                // Fetch all independently to reduce loading time
+                await Promise.all([
+                    fetchMembers().catch(e => console.error("Members error:", e)),
+                    fetchAttendance().catch(e => console.error(e)),
+                    fetchHolidays().catch(e => console.error(e)),
+                    fetchTimetable().catch(e => console.error(e))
+                ]);
             } catch (e) {
-                // Can't render without members
+                console.error(e);
             }
-
-            // Fetch others independently so one failure doesn't block others (though members is critical)
-            try { await fetchAttendance(); } catch (e) { console.error(e); }
-            try { await fetchHolidays(); } catch (e) { console.error(e); }
-            try { await fetchTimetable(); } catch (e) { console.error(e); }
-
             renderSheet();
         }
 
         async function fetchMembers(retries = 3) {
-            const url = `${SHEET_API_BASE}/members`;
+            const url = `${SHEET_API_BASE}/members?t=${Date.now()}`;
 
             try {
                 const res = await fetch(url);
@@ -1612,21 +1732,21 @@
         }
 
         async function fetchAttendance() {
-            const res = await fetch(`${SHEET_API_BASE}/attendance`);
+            const res = await fetch(`${SHEET_API_BASE}/attendance?t=${Date.now()}`);
             if (!res.ok) throw new Error('Attendance fetch failed: ' + res.status);
             attendanceData = await res.json();
         }
 
         async function fetchHolidays() {
             try {
-                const res = await fetch(`${SHEET_API_BASE}/holidays`);
+                const res = await fetch(`${SHEET_API_BASE}/holidays?t=${Date.now()}`);
                 if (res.ok) holidaysData = await res.json();
             } catch (e) { console.error(e); }
         }
 
         async function fetchTimetable() {
             try {
-                const res = await fetch(`${SHEET_API_BASE}/timetable`);
+                const res = await fetch(`${SHEET_API_BASE}/timetable?t=${Date.now()}`);
                 if (res.ok) {
                     const apiData = await res.json();
                     if (apiData && Object.keys(apiData).length > 0) {
@@ -1681,6 +1801,9 @@
             // Sync Selects
             document.getElementById('yearSelect').value = currentYear;
             document.getElementById('monthSelect').value = currentMonth;
+
+            sessionStorage.setItem('sejong_currentYear', currentYear);
+            sessionStorage.setItem('sejong_currentMonth', currentMonth);
 
             renderSheet();
         }
@@ -1826,11 +1949,34 @@
                 if (hcSpan) {
                     hcSpan.textContent = `(총 ${uniqueHeadcount}명)`;
                 }
+                window.lastRenderedMembers = [...new Set(filteredRows.map(r => r.member.id))];
 
                 // Body
                 // Body - Fixed 20 Rows
                 const tbody = document.getElementById('sheetBody');
                 tbody.innerHTML = '';
+
+                // [신규 - 전체 동기화] 현재 필터링된 모든 학생에대해 예정일 계산 및 동기화 저장
+                // (기존에는 상위 20명만 처리되어 다른 페이지 학생들의 데이터가 즉시 반영되지 않던 문제 해결)
+                filteredRows.forEach(row => {
+                    const m = row.member;
+                    const rowCourseNameScope = row.courseName;
+                    if (m && m.id) {
+                        // 당월 예정일 계산
+                        const stats = getSheetSimulatedScheduledDate(m.id, currentYear, currentMonth, rowCourseNameScope);
+                        const syncKeyNow = `${m.id}_${currentYear}_${currentMonth}_${rowCourseNameScope || 'all'}`;
+                        window.ledgerSyncData[syncKeyNow] = stats.scheduledDay;
+
+                        // 익월 예정일 미리 계산
+                        const nextDate = new Date(currentYear, currentMonth, 1);
+                        const nYear = nextDate.getFullYear();
+                        const nMonth = nextDate.getMonth() + 1;
+                        const nextStats = getSheetSimulatedScheduledDate(m.id, nYear, nMonth, rowCourseNameScope);
+                        const syncKeyNext = `${m.id}_${nYear}_${nMonth}_${rowCourseNameScope || 'all'}`;
+                        window.ledgerSyncData[syncKeyNext] = nextStats.scheduledDay;
+                    }
+                });
+                localStorage.setItem('sejong_ledger_sync', JSON.stringify(window.ledgerSyncData));
 
                 const renderedArrows = new Set(); // memberId_date
 
@@ -2016,16 +2162,8 @@
                             // 이월 로직에서 사용할 값 저장 (이전 달에서 넘어온 값)
                             mc.carryFromPrev = carryOverP;
 
-                            // 요약 컬럼 (J, P) 계산 변경 (8일 이하일 경우 재고출석이 아닌 출석으로 표시)
-                            if (vRaw <= 80) {
-                                mc.m_J = 0;
-                                mc.m_P = vRaw / 10;
-                            } else {
-                                mc.m_J = 8;
-                                let pRaw = vRaw - 80;
-                                // 9.0일(pRaw=10) -> 1, 17.0일(pRaw=90) -> 1 식으로 8일 주기 순환
-                                mc.m_P = (((pRaw - 10) % 80 + 80) % 80 + 10) / 10;
-                            }
+                            // 요약 컬럼 계산을 위한 이전 달 로직 제거 (하단의 전체 누적 로직에서 처리됨)
+                            // mc.m_J / mc.m_P 는 더 이상 여기서 계산하지 않습니다.
 
                             mc.m_Overflow = 0;
                             mc.manualMakeup = manualMakeup;
@@ -2037,8 +2175,9 @@
 
                         const currentMC = monthsToCalc[monthsToCalc.length - 1];
                         if (currentMC) {
-                            displayMakeup = currentMC.m_J;
-                            displayP = currentMC.m_P;
+                            // m_J / m_P 는 아래에서 명확히 다시 계산하므로 여기서는 0으로 초기화
+                            displayMakeup = 0;
+                            displayP = 0;
 
                             // Calculate Red Box days for the current month
                             const currentMonthLogs = uniqueLogs.filter(l => {
@@ -2093,33 +2232,44 @@
                                     redBoxDates.add(l.date);
                                 }
                             });
-                        }
-                    }
 
-                    // [신규] 납부 예정일 동기화 (ledger)
-                    let syncScheduledDay = null;
-                    if (m && m.id) {
-                        // 1순위: 출석부 화면에 실제로 그려진 레드박스(redBoxDates) 확인
-                        const prefix = `${currentYear}-${String(currentMonth).padStart(2, '0')}`;
-                        for (const d of redBoxDates) {
-                            if (d.startsWith(prefix)) {
-                                syncScheduledDay = parseInt(d.split('-')[2]);
-                                break;
+                            // [결정적 J/P 수정] - 당월의 주기(네모박스) 변화만 감지
+                            const startCycle = getCycle(currentMC.carryFromPrev);
+                            const endCycle = getCycle(runningTotal);
+                            const cyclesThisMonth = endCycle - startCycle;
+
+                            let hasManualRedBox = false;
+                            currentMonthLogs.forEach(l => {
+                                if (l.status === '9' || l.status === 9) hasManualRedBox = true;
+                            });
+                            if (adjustment && adjustment.forceRedBoxDates) {
+                                currentMonthLogs.forEach(l => {
+                                    if (adjustment.forceRedBoxDates.includes(l.date)) hasManualRedBox = true;
+                                });
+                            }
+
+                            if (cyclesThisMonth > 0 || hasManualRedBox) {
+                                // 이번 달에 빨간색 네모박스가 발생했다면 -> 누적 주기의 8배수 전체를 재고출석(J)에 표기
+                                let actualCycle = endCycle > 0 ? endCycle : (hasManualRedBox ? 1 : 0);
+                                displayMakeup = actualCycle * 8;
+                                displayP = Math.round((runningTotal - (actualCycle * 8)) * 10) / 10;
+                            } else {
+                                // 이번 달에 발생한 네모박스가 없다면 -> 재고출석(J)은 0, 나머지는 전부 출석(P)에 표기
+                                displayMakeup = 0;
+                                displayP = Math.round((runningTotal - (startCycle * 8)) * 10) / 10;
                             }
                         }
-
-                        // 2순위: 미래 예측 시뮬레이션
-                        if (!syncScheduledDay) {
-                            const stats = getSheetSimulatedScheduledDate(m.id, currentYear, currentMonth, rowCourseNameScope);
-                            syncScheduledDay = stats.scheduledDay;
-                        }
-
-                        // [신규 - 동기화] 출석부의 예정일을 무조건 수강료대장으로 넘겨주기 위해 window 객체에 기록 (저장은 루프 종료 후 한 번에)
-                        const syncKey = `${m.id}_${currentYear}_${currentMonth}_${rowCourseNameScope || 'all'}`;
-                        window.ledgerSyncData[syncKey] = syncScheduledDay;
                     }
 
-                    let simScheduledDay = syncScheduledDay; // UI 표시를 위해 변수명 유지
+                    // [동기화 데이터 활용] 위에서 계산된 전체 동기화 데이터에서 가져오기
+                    let syncScheduledDay = null;
+                    if (m && m.id) {
+                        const syncKeyNow = `${m.id}_${currentYear}_${currentMonth}_${rowCourseNameScope || 'all'}`;
+                        syncScheduledDay = window.ledgerSyncData[syncKeyNow];
+                    }
+
+
+                    let simScheduledDay = typeof syncScheduledDay !== 'undefined' ? syncScheduledDay : null; // UI 표시를 위해 변수명 유지
 
 
 
@@ -2313,8 +2463,20 @@
                             displayVal = '';
                         }
 
-                        // Format decimal values (0.5, 1.5, etc.) for display
-                        td.textContent = m ? (displayVal !== '' ? (displayVal % 1 === 0 ? displayVal : displayVal.toFixed(1)) : '') : '';
+                        if (m && displayVal !== '') {
+                            let formattedVal = (displayVal % 1 === 0 ? displayVal : displayVal.toFixed(1));
+
+                            // User Request: 재고출석이 16으로 표시하지 마시고 8로 표기하고 아주 작은 숫자로 2로 넣어주세요
+                            if (idx === 0 && displayVal >= 16) {
+                                const cycleNum = Math.floor(displayVal / 8);
+                                td.innerHTML = `8<span style="font-size: 0.6em; color: gray; vertical-align: super; margin-left: 1px;">${cycleNum}</span>`;
+                            } else {
+                                td.textContent = formattedVal;
+                            }
+                        } else {
+                            td.textContent = '';
+                        }
+
                         tr.appendChild(td);
                     });
 
@@ -2350,8 +2512,7 @@
                     tbody.appendChild(tr);
                 }
 
-                // [신규 - 동기화 저장] 모든 행의 계산이 끝난 후 한 번만 저장
-                localStorage.setItem('sejong_ledger_sync', JSON.stringify(window.ledgerSyncData));
+                // [삭제] 위에서 루프 돌기전에 한 번에 저장함.
             } catch (e) {
 
                 console.error(e);
@@ -2387,9 +2548,13 @@
             if (status === 'present') {
                 td.textContent = 'O';
                 td.classList.add('stat-present');
-            } else if (['10', '12', '2', '5', '7', '3', '9', '[', ']'].includes(status)) {
+            } else if (['10', '12', '2', '5', '7', '3', '9'].includes(status)) {
                 td.textContent = status;
                 td.classList.add('stat-numeric');
+            } else if (['[', ']'].includes(status)) {
+                td.textContent = status;
+                td.classList.add('stat-makeup');
+                td.classList.add('symbol');
             } else if (status === 'absent') {
                 td.textContent = 'X';
                 td.classList.add('stat-absent');
@@ -2442,7 +2607,8 @@
                 await fetch(`${SHEET_API_BASE}/attendance`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ memberId, date: dateStr, status: status || 'unchecked', course: course })
+                    body: JSON.stringify({ memberId, date: dateStr, status: status || 'unchecked', course: course }),
+                    keepalive: true
                 });
             } catch (e) {
                 console.error("Save failed", e);
@@ -2483,14 +2649,15 @@
                 const d = parseInt(cDate.split('-')[2]);
 
                 if (d >= start && d <= end) {
-                    const cellHasArrow = !!attendanceData.find(l => l.memberId === memberId && l.date === cDate && l.status === 'arrow');
+                    // Eraser Bypass: Only bypass if it has a log (arrow or attendance) OR it's not a restricted day
+                    const isRestrictedDay = holidaysData.some(h => h.date === cDate) || !!KOREAN_HOLIDAYS_MAP[cDate] || new Date(cDate).getDay() === 0;
+                    const cellHasLog = !!attendanceData.find(l => l.memberId === memberId && l.date === cDate);
 
-                    // Eraser Bypass: Only bypass if it has an arrow OR it's not a restricted day
-                    const canBypassCell = isArrowBrush || (isEraserBrush && cellHasArrow);
+                    const canBypassCell = isArrowBrush || (isEraserBrush && cellHasLog);
 
-                    if (cell.classList.contains('cell-disabled')) {
+                    if (cell.classList.contains('cell-disabled') && !isEraserBrush) {
                         cell.classList.remove('cell-drag-selected');
-                    } else if (canBypassCell || !cell.classList.contains('cell-disabled')) {
+                    } else if (canBypassCell || (!cell.classList.contains('cell-disabled') && !isRestrictedDay) || (isEraserBrush)) {
                         dragSelection.add(cDate);
                         cell.classList.add('cell-drag-selected');
                     } else {
@@ -2645,16 +2812,18 @@
             // Removed 300ms debouncer to allow fast clicking/cycling
             lastCellClickTime = now;
 
-            // [입력 차단] 국경일 및 일요일은 출석 표시 안되게 차단 (둘다 출석 표시 안되게 해줘 요청 반영)
+            // [입력 차단] 국경일 및 일요일은 출석 표시 안되게 차단 (단, 지우개는 허용)
             const isHolidayInSystem = holidaysData.some(h => h.date === dateStr);
             const isNationalHoliday = !!KOREAN_HOLIDAYS_MAP[dateStr];
             const dayOfWeek = new Date(dateStr).getDay();
-            if (isHolidayInSystem || isNationalHoliday || dayOfWeek === 0) {
+            const isRestrictedDay = isHolidayInSystem || isNationalHoliday || dayOfWeek === 0;
+
+            if (isRestrictedDay && activeStatusBrush !== 'unchecked') {
                 showToast('휴일 및 일요일에는 입력할 수 없습니다.');
                 return;
             }
 
-            if (td.classList.contains('cell-disabled')) {
+            if (td.classList.contains('cell-disabled') && activeStatusBrush !== 'unchecked') {
                 showToast('해당 과정의 지정된 수업 요일이 아닙니다 (회색칸).');
                 return;
             }
@@ -2837,7 +3006,9 @@
                 });
                 if (res.ok) {
                     timetableData = newTimetable;
-                    alert('설정이 저장되었습니다.');
+                    // [즉각 동기화] 다른 탭에 설정 변경 알림
+                    localStorage.setItem('sejong_timetable_sync', Date.now());
+                    await showCustomAlert('설정이 성공적으로 저장되었습니다.');
                     closeSettingsModal();
                     renderSheet();
                     // Also notify other parts of the system if needed (can refresh)
@@ -2855,6 +3026,9 @@
             if (e.key === 'sejong_ledger_sync') {
                 window.ledgerSyncData = JSON.parse(e.newValue || '{}');
                 renderSheet();
+            }
+            if (e.key === 'sejong_timetable_sync') {
+                fetchTimetable().then(() => renderSheet());
             }
         });
     </script>

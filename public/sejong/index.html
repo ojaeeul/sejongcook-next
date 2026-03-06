@@ -29,10 +29,10 @@
             <nav class="sidebar-nav">
                 <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">수강 관리</div>
                 <div class="nav-sub-menu show">
-                    <a href="register.html" class="nav-item">수강생 등록</a>
-                    <a href="index.html" class="nav-item active">수강생 대장</a>
-                    <a href="index.html?filter=phonebook" class="nav-item">전화번호부</a>
-                    <a href="sheet.html" class="nav-item">월간 출석부</a>
+                    <a href="register.html" id="navRegister" class="nav-item">수강생 등록</a>
+                    <a href="index.html" id="navIndex" class="nav-item">수강생 대장</a>
+                    <a href="phonebook.html" id="navPhoneBook" class="nav-item">전화번호부</a>
+                    <a href="sheet.html" id="navSheet" class="nav-item">월간 출석부</a>
                 </div>
                 <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">수강료</div>
                 <div class="nav-sub-menu show">
@@ -149,9 +149,14 @@
                         <span class="material-icons" style="font-size: 1.2rem; margin-right: 8px;">settings</span>
                         수업 요일 설정
                     </a>
-                    <a href="index.html?filter=archive" class="nav-item">수료생 보관함</a>
-                    <a href="index.html?filter=trash" class="nav-item">휴지통</a>
+                    <a href="index.html?filter=archive" id="navArchive" class="nav-item">수료생 보관함</a>
+                    <a href="index.html?filter=trash" id="navTrash" class="nav-item">휴지통</a>
                     <a href="stats.html" class="nav-item">통계 및 납부</a>
+                </div>
+                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">학원문자</div>
+                <div class="nav-sub-menu show">
+                    <a href="attendance_daily.html" id="navDailyAttendance" class="nav-item">일일 출석부</a>
+                    <a href="sms.html" id="navSms" class="nav-item">문자 발송</a>
                 </div>
                 <a href="monitor.html?v=20260301_03" target="_blank" class="nav-item highlight">키오스크 모니터</a>
             </nav>

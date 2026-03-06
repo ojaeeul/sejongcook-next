@@ -45,8 +45,8 @@ const KOREAN_HOLIDAYS_MAP = {
     "2027-12-25": "성탄절"
 };
 window.currentState = {
-    year: new Date().getFullYear(),
-    month: new Date().getMonth() + 1,
+    year: parseInt(sessionStorage.getItem('sejong_tuition_currentYear')) || new Date().getFullYear(),
+    month: parseInt(sessionStorage.getItem('sejong_tuition_currentMonth')) || new Date().getMonth() + 1,
     course: 'all',
     statusFilter: 'all',
     tab: 'enrolled',
@@ -119,6 +119,7 @@ function initFilters() {
     if (yearSelect) {
         yearSelect.addEventListener('change', (e) => {
             window.currentState.year = parseInt(e.target.value);
+            sessionStorage.setItem('sejong_tuition_currentYear', window.currentState.year);
             renderTable();
         });
     }
@@ -128,6 +129,7 @@ function initFilters() {
         monthSelect.value = window.currentState.month;
         monthSelect.addEventListener('change', (e) => {
             window.currentState.month = parseInt(e.target.value);
+            sessionStorage.setItem('sejong_tuition_currentMonth', window.currentState.month);
             renderTable();
         });
     }
@@ -163,6 +165,9 @@ function changeMonth(delta) {
     const monthSelect = document.getElementById('monthSelect');
     if (yearSelect) yearSelect.value = window.currentState.year;
     if (monthSelect) monthSelect.value = window.currentState.month;
+
+    sessionStorage.setItem('sejong_tuition_currentYear', window.currentState.year);
+    sessionStorage.setItem('sejong_tuition_currentMonth', window.currentState.month);
 
     renderTable();
 }
@@ -280,7 +285,7 @@ function updateTabStyles() {
 
 async function loadData() {
     try {
-        const API_BASE = 'http://localhost:8000/api';
+        const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:8000/api' : '/api/sejong';
         const cacheBuster = `?t=${Date.now()}`;
         const [mRes, pRes, sRes, aRes, hRes, tRes] = await Promise.all([
             fetch(`${API_BASE}/members${cacheBuster}`),
@@ -367,13 +372,6 @@ function getMemberEighthDayInMonth(memberId, year, month, courseFilter = null) {
     let allMilestones = [];  // 모든 결제 지점 (역사적)
     let rollingTotal = 0;
 
-    // [데이터 보정] 특정 수강생/기간에 대한 수동 보정값 적용
-    if (String(memberId) === '1770517017920' && year === 2026) {
-        if (month === 2) rollingTotal = 7.0;
-        else if (month === 3) rollingTotal = 4.0; // Feb(Carry 7 + Present 6) = 13. 13%9 = 4.
-        else if (month === 4) rollingTotal = 5.0; // March(Carry 4 + Present 10) = 14. 14%9 = 5. (Wait, let's keep it consistent with ledger/sheet)
-        else if (month === 6) rollingTotal = 6.0;
-    }
 
     let rollingTotalUpToToday = 0;
 
@@ -499,17 +497,26 @@ function getMemberEighthDayInMonth(memberId, year, month, courseFilter = null) {
     try {
         const syncData = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
         const syncKey = `${memberId}_${year}_${month}_${courseFilter || 'all'}`;
+
         if (syncData[syncKey]) {
             const dayNum = syncData[syncKey];
             eighthDay = { year, month, day: dayNum };
-            // Ensure this milestone is in allMilestones for the payment check logic
-            if (!allMilestones.some(ms => ms.year === year && ms.month === month)) {
-                allMilestones.push(eighthDay);
-            } else {
-                // Update existing one
-                const idx = allMilestones.findIndex(ms => ms.year === year && ms.month === month);
-                allMilestones[idx] = eighthDay;
+        } else {
+            // [추가] 만약 당월 예정일이 없더라도, 익월(M+1) 예정일이 싱크되어 있다면 가져오기 (미리계산 표시용)
+            const nextM = month === 12 ? 1 : month + 1;
+            const nextY = month === 12 ? year + 1 : year;
+            const nextKey = `${memberId}_${nextY}_${nextM}_${courseFilter || 'all'}`;
+            if (syncData[nextKey] && !nextEighthDay) {
+                nextEighthDay = { year: nextY, month: nextM, day: syncData[nextKey] };
             }
+        }
+
+        // Ensure milestones are updated
+        if (eighthDay && !allMilestones.some(ms => ms.year === eighthDay.year && ms.month === eighthDay.month)) {
+            allMilestones.push(eighthDay);
+        }
+        if (nextEighthDay && !allMilestones.some(ms => ms.year === nextEighthDay.year && ms.month === nextEighthDay.month)) {
+            allMilestones.push(nextEighthDay);
         }
     } catch (e) { }
 
@@ -839,57 +846,58 @@ function renderGroupedView(rows, tableCard) {
         container.className = 'tuition-grouped';
         tableCard.appendChild(container);
     }
-    container.style.display = 'block';
+    container.style.display = 'grid';
     container.innerHTML = '';
 
-    const courses = [...new Set(rows.map(r => getCourseShort(r.member.course).split(',')[0]))];
-    courses.forEach(course => {
-        const courseRows = rows.filter(r => getCourseShort(r.member.course).startsWith(course));
-        if (courseRows.length === 0) return;
+    const statuses = [
+        { id: 'unpaid', label: '미납', class: 'unpaid' },
+        { id: 'enrolled', label: '수강중', class: 'enrolled' },
+        { id: 'paid', label: '납부완료', class: 'paid' }
+    ];
 
-        const translateStatus = (status) => {
-            if (status === 'paid') return '납부완료';
-            if (status === 'unpaid') return '미납';
-            return '수강중';
-        };
+    statuses.forEach(status => {
+        const statusRows = rows.filter(r => r.rowStatus === status.id);
 
-        const section = document.createElement('div');
-        section.className = 'grouped-section';
-        section.innerHTML = `
-            <h3 class="grouped-title">${course}</h3>
+        const column = document.createElement('div');
+        column.className = `grouped-column ${status.class}`;
+
+        column.innerHTML = `
+            <div class="grouped-header">
+                <span>${status.label}</span>
+                <span style="font-size: 0.8rem; opacity: 0.8;">${statusRows.length}명</span>
+            </div>
             <div class="grouped-list">
-                ${courseRows.map(r => {
+                ${statusRows.map(r => {
             const m = r.member;
             const cName = r.courseName || getCourseShort(m.course);
             let infoText = '';
 
             if (r.rowStatus === 'enrolled') {
-                // Course Start Date and course
                 const startDateStr = m.start_date ? new Date(m.start_date).toLocaleDateString() : '미상';
-                infoText = `<span style="color:#64748b; font-size:0.85rem; margin-left:10px;">(수강시작일: ${startDateStr} | 과정: ${cName})</span>`;
+                infoText = `시작: ${startDateStr} | ${cName}`;
             } else if (r.rowStatus === 'unpaid') {
-                // Course and Scheduled Date
                 const dStr = (r.isDueThisMonth && r.scheduledDate) ? `${r.scheduledDate.month}/${r.scheduledDate.day}` : '미상';
-                infoText = `<span style="color:#d946ef; font-size:0.85rem; margin-left:10px;">(과정: ${cName} | 📅 결제 예정일: ${dStr})</span>`;
+                infoText = `예정: ${dStr} | ${cName}`;
             } else if (r.rowStatus === 'paid') {
-                // Course and Payment completed Date
                 let paidStr = '미상';
                 if (r.payment) {
                     const pDate = r.payment.updatedAt ? new Date(r.payment.updatedAt) : new Date(r.payment.date || Date.now());
                     paidStr = `${pDate.getMonth() + 1}/${pDate.getDate()}`;
                 }
-                infoText = `<span style="color:#059669; font-size:0.85rem; margin-left:10px;">(과정: ${cName} | ✅ 결제 완료일: ${paidStr})</span>`;
+                infoText = `완료: ${paidStr} | ${cName}`;
             }
 
-            return `<div style="padding: 5px 0; border-bottom: 1px dashed #e2e8f0;">
-                                <span style="font-weight: 700; color: #1e293b;">${m.name}</span> 
-                                <span style="font-size:0.8rem; color:#94a3b8; margin-left:5px;">- ${translateStatus(r.rowStatus)}</span>
-                                ${infoText}
-                            </div>`;
+            return `
+                        <div class="grouped-item" onclick="location.href='ledger.html?memberId=${m.id}&year=${window.currentState.year}'" style="cursor:pointer;">
+                            <div class="grouped-item-name">${m.name}</div>
+                            <div class="grouped-item-info">${infoText}</div>
+                        </div>
+                    `;
         }).join('')}
+                ${statusRows.length === 0 ? '<div style="text-align:center; padding:20px; color:#94a3b8; font-size:0.8rem;">해당 없음</div>' : ''}
             </div>
         `;
-        container.appendChild(section);
+        container.appendChild(column);
     });
 }
 
@@ -911,7 +919,7 @@ async function togglePayment(memberId, forcedStatus = null, courseName = null, a
     const newStatus = forcedStatus || (isPaid ? 'unpaid' : 'paid');
 
     try {
-        const API_BASE = 'http://localhost:8000/api';
+        const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:8000/api' : '/api/sejong';
         await fetch(`${API_BASE}/payments`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -1184,7 +1192,7 @@ window.loadExamView = function (key) {
 
 // [신규 - 즉각 동기화] 다른 탭에서 예정일이 변경되면 즉시 반영
 window.addEventListener('storage', (e) => {
-    if (e.key === 'sejong_ledger_sync') {
+    if (e.key === 'sejong_ledger_sync' || e.key === 'sejong_timetable_sync') {
         renderTable();
     } else if (e.key === 'sejong_payment_sync') {
         loadData();

@@ -1,21 +1,19 @@
 // Force API Calls to port 8000 API for Bidirectional Sync
-const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    ? 'http://localhost:8000/api'
-    : 'https://thin-bags-listen.loca.lt/api';
+const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:8000/api' : '/api/sejong';
 
 
 
 // Control Test: Fetch a static file to check server reachability
 fetch(`${window.location.origin}/sejong/questions_data.js?v=${Date.now()}`)
-    .then(res => {
+    .then(() => {
 
     })
-    .catch(err => {
+    .catch(() => {
 
     });
 
 // Daum Postcode Search Function
-function execDaumPostcode(targetId, detailId) {
+window.execDaumPostcode = function (targetId, detailId) {
     new daum.Postcode({
         oncomplete: function (data) {
             // R: Road address, J: Jibun address
@@ -252,7 +250,7 @@ async function submitRegistration(data, isModal, formEl) {
         } else {
             alert("등록 실패");
         }
-    } catch (err) {
+    } catch {
         alert("통신 오류");
     }
 }
@@ -322,135 +320,6 @@ async function fetchData() {
     }
 }
 
-function getStatus(memberId) {
-    const log = attendanceLogs.find(l => l.memberId === memberId);
-    return log ? log.status : 'unchecked';
-}
-
-function renderMembers_OLD() {
-    memberListEl.innerHTML = '';
-
-    let displayMembers = members;
-    if (currentFilter !== 'all') {
-        // Support multi-value course string "A,B"
-        displayMembers = members.filter(m => m.course && m.course.includes(currentFilter));
-    }
-
-    if (displayMembers.length === 0) {
-        memberListEl.innerHTML = '<div style="text-align:center; padding:20px; color:#888;">표시할 회원이 없습니다.</div>';
-        return;
-    }
-
-    // Create Table Structure for Ledger View
-    const table = document.createElement('table');
-    table.className = 'ledger-table';
-    table.innerHTML = `
-        <thead>
-            <tr>
-                <th rowspan="2">성명</th>
-                <th rowspan="2">주민등록번호</th>
-                <th rowspan="2">주소</th>
-                <th colspan="3">연락처</th>
-                <th rowspan="2">수강<br>시작일</th>
-                <th rowspan="2">비고<br></th>
-                <th rowspan="2">상태</th>
-            </tr>
-            <tr>
-                <th>본인</th>
-                <th>자택</th>
-                <th>보호자</th>
-            </tr>
-        </thead>
-        <tbody id="ledgerBody"></tbody>
-    `;
-
-    const tbody = table.querySelector('tbody');
-
-    displayMembers.forEach(member => {
-        // Enrollment Status: taking, completed, retaking, delete
-        // If undefined, default to 'taking'
-        const status = member.status || 'taking';
-        const statusText = {
-            'taking': '수강',
-            'completed': '수료',
-            'retaking': '재수강',
-            'delete': '삭제'
-        }[status] || '수강';
-
-        const statusClass = {
-            'taking': 'status-taking',
-            'completed': 'status-completed',
-            'retaking': 'status-retaking',
-            'delete': 'status-delete'
-        }[status] || 'status-taking';
-
-        // Remarks: School or Job (No Course)
-        let remarks = '';
-        if (member.type === 'student') {
-            const schoolName = member.school || '';
-            const schoolLevel = member.school_level ? `(${member.school_level})` : '';
-            const grade = member.grade ? `${member.grade}학년` : '';
-            remarks = `${schoolName} ${grade}`.trim();
-        } else if (member.type === 'general') {
-            remarks = member.job || '';
-        } else {
-            // Fallback for legacy data or unspecified type
-            remarks = member.school || member.job || '';
-        }
-        // If simple note exists, maybe append? (member.notes) - user asked for School/Course mainly in remarks col.
-
-        const tr = document.createElement('tr');
-        // Add click event to open edit modal (except when clicking status select or buttons)
-        tr.onclick = (e) => {
-            // Prevent triggering when clicking interactive elements
-            if (e.target.tagName === 'SELECT' || e.target.tagName === 'BUTTON' || e.target.closest('select') || e.target.closest('button')) {
-                return;
-            }
-
-            // User requested confirmation before editing
-            if (confirm(`${member.name} 학생의 정보를 수정하시겠습니까?`)) {
-                openEditModal(member.id);
-            }
-        };
-
-        // Status Select Options
-        const statuses = [
-            { val: 'taking', text: '수강중' },
-            { val: 'completed', text: '수료' },
-            { val: 'retaking', text: '재수강' },
-            { val: 'hold', text: '보류' },
-            { val: 'trash', text: '휴지통' }
-        ];
-
-        const optionsHtml = statuses.map(s =>
-            `<option value="${s.val}" ${status === s.val ? 'selected' : ''}>${s.text}</option>`
-        ).join('');
-
-        tr.innerHTML = `
-            <td>${member.name}</td>
-            <td>${member.resident_num || ''}</td>
-            <td>${member.address || ''} ${member.address_detail || ''}</td>
-            <td>${member.phone || ''}</td>
-            <td>${member.phone_guardian || ''}</td>
-            <td>${member.course || ''}</td>
-            <td>${member.start_date || ''}</td>
-            <td>${remarks}</td>
-            <td onclick="event.stopPropagation()">
-                <select class="status-select ${statusClass}" onchange="handleStatusChange(event, '${member.id}')">
-                    ${optionsHtml}
-                </select>
-            </td>
-        `;
-
-        // Style the select based on selected value (initial)
-        const selectEl = tr.querySelector('.status-select');
-        selectEl.dataset.prev = status; // Store previous value for revert
-
-        tbody.appendChild(tr);
-    });
-
-    memberListEl.appendChild(table);
-}
 
 // Edit Student Logic
 const editModal = document.getElementById('editStudentModal');
@@ -745,7 +614,7 @@ async function handleEditSubmit(e) {
         } else {
             alert("저장 오류");
         }
-    } catch (err) {
+    } catch {
         alert("통신 오류");
     }
 }
@@ -799,90 +668,6 @@ function updateSummary() {
     }
 }
 
-async function handleStatusChange_OLD(e, memberId) {
-    const selectEl = e.target;
-    const newStatus = selectEl.value;
-    const prevStatus = selectEl.dataset.prev;
-    const member = members.find(m => m.id === memberId);
-
-    if (!member) {
-        alert("수강생 정보를 찾을 수 없습니다.");
-        return;
-    }
-
-    // Logic per user request
-    if (newStatus === 'hold') { // 1. 보류
-        const reason = prompt("보류 사유를 입력하세요:");
-        if (reason) {
-            // Save reason to notes (append or replace?) - Let's append with date
-            const dateStr = new Date().toLocaleDateString();
-            member.notes = (member.notes || '') + `\n ${reason}`;
-            // Proceed to update status
-        } else {
-            // Cancel -> Revert
-            selectEl.value = prevStatus;
-            return;
-        }
-    }
-    else if (newStatus === 'completed') { // 2. 수료
-        if (confirm("수료 처리하시겠습니까?")) {
-            // Confirm -> Completed (Archive) -> Proceed
-        } else {
-            // Cancel -> Delete Status
-            selectEl.value = 'delete';
-            // Trigger change event manually or call recursive? 
-            // Better to just set member status directly to 'delete' and save?
-            // User said "move to Delete text". It implies changing status to 'delete'.
-            // Let's just proceed with 'delete' update.
-            member.status = 'delete';
-            return updateMemberStatus(member, 'delete');
-        }
-    }
-    else if (newStatus === 'delete') { // 3. 삭제
-        if (confirm("정말 삭제하시겠습니까? (복구 불가)")) {
-            // Confirm -> Delete Data API
-            try {
-                await fetch(`${API_BASE}/members?id=${member.id}`, { method: 'DELETE' });
-                alert("삭제되었습니다.");
-                await fetchData();
-                renderMembers();
-                updateSummary();
-                return;
-            } catch (err) {
-                alert("삭제 처리 중 오류 발생");
-                selectEl.value = prevStatus;
-                return;
-            }
-        } else {
-            // Cancel -> Taking Status
-            selectEl.value = 'taking';
-            member.status = 'taking';
-            return updateMemberStatus(member, 'taking');
-        }
-    }
-
-    // Default Update (Taking, Retaking, Hold-confirmed, Completed-confirmed)
-    updateMemberStatus(member, newStatus);
-}
-
-async function updateMemberStatus_OLD(member, status) {
-    member.status = status;
-    try {
-        await fetch(`${API_BASE}/members`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(member)
-        });
-        // Refresh to update UI properly (color classes etc)
-        renderMembers();
-        await fetchData();
-        updateSummary();
-    } catch (e) {
-        console.error('Failed to update status', e);
-        alert("상태 업데이트 실패");
-        renderMembers(); // Revert UI
-    }
-}
 
 // Registration
 // Registration
@@ -1001,7 +786,7 @@ async function performRegistration(data, formEl) {
         } else {
             alert("등록 실패");
         }
-    } catch (err) {
+    } catch {
         alert("통신 오류");
     }
 }
@@ -1283,8 +1068,8 @@ window.loadExamView = async function (key) {
         // [FIX] Append to container (outside column layout) to ensure page break works
         container.appendChild(answerSection);
 
-    } catch (err) {
-        console.error('Failed to load exam data:', err);
+    } catch {
+        console.error('Failed to load exam data:');
         listBody.innerHTML = '<div class="error">데이터 로드 실패</div>';
     }
 };
@@ -1329,13 +1114,33 @@ document.addEventListener('DOMContentLoaded', () => {
     if (viewYear) {
         setTimeout(() => loadExamView(viewYear), 500);
     }
+
+    // Reset all nav items first
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+
+    // Default Highlights based on filename
+    let filename = window.location.pathname.split('/').pop() || 'index.html';
+    if (filename === '') filename = 'index.html'; // Extra safety for root
     const filter = params.get('filter');
-    if (filter === 'archive') {
-        setTimeout(() => loadArchive(), 500);
-    } else if (filter === 'phonebook') {
-        setTimeout(() => loadPhoneBook(), 500);
-    } else if (filter === 'trash') {
-        setTimeout(() => loadTrash(), 500);
+
+    if (filename === 'index.html') {
+        if (filter === 'archive') {
+            setTimeout(() => loadArchive(), 500);
+        } else if (filter === 'trash') {
+            setTimeout(() => loadTrash(), 500);
+        } else if (!filter) {
+            document.getElementById('navIndex')?.classList.add('active');
+        }
+    } else if (filename === 'register.html') {
+        document.getElementById('navRegister')?.classList.add('active');
+    } else if (filename === 'sheet.html') {
+        document.getElementById('navSheet')?.classList.add('active');
+    } else if (filename === 'phonebook.html') {
+        document.getElementById('navPhoneBook')?.classList.add('active');
+    } else if (filename === 'sms.html') {
+        document.getElementById('navSms')?.classList.add('active');
+    } else if (filename === 'attendance_daily.html') {
+        document.getElementById('navDailyAttendance')?.classList.add('active');
     }
 });
 
@@ -1402,7 +1207,7 @@ function closeStatusModal() {
     }
 }
 
-async function handleStatusChange(e, memberId) {
+window.handleStatusChange = async function (e, memberId) {
     const selectEl = e.target;
     const newStatus = selectEl.value;
     const prevStatus = selectEl.dataset.prev;
@@ -1421,7 +1226,6 @@ async function handleStatusChange(e, memberId) {
             () => {
                 const reason = document.getElementById('holdReason').value;
                 if (reason.trim()) {
-                    const dateStr = new Date().toLocaleDateString();
                     member.notes = (member.notes || '') + '\n ' + reason;
                     updateMemberStatus(member, 'hold');
                     closeStatusModal();
@@ -1437,7 +1241,6 @@ async function handleStatusChange(e, memberId) {
             archiveBtn.onclick = async () => {
                 const reason = document.getElementById('holdReason').value;
                 if (reason.trim()) {
-                    const dateStr = new Date().toLocaleDateString();
                     member.notes = (member.notes || '') + '\n ' + reason;
                 }
                 selectEl.value = 'completed';
@@ -1523,7 +1326,7 @@ async function handleStatusChange(e, memberId) {
                     renderMembers();
                     updateSummary();
                     closeStatusModal();
-                } catch (err) {
+                } catch {
                     alert("영구 삭제 중 오류 발생");
                     selectEl.value = prevStatus;
                     closeStatusModal();
@@ -1676,7 +1479,7 @@ function renderMembers() {
                 const schoolName = member.school || '';
                 const schoolLevel = member.school_level ? `(${member.school_level})` : '';
                 const grade = member.grade ? `${member.grade}학년` : '';
-                remarks = `${schoolName} ${grade}`.trim();
+                remarks = `${schoolName} ${schoolLevel} ${grade}`.trim();
             } else {
                 remarks = member.job || '';
             }
