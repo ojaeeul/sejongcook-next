@@ -5,21 +5,25 @@ let selectedTargets = []; // Array of member objects
 let currentMsgType = 'SMS';
 let editingTemplateIndex = -1;
 
-let myTemplates = JSON.parse(localStorage.getItem('sejongSmsTemplates')) || [
+let defaultTemplates = [
     '반갑습니다.',
-    '[세종요리제과학원] 안녕하세요! %%% 학생 오늘 수업 안내드립니다. 항상 저희 학원을 이용해 주셔서 감사합니다. 자세한 사항은 학원으로 문의주시길 바랍니다.'
+    '[세종요리제과학원] 안녕하세요! %%% 학생 오늘 수업 안내드립니다.',
+    '[세종요리제과학원] 안녕하세요! %%% 학생, 이번 주 수업 일정 및 학원 안내입니다. 항상 저희 학원을 이용해 주셔서 진심으로 감사드리며 편안한 하루 되시길 바랍니다.'
 ];
 
-// 템플릿 길이가 짧아 SMS로 인식되던 기존 기본값을 LMS로 길게 만들어주는 임시 마이그레이션
-let migrated = false;
-myTemplates = myTemplates.map(t => {
-    if (t.includes('[세종요리제과학원]') && t.length < 45) {
-        migrated = true;
-        return '[세종요리제과학원] 안녕하세요! %%% 학생 오늘 수업 안내드립니다. 항상 저희 학원을 이용해 주셔서 감사합니다. 자세한 사항은 학원으로 문의주시길 바랍니다.';
-    }
-    return t;
+let storedTemplates = localStorage.getItem('sejongSmsTemplates');
+let myTemplates = storedTemplates ? JSON.parse(storedTemplates) : defaultTemplates;
+
+// 강제 마이그레이션: 만약 LMS 템플릿(90바이트 초과)이 하나도 없다면 기본 LMS를 하나 추가해줍니다.
+let hasLMS = false;
+myTemplates.forEach(t => {
+    let bytes = 0;
+    for (let j = 0; j < t.length; j++) bytes += t.charCodeAt(j) > 128 ? 2 : 1;
+    if (bytes > 90) hasLMS = true;
 });
-if (migrated) {
+
+if (!hasLMS) {
+    myTemplates.push('[세종요리제과학원] 안녕하세요! %%% 학생, 이번 주 수업 일정 및 학원 안내입니다. 항상 저희 학원을 이용해 주셔서 진심으로 감사드리며 편안한 하루 되시길 바랍니다.');
     localStorage.setItem('sejongSmsTemplates', JSON.stringify(myTemplates));
 }
 
