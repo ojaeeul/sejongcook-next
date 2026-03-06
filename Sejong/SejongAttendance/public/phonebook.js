@@ -166,7 +166,7 @@ function renderPhonebook() {
                             </div>
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <div class="course-badge-list" style="margin-right: 5px;">
-                                    ${courseBadges}
+                                    ${!m.phone_guardian ? courseBadges : ''}
                                 </div>
                                 ${getPhoneButtons(m.phone)}
                             </div>
@@ -179,7 +179,7 @@ function renderPhonebook() {
                             </div>
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <div class="course-badge-list" style="margin-right: 5px;">
-                                    <!-- Guardian doesn't have courses, so this will be empty -->
+                                    ${courseBadges}
                                 </div>
                                 ${getPhoneButtons(m.phone_guardian)}
                             </div>
