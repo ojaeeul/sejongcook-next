@@ -565,8 +565,9 @@ function updateMockup() {
     const bubble = document.getElementById('mockupBubble');
     const topBar = document.getElementById('mockupTypeBar');
 
-    // Replace %%% with a sample name for preview
+    // Replace %%% with a sample name for preview and @@@ for sample date
     let previewText = text.replace(/%%%/g, '김학생');
+    previewText = previewText.replace(/@@@/g, '15');
 
     if (previewText.trim() === '') {
         bubble.textContent = '메시지를 입력해주세요...';
@@ -620,8 +621,8 @@ function sendSms() {
     selectedTargets.forEach(t => {
         let msg = text.replace(/%%%/g, t.name);
 
-        // If tuition date logic is requested
-        const tuitionDate = t.reg_date ? new Date(t.reg_date).getDate() + '일' : '지정일';
+        // Tuition date logic (using start_date)
+        const tuitionDate = t.start_date ? new Date(t.start_date).getDate() : '지정';
         msg = msg.replace(/@@@/g, tuitionDate);
 
         personalizedMessages.push({ name: t.name, text: msg });
