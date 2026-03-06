@@ -642,12 +642,29 @@ function sendSms() {
         <div style="margin-bottom:15px; text-align:center;">
             발송 대상: <strong style="color:#2563eb; font-size:1.2rem;">총 ${selectedTargets.length}명</strong>
         </div>
-        <div style="font-weight:700; margin-bottom:10px; color:#475569; border-bottom:2px solid #e2e8f0; padding-bottom:5px; text-align:center;">전송 내용 전체 미리보기</div>
-        <div style="max-height: 250px; overflow-y: auto; padding:5px 10px;">
+        
+        <div style="text-align:center; margin-bottom:15px;">
+            <button onclick="
+                const d = document.getElementById('smsPreviewContent');
+                if (d.style.display === 'none') {
+                    d.style.display = 'block';
+                    this.innerHTML = '<i class=\\'material-icons\\' style=\\'font-size:1rem; vertical-align:middle;\\'>visibility_off</i> 미리보기 닫기';
+                } else {
+                    d.style.display = 'none';
+                    this.innerHTML = '<i class=\\'material-icons\\' style=\\'font-size:1rem; vertical-align:middle;\\'>visibility</i> 미리보기 열기';
+                }
+            " style="padding:6px 15px; font-size:0.9rem; background:#f8fafc; border:1px solid #cbd5e1; border-radius:5px; cursor:pointer; color:#475569; font-weight:700;">
+                <i class="material-icons" style="font-size:1rem; vertical-align:middle;">visibility</i> 미리보기 열기
+            </button>
+        </div>
+
+        <div id="smsPreviewContent" style="display:none; max-height:220px; overflow-y:auto; padding:10px; background:#f1f5f9; border-radius:8px; margin-bottom:15px; box-shadow:inset 0 2px 4px rgba(0,0,0,0.05);">
+            <div style="font-weight:700; margin-bottom:10px; color:#475569; border-bottom:2px solid #e2e8f0; padding-bottom:5px; text-align:center;">전송 내용 전체 미리보기</div>
             ${previewOutput}
             ${extraCount}
         </div>
-        <div style="margin-top:20px; font-weight:700; color:#ef4444; text-align:center; font-size:1.1rem;">
+        
+        <div style="margin-top:15px; font-weight:700; color:#ef4444; text-align:center; font-size:1.1rem;">
             정말 발송하시겠습니까?
         </div>
     `;
