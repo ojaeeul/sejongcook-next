@@ -1,7 +1,8 @@
 const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:8000/api' : '/api/sejong';
 
 let allMembers = [];
-let selectedTargets = []; // Array of member objects
+let storedTargets = localStorage.getItem('sejongSmsSelectedTargets');
+let selectedTargets = storedTargets ? JSON.parse(storedTargets) : []; // Array of member objects
 let currentMsgType = 'SMS';
 let editingTemplateIndex = -1;
 let isAddingNewTemplate = false;
@@ -119,7 +120,16 @@ function processCourses() {
     });
 }
 
-let expandedCourses = new Set();
+let storedExpanded = localStorage.getItem('sejongSmsExpandedCourses');
+let expandedCourses = new Set(storedExpanded ? JSON.parse(storedExpanded) : []);
+
+function saveExpandedCourses() {
+    localStorage.setItem('sejongSmsExpandedCourses', JSON.stringify(Array.from(expandedCourses)));
+}
+
+function saveSelectedTargets() {
+    localStorage.setItem('sejongSmsSelectedTargets', JSON.stringify(selectedTargets));
+}
 
 function renderTargetList() {
     const includeInactive = document.getElementById('includeInactive').checked;
@@ -200,6 +210,7 @@ function renderTargetList() {
             header.querySelector('i:last-child').textContent = isHidden ? 'keyboard_arrow_up' : 'keyboard_arrow_down';
             if (isHidden) expandedCourses.add(cName);
             else expandedCourses.delete(cName);
+            saveExpandedCourses();
         };
 
         groupDiv.appendChild(header);
@@ -238,6 +249,7 @@ function toggleTarget(member, phone, courseName) {
 
     updateCheckmarks();
     updateSelectedTags();
+    saveSelectedTargets();
 }
 
 function updateSelectedTags() {
@@ -262,6 +274,7 @@ function removeTarget(index) {
     selectedTargets.splice(index, 1);
     updateCheckmarks();
     updateSelectedTags();
+    saveSelectedTargets();
 }
 
 function selectAllCourses() {
@@ -292,6 +305,7 @@ function deselectAllCourses() {
     selectedTargets = [];
     updateCheckmarks();
     updateSelectedTags();
+    saveSelectedTargets();
 }
 
 // ----------------------------------------------------
