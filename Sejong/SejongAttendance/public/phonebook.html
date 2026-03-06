@@ -170,11 +170,12 @@
 
         .course-badge-list {
             display: flex;
+            flex-wrap: nowrap;
+            overflow-x: auto;
             gap: 4px;
-            flex-wrap: wrap;
-            max-width: 250px;
-            justify-content: flex-end;
-            align-items: center;
+            max-width: 100%;
+            font-size: 0.65rem;
+            /* slightly smaller to fit more */
         }
 
         .course-badge {
