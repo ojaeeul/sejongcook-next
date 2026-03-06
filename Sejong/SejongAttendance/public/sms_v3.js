@@ -4,6 +4,7 @@ let allMembers = [];
 let selectedTargets = []; // Array of member objects
 let currentMsgType = 'SMS';
 let editingTemplateIndex = -1;
+let isAddingNewTemplate = false;
 
 let defaultTemplates = [
     '반갑습니다.',
@@ -369,6 +370,27 @@ function renderTemplates() {
     if (!box) return;
     box.innerHTML = '';
 
+    if (isAddingNewTemplate) {
+        const div = document.createElement('div');
+        div.className = 'template-item';
+        div.style.background = '#e0f2fe';
+        div.style.padding = '8px 10px';
+        div.style.border = '1px solid #3b82f6';
+        div.style.marginBottom = '10px';
+
+        div.innerHTML = `
+            <div style="font-weight:700; font-size:0.85rem; color:#1e3a8a; margin-bottom:5px;">새 템플릿 등록</div>
+            <div style="display:flex; flex-direction:column; width:100%; gap:5px;">
+                <textarea id="newTplInput" placeholder="여기에 내용을 입력하세요..." style="width:100%; height:80px; padding:8px; font-size:0.85rem; border:1px solid #93c5fd; border-radius:4px; resize:none;" onclick="event.stopPropagation()"></textarea>
+                <div style="display:flex; justify-content:flex-end; gap:5px;">
+                    <button onclick="event.stopPropagation(); confirmNewTemplate()" style="padding:4px 10px; background:#10b981; color:white; border:none; border-radius:3px; cursor:pointer;">저장</button>
+                    <button onclick="event.stopPropagation(); cancelNewTemplate()" style="padding:4px 10px; background:#94a3b8; color:white; border:none; border-radius:3px; cursor:pointer;">취소</button>
+                </div>
+            </div>
+        `;
+        box.appendChild(div);
+    }
+
     myTemplates.forEach((text, i) => {
         let bytes = 0;
         for (let j = 0; j < text.length; j++) bytes += text.charCodeAt(j) > 128 ? 2 : 1;
@@ -456,10 +478,24 @@ function deleteTemplate(i, e) {
     });
 }
 
-function saveNewTemplate() {
-    const text = document.getElementById('messageInput').value.trim();
+function openNewTemplateEditor() {
+    isAddingNewTemplate = true;
+    editingTemplateIndex = -1; // close any open edit
+    renderTemplates();
+
+    // Focus the new input
+    setTimeout(() => {
+        const input = document.getElementById('newTplInput');
+        if (input) input.focus();
+    }, 50);
+}
+
+function confirmNewTemplate() {
+    const input = document.getElementById('newTplInput');
+    if (!input) return;
+    const text = input.value.trim();
     if (!text) {
-        showModalAlert('등록할 내용을 아래 입력창에 작성해주세요.', true);
+        showModalAlert('등록할 내용을 입력해주세요.', true);
         return;
     }
     if (myTemplates.includes(text)) {
@@ -468,8 +504,14 @@ function saveNewTemplate() {
     }
     myTemplates.unshift(text); // Add to top
     localStorage.setItem('sejongSmsTemplates', JSON.stringify(myTemplates));
+    isAddingNewTemplate = false;
     renderTemplates();
-    showModalAlert('새로운 자동글이 등록되었습니다.');
+    showModalAlert('새로운 템플릿이 등록되었습니다.');
+}
+
+function cancelNewTemplate() {
+    isAddingNewTemplate = false;
+    renderTemplates();
 }
 
 function loadTemplate(text) {
