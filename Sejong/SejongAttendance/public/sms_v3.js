@@ -457,9 +457,20 @@ function saveEditTemplate(i) {
         return;
     }
     myTemplates[i] = newText;
+    myTemplates[i] = newText;
     localStorage.setItem('sejongSmsTemplates', JSON.stringify(myTemplates));
     editingTemplateIndex = -1;
-    renderTemplates();
+
+    // Switch to appropriate tab so it doesn't disappear if byte boundary crossed
+    let bytes = 0;
+    for (let j = 0; j < newText.length; j++) bytes += newText.charCodeAt(j) > 128 ? 2 : 1;
+    const typeBadge = bytes > 90 ? 'lms' : 'sms';
+    if (currentTab !== 'all' && currentTab !== typeBadge) {
+        switchTab(typeBadge);
+    } else {
+        renderTemplates();
+    }
+
     loadTemplateByIndex(i);
     showModalAlert('수정되었습니다.');
 }
@@ -505,7 +516,18 @@ function confirmNewTemplate() {
     myTemplates.unshift(text); // Add to top
     localStorage.setItem('sejongSmsTemplates', JSON.stringify(myTemplates));
     isAddingNewTemplate = false;
-    renderTemplates();
+
+    // Switch to appropriate tab so it doesn't disappear
+    let bytes = 0;
+    for (let j = 0; j < text.length; j++) bytes += text.charCodeAt(j) > 128 ? 2 : 1;
+    const typeBadge = bytes > 90 ? 'lms' : 'sms';
+
+    if (currentTab !== 'all' && currentTab !== typeBadge) {
+        switchTab(typeBadge);
+    } else {
+        renderTemplates();
+    }
+
     showModalAlert('새로운 템플릿이 등록되었습니다.');
 }
 
