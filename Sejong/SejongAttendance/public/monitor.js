@@ -134,39 +134,97 @@ async function submitAttendance() {
     if (mainSubmitBtn) { mainSubmitBtn.disabled = false; mainSubmitBtn.textContent = "출석"; mainSubmitBtn.style.opacity = "1"; }
 }
 
+let steadyFrames = 0;
+
 function startAutoDetection() {
     stopAutoDetection();
     if (currentMode !== 'face_only') return;
 
-    showStatus("카메라 중앙을 바라봐주시면 자동으로 출석됩니다...", "#059669");
+    showStatus("붉은선 네모박스가 얼굴을 추적하면 자동으로 출석됩니다...", "#059669");
     const btn = document.querySelector('#faceOnlyPanel button');
     if (btn) {
-        btn.textContent = "자동으로 얼굴을 인식 중입니다...";
+        btn.textContent = "얼굴을 찾는 중입니다...";
     }
+
+    const overlayCanvas = document.getElementById('overlayCanvas');
+    const ctx = overlayCanvas ? overlayCanvas.getContext('2d') : null;
 
     autoDetectInterval = setInterval(async () => {
         if (currentMode !== 'face_only' || isDetecting || !modelsLoaded) return;
 
         isDetecting = true;
         try {
-            const detection = await faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor();
-            if (detection) {
-                stopAutoDetection();
-                recognizeAndAttend(detection); // Proceed directly
+            if (video.videoWidth > 0 && ctx) {
+                const displaySize = { width: video.videoWidth, height: video.videoHeight };
+                faceapi.matchDimensions(overlayCanvas, displaySize);
+
+                // Use fast detection without descriptors/landmarks for tracking
+                const detection = await faceapi.detectSingleFace(video);
+
+                ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+
+                if (detection) {
+                    const resized = faceapi.resizeResults(detection, displaySize);
+                    const box = resized.box;
+
+                    steadyFrames++;
+
+                    // Draw focus box
+                    ctx.strokeStyle = steadyFrames >= 4 ? '#10b981' : '#ef4444'; // Green when focusing, Red for tracking
+                    ctx.lineWidth = 4;
+
+                    // Box corners for a "camera focus" look
+                    const len = 30;
+                    ctx.beginPath();
+                    // Top-Left
+                    ctx.moveTo(box.x, box.y + len); ctx.lineTo(box.x, box.y); ctx.lineTo(box.x + len, box.y);
+                    // Top-Right
+                    ctx.moveTo(box.x + box.width - len, box.y); ctx.lineTo(box.x + box.width, box.y); ctx.lineTo(box.x + box.width, box.y + len);
+                    // Bottom-Right
+                    ctx.moveTo(box.x + box.width, box.y + box.height - len); ctx.lineTo(box.x + box.width, box.y + box.height); ctx.lineTo(box.x + box.width - len, box.y + box.height);
+                    // Bottom-Left
+                    ctx.moveTo(box.x + len, box.y + box.height); ctx.lineTo(box.x, box.y + box.height); ctx.lineTo(box.x, box.y + box.height - len);
+                    ctx.stroke();
+
+                    // Faint full box
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(box.x, box.y, box.width, box.height);
+
+                    if (steadyFrames >= 5) { // ~1 sec of steady tracking
+                        stopAutoDetection(); // Pause tracking
+
+                        // Proceed to full recognition
+                        const fullDetection = await faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor();
+                        if (fullDetection) {
+                            recognizeAndAttend(fullDetection);
+                        } else {
+                            startAutoDetection(); // Retry if lost
+                        }
+                    }
+                } else {
+                    steadyFrames = 0;
+                }
             }
         } catch (e) {
-            // ignore
+            // ignore errors during background tracking
         } finally {
             if (currentMode === 'face_only') {
                 isDetecting = false;
             }
         }
-    }, 1000);
+    }, 200); // 200ms interval = 5 FPS for smooth tracking
 }
 
 function stopAutoDetection() {
     if (autoDetectInterval) clearInterval(autoDetectInterval);
     isDetecting = false;
+    steadyFrames = 0;
+
+    const overlayCanvas = document.getElementById('overlayCanvas');
+    if (overlayCanvas) {
+        const ctx = overlayCanvas.getContext('2d');
+        if (ctx) ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+    }
 }
 
 async function recognizeAndAttend(preDetection = null) {

@@ -521,9 +521,11 @@
                     <div class="camera-frame"
                         style="position: absolute; inset: -4px; border-radius: 40px; background: linear-gradient(45deg, #059669, #34d399, #059669); padding: 4px; box-shadow: 0 0 50px rgba(5, 150, 105, 0.4);">
                         <div
-                            style="width: 100%; height: 100%; background: #000; border-radius: 36px; overflow: hidden;">
+                            style="width: 100%; height: 100%; background: #000; border-radius: 36px; overflow: hidden; position: relative;">
                             <video id="video" autoplay playsinline
                                 style="width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1);"></video>
+                            <canvas id="overlayCanvas"
+                                style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; z-index: 5; transform: scaleX(-1);"></canvas>
                             <div id="shutterEffect"
                                 style="position: absolute; inset:0; background:white; opacity:0; pointer-events:none; z-index: 10;">
                             </div>
