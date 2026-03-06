@@ -1659,8 +1659,8 @@
                             if (simDate.getFullYear() === year && (simDate.getMonth() + 1) === month) {
                                 foundSimulatedDay = simDate.getDate();
                                 eighthMonth = simDate.getMonth() + 1;
-                                break;
                             }
+                            break;
                         }
                     }
                     simDate.setDate(simDate.getDate() + 1);
@@ -1669,6 +1669,17 @@
                 if (foundSimulatedDay) {
                     eighthDay = foundSimulatedDay;
                     isSimulated = true;
+                }
+            }
+
+            if (!hasAnyAttendance) {
+                eighthDay = null;
+            } else if (lastRecordDate && eighthDay !== null) {
+                let maxYear = lastRecordDate.getFullYear();
+                let maxMonth = lastRecordDate.getMonth() + 2;
+                if (maxMonth > 12) { maxMonth -= 12; maxYear += 1; }
+                if (year > maxYear || (year === maxYear && month > maxMonth)) {
+                    eighthDay = null;
                 }
             }
 

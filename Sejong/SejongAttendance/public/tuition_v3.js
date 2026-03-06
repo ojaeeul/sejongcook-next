@@ -474,10 +474,10 @@ function getMemberEighthDayInMonth(memberId, year, month, courseFilter = null) {
                     allMilestones.push(milestone);
                     if (milestone.year === year && milestone.month === month) {
                         eighthDay = milestone;
-                    } else if (!eighthDay && (milestone.year > year || (milestone.year === year && milestone.month > month))) {
-                        if (!nextEighthDay) nextEighthDay = milestone;
+                    } else if (!eighthDay) {
+                        nextEighthDay = milestone;
                     }
-                    if (eighthDay || nextEighthDay) break;
+                    break;
                 }
             }
             simDate.setDate(simDate.getDate() + 1);
@@ -520,7 +520,41 @@ function getMemberEighthDayInMonth(memberId, year, month, courseFilter = null) {
         }
     } catch (e) { }
 
-    return { scheduledDate: eighthDay || nextEighthDay, currentCount, isDueInSelectedMonth: !!eighthDay, allMilestones };
+    let finalScheduledDate = eighthDay || nextEighthDay;
+    let globalLastRecordDate = null;
+    let hasAnyAttendance = false;
+    for (const r of memberRecords) {
+        if (courseFilter) {
+            if (!r.course) continue;
+            const rClean = r.course.replace(/\([^)]*\)/g, '').trim();
+            const fClean = courseFilter.replace(/\([^)]*\)/g, '').trim();
+            if (rClean !== fClean) continue;
+        }
+        const isMarker = ['[', ']'].includes(r.status);
+        const isNumericPresent = ['10', '12', '2', '5', '7'].includes(r.status);
+        const isAbsent = r.status === 'absent' || (typeof r.status === 'string' && r.status.startsWith('X'));
+        const isRegular = r.status === 'present' || r.status === 'extension' || isNumericPresent || isAbsent;
+
+        if (isMarker || isRegular) {
+            globalLastRecordDate = r.dateObj;
+            hasAnyAttendance = true;
+        }
+    }
+
+    if (!hasAnyAttendance) {
+        finalScheduledDate = null;
+    } else if (globalLastRecordDate && finalScheduledDate) {
+        let maxYear = globalLastRecordDate.getFullYear();
+        let maxMonth = globalLastRecordDate.getMonth() + 2;
+        if (maxMonth > 12) { maxMonth -= 12; maxYear += 1; }
+        if (finalScheduledDate.year > maxYear || (finalScheduledDate.year === maxYear && finalScheduledDate.month > maxMonth)) {
+            finalScheduledDate = null;
+        }
+    }
+
+    if (!finalScheduledDate && eighthDay) eighthDay = null; // Sync isDueInSelectedMonth if cleared
+
+    return { scheduledDate: finalScheduledDate, currentCount, isDueInSelectedMonth: !!eighthDay, allMilestones };
 
 }
 
