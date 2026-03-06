@@ -372,7 +372,7 @@ function renderTemplates() {
 
     if (isAddingNewTemplate) {
         const div = document.createElement('div');
-        div.className = 'template-item';
+        div.className = 'template-item-new';
         div.style.background = '#e0f2fe';
         div.style.padding = '8px 10px';
         div.style.border = '1px solid #3b82f6';
