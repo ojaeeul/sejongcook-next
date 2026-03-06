@@ -456,25 +456,24 @@ function editTemplateInline(i, e) {
 
 function saveEditTemplate(i) {
     const editArea = document.getElementById(`editTpl_${i}`);
+    const typeSelect = document.getElementById(`editTplType_${i}`);
     if (!editArea) return;
     const newText = editArea.value.trim();
     if (!newText) {
         showModalAlert('내용을 입력해주세요.', true);
         return;
     }
-    myTemplates[i] = newText;
-    myTemplates[i] = newText;
+    const newType = typeSelect ? typeSelect.value : myTemplates[i].type;
+
+    myTemplates[i] = { text: newText, type: newType };
     localStorage.setItem('sejongSmsTemplates', JSON.stringify(myTemplates));
     editingTemplateIndex = -1;
 
-    // Switch to appropriate tab so it doesn't disappear if byte boundary crossed
-    let bytes = 0;
-    for (let j = 0; j < newText.length; j++) bytes += newText.charCodeAt(j) > 128 ? 2 : 1;
-    const typeBadge = bytes > 90 ? 'lms' : 'sms';
-    if (currentTab !== 'all' && currentTab !== typeBadge) {
-        switchTab(typeBadge);
-    } else {
-        renderTemplates();
+    // MUST call renderTemplates BEFORE switchTab so DOM updates and hides the editor
+    renderTemplates();
+
+    if (currentTab !== 'all' && currentTab !== newType.toLowerCase()) {
+        switchTab(newType.toLowerCase());
     }
 
     loadTemplateByIndex(i);
@@ -509,29 +508,28 @@ function openNewTemplateEditor() {
 
 function confirmNewTemplate() {
     const input = document.getElementById('newTplInput');
+    const typeSelect = document.getElementById('newTplType');
     if (!input) return;
     const text = input.value.trim();
     if (!text) {
         showModalAlert('등록할 내용을 입력해주세요.', true);
         return;
     }
-    if (myTemplates.includes(text)) {
+    if (myTemplates.some(t => t.text === text)) {
         showModalAlert('이미 동일한 내용의 템플릿이 있습니다.', true);
         return;
     }
-    myTemplates.unshift(text); // Add to top
+
+    const type = typeSelect ? typeSelect.value : 'SMS';
+    myTemplates.unshift({ text, type }); // Add to top
     localStorage.setItem('sejongSmsTemplates', JSON.stringify(myTemplates));
     isAddingNewTemplate = false;
 
-    // Switch to appropriate tab so it doesn't disappear
-    let bytes = 0;
-    for (let j = 0; j < text.length; j++) bytes += text.charCodeAt(j) > 128 ? 2 : 1;
-    const typeBadge = bytes > 90 ? 'lms' : 'sms';
+    // MUST render DOM to destroy editor before tab switch logic
+    renderTemplates();
 
-    if (currentTab !== 'all' && currentTab !== typeBadge) {
-        switchTab(typeBadge);
-    } else {
-        renderTemplates();
+    if (currentTab !== 'all' && currentTab !== type.toLowerCase()) {
+        switchTab(type.toLowerCase());
     }
 
     showModalAlert('새로운 템플릿이 등록되었습니다.');
