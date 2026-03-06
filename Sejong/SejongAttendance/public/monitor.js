@@ -69,12 +69,21 @@ function switchMode(mode) {
             });
         }
         else if (mode === 'register') {
-            setupUI("신규 얼굴 등록", "번호 입력 후 얼굴을 촬영하세요", true, false, true);
+            setupUI("신규 얼굴 등록", "번호 입력 시부터 얼굴을 추적해 등록합니다", true, false, true);
             if (mirrorSection) mirrorSection.style.opacity = '1';
-            if (faceSubmitBtn) faceSubmitBtn.style.display = 'block';
+
+            // hide manual face submit button since we'll auto-capture
+            if (faceSubmitBtn) {
+                faceSubmitBtn.style.display = 'block';
+                faceSubmitBtn.innerHTML = "자동 촬영됨<br>(번호입력시)";
+                faceSubmitBtn.disabled = true;
+            }
             if (mainSubmitBtn) mainSubmitBtn.style.display = 'none';
+
             startCamera();
-            loadFaceModels(); // Preload ML
+            loadFaceModels().then(() => {
+                if (currentMode === 'register') startAutoDetection('register');
+            });
         }
     }
 }
@@ -300,7 +309,7 @@ async function recognizeAndAttend(preDetection = null) {
     }
 }
 
-async function capturePhoto() {
+async function capturePhoto(preDetection = null) {
     if (currentInput.length !== 8) {
         showStatus("먼저 뒷번호 8자리를 입력해주세요.", "red");
         return;
@@ -317,6 +326,12 @@ async function capturePhoto() {
         faceSubmitBtn.style.background = "#94a3b8";
     }
 
+    // Play camera shutter sound
+    try {
+        const audio = new Audio('https://www.soundjay.com/mechanical/camera-shutter-click-03.mp3');
+        audio.play().catch(e => { }); // Ignore play errors (mobile interaction policies)
+    } catch (e) { }
+
     showStatus("찰칵! 사진을 인식중입니다. (이제 움직이셔도 됩니다)", "#3b82f6");
     if (shutter) shutter.style.opacity = '1';
     setTimeout(() => { if (shutter) shutter.style.opacity = '0'; }, 150);
@@ -332,7 +347,7 @@ async function capturePhoto() {
         // API 연동과 ML 모델 얼굴 분석을 동시 병렬로 실행
         const [rawMembers, detection] = await Promise.all([
             fetch(`${API_BASE}/members?t=` + Date.now()).then(res => res.json()),
-            faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor()
+            preDetection ? Promise.resolve(preDetection) : faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor()
         ]);
 
         const members = Array.isArray(rawMembers) ? rawMembers.filter(m => !['delete', 'trash', 'hold', 'completed'].includes(m.status)) : [];
@@ -340,11 +355,13 @@ async function capturePhoto() {
 
         if (!member) {
             showStatus("뒷번호 8자리와 일치하는 회원이 없습니다.", "red");
+            setTimeout(() => { if (currentMode === 'register') startAutoDetection(); }, 2000);
             return;
         }
 
         if (!detection) {
             showStatus("얼굴이 명확히 인식되지 않았습니다. 밝은 곳에서 시도해주세요.", "red");
+            setTimeout(() => { if (currentMode === 'register') startAutoDetection(); }, 2000);
             return;
         }
 
