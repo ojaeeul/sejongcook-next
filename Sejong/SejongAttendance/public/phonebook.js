@@ -165,10 +165,10 @@ function renderPhonebook() {
                                 <span class="phone-number">${m.phone || '-'}</span>
                             </div>
                             <div style="display: flex; align-items: center; gap: 8px;">
-                                <div class="course-badge-list" style="margin-right: 5px;">
+                                ${getPhoneButtons(m.phone)}
+                                <div class="course-badge-list" style="margin-left: 5px;">
                                     ${!m.phone_guardian ? courseBadges : ''}
                                 </div>
-                                ${getPhoneButtons(m.phone)}
                             </div>
                         </div>
                         ${m.phone_guardian ? `
@@ -178,10 +178,10 @@ function renderPhonebook() {
                                 <span class="phone-number">${m.phone_guardian}</span>
                             </div>
                             <div style="display: flex; align-items: center; gap: 8px;">
-                                <div class="course-badge-list" style="margin-right: 5px;">
+                                ${getPhoneButtons(m.phone_guardian)}
+                                <div class="course-badge-list" style="margin-left: 5px;">
                                     ${courseBadges}
                                 </div>
-                                ${getPhoneButtons(m.phone_guardian)}
                             </div>
                         </div>
                         ` : ''}
