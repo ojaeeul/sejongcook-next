@@ -7,8 +7,14 @@ let editingTemplateIndex = -1;
 
 let myTemplates = JSON.parse(localStorage.getItem('sejongSmsTemplates')) || [
     '반갑습니다.',
-    '[세종요리제과학원] 안녕하세요! %%% 학생 오늘 수업 안내드립니다.'
+    '[세종요리제과학원] 안녕하세요! %%% 학생 오늘 수업 안내드립니다. 항상 저희 학원을 이용해 주셔서 감사합니다. 자세한 사항은 학원으로 문의주시길 바랍니다.'
 ];
+
+// 템플릿 길이가 짧아 SMS로 인식되던 기존 기본값을 LMS로 길게 만들어주는 임시 마이그레이션
+if (myTemplates.length >= 2 && myTemplates[1] === '[세종요리제과학원] 안녕하세요! %%% 학생 오늘 수업 안내드립니다.') {
+    myTemplates[1] = '[세종요리제과학원] 안녕하세요! %%% 학생 오늘 수업 안내드립니다. 항상 저희 학원을 이용해 주셔서 감사합니다. 자세한 사항은 학원으로 문의주시길 바랍니다.';
+    localStorage.setItem('sejongSmsTemplates', JSON.stringify(myTemplates));
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     fetchMembers();
@@ -253,10 +259,14 @@ function filterTemplates() {
     const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
     const items = document.querySelectorAll('.template-item');
 
-    items.forEach(item => {
-        const text = item.textContent.toLowerCase();
-        const badgeEl = item.querySelector('.type-badge');
-        const typeBadge = badgeEl ? badgeEl.textContent.toLowerCase() : '';
+    items.forEach((item, index) => {
+        const templateText = myTemplates[index] || '';
+        const text = templateText.toLowerCase();
+
+        // Calculate byte type logically rather than looking for a DOM badge
+        let bytes = 0;
+        for (let j = 0; j < templateText.length; j++) bytes += templateText.charCodeAt(j) > 128 ? 2 : 1;
+        const typeBadge = bytes > 90 ? 'lms' : 'sms';
 
         let matchesTab = true;
         if (currentTab === 'sms' && typeBadge !== 'sms') matchesTab = false;
