@@ -11,8 +11,15 @@ let myTemplates = JSON.parse(localStorage.getItem('sejongSmsTemplates')) || [
 ];
 
 // 템플릿 길이가 짧아 SMS로 인식되던 기존 기본값을 LMS로 길게 만들어주는 임시 마이그레이션
-if (myTemplates.length >= 2 && myTemplates[1] === '[세종요리제과학원] 안녕하세요! %%% 학생 오늘 수업 안내드립니다.') {
-    myTemplates[1] = '[세종요리제과학원] 안녕하세요! %%% 학생 오늘 수업 안내드립니다. 항상 저희 학원을 이용해 주셔서 감사합니다. 자세한 사항은 학원으로 문의주시길 바랍니다.';
+let migrated = false;
+myTemplates = myTemplates.map(t => {
+    if (t.includes('[세종요리제과학원]') && t.length < 45) {
+        migrated = true;
+        return '[세종요리제과학원] 안녕하세요! %%% 학생 오늘 수업 안내드립니다. 항상 저희 학원을 이용해 주셔서 감사합니다. 자세한 사항은 학원으로 문의주시길 바랍니다.';
+    }
+    return t;
+});
+if (migrated) {
     localStorage.setItem('sejongSmsTemplates', JSON.stringify(myTemplates));
 }
 
@@ -331,11 +338,14 @@ function renderTemplates() {
             `;
         } else {
             div.innerHTML = `
-                <div style="cursor:pointer; flex:1; padding-left: 5px;" onclick="loadTemplateByIndex(${i})" ondblclick="editTemplateInline(${i})">
+                <div style="cursor:pointer; flex:1; padding-left: 5px;" onclick="loadTemplateByIndex(${i})">
                     <span class="type-badge" style="color:${color}; border-color:${color};">${type}</span> 
                     ${shortText}
                 </div>
-                <i class="material-icons" style="font-size:1.1rem; color:#cbd5e1; cursor:pointer;" title="삭제" onclick="deleteTemplate(${i}, event)">close</i>
+                <div style="display:flex; gap:8px;">
+                    <i class="material-icons" style="font-size:1.1rem; color:#94a3b8; cursor:pointer;" title="수정" onclick="editTemplateInline(${i})">edit</i>
+                    <i class="material-icons" style="font-size:1.1rem; color:#cbd5e1; cursor:pointer;" title="삭제" onclick="deleteTemplate(${i}, event)">close</i>
+                </div>
             `;
         }
 
@@ -350,7 +360,8 @@ function loadTemplateByIndex(i) {
     updateMockup();
 }
 
-function editTemplateInline(i) {
+function editTemplateInline(i, e) {
+    if (e) e.stopPropagation();
     editingTemplateIndex = i;
     renderTemplates();
 }
