@@ -30,6 +30,7 @@ if (!hasLMS) {
 document.addEventListener('DOMContentLoaded', () => {
     fetchMembers();
     renderTemplates(); // Initialize templates
+    filterTemplates(); // Apply filter initially
 
     // Event listeners
     document.querySelectorAll('input[name="targetType"]').forEach(radio => {
@@ -37,6 +38,61 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     document.getElementById('includeInactive').addEventListener('change', renderTargetList);
 });
+
+// Custom Modal Helpers
+function openModal(title, bodyHTML, onConfirm = null, confirmBtnText = '확인', confirmBtnColor = '#3b82f6') {
+    const modalTitle = document.getElementById('smsModalTitle');
+    const modalBody = document.getElementById('smsModalBody');
+    const modal = document.getElementById('smsModal');
+    let confirmBtn = document.querySelector('.modal-btn-confirm');
+    let cancelBtn = document.querySelector('.modal-btn-cancel');
+
+    if (!modal) return;
+
+    modalTitle.textContent = title;
+    modalBody.innerHTML = bodyHTML;
+
+    // Reset event listeners by cloning
+    const newConfirmBtn = confirmBtn.cloneNode(true);
+    const newCancelBtn = cancelBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+    cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+
+    const closeFn = () => { modal.style.display = 'none'; };
+
+    if (onConfirm) {
+        newConfirmBtn.style.display = 'block';
+        newConfirmBtn.textContent = confirmBtnText;
+        newConfirmBtn.style.background = confirmBtnColor;
+        newConfirmBtn.onclick = () => { closeFn(); onConfirm(); };
+
+        newCancelBtn.textContent = '취소';
+        newCancelBtn.style.background = '#e2e8f0';
+        newCancelBtn.style.color = '#475569';
+        newCancelBtn.onclick = closeFn;
+    } else {
+        newConfirmBtn.style.display = 'none';
+        newCancelBtn.textContent = '확인';
+        newCancelBtn.style.background = '#3b82f6';
+        newCancelBtn.style.color = 'white';
+        newCancelBtn.onclick = closeFn;
+    }
+
+    modal.style.display = 'flex';
+}
+
+function showModalAlert(msg, isError = false) {
+    const title = isError ? '오류' : '알림';
+    const content = isError
+        ? `<div style="text-align:center; padding: 30px 0; font-size:1.1rem; color:#ef4444; font-weight:700; display:flex; flex-direction:column; align-items:center; gap:10px;"><i class="material-icons" style="font-size:3rem;">error_outline</i>${msg}</div>`
+        : `<div style="text-align:center; padding: 30px 0; font-size:1.05rem; color:#334155;">${msg}</div>`;
+    openModal(title, content, null);
+}
+
+function showModalConfirm(msg, onConfirm) {
+    const content = `<div style="text-align:center; padding: 30px 0; font-size:1.1rem; color:#334155; font-weight:500;">${msg}</div>`;
+    openModal('확인', content, onConfirm);
+}
 
 async function fetchMembers() {
     try {
@@ -170,7 +226,7 @@ function updateCheckmarks() {
 
 function toggleTarget(member, phone, courseName) {
     if (!phone) {
-        alert('전화번호가 없습니다.');
+        showModalAlert('전화번호가 없습니다.', true);
         return;
     }
 
@@ -375,7 +431,7 @@ function saveEditTemplate(i) {
     if (!editArea) return;
     const newText = editArea.value.trim();
     if (!newText) {
-        alert('내용을 입력해주세요.');
+        showModalAlert('내용을 입력해주세요.', true);
         return;
     }
     myTemplates[i] = newText;
@@ -383,7 +439,7 @@ function saveEditTemplate(i) {
     editingTemplateIndex = -1;
     renderTemplates();
     loadTemplateByIndex(i);
-    alert('수정되었습니다.');
+    showModalAlert('수정되었습니다.');
 }
 
 function cancelEditTemplate() {
@@ -393,27 +449,27 @@ function cancelEditTemplate() {
 
 function deleteTemplate(i, e) {
     e.stopPropagation();
-    if (confirm('이 템플릿을 삭제하시겠습니까?')) {
+    showModalConfirm('이 템플릿을 삭제하시겠습니까?', () => {
         myTemplates.splice(i, 1);
         localStorage.setItem('sejongSmsTemplates', JSON.stringify(myTemplates));
         renderTemplates();
-    }
+    });
 }
 
 function saveNewTemplate() {
     const text = document.getElementById('messageInput').value.trim();
     if (!text) {
-        alert('등록할 내용을 아래 입력창에 작성해주세요.');
+        showModalAlert('등록할 내용을 아래 입력창에 작성해주세요.', true);
         return;
     }
     if (myTemplates.includes(text)) {
-        alert('이미 동일한 내용의 템플릿이 있습니다.');
+        showModalAlert('이미 동일한 내용의 템플릿이 있습니다.', true);
         return;
     }
     myTemplates.unshift(text); // Add to top
     localStorage.setItem('sejongSmsTemplates', JSON.stringify(myTemplates));
     renderTemplates();
-    alert('새로운 자동글이 등록되었습니다.');
+    showModalAlert('새로운 자동글이 등록되었습니다.');
 }
 
 function loadTemplate(text) {
@@ -466,26 +522,8 @@ function updateMockup() {
 }
 
 function sendSms() {
-    const modalTitle = document.getElementById('smsModalTitle');
-    const modalBody = document.getElementById('smsModalBody');
-    const modal = document.getElementById('smsModal');
-    const confirmBtn = document.querySelector('.modal-btn-confirm');
-    const cancelBtn = document.querySelector('.modal-btn-cancel');
-
-    const showAlert = (msg) => {
-        modalTitle.textContent = '알림';
-        modalBody.innerHTML = `<div style="text-align:center; padding: 30px 0; font-size:1.1rem; color:#ef4444; font-weight:700; display:flex; flex-direction:column; align-items:center; gap:10px;"><i class="material-icons" style="font-size:3rem;">error_outline</i>${msg}</div>`;
-        if (confirmBtn) confirmBtn.style.display = 'none';
-        if (cancelBtn) {
-            cancelBtn.textContent = '확인';
-            cancelBtn.style.background = '#3b82f6';
-            cancelBtn.style.color = 'white';
-        }
-        modal.style.display = 'flex';
-    };
-
     if (selectedTargets.length === 0) {
-        showAlert('전송 대상을 먼저 추가해주세요.');
+        showModalAlert('전송 대상을 먼저 추가해주세요.', true);
         return;
     }
     let text = document.getElementById('messageInput').value;
@@ -496,21 +534,13 @@ function sendSms() {
         if (text.trim() === '') {
             text = footerInput;
         } else {
-            text += '\n\n' + footerInput;
+            text += '\\n\\n' + footerInput;
         }
     }
 
     if (text.trim() === '') {
-        showAlert('메시지 내용을 입력해주세요.');
+        showModalAlert('메시지 내용을 입력해주세요.', true);
         return;
-    }
-
-    // Reset buttons for sending flow
-    if (confirmBtn) confirmBtn.style.display = 'block';
-    if (cancelBtn) {
-        cancelBtn.textContent = '취소';
-        cancelBtn.style.background = '#e2e8f0';
-        cancelBtn.style.color = '#475569';
     }
 
     // Build personalized examples
@@ -519,8 +549,6 @@ function sendSms() {
         let msg = text.replace(/%%%/g, t.name);
 
         // If tuition date logic is requested (assuming t.reg_date or similar holds billing date)
-        // If an explicit placeholder like ### is used for date, we replace it.
-        // We will replace @@@ with payment date just in case, or show how it works.
         const tuitionDate = t.reg_date ? new Date(t.reg_date).getDate() + '일' : '지정일';
         msg = msg.replace(/@@@/g, tuitionDate);
 
@@ -530,9 +558,9 @@ function sendSms() {
     const previewOutput = personalizedMessages.slice(0, 3).map(msg => `<div style="background:#f1f5f9; padding:10px; border-radius:6px; margin-bottom:8px; font-size:0.9rem;">${msg.replace(/\\n/g, '<br>')}</div>`).join('');
     const extraCount = personalizedMessages.length > 3 ? `<div style="text-align:center; color:#64748b; font-size:0.85rem; margin-top:5px;">...외 ${personalizedMessages.length - 3}명</div>` : '';
 
-    modalTitle.textContent = `[${currentMsgType}] 전송 확인`;
+    const title = `[${currentMsgType}] 전송 확인`;
 
-    modalBody.innerHTML = `
+    const bodyHTML = `
         <div style="margin-bottom:15px;">
             <strong style="color:#2563eb; font-size:1.1rem;">총 ${selectedTargets.length}명</strong>에게 문자를 발송합니다.
         </div>
@@ -544,10 +572,9 @@ function sendSms() {
         </div>
     `;
 
-    modal.style.display = 'flex';
+    openModal(title, bodyHTML, confirmSmsSend, '발송하기', '#3b82f6');
 }
 
 function confirmSmsSend() {
-    document.getElementById('smsModal').style.display = 'none';
-    alert('전송이 완료되었습니다. (테스트)');
+    showModalAlert('전송이 완료되었습니다. (테스트용 응답입니다)');
 }
