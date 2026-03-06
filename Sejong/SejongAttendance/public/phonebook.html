@@ -5,18 +5,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>전화번호부 - 세종요리</title>
-    <link rel="stylesheet" href="style.css?v=20260307_2">
+    <link rel="stylesheet" href="style.css?v=20260307_3">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="phonebook.js?v=20260307_2" defer></script>
+    <script src="phonebook.js?v=20260307_4" defer></script>
     <style>
         .phone-grid {
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            /* drastically reduced from 30px */
-            padding: 10px 0;
+            gap: 5px;
+            /* highly compressed gap */
+            padding: 5px 0;
             max-height: 80vh;
             overflow-y: auto;
         }
@@ -38,25 +38,26 @@
         .phone-card-list {
             display: flex;
             flex-direction: column;
-            gap: 6px;
-            /* reduced from 12px */
+            gap: 2px;
+            /* ultra thin list gap */
         }
 
         .phone-card {
             background: white;
-            border-radius: 6px;
-            /* smaller radius */
-            padding: 4px 8px;
-            /* severely reduced padding to make box thin */
+            border-radius: 4px;
+            padding: 2px 5px;
+            /* ultra thin padding to make the white box as small as possible */
             display: flex;
             align-items: center;
             justify-content: space-between;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-            /* smaller shadow */
+            box-shadow: none;
+            /* remove shadow to make it flatter */
             transition: all 0.2s ease;
-            border: 1px solid #f1f5f9;
-            /* thinner border */
-            font-size: 0.8rem;
+            border: 1px solid #e2e8f0;
+            /* standard border */
+            font-size: 0.75rem;
+            min-height: 38px;
+            /* severely restrict minimum height */
         }
 
         .phone-card:hover {
@@ -99,7 +100,8 @@
             align-items: center;
             gap: 4px;
             background: #f8fafc;
-            padding: 2px 4px;
+            padding: 1px 4px;
+            /* thinnest padding inside */
             border-radius: 4px;
             border: 1px solid #edf2f7;
             justify-content: space-between;
