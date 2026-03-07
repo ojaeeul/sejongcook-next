@@ -1,6 +1,46 @@
 const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:8000/api' : '/api/sejong';
 
 let allMembers = [];
+let paymentsData = [];
+let attendanceData = [];
+let holidaysData = [];
+let attendanceByMember = {};
+
+let COURSE_SCHEDULES = {
+    '한식기능사': [1, 3],
+    '양식기능사': [2, 4],
+    '일식기능사': [2, 4],
+    '중식기능사': [2, 4],
+    '제과기능사': [1, 3],
+    '제빵기능사': [2, 4],
+    '제과제빵기능사': [1, 2, 3, 4],
+    '복어기능사': [5],
+    '산업기사': [5],
+    '가정요리': [2, 4],
+    '브런치': [5]
+};
+
+const KOREAN_HOLIDAYS_MAP = {
+    "2025-01-01": "신정", "2025-01-28": "설날 연휴", "2025-01-29": "설날", "2025-01-30": "설날 연휴",
+    "2025-03-01": "삼일절",
+    "2025-05-05": "어린이날", "2025-05-07": "부처님오신날",
+    "2025-06-06": "현충일", "2025-08-15": "광복절",
+    "2025-10-03": "개천절", "2025-10-05": "추석 연휴", "2025-10-06": "추석", "2025-10-07": "추석 연휴", "2025-10-09": "한글날",
+    "2025-12-25": "성탄절",
+    "2026-01-01": "신정", "2026-02-16": "설날 연휴", "2026-02-17": "설날", "2026-02-18": "설날 연휴",
+    "2026-03-01": "삼일절",
+    "2026-05-05": "어린이날", "2026-05-24": "부처님오신날",
+    "2026-06-06": "현충일", "2026-08-15": "광복절",
+    "2026-09-24": "추석 연휴", "2026-09-25": "추석", "2026-09-26": "추석 연휴",
+    "2026-10-03": "개천절", "2026-10-09": "한글날",
+    "2026-12-25": "성탄절",
+    "2027-01-01": "신정", "2027-02-06": "설날 연휴", "2027-02-07": "설날", "2027-02-08": "설날 연휴",
+    "2027-03-01": "삼일절", "2027-05-05": "어린이날", "2027-05-13": "부처님오신날",
+    "2027-06-06": "현충일", "2027-08-15": "광복절",
+    "2027-09-14": "추석 연휴", "2027-09-15": "추석", "2027-09-16": "추석 연휴",
+    "2027-10-03": "개천절", "2027-10-09": "한글날",
+    "2027-12-25": "성탄절"
+};
 let storedTargets = localStorage.getItem('sejongSmsSelectedTargets');
 let selectedTargets = storedTargets ? JSON.parse(storedTargets) : []; // Array of member objects
 let currentMsgType = 'SMS';
@@ -29,7 +69,82 @@ let myTemplates = parsed.map(t => {
 localStorage.setItem('sejongSmsTemplates', JSON.stringify(myTemplates));
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Restore settings
+    // Restore settings will happen in restoreAllDrafts below
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    document.getElementById('currentDateHeader').textContent = todayStr;
+
+    // Default dates (will be overridden if saved data exists)
+    document.getElementById('paymentRangeStart').value = todayStr;
+    let daysUntilNextSat = 6 - today.getDay();
+    if (daysUntilNextSat < 0) daysUntilNextSat += 7;
+    const nextSat = new Date(today);
+    nextSat.setDate(today.getDate() + daysUntilNextSat + 7);
+    document.getElementById('paymentRangeEnd').value = nextSat.toISOString().split('T')[0];
+
+    // Default settings for first load
+    const pf = document.getElementById('usePaymentFilter');
+    if (pf) pf.checked = false;
+    const ii = document.getElementById('includeInactive');
+    if (ii) ii.checked = true; // Show all by default
+
+    fetchAllData();
+    renderTemplates();
+    filterTemplates();
+
+    // Default: uncheck payment filter to show all students on load
+    if (pf) pf.checked = false;
+
+    // Event listeners
+    document.querySelectorAll('input[name="targetType"]').forEach(radio => {
+        radio.addEventListener('change', () => {
+            syncSelectedPhones();
+            saveAllDrafts();
+            renderTargetList();
+        });
+    });
+    document.getElementById('includeInactive').addEventListener('change', () => {
+        saveAllDrafts();
+        renderTargetList();
+    });
+    document.getElementById('usePaymentFilter').addEventListener('change', () => {
+        saveAllDrafts();
+        renderTargetList();
+    });
+
+    restoreAllDrafts();
+});
+
+function saveAllDrafts() {
+    // 1. Core Settings
+    const type = document.querySelector('input[name="targetType"]:checked')?.value || 'parent';
+    const inactive = document.getElementById('includeInactive').checked;
+    localStorage.setItem('sejongSmsTargetType', type);
+    localStorage.setItem('sejongSmsIncludeInactive', inactive);
+
+    // 2. Draft Message & Footer
+    const message = document.getElementById('messageInput').value;
+    const footer = document.getElementById('footerInput').value;
+    const useFooter = document.getElementById('useFooter').checked;
+    localStorage.setItem('sejongSmsDraftMessage', message);
+    localStorage.setItem('sejongSmsDraftFooter', footer);
+    localStorage.setItem('sejongSmsUseFooter', useFooter);
+
+    // 3. Filters
+    const rangeStart = document.getElementById('paymentRangeStart').value;
+    const rangeEnd = document.getElementById('paymentRangeEnd').value;
+    const useFilter = document.getElementById('usePaymentFilter').checked;
+    localStorage.setItem('sejongSmsRangeStart', rangeStart);
+    localStorage.setItem('sejongSmsRangeEnd', rangeEnd);
+    localStorage.setItem('sejongSmsUseFilter', useFilter);
+
+    // 4. Search State
+    const searchVal = document.getElementById('memberSearchInputSide')?.value || '';
+    localStorage.setItem('sejongSmsSearchValue', searchVal);
+}
+
+function restoreAllDrafts() {
+    // Restore Core Settings
     const savedType = localStorage.getItem('sejongSmsTargetType');
     if (savedType) {
         const radio = document.querySelector(`input[name="targetType"][value="${savedType}"]`);
@@ -40,28 +155,34 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('includeInactive').checked = savedInactive === 'true';
     }
 
-    fetchMembers();
-    renderTemplates(); // Initialize templates
-    filterTemplates(); // Apply filter initially
+    // Restore Drafts
+    const draftMsg = localStorage.getItem('sejongSmsDraftMessage');
+    if (draftMsg !== null) document.getElementById('messageInput').value = draftMsg;
 
-    // Event listeners
-    document.querySelectorAll('input[name="targetType"]').forEach(radio => {
-        radio.addEventListener('change', () => {
-            saveSettings();
-            renderTargetList();
-        });
-    });
-    document.getElementById('includeInactive').addEventListener('change', () => {
-        saveSettings();
-        renderTargetList();
-    });
-});
+    const draftFooter = localStorage.getItem('sejongSmsDraftFooter');
+    if (draftFooter !== null) document.getElementById('footerInput').value = draftFooter;
 
-function saveSettings() {
-    const type = document.querySelector('input[name="targetType"]:checked').value;
-    const inactive = document.getElementById('includeInactive').checked;
-    localStorage.setItem('sejongSmsTargetType', type);
-    localStorage.setItem('sejongSmsIncludeInactive', inactive);
+    const useFooter = localStorage.getItem('sejongSmsUseFooter');
+    if (useFooter !== null) {
+        document.getElementById('useFooter').checked = (useFooter === 'true');
+        document.getElementById('noFooter').checked = (useFooter !== 'true');
+    }
+
+    // Restore Filters
+    const rStart = localStorage.getItem('sejongSmsRangeStart');
+    const rEnd = localStorage.getItem('sejongSmsRangeEnd');
+    const uFilter = localStorage.getItem('sejongSmsUseFilter');
+    if (rStart) document.getElementById('paymentRangeStart').value = rStart;
+    if (rEnd) document.getElementById('paymentRangeEnd').value = rEnd;
+    if (uFilter !== null) document.getElementById('usePaymentFilter').checked = (uFilter === 'true');
+
+    // Restore Search
+    const savedSearch = localStorage.getItem('sejongSmsSearchValue');
+    if (savedSearch !== null && document.getElementById('memberSearchInputSide')) {
+        document.getElementById('memberSearchInputSide').value = savedSearch;
+    }
+
+    updateMockup();
 }
 
 // Custom Modal Helpers
@@ -119,31 +240,218 @@ function showModalConfirm(msg, onConfirm) {
     openModal('확인', content, onConfirm);
 }
 
-async function fetchMembers() {
+async function fetchAllData() {
     try {
-        const res = await fetch(`${API_BASE}/members`);
-        allMembers = await res.json();
+        const cacheBuster = `?t=${Date.now()}`;
+        const fetchWithErrorHandling = async (url) => {
+            const res = await fetch(url);
+            if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
+            return res.json();
+        };
+
+        const results = await Promise.allSettled([
+            fetchWithErrorHandling(`${API_BASE}/members${cacheBuster}`),
+            fetchWithErrorHandling(`${API_BASE}/payments${cacheBuster}`),
+            fetchWithErrorHandling(`${API_BASE}/attendance${cacheBuster}`),
+            fetchWithErrorHandling(`${API_BASE}/holidays${cacheBuster}`),
+            fetchWithErrorHandling(`${API_BASE}/timetable${cacheBuster}`),
+            fetchWithErrorHandling(`${API_BASE}/settings${cacheBuster}`)
+        ]);
+
+        if (results[0].status === 'fulfilled') allMembers = results[0].value;
+        if (results[1].status === 'fulfilled') paymentsData = results[1].value;
+        if (results[2].status === 'fulfilled') attendanceData = results[2].value;
+        if (results[3].status === 'fulfilled') holidaysData = results[3].value;
+
+        if (results[4].status === 'fulfilled' && results[4].value) {
+            COURSE_SCHEDULES = { ...COURSE_SCHEDULES, ...results[4].value };
+        }
+
+        // Settings handling
+        if (results[5].status === 'fulfilled') {
+            const rawSettings = results[5].value;
+            const settings = Array.isArray(rawSettings) ? rawSettings[0] : rawSettings;
+            // potential future settings use
+        }
+
+        processAttendanceData();
         processCourses();
         renderTargetList();
         updateSelectedTags();
     } catch (err) {
-        console.error('Failed to fetch members for SMS:', err);
+        console.error('Failed to fetch data for SMS:', err);
     }
+}
+
+function processAttendanceData() {
+    attendanceByMember = {};
+    if (!Array.isArray(attendanceData)) return;
+    const deduped = new Map();
+    attendanceData.forEach(a => {
+        if (!a.memberId || !a.date) return;
+        const key = `${a.memberId}_${a.date}_${a.course || ''}`;
+        if (!deduped.has(key)) deduped.set(key, a);
+    });
+    deduped.forEach(a => {
+        const mid = a.memberId;
+        if (!attendanceByMember[mid]) attendanceByMember[mid] = [];
+        const dateObj = new Date(a.date);
+        attendanceByMember[mid].push({
+            ...a,
+            dateObj: dateObj,
+            yearNum: dateObj.getFullYear(),
+            monthNum: dateObj.getMonth() + 1
+        });
+    });
+    for (const mid in attendanceByMember) {
+        attendanceByMember[mid].sort((a, b) => a.dateObj - b.dateObj);
+    }
+}
+
+function getMemberScheduledDate(memberId, courseFilter) {
+    const today = new Date();
+
+    // Filter holidays/Sundays like ledger.js
+    let memberRecords = (attendanceByMember[memberId] || []).filter(r => {
+        const dateStr = r.date.split('T')[0];
+        const isHolidayInSys = holidaysData.some(h => h.date === dateStr);
+        const isNationalHoliday = !!KOREAN_HOLIDAYS_MAP[dateStr];
+        const dayOfWeek = r.dateObj.getDay();
+        return !(isHolidayInSys || isNationalHoliday || dayOfWeek === 0);
+    }).sort((a, b) => a.dateObj - b.dateObj);
+
+    let rollingTotal = 0;
+    let lastRecordDate = null;
+    let allMilestones = [];
+    let hasAnyAttendance = false;
+
+    const getCycle = (val) => {
+        let vRaw = Math.round(val * 10);
+        if (vRaw < 90) return 0;
+        return Math.floor((vRaw - 90) / 80) + 1;
+    };
+
+    // [1] Check Sync Data
+    try {
+        const syncData = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
+        for (let mOffset = -6; mOffset <= 6; mOffset++) {
+            const d = new Date(today.getFullYear(), today.getMonth() + mOffset, 1);
+            const y = d.getFullYear();
+            const m = d.getMonth() + 1;
+            const syncKey = `${memberId}_${y}_${m}_${courseFilter || 'all'}`;
+            if (syncData[syncKey]) {
+                allMilestones.push({ year: y, month: m, day: syncData[syncKey] });
+            }
+        }
+    } catch (e) { }
+
+    for (const r of memberRecords) {
+        if (courseFilter) {
+            const rClean = (r.course || '').replace(/\([^)]*\)/g, '').trim();
+            const fClean = courseFilter.replace(/\([^)]*\)/g, '').trim();
+            if (rClean !== fClean) continue;
+        }
+
+        const inc = (r.course && r.course.includes('제과제빵')) ? 0.5 : 1.0;
+        const isMarker = ['[', ']'].includes(r.status);
+        const isNumericPresent = ['10', '12', '2', '5', '7'].includes(r.status);
+        const isAbsent = r.status === 'absent' || (typeof r.status === 'string' && r.status.startsWith('X'));
+        const isRegular = r.status === 'present' || r.status === 'extension' || isNumericPresent || isAbsent;
+
+        if (isMarker || isRegular) {
+            const prevCycle = getCycle(rollingTotal);
+            rollingTotal += inc;
+            const currCycle = getCycle(rollingTotal);
+            if (currCycle > prevCycle) {
+                allMilestones.push({ year: r.yearNum, month: r.monthNum, day: r.dateObj.getDate() });
+            }
+            lastRecordDate = r.dateObj;
+            hasAnyAttendance = true;
+        }
+    }
+
+    // Simulation like ledger.js
+    if (hasAnyAttendance) {
+        const firstDayOfSim = new Date(today.getFullYear(), today.getMonth() - 6, 1);
+        let simDate = new Date(firstDayOfSim);
+        if (lastRecordDate && lastRecordDate > firstDayOfSim) {
+            simDate = new Date(lastRecordDate.getTime() + 86400000);
+        }
+
+        const limitDate = new Date(today.getFullYear(), today.getMonth() + 6, 0);
+        let simRolling = rollingTotal;
+
+        while (simDate <= limitDate) {
+            const dayOfWeek = simDate.getDay();
+            const y_sim = simDate.getFullYear();
+            const m_sim = String(simDate.getMonth() + 1).padStart(2, '0');
+            const d_sim = String(simDate.getDate()).padStart(2, '0');
+            const dateStr = `${y_sim}-${m_sim}-${d_sim}`;
+            const isHoliday = holidaysData.some(h => h.date === dateStr) || !!KOREAN_HOLIDAYS_MAP[dateStr];
+
+            let isValidDay = false;
+            if (courseFilter) {
+                const cleanFilter = courseFilter.replace(/\([^)]*\)/g, '').trim();
+                const schedule = COURSE_SCHEDULES[cleanFilter];
+                if (schedule) {
+                    if (schedule.includes(dayOfWeek)) isValidDay = true;
+                } else {
+                    if (dayOfWeek !== 0) isValidDay = true;
+                }
+            } else {
+                if (dayOfWeek !== 0) isValidDay = true;
+            }
+
+            if (isValidDay && !isHoliday) {
+                const prevSim = simRolling;
+                const inc = (courseFilter && courseFilter.includes('제과제빵')) ? 0.5 : 1.0;
+                simRolling += inc;
+                if (getCycle(simRolling) > getCycle(prevSim)) {
+                    allMilestones.push({ year: simDate.getFullYear(), month: simDate.getMonth() + 1, day: simDate.getDate() });
+                    if (allMilestones.length > 10) break;
+                }
+            }
+            simDate.setDate(simDate.getDate() + 1);
+        }
+    }
+
+    if (allMilestones.length > 0) {
+        allMilestones.sort((a, b) => new Date(a.year, a.month - 1, a.day) - new Date(b.year, b.month - 1, b.day));
+        // For @@@, return the closest future (or current today) date
+        const best = allMilestones.find(m => {
+            const d = new Date(m.year, m.month - 1, m.day);
+            return d >= today;
+        });
+        return best || allMilestones[allMilestones.length - 1];
+    }
+    return null;
 }
 
 function processCourses() {
     groupedCourses = { '미지정': [] };
     allMembers.forEach(m => {
-        if (!m.course || m.course.trim() === '') {
+        const rawCourse = (m.course || '').trim();
+        if (rawCourse === '') {
             groupedCourses['미지정'].push(m);
         } else {
-            m.course.split(',').forEach(c => {
-                const cName = c.trim();
-                if (!groupedCourses[cName]) groupedCourses[cName] = [];
-                groupedCourses[cName].push(m);
+            // Split multiple courses and merge into subjects (strip times)
+            rawCourse.split(',').forEach(c => {
+                const trimmedC = c.trim();
+                // Strip class times/times in parentheses like (19:00)
+                const subjectName = trimmedC.replace(/\(\d{1,2}:\d{2}\)/g, '').trim() || '미지정';
+                if (!groupedCourses[subjectName]) groupedCourses[subjectName] = [];
+                // Prevent duplicate entries of the same student in the same merged group
+                if (!groupedCourses[subjectName].some(em => em.id === m.id)) {
+                    groupedCourses[subjectName].push(m);
+                }
             });
         }
     });
+
+    // Cleanup: Remove "미지정" group if it's empty
+    if (groupedCourses['미지정'].length === 0) {
+        delete groupedCourses['미지정'];
+    }
 }
 
 let storedExpanded = localStorage.getItem('sejongSmsExpandedCourses');
@@ -160,22 +468,57 @@ function saveSelectedTargets() {
 function renderTargetList() {
     const includeInactive = document.getElementById('includeInactive').checked;
     const targetType = document.querySelector('input[name="targetType"]:checked').value;
+    const usePaymentFilter = document.getElementById('usePaymentFilter').checked;
+    const rangeStartVal = document.getElementById('paymentRangeStart').value;
+    const rangeEndVal = document.getElementById('paymentRangeEnd').value;
+    const searchVal = (document.getElementById('memberSearchInputSide') ? document.getElementById('memberSearchInputSide').value : '').toLowerCase();
+
+    const rangeStart = rangeStartVal ? new Date(rangeStartVal + 'T00:00:00') : null;
+    const rangeEnd = rangeEndVal ? new Date(rangeEndVal + 'T00:00:00') : null;
 
     const listDiv = document.getElementById('courseList');
+    if (!listDiv) return;
+
+    // Maintain old content if searching (optional, but here we rebuild)
     listDiv.innerHTML = '';
+
+    saveAllDrafts(); // Save state (search, inactive toggle, etc)
 
     Object.keys(groupedCourses).sort().forEach(cName => {
         let membersInCourse = groupedCourses[cName];
 
-        // Filter active/inactive
-        if (!includeInactive) {
+        // 1. Filter active/inactive
+        // If searching, we skip this early filter to look through everyone
+        if (!includeInactive && !searchVal) {
             membersInCourse = membersInCourse.filter(m => m.status !== 'trash' && m.status !== 'delete');
         }
 
-        // Filter by phone existence based on type
-        membersInCourse = membersInCourse.filter(m => {
-            return targetType === 'student' ? m.phone : m.phone_guardian;
-        });
+        // 2. Note: We NO LONGER filter by phone here, so students always show up.
+        // We handle selection eligibility in the rendering loop.
+
+        // 3. Filter by Payment Schedule (8th day) if enabled
+        if (usePaymentFilter && rangeStart && rangeEnd) {
+            membersInCourse = membersInCourse.filter(m => {
+                const schedArr = getAllMilestonesForRange(m.id, cName === '미지정' ? null : cName, rangeStart, rangeEnd);
+                return schedArr.length > 0;
+            });
+        }
+
+        // 4. Search Filter
+        if (searchVal) {
+            membersInCourse = membersInCourse.filter(m => {
+                const isInactive = m.status === 'trash' || m.status === 'delete';
+                const statusTag = isInactive ? '휴원' : '재원';
+                // Always search through both names and both potential phone numbers
+                return m.name.toLowerCase().includes(searchVal) ||
+                    (m.phone && m.phone.includes(searchVal)) ||
+                    (m.phone_guardian && m.phone_guardian.includes(searchVal)) ||
+                    cName.toLowerCase().includes(searchVal) ||
+                    statusTag.includes(searchVal) ||
+                    '수강생'.includes(searchVal) ||
+                    '학부모'.includes(searchVal);
+            });
+        }
 
         if (membersInCourse.length === 0) return;
 
@@ -184,9 +527,10 @@ function renderTargetList() {
         // Header
         const header = document.createElement('div');
         header.className = 'course-item';
-        const isExpanded = expandedCourses.has(cName);
+        const isExpanded = expandedCourses.has(cName) || !!searchVal;
+        const cleanCNameHeader = cName.replace(/\(\d{1,2}:\d{2}\)/, '').trim();
         header.innerHTML = `
-            <span><i class="material-icons" style="font-size:1rem; vertical-align:middle; margin-right:5px; color:#cbd5e1;">folder</i> ${cName} <span style="font-size:0.8rem; color:#94a3b8;">(${membersInCourse.length})</span></span>
+            <span><i class="material-icons" style="font-size:1rem; vertical-align:middle; margin-right:5px; color:#cbd5e1;">folder</i> ${cleanCNameHeader} <span style="font-size:0.8rem; color:#94a3b8;">(${membersInCourse.length})</span></span>
             <i class="material-icons">${isExpanded ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}</i>
         `;
 
@@ -200,31 +544,45 @@ function renderTargetList() {
             const mDiv = document.createElement('div');
             mDiv.className = 'member-row';
             const phone = targetType === 'student' ? m.phone : m.phone_guardian;
+            const hasPhone = !!(phone && phone.trim());
+
             mDiv.dataset.id = m.id;
             mDiv.dataset.phone = phone || '';
 
             mDiv.style.padding = '8px 20px 8px 40px';
             mDiv.style.fontSize = '0.9rem';
-            mDiv.style.cursor = 'pointer';
+            mDiv.style.cursor = hasPhone ? 'pointer' : 'not-allowed';
             mDiv.style.display = 'flex';
             mDiv.style.justifyContent = 'space-between';
             mDiv.style.borderBottom = '1px solid #f1f5f9';
+            if (!hasPhone) mDiv.style.opacity = '0.6';
 
-            const isSelected = selectedTargets.some(t => String(t.id) === String(m.id) && t.phone === phone);
+            const isSelected = selectedTargets.some(t => String(t.id) === String(m.id));
             if (isSelected) mDiv.style.color = '#3b82f6';
 
+            const isInactive = m.status === 'trash' || m.status === 'delete';
+            const statusLabel = isInactive ? '<span style="color:#ef4444; font-size:0.75rem; margin-left:4px;">(휴원)</span>' : '';
+            const typeLabel = targetType === 'student' ? '<span style="color:#94a3b8; font-size:0.7rem; margin-right:4px;">수강생:</span>' : '<span style="color:#94a3b8; font-size:0.7rem; margin-right:4px;">학부모:</span>';
+
             mDiv.innerHTML = `
-                <span>
-                    <i class="material-icons" style="font-size:1rem; vertical-align:middle; margin-right:5px; color:${isSelected ? '#3b82f6' : '#cbd5e1'};">
-                        ${isSelected ? 'check_circle' : 'radio_button_unchecked'}
+                <span style="display:flex; align-items:center;">
+                    <i class="material-icons" style="font-size:1rem; vertical-align:middle; margin-right:8px; color:${isSelected ? '#3b82f6' : '#cbd5e1'};">
+                        ${isSelected ? 'check_circle' : (hasPhone ? 'radio_button_unchecked' : 'error_outline')}
                     </i>
-                    ${m.name}
+                    <span style="font-weight:600;">${m.name}</span>
+                    ${statusLabel}
                 </span>
-                <span style="font-size:0.8rem; color:#94a3b8;">${phone || '-'}</span>
+                <span style="font-size:0.8rem; color:${hasPhone ? '#64748b' : '#ef4444'};">
+                    ${typeLabel}${hasPhone ? phone : '번호 없음'}
+                </span>
             `;
 
             mDiv.onclick = (e) => {
                 e.stopPropagation();
+                if (!hasPhone) {
+                    showModalAlert(`${m.name} 수강생의 ${targetType === 'student' ? '휴대폰' : '학부모'} 번호가 없습니다.`, true);
+                    return;
+                }
                 toggleTarget(m, phone, cName);
             };
             membersDiv.appendChild(mDiv);
@@ -248,8 +606,7 @@ function renderTargetList() {
 function updateCheckmarks() {
     document.querySelectorAll('.member-row').forEach(mDiv => {
         const id = mDiv.dataset.id;
-        const phone = mDiv.dataset.phone;
-        const isSelected = selectedTargets.some(t => String(t.id) === id && String(t.phone) === phone);
+        const isSelected = selectedTargets.some(t => String(t.id) === id);
 
         mDiv.style.color = isSelected ? '#3b82f6' : '';
         const iTag = mDiv.querySelector('i');
@@ -266,14 +623,46 @@ function toggleTarget(member, phone, courseName) {
         return;
     }
 
-    const index = selectedTargets.findIndex(t => String(t.id) === String(member.id) && t.phone === phone);
+    const index = selectedTargets.findIndex(t => String(t.id) === String(member.id));
     if (index > -1) {
-        selectedTargets.splice(index, 1);
+        // Find current member to see if phone matches
+        const activeTarget = selectedTargets[index];
+        // If the number being clicked is the same as already selected, turn it off.
+        if (activeTarget.phone === phone) {
+            selectedTargets.splice(index, 1);
+        } else {
+            // If phone type was changed (e.g. was Parent, now clicking Trainee), update it.
+            selectedTargets[index].phone = phone;
+            selectedTargets[index].selectedCourse = courseName;
+        }
     } else {
         selectedTargets.push({ ...member, phone: phone, selectedCourse: courseName });
     }
 
     updateCheckmarks();
+    updateSelectedTags();
+    saveSelectedTargets();
+}
+
+/**
+ * Synchronizes all selected targets' phone numbers when the global targetType changes.
+ * It looks up the original member data from allMembers to ensure accuracy.
+ */
+function syncSelectedPhones() {
+    const targetType = document.querySelector('input[name="targetType"]:checked')?.value || 'student';
+
+    selectedTargets = selectedTargets.map(t => {
+        // Find the full member data to get both original phone numbers
+        const original = allMembers.find(m => String(m.id) === String(t.id));
+        if (original) {
+            const newPhone = targetType === 'student' ? original.phone : original.phone_guardian;
+            if (newPhone && newPhone.trim()) {
+                return { ...t, phone: newPhone };
+            }
+        }
+        return t;
+    });
+
     updateSelectedTags();
     saveSelectedTargets();
 }
@@ -288,9 +677,45 @@ function updateSelectedTags() {
     selectedTargets.forEach((t, index) => {
         const tag = document.createElement('div');
         tag.className = 'target-tag';
+        tag.style.background = '#eff6ff';
+        tag.style.color = '#3b82f6';
+        tag.style.borderColor = '#93c5fd';
+        tag.style.display = 'inline-flex';
+        tag.style.alignItems = 'center';
+
+        // Strip study time from course name
+        const cleanCourse = (t.selectedCourse || '').replace(/\(\d{1,2}:\d{2}\)/, '').trim();
+
+        // Get payment date
+        let datePart = '';
+        const usePaymentFilter = document.getElementById('usePaymentFilter') ? document.getElementById('usePaymentFilter').checked : false;
+        const rangeStartVal = document.getElementById('paymentRangeStart') ? document.getElementById('paymentRangeStart').value : null;
+        const rangeEndVal = document.getElementById('paymentRangeEnd') ? document.getElementById('paymentRangeEnd').value : null;
+        const rangeStart = rangeStartVal ? new Date(rangeStartVal + 'T00:00:00') : null;
+        const rangeEnd = rangeEndVal ? new Date(rangeEndVal + 'T00:00:00') : null;
+
+        let sched = null;
+        if (rangeStart && rangeEnd) {
+            const milestones = getAllMilestonesForRange(t.id, t.selectedCourse === '미지정' ? null : t.selectedCourse, rangeStart, rangeEnd);
+            if (milestones.length > 0) {
+                sched = milestones[0];
+            }
+        }
+        if (!sched) {
+            sched = getMemberScheduledDate(t.id, t.selectedCourse === '미지정' ? null : t.selectedCourse);
+        }
+
+        if (sched) {
+            const mm = String(sched.month).padStart(2, '0');
+            const dd = String(sched.day).padStart(2, '0');
+            datePart = `<span style="font-size:0.75rem; color:#2563eb; margin-left:6px; font-weight:700;">${mm}/${dd}</span>`;
+        }
+
         tag.innerHTML = `
-            ${t.name}
-            <i class="material-icons" onclick="removeTarget(${index})">cancel</i>
+            <span style="font-weight:700;">${t.name}</span>
+            <span style="font-size:0.65rem; color:#475569; margin-left:5px;">${cleanCourse}</span>
+            ${datePart}
+            <i class="material-icons" style="margin-left:4px; cursor:pointer; color:#94a3b8;" onclick="removeTarget(${index})">cancel</i>
         `;
         tagsDiv.appendChild(tag);
     });
@@ -301,6 +726,23 @@ function removeTarget(index) {
     updateCheckmarks();
     updateSelectedTags();
     saveSelectedTargets();
+}
+
+/**
+ * Resets all list filters (Search, Inactive, Payment) to show the full student list.
+ * Triggered by clicking the 'Class List' (반목록) header.
+ */
+function resetFilters() {
+    const pf = document.getElementById('usePaymentFilter');
+    const ii = document.getElementById('includeInactive');
+    const search = document.getElementById('memberSearchInputSide');
+
+    if (pf) pf.checked = false;
+    if (ii) ii.checked = true;
+    if (search) search.value = '';
+
+    renderTargetList();
+    saveAllDrafts();
 }
 
 function selectAllCourses() {
@@ -315,7 +757,7 @@ function selectAllCourses() {
         membersInCourse.forEach(m => {
             const phone = targetType === 'student' ? m.phone : m.phone_guardian;
             if (phone) {
-                const alreadySelected = selectedTargets.some(t => t.id === m.id && t.phone === phone);
+                const alreadySelected = selectedTargets.some(t => String(t.id) === String(m.id) && t.phone === phone);
                 if (!alreadySelected) {
                     selectedTargets.push({ ...m, phone: phone, selectedCourse: cName });
                 }
@@ -328,11 +770,73 @@ function selectAllCourses() {
     saveSelectedTargets();
 }
 
+function selectFilteredCourses() {
+    const includeInactive = document.getElementById('includeInactive').checked;
+    const targetType = document.querySelector('input[name="targetType"]:checked').value;
+    const rangeStartVal = document.getElementById('paymentRangeStart').value;
+    const rangeEndVal = document.getElementById('paymentRangeEnd').value;
+    const searchVal = (document.getElementById('memberSearchInputSide') ? document.getElementById('memberSearchInputSide').value : '').toLowerCase();
+
+    const rangeStart = rangeStartVal ? new Date(rangeStartVal + 'T00:00:00') : null;
+    const rangeEnd = rangeEndVal ? new Date(rangeEndVal + 'T00:00:00') : null;
+
+    let totalSelectedNow = 0;
+    selectedTargets = []; // Clear previous selections to strictly match the current filter
+
+
+    Object.keys(groupedCourses).sort().forEach(cName => {
+        let membersInCourse = groupedCourses[cName];
+
+        // 1. Inactive Filter
+        if (!includeInactive) {
+            membersInCourse = membersInCourse.filter(m => m.status !== 'trash' && m.status !== 'delete');
+        }
+
+        // 2. Range Filter (Button always applies the range if one is selected)
+        if (rangeStart && rangeEnd) {
+            membersInCourse = membersInCourse.filter(m => {
+                const schedArr = getAllMilestonesForRange(m.id, cName === '미지정' ? null : cName, rangeStart, rangeEnd);
+                return schedArr.length > 0;
+            });
+        }
+
+        // 3. Search Filter
+        if (searchVal) {
+            membersInCourse = membersInCourse.filter(m =>
+                m.name.toLowerCase().includes(searchVal) ||
+                (m.phone && m.phone.includes(searchVal)) ||
+                (m.phone_guardian && m.phone_guardian.includes(searchVal)) ||
+                cName.toLowerCase().includes(searchVal)
+            );
+        }
+
+        // Apply selection
+        membersInCourse.forEach(m => {
+            const phone = targetType === 'student' ? m.phone : m.phone_guardian;
+            if (phone && phone.trim()) {
+                const alreadySelected = selectedTargets.some(t => String(t.id) === String(m.id) && t.phone === phone);
+                if (!alreadySelected) {
+                    selectedTargets.push({ ...m, phone: phone, selectedCourse: cName });
+                    totalSelectedNow++;
+                }
+            }
+        });
+    });
+
+    updateCheckmarks();
+    updateSelectedTags();
+    saveSelectedTargets();
+    saveAllDrafts();
+
+    showModalAlert(`필터링 구간에 해당하는 수강생 ${totalSelectedNow}명이 선택되었습니다.`);
+}
+
 function deselectAllCourses() {
     selectedTargets = [];
     updateCheckmarks();
     updateSelectedTags();
     saveSelectedTargets();
+    resetFilters(); // This resets the sidebar list to show everything
 }
 
 // ----------------------------------------------------
@@ -344,7 +848,9 @@ let currentTab = 'all';
 function switchTab(type) {
     const tabs = document.querySelectorAll('.tab-btn');
     tabs.forEach(b => {
-        if (b.getAttribute('onclick') && b.getAttribute('onclick').includes(`switchTab('${type}')`)) {
+        // Match by text or onclick if text is not unique
+        const btnText = b.textContent.trim().toLowerCase();
+        if (btnText === type || (type === 'all' && btnText === '전체')) {
             b.classList.add('active');
             b.style.background = '#3b82f6';
             b.style.color = 'white';
@@ -359,6 +865,7 @@ function switchTab(type) {
 
     currentTab = type;
     filterTemplates();
+    updateMockup(); // Sync preview when tab changes
 }
 
 function filterTemplates() {
@@ -608,8 +1115,19 @@ function updateMockup() {
 
     // Replace %%% with a sample name for preview and @@@ for sample date
     let previewText = text.replace(/%%%/g, '김학생');
-    previewText = previewText.replace(/@@@/g, '15');
+    previewText = previewText.replace(/@@@/g, '3월 15일');
 
+    // Roughly calculate bytes
+    let bytes = 0;
+    for (let i = 0; i < text.length; i++) {
+        bytes += text.charCodeAt(i) > 128 ? 2 : 1;
+    }
+
+    const detectedType = bytes > 90 ? 'LMS' : 'SMS';
+    currentMsgType = detectedType;
+
+    // Filter preview content based on currentTab? 
+    // The user said "SMS 글만 나오기 해주세요" which could mean "If I'm on SMS tab, show it as SMS"
     if (previewText.trim() === '') {
         bubble.textContent = '메시지를 입력해주세요...';
         bubble.style.color = '#94a3b8';
@@ -618,21 +1136,17 @@ function updateMockup() {
         bubble.style.color = '#334155';
     }
 
-    // Rough byte calculation (Korean = 2 bytes, English = 1 byte)
-    let bytes = 0;
-    for (let i = 0; i < text.length; i++) {
-        bytes += text.charCodeAt(i) > 128 ? 2 : 1;
+    // Update Top Bar with Alert color if doesn't match tab
+    topBar.textContent = `${detectedType} ${bytes} bytes`;
+
+    if (currentTab !== 'all' && currentTab.toUpperCase() !== detectedType) {
+        topBar.style.background = '#f59e0b'; // Amber warning for mismatch
+        topBar.textContent += ` (탭 미스매치)`;
+    } else {
+        topBar.style.background = detectedType === 'LMS' ? '#ef4444' : '#3b82f6';
     }
 
-    if (bytes > 90) {
-        currentMsgType = 'LMS';
-        topBar.textContent = `LMS ${bytes} bytes`;
-        topBar.style.background = '#ef4444'; // Red for LMS
-    } else {
-        currentMsgType = 'SMS';
-        topBar.textContent = `SMS ${bytes} bytes`;
-        topBar.style.background = '#3b82f6'; // Blue for SMS
-    }
+    saveAllDrafts(); // AUTO SAVE ON EVERY INPUT
 }
 
 function sendSms() {
@@ -648,7 +1162,7 @@ function sendSms() {
         if (text.trim() === '') {
             text = footerInput;
         } else {
-            text += '\\n\\n' + footerInput;
+            text += '\n\n' + footerInput;
         }
     }
 
@@ -659,24 +1173,68 @@ function sendSms() {
 
     // Build personalized examples
     let personalizedMessages = [];
+    const rangeStartVal = document.getElementById('paymentRangeStart').value;
+    const rangeEndVal = document.getElementById('paymentRangeEnd').value;
+    const usePaymentFilter = document.getElementById('usePaymentFilter').checked;
+    const rangeStart = rangeStartVal ? new Date(rangeStartVal + 'T00:00:00') : null;
+    const rangeEnd = rangeEndVal ? new Date(rangeEndVal + 'T00:00:00') : null;
+
+
     selectedTargets.forEach(t => {
         let msg = text.replace(/%%%/g, t.name);
-        const tuitionDate = t.start_date ? new Date(t.start_date).getDate() : '지정';
-        msg = msg.replace(/@@@/g, tuitionDate);
+
+        let tuitionDateStr = '지정';
+        let sched = null;
+        if (rangeStart && rangeEnd) {
+            const milestones = getAllMilestonesForRange(t.id, t.selectedCourse === '미지정' ? null : t.selectedCourse, rangeStart, rangeEnd);
+            if (milestones.length > 0) {
+                sched = milestones[0];
+            }
+        }
+        if (!sched) {
+            sched = getMemberScheduledDate(t.id, t.selectedCourse === '미지정' ? null : t.selectedCourse);
+        }
+
+        if (sched) {
+            const schedDate = new Date(sched.year, sched.month - 1, sched.day);
+            let limitStart = new Date();
+            limitStart.setHours(0, 0, 0, 0);
+            let daysUntilNextSat = 6 - limitStart.getDay();
+            if (daysUntilNextSat < 0) daysUntilNextSat += 7;
+            let limitEnd = new Date(limitStart);
+            limitEnd.setDate(limitStart.getDate() + daysUntilNextSat + 7);
+
+            const finalStart = rangeStart ? rangeStart : limitStart;
+            const finalEnd = rangeEnd ? rangeEnd : limitEnd;
+
+            if (schedDate >= finalStart && schedDate <= finalEnd) {
+                tuitionDateStr = `${sched.month}월 ${sched.day}일`;
+            }
+        }
+
+        msg = msg.replace(/@@@/g, tuitionDateStr);
         personalizedMessages.push({ name: t.name, text: msg });
     });
 
     lastGeneratedPreviews = personalizedMessages; // Save for full view window
 
     // Slice first 2 for the small confirmation modal
-    const smallPreviewOutput = personalizedMessages.slice(0, 2).map(item => `
-        <div style="background:#e0f2fe; border:1px solid #bae6fd; padding:12px; border-radius:8px; margin-bottom:10px; font-size:0.9rem; color:#1e293b; text-align:left; word-break:keep-all;">
-            <div style="font-weight:700; color:#0369a1; margin-bottom:5px;">[${item.name}님에게 수신될 화면]</div>
-            ${item.text.replace(/\\n/g, '<br>')}
-        </div>
-    `).join('');
+    const smallPreviewOutput = personalizedMessages.slice(0, 3).map(item => {
+        let textBytes = 0;
+        for (let i = 0; i < item.text.length; i++) textBytes += item.text.charCodeAt(i) > 128 ? 2 : 1;
+        const typeStr = textBytes > 90 ? 'LMS' : 'SMS';
+        const isMismatch = currentTab !== 'all' && currentTab.toUpperCase() !== typeStr;
 
-    const extraCount = personalizedMessages.length > 2 ? `<div style="text-align:center; color:#64748b; font-size:0.85rem; margin-top:5px; font-weight:700;">...외 ${personalizedMessages.length - 2}명에게도 동일한 형식으로 전송됩니다.</div>` : '';
+        return `
+        <div style="background:${isMismatch ? '#fff7ed' : '#e0f2fe'}; border:1px solid ${isMismatch ? '#fdba74' : '#bae6fd'}; padding:12px; border-radius:8px; margin-bottom:10px; font-size:0.9rem; color:#1e293b; text-align:left; position:relative;">
+            ${isMismatch ? `<div style="position:absolute; top:5px; right:10px; font-size:0.65rem; background:#f59e0b; color:white; padding:1px 4px; border-radius:3px; font-weight:800;">${typeStr} 전환됨</div>` : ''}
+            <div style="font-weight:700; color:${isMismatch ? '#c2410c' : '#0369a1'}; margin-bottom:5px;">[${item.name}님 수신 화면]</div>
+            ${item.text.replace(/\n/g, '<br>')}
+        </div>
+    `;
+    }).join('');
+
+    const extraCount = personalizedMessages.length > 3 ? `<div style="text-align:center; color:#64748b; font-size:0.85rem; margin-top:5px; font-weight:700;">...외 ${personalizedMessages.length - 3}명에게 동일한 형식으로 전송됩니다.</div>` : '';
 
     const title = `[${currentMsgType}] 전송 확인`;
 
@@ -690,21 +1248,21 @@ function sendSms() {
                 const d = document.getElementById('smsPreviewContent');
                 if (d.style.display === 'none') {
                     d.style.display = 'block';
-                    this.innerHTML = '<i class=\\'material-icons\\' style=\\'font-size:1rem; vertical-align:middle;\\'>visibility_off</i> 간단 미리보기 닫기';
+                    this.innerHTML = '<i class=\\'material-icons\\' style=\\'font-size:1rem; vertical-align:middle;\\'>visibility_off</i> 미리보기 샘플 닫기';
                 } else {
                     d.style.display = 'none';
-                    this.innerHTML = '<i class=\\'material-icons\\' style=\\'font-size:1rem; vertical-align:middle;\\'>visibility</i> 간단 미리보기 열기';
+                    this.innerHTML = '<i class=\\'material-icons\\' style=\\'font-size:1rem; vertical-align:middle;\\'>visibility</i> 미리보기 샘플 열기';
                 }
             " style="width:200px; padding:6px 15px; font-size:0.9rem; background:#f8fafc; border:1px solid #cbd5e1; border-radius:5px; cursor:pointer; color:#475569; font-weight:700;">
-                <i class="material-icons" style="font-size:1rem; vertical-align:middle;">visibility</i> 간단 미리보기 열기
+                <i class="material-icons" style="font-size:1rem; vertical-align:middle;">visibility_off</i> 미리보기 샘플 닫기
             </button>
             <button onclick="showFullPreview()" style="width:200px; padding:6px 15px; font-size:0.9rem; background:#0369a1; border:none; border-radius:5px; cursor:pointer; color:white; font-weight:700; box-shadow:0 2px 4px rgba(0,0,0,0.1);">
                 <i class="material-icons" style="font-size:1rem; vertical-align:middle;">open_in_new</i> 전체 상세 미리보기 (대화면)
             </button>
         </div>
 
-        <div id="smsPreviewContent" style="display:none; max-height:200px; overflow-y:auto; padding:10px; background:#f1f5f9; border-radius:8px; margin-bottom:15px; box-shadow:inset 0 2px 4px rgba(0,0,0,0.05);">
-            <div style="font-weight:700; margin-bottom:10px; color:#475569; border-bottom:2px solid #e2e8f0; padding-bottom:5px; text-align:center;">전송 내용 (상단 2건 샘플)</div>
+        <div id="smsPreviewContent" style="display:block; max-height:250px; overflow-y:auto; padding:10px; background:#f1f5f9; border-radius:8px; margin-bottom:15px; box-shadow:inset 0 2px 4px rgba(0,0,0,0.05);">
+            <div style="font-weight:700; margin-bottom:10px; color:#475569; border-bottom:2px solid #e2e8f0; padding-bottom:5px; text-align:center;">치환 결과 샘플 (3명분)</div>
             ${smallPreviewOutput}
             ${extraCount}
         </div>
@@ -718,24 +1276,37 @@ function sendSms() {
 }
 
 function showFullPreview() {
-    const listHtml = lastGeneratedPreviews.map((item, idx) => `
-        <div style="background:white; border:1px solid #e2e8f0; padding:15px; border-radius:10px; margin-bottom:15px; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+    // Show all messages but highlight the ones that don't match the active tab
+    const listHtml = lastGeneratedPreviews.map((item, idx) => {
+        let textBytes = 0;
+        for (let i = 0; i < item.text.length; i++) textBytes += item.text.charCodeAt(i) > 128 ? 2 : 1;
+        const typeStr = textBytes > 90 ? 'LMS' : 'SMS';
+        const isMismatch = currentTab !== 'all' && currentTab.toUpperCase() !== typeStr;
+        const headerBg = isMismatch ? '#fff7ed' : 'white';
+        const typeColor = typeStr === 'LMS' ? '#ef4444' : '#3b82f6';
+
+        return `
+        <div style="background:${headerBg}; border:1px solid ${isMismatch ? '#fdba74' : '#e2e8f0'}; padding:15px; border-radius:10px; margin-bottom:15px; box-shadow:0 1px 3px rgba(0,0,0,0.05); position:relative;">
+            ${isMismatch ? `<div style="position:absolute; top:10px; right:15px; font-size:0.7rem; background:#f59e0b; color:white; padding:2px 6px; border-radius:4px; font-weight:800;">탭 미스매치</div>` : ''}
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid #f1f5f9; padding-bottom:5px;">
                 <span style="font-weight:800; color:#1e3a8a;">[${idx + 1}] 수신인: ${item.name}님</span>
-                <span style="font-size:0.75rem; color:#94a3b8;">${currentMsgType} 전송예정</span>
+                <span style="font-size:0.75rem; color:${typeColor}; font-weight:700;">${typeStr} (${textBytes} bytes)</span>
             </div>
-            <div style="padding:10px; background:#f8fafc; border-radius:6px; font-size:0.95rem; line-height:1.5; color:#334155; word-break:break-all;">
-                ${item.text.replace(/\\n/g, '<br>')}
+            <div style="padding:10px; background:${isMismatch ? '#fffcf0' : '#f8fafc'}; border-radius:6px; font-size:0.95rem; line-height:1.5; color:#334155; word-break:break-all;">
+                ${item.text.replace(/\n/g, '<br>')}
             </div>
         </div>
-    `).join('');
+    `;
+    }).join('');
 
     document.getElementById('fullPreviewBody').innerHTML = `
         <div style="padding:10px;">
-            <div style="background:#fff7ed; border:1px solid #ffedd5; color:#c2410c; padding:10px; border-radius:6px; margin-bottom:20px; font-size:0.85rem; text-align:center;">
-                <i class="material-icons" style="font-size:1rem; vertical-align:middle;">info</i> 수신인 100명에 대한 개별 치환 메시지 전체 목록입니다.
+            <div style="background:#f1f5f9; border:1px solid #e2e8f0; color:#475569; padding:10px; border-radius:6px; margin-bottom:20px; font-size:0.85rem; text-align:center;">
+                <i class="material-icons" style="font-size:1rem; vertical-align:middle;">info</i> ${currentTab === 'all' ? '전체' : currentTab.toUpperCase()} 탭의 전송 대상 목록입니다. (총 ${lastGeneratedPreviews.length}건)
             </div>
-            ${listHtml}
+            <div style="display:flex; flex-direction:column; gap:0;">
+                ${listHtml}
+            </div>
         </div>
     `;
     document.getElementById('fullPreviewModal').style.display = 'flex';
@@ -743,4 +1314,329 @@ function showFullPreview() {
 
 function confirmSmsSend() {
     showModalAlert('전송이 완료되었습니다. (테스트용 응답입니다)');
+}
+
+/* --- Range Selection Calendar Logic (Interactive Drag Support) --- */
+let calendarYear = new Date().getFullYear();
+let calendarMonth = new Date().getMonth();
+let isDragging = false;
+let dragStartDay = null;
+
+function toggleRangeCalendar() {
+    const body = document.getElementById('rangeFilterBody');
+    const icon = document.getElementById('rangeToggleIcon');
+    if (body.style.display === 'none') {
+        body.style.display = 'block';
+        icon.textContent = 'expand_less';
+        renderRangeCalendar();
+    } else {
+        body.style.display = 'none';
+        icon.textContent = 'expand_more';
+    }
+}
+
+function renderRangeCalendar() {
+    const grid = document.getElementById('calendarDays');
+    const title = document.getElementById('calendarTitle');
+    if (!grid) return;
+    grid.innerHTML = '';
+    title.textContent = `${calendarYear}.${String(calendarMonth + 1).padStart(2, '0')}`;
+
+    const firstDay = new Date(calendarYear, calendarMonth, 1).getDay();
+    const lastDate = new Date(calendarYear, calendarMonth + 1, 0).getDate();
+    const prevLastDate = new Date(calendarYear, calendarMonth, 0).getDate();
+
+    const startVal = document.getElementById('paymentRangeStart').value;
+    const endVal = document.getElementById('paymentRangeEnd').value;
+
+    const startDate = startVal ? new Date(startVal) : null;
+    const endDate = endVal ? new Date(endVal) : null;
+    if (startDate) startDate.setHours(0, 0, 0, 0);
+    if (endDate) endDate.setHours(0, 0, 0, 0);
+
+    // Pre-calculate payment days for highlighting
+    const paymentDays = new Set();
+    allMembers.forEach(m => {
+        if (!m.course) return;
+        m.course.split(',').forEach(c => {
+            const milestones = getAllMilestonesForMonth(m.id, c.trim(), calendarYear, calendarMonth + 1);
+            milestones.forEach(ms => paymentDays.add(ms.day));
+        });
+    });
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Padding prev month
+    for (let i = firstDay; i > 0; i--) {
+        const d = document.createElement('div');
+        d.className = 'calendar-day other-month';
+        d.textContent = prevLastDate - i + 1;
+        grid.appendChild(d);
+    }
+
+    // Current month days
+    for (let i = 1; i <= lastDate; i++) {
+        const d = document.createElement('div');
+        const currentD = new Date(calendarYear, calendarMonth, i);
+        currentD.setHours(0, 0, 0, 0);
+
+        d.className = 'calendar-day';
+        d.textContent = i;
+
+        const dayOfWeek = currentD.getDay();
+        const y_cal = currentD.getFullYear();
+        const m_cal = String(currentD.getMonth() + 1).padStart(2, '0');
+        const d_cal = String(currentD.getDate()).padStart(2, '0');
+        const dateStr = `${y_cal}-${m_cal}-${d_cal}`;
+        const isHolidayInSys = holidaysData.some(h => h.date === dateStr);
+        const isNationalHoliday = !!KOREAN_HOLIDAYS_MAP[dateStr];
+
+        // Color rules: Sun/Holiday Red, Sat Blue, Others Black
+        if (dayOfWeek === 0 || isHolidayInSys || isNationalHoliday) {
+            d.style.color = '#ef4444';
+        } else if (dayOfWeek === 6) {
+            d.style.color = '#3b82f6';
+        } else {
+            d.style.color = '#000000';
+        }
+
+        if (currentD.getTime() === today.getTime()) d.classList.add('today');
+
+        if (startDate && endDate) {
+            if (currentD.getTime() === startDate.getTime()) d.classList.add('range-start');
+            if (currentD.getTime() === endDate.getTime()) d.classList.add('range-end');
+            if (currentD > startDate && currentD < endDate) d.classList.add('in-range');
+        } else if (startDate && currentD.getTime() === startDate.getTime()) {
+            d.classList.add('range-start');
+        }
+
+        // Highlight dates that have scheduled payments
+        if (paymentDays.has(i)) {
+            d.style.fontWeight = '800';
+        }
+
+        // Mouse Events for Drag
+        d.onmousedown = (e) => {
+            e.preventDefault();
+            startDrag(new Date(currentD));
+        };
+        d.onmouseenter = (e) => {
+            if (isDragging) updateDrag(new Date(currentD));
+        };
+        d.onmouseup = (e) => {
+            endDrag(new Date(currentD));
+        };
+
+        grid.appendChild(d);
+    }
+
+    // Global mouseup to stop drag
+    if (!window.hasGlobalMouseUp) {
+        window.addEventListener('mouseup', () => {
+            if (isDragging) {
+                isDragging = false;
+                renderTargetList();
+            }
+        });
+        window.hasGlobalMouseUp = true;
+    }
+}
+
+function startDrag(date) {
+    isDragging = true;
+    dragStartDay = date;
+    const dateStr = date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
+    document.getElementById('paymentRangeStart').value = dateStr;
+    document.getElementById('paymentRangeEnd').value = dateStr;
+    renderRangeCalendar();
+}
+
+function updateDrag(date) {
+    if (!isDragging || !dragStartDay) return;
+
+    let start = new Date(Math.min(dragStartDay, date));
+    let end = new Date(Math.max(dragStartDay, date));
+
+    const startStr = start.getFullYear() + '-' + String(start.getMonth() + 1).padStart(2, '0') + '-' + String(start.getDate()).padStart(2, '0');
+    const endStr = end.getFullYear() + '-' + String(end.getMonth() + 1).padStart(2, '0') + '-' + String(end.getDate()).padStart(2, '0');
+
+    document.getElementById('paymentRangeStart').value = startStr;
+    document.getElementById('paymentRangeEnd').value = endStr;
+    renderRangeCalendar();
+}
+
+function endDrag(date) {
+    isDragging = false;
+    renderRangeCalendar();
+
+    // Automatically check the filter if a range is selected to show filtered view
+    const pf = document.getElementById('usePaymentFilter');
+    if (pf) pf.checked = true;
+
+    renderTargetList();
+
+    // Auto-select if range filtering is active
+    if (pf && pf.checked) {
+        selectFilteredCourses();
+    }
+    saveAllDrafts();
+}
+
+function changeRangeMonth(offset) {
+    calendarMonth += offset;
+    if (calendarMonth > 11) { calendarMonth = 0; calendarYear++; }
+    if (calendarMonth < 0) { calendarMonth = 11; calendarYear--; }
+    renderRangeCalendar();
+}
+
+function setQuickRange(days) {
+    const start = new Date();
+    const end = new Date();
+    end.setDate(start.getDate() + days);
+
+    const startStr = start.getFullYear() + '-' + String(start.getMonth() + 1).padStart(2, '0') + '-' + String(start.getDate()).padStart(2, '0');
+    const endStr = end.getFullYear() + '-' + String(end.getMonth() + 1).padStart(2, '0') + '-' + String(end.getDate()).padStart(2, '0');
+
+    document.getElementById('paymentRangeStart').value = startStr;
+    document.getElementById('paymentRangeEnd').value = endStr;
+
+    calendarYear = start.getFullYear();
+    calendarMonth = start.getMonth();
+
+    renderRangeCalendar();
+    renderTargetList();
+
+    if (document.getElementById('usePaymentFilter').checked) {
+        selectFilteredCourses();
+    }
+    saveAllDrafts();
+}
+
+function getAllMilestonesForRange(memberId, courseFilter, startRange, endRange) {
+    // Re-use logic to get all milestones and filter
+    const milestones = getMemberAllMilestones(memberId, courseFilter);
+    return milestones.filter(m => {
+        const d = new Date(m.year, m.month - 1, m.day);
+        return d >= startRange && d <= endRange;
+    });
+}
+
+function getAllMilestonesForMonth(memberId, courseFilter, year, month) {
+    const milestones = getMemberAllMilestones(memberId, courseFilter);
+    return milestones.filter(m => m.year === year && m.month === month);
+}
+
+function getMemberAllMilestones(memberId, courseFilter) {
+    // Helper to get raw array without "best" logic
+    let milestones = [];
+    const today = new Date();
+
+    // Filter records
+    let records = (attendanceByMember[memberId] || []).filter(r => {
+        const dateStr = r.date.split('T')[0];
+        const isHolidayInSys = holidaysData.some(h => h.date === dateStr);
+        const isNationalHoliday = !!KOREAN_HOLIDAYS_MAP[dateStr];
+        const dayOfWeek = r.dateObj.getDay();
+        return !(isHolidayInSys || isNationalHoliday || dayOfWeek === 0);
+    }).sort((a, b) => a.dateObj - b.dateObj);
+
+    let rollingTotal = 0;
+    let lastRecordDate = null;
+    let hasAnyAttendance = false;
+
+    const getCycle = (val) => {
+        let vRaw = Math.round(val * 10);
+        if (vRaw < 90) return 0;
+        return Math.floor((vRaw - 90) / 80) + 1;
+    };
+
+    // [1] Check Sync Data
+    try {
+        const syncData = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
+        for (let mOffset = -6; mOffset <= 6; mOffset++) {
+            const d = new Date(today.getFullYear(), today.getMonth() + mOffset, 1);
+            const y = d.getFullYear();
+            const m = d.getMonth() + 1;
+            const syncKey = `${memberId}_${y}_${m}_${courseFilter || 'all'}`;
+            if (syncData[syncKey]) {
+                milestones.push({ year: y, month: m, day: syncData[syncKey] });
+            }
+        }
+    } catch (e) { }
+
+    for (const r of records) {
+        if (courseFilter) {
+            const rClean = (r.course || '').replace(/\([^)]*\)/g, '').trim();
+            const fClean = courseFilter.replace(/\([^)]*\)/g, '').trim();
+            if (rClean !== fClean) continue;
+        }
+
+        const inc = (r.course && r.course.includes('제과제빵')) ? 0.5 : 1.0;
+        const isMarker = ['[', ']'].includes(r.status);
+        const isNumericPresent = ['10', '12', '2', '5', '7'].includes(r.status);
+        const isAbsent = r.status === 'absent' || (typeof r.status === 'string' && r.status.startsWith('X'));
+        const isRegular = r.status === 'present' || r.status === 'extension' || isNumericPresent || isAbsent;
+
+        if (isMarker || isRegular) {
+            const prevCycle = getCycle(rollingTotal);
+            rollingTotal += inc;
+            const currCycle = getCycle(rollingTotal);
+            if (currCycle > prevCycle) {
+                milestones.push({ year: r.yearNum, month: r.monthNum, day: r.dateObj.getDate() });
+            }
+            lastRecordDate = r.dateObj;
+            hasAnyAttendance = true;
+        }
+    }
+
+    if (hasAnyAttendance) {
+        const firstDayOfSim = new Date(today.getFullYear(), today.getMonth() - 6, 1);
+        let simDate = new Date(firstDayOfSim);
+        if (lastRecordDate && lastRecordDate > firstDayOfSim) {
+            simDate = new Date(lastRecordDate.getTime() + 86400000);
+        }
+
+        const limitDate = new Date(today.getFullYear(), today.getMonth() + 6, 0);
+        let simRolling = rollingTotal;
+
+        while (simDate <= limitDate) {
+            const dayOfWeek = simDate.getDay();
+            const y_sim = simDate.getFullYear();
+            const m_sim = String(simDate.getMonth() + 1).padStart(2, '0');
+            const d_sim = String(simDate.getDate()).padStart(2, '0');
+            const dateStr = `${y_sim}-${m_sim}-${d_sim}`;
+            const isHoliday = holidaysData.some(h => h.date === dateStr) || !!KOREAN_HOLIDAYS_MAP[dateStr];
+
+            let isValidDay = false;
+            if (courseFilter) {
+                const cleanFilter = courseFilter.replace(/\([^)]*\)/g, '').trim();
+                const schedule = COURSE_SCHEDULES[cleanFilter];
+                if (schedule) {
+                    if (schedule.includes(dayOfWeek)) isValidDay = true;
+                } else {
+                    if (dayOfWeek !== 0) isValidDay = true;
+                }
+            } else {
+                if (dayOfWeek !== 0) isValidDay = true;
+            }
+
+            if (isValidDay && !isHoliday) {
+                const prevSim = simRolling;
+                const inc = (courseFilter && courseFilter.includes('제과제빵')) ? 0.5 : 1.0;
+                simRolling += inc;
+                if (getCycle(simRolling) > getCycle(prevSim)) {
+                    milestones.push({ year: simDate.getFullYear(), month: simDate.getMonth() + 1, day: simDate.getDate() });
+                }
+            }
+            if (milestones.length > 20) break;
+            simDate.setDate(simDate.getDate() + 1);
+        }
+    }
+    return milestones;
+}
+
+function syncCalendarSelection() {
+    renderRangeCalendar();
+    saveAllDrafts(); // Auto save on date change
 }

@@ -22,14 +22,30 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchMembers();
 });
 
+let attendanceData = [];
+
 async function fetchMembers() {
     try {
-        const res = await fetch(`${API_BASE}/members`);
-        allMembers = await res.json();
+        const [resMembers, resAttendance] = await Promise.all([
+            fetch(`${API_BASE}/members`),
+            fetch(`${API_BASE}/attendance?date=${currentDate}`)
+        ]);
+        allMembers = await resMembers.json();
+        attendanceData = await resAttendance.json();
         processCourses();
         renderCourseList();
     } catch (err) {
-        console.error('Failed to fetch members:', err);
+        console.error('Failed to fetch data:', err);
+    }
+}
+
+async function fetchAttendance() {
+    try {
+        const res = await fetch(`${API_BASE}/attendance?date=${currentDate}`);
+        attendanceData = await res.json();
+        renderAttendanceTbody();
+    } catch (err) {
+        console.error('Failed to fetch attendance:', err);
     }
 }
 
@@ -127,10 +143,12 @@ function renderAttendanceTbody() {
     // Sort by name
     membersToRender.sort((a, b) => a.name.localeCompare(b.name, 'ko'));
 
-    // Initialize all as unset if not already set for this session viewing
-    // In a real app, this should fetch today's actual attendance from DB
+    // Initialize from DB or preserve local changes
     membersToRender.forEach(m => {
-        if (!currentAttendanceState[m.id]) currentAttendanceState[m.id] = null; // null means 'unset'
+        if (currentAttendanceState[m.id] === undefined) {
+            const dbRecord = attendanceData.find(a => String(a.memberId) === String(m.id) && a.course === activeCourse);
+            currentAttendanceState[m.id] = dbRecord ? dbRecord.status : null; // null means 'unset'
+        }
     });
 
     membersToRender.forEach(m => {
@@ -189,9 +207,9 @@ window.changeDate = function (offset) {
     currentDate = d.toISOString().split('T')[0];
     document.getElementById('attendanceDate').value = currentDate;
 
-    // Clear temporary state on date change (in real app, fetch DB)
+    // Clear temporary state on date change and fetch DB
     currentAttendanceState = {};
-    renderAttendanceTbody();
+    fetchAttendance();
 };
 
 window.markAllPresent = function () {
@@ -239,28 +257,56 @@ function updateStats() {
     document.getElementById('statMakeup').textContent = stats.makeup;
 }
 
-window.saveDailyAttendance = function () {
+window.saveDailyAttendance = async function () {
     const sendSms = document.getElementById('sendSmsOnSave').checked;
-    // Collect data to save
-    const stats = { present: 0, absent: 0, late: 0, early: 0, makeup: 0 };
-    Object.values(currentAttendanceState).forEach(st => {
-        if (st) stats[st]++;
-    });
 
-    const totalSet = stats.present + stats.absent + stats.late + stats.early + stats.makeup;
-
-    if (totalSet === 0) {
-        alert('저장할 출결 데이터가 없습니다.');
+    if (!activeCourse) {
+        alert('선택된 반이 없습니다.');
         return;
     }
 
-    let msg = `[${currentDate}] ${activeCourse} 출석부 저장 완료.\\n총 ${totalSet}건 처리됨.`;
-    if (sendSms) {
-        msg += `\\n\\n해당 학부모에게 출결 문자가 발송됩니다.`;
+    let membersToRender = groupedCourses[activeCourse];
+    const includeInactive = document.getElementById('includeInactive').checked;
+    if (!includeInactive) {
+        membersToRender = membersToRender.filter(m => m.status !== 'trash' && m.status !== 'delete');
     }
 
-    alert(msg);
-    // Real implementation would sync back to the main attendance JSON via API here
+    let savedCount = 0;
+
+    try {
+        // Prepare promises for all members in the current active course
+        const promises = membersToRender.map(m => {
+            const st = currentAttendanceState[m.id] === null ? 'unchecked' : currentAttendanceState[m.id];
+
+            savedCount += (st !== 'unchecked' ? 1 : 0);
+
+            return fetch(`${API_BASE}/attendance`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    memberId: m.id,
+                    date: currentDate,
+                    status: st,
+                    course: activeCourse
+                })
+            });
+        });
+
+        await Promise.all(promises);
+
+        let msg = `[${currentDate}] ${activeCourse} 출석부 저장 완료.\n총 ${savedCount}건 기록됨.`;
+        if (sendSms && savedCount > 0) {
+            msg += `\n\n해당 학부모에게 출결 문자가 발송됩니다.`;
+        }
+        alert(msg);
+
+        // Refresh from DB naturally
+        await fetchAttendance();
+
+    } catch (err) {
+        console.error(err);
+        alert('저장 중 오류가 발생했습니다.');
+    }
 };
 
 window.sendDismissalSms = function () {

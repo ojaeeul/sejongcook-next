@@ -62,7 +62,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         elif parsed.path == '/api/timetable':
             self.handle_get_timetable()
             return
-        elif parsed.path == '/api/admin/data/settings':
+        elif parsed.path == '/api/admin/data/settings' or parsed.path == '/api/settings':
             self.handle_get_settings()
             return
             
