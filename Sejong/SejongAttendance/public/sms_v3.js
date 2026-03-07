@@ -47,6 +47,7 @@ let currentMsgType = 'SMS';
 let editingTemplateIndex = -1;
 let isAddingNewTemplate = false;
 let lastGeneratedPreviews = []; // Store for full preview modal
+let smsHistory = JSON.parse(localStorage.getItem('sejongSmsHistory') || '[]');
 
 let defaultTemplates = [
     { text: '반갑습니다.', type: 'SMS' },
@@ -870,9 +871,8 @@ let currentTab = 'all';
 function switchTab(type) {
     const tabs = document.querySelectorAll('.tab-btn');
     tabs.forEach(b => {
-        // Match by text or onclick if text is not unique
-        const btnText = b.textContent.trim().toLowerCase();
-        if (btnText === type || (type === 'all' && btnText === '전체')) {
+        const btnText = b.textContent.trim();
+        if (type === 'history' ? btnText === '발신 기록' : (btnText.toLowerCase() === type || (type === 'all' && btnText === '전체'))) {
             b.classList.add('active');
             b.style.background = '#3b82f6';
             b.style.color = 'white';
@@ -886,8 +886,123 @@ function switchTab(type) {
     });
 
     currentTab = type;
-    filterTemplates();
+
+    // Toggle Editor vs History view
+    const editorFlow = document.getElementById('editorFlow');
+    const historyFlow = document.getElementById('historyFlow');
+    const sendBtn = document.querySelector('.send-btn');
+
+    if (type === 'history') {
+        if (editorFlow) editorFlow.style.display = 'none';
+        if (historyFlow) historyFlow.style.display = 'flex';
+        if (sendBtn) sendBtn.style.visibility = 'hidden';
+        renderSentHistory();
+    } else {
+        if (editorFlow) editorFlow.style.display = 'flex';
+        if (historyFlow) historyFlow.style.display = 'none';
+        if (sendBtn) sendBtn.style.visibility = 'visible';
+        filterTemplates();
+    }
+
     updateMockup(); // Sync preview when tab changes
+}
+
+function saveSentHistory() {
+    if (!lastGeneratedPreviews || lastGeneratedPreviews.length === 0) return;
+
+    const now = new Date();
+    const dateKey = now.toISOString().split('T')[0];
+    const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+    const historyItem = {
+        id: Date.now(),
+        date: dateKey,
+        time: timeStr,
+        text: document.getElementById('messageInput').value,
+        count: lastGeneratedPreviews.length,
+        targets: lastGeneratedPreviews.map(p => p.name)
+    };
+
+    smsHistory.unshift(historyItem); // Add to top
+    // Limit to 100 items for performance
+    if (smsHistory.length > 100) smsHistory = smsHistory.slice(0, 100);
+
+    localStorage.setItem('sejongSmsHistory', JSON.stringify(smsHistory));
+}
+
+function renderSentHistory() {
+    const box = document.getElementById('sentHistoryBox');
+    if (!box) return;
+
+    if (smsHistory.length === 0) {
+        box.innerHTML = `<div style="text-align:center; padding:40px; color:#94a3b8; font-size:0.9rem;">발신 기록이 없습니다.</div>`;
+        return;
+    }
+
+    // Group by date
+    const grouped = {};
+    smsHistory.forEach(h => {
+        if (!grouped[h.date]) grouped[h.date] = [];
+        grouped[h.date].push(h);
+    });
+
+    const dates = Object.keys(grouped).sort().reverse();
+
+    let html = '';
+    dates.forEach(date => {
+        html += `
+            <div style="background: #1e3a8a; color: white; padding: 8px 15px; font-weight: 700; font-size: 0.9rem; display: flex; align-items: center; gap: 8px;">
+                <i class="material-icons" style="font-size:1.1rem;">calendar_today</i>
+                ${date}
+            </div>
+        `;
+
+        grouped[date].forEach(item => {
+            const shortText = item.text.length > 50 ? item.text.substring(0, 50) + '...' : item.text;
+            html += `
+                <div style="padding: 12px 15px; border-bottom: 1px solid #f1f5f9; cursor: pointer;" onclick="loadHistoryItem(${item.id})">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                        <span style="font-weight:700; color:#1e293b; font-size:0.85rem;">[${item.time}] ${item.count}명 발송</span>
+                        <i class="material-icons" style="font-size:1.1rem; color:#cbd5e1;" onclick="event.stopPropagation(); deleteHistoryItem(${item.id})">delete_outline</i>
+                    </div>
+                    <div style="font-size: 0.8rem; color: #64748b; line-height: 1.4; white-space: pre-wrap;">${shortText}</div>
+                </div>
+            `;
+        });
+    });
+
+    html += `
+        <div style="padding: 20px; text-align: center;">
+            <button onclick="clearSmsHistory()" style="background:none; border:none; color:#ef4444; font-size:0.8rem; cursor:pointer; text-decoration:underline;">전체 내역 삭제</button>
+        </div>
+    `;
+
+    box.innerHTML = html;
+}
+
+function loadHistoryItem(id) {
+    const item = smsHistory.find(h => h.id === id);
+    if (!item) return;
+
+    document.getElementById('messageInput').value = item.text;
+    switchTab('all'); // Go back to editor
+    showModalAlert(`[${item.date} ${item.time}] 발신 내용을 불러왔습니다.`);
+}
+
+function deleteHistoryItem(id) {
+    showModalConfirm('이 발신 기록을 삭제하시겠습니까?', () => {
+        smsHistory = smsHistory.filter(h => h.id !== id);
+        localStorage.setItem('sejongSmsHistory', JSON.stringify(smsHistory));
+        renderSentHistory();
+    });
+}
+
+function clearSmsHistory() {
+    showModalConfirm('전체 발신 내역을 삭제하시겠습니까?', () => {
+        smsHistory = [];
+        localStorage.setItem('sejongSmsHistory', JSON.stringify(smsHistory));
+        renderSentHistory();
+    });
 }
 
 function filterTemplates() {
@@ -1335,7 +1450,15 @@ function showFullPreview() {
 }
 
 function confirmSmsSend() {
-    showModalAlert('전송이 완료되었습니다. (테스트용 응답입니다)');
+    saveSentHistory();
+    closeSmsModal();
+    showModalAlert('전송이 완료되었습니다. (발신 내역에 저장되었습니다)');
+
+    // Optional: Reset targets after send? 
+    // selectedTargets = [];
+    // localStorage.removeItem('sejongSmsSelectedTargets');
+    // renderSelectedTargets();
+    // renderTargetList();
 }
 
 /* --- Range Selection Calendar Logic (Interactive Drag Support) --- */
