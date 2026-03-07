@@ -242,33 +242,23 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     def handle_save_attendance(self):
         try:
             body = self.get_body()
-            data = json.loads(body) # { memberId, date, status }
+            data = json.loads(body) # { memberId, date, status, course }
             
             logs = self._read_json('attendance.json')
             
-            # Remove existing logic for same member/date
-            # Simple approach: filter out old, append new
-            # Optimization: check if exists
-            
-            existing_idx = -1
+            # Robust filtering out of existing record
             data_course = data.get('course') or ''
-            for i, log in enumerate(logs):
+            filtered_logs = []
+            for log in logs:
                 log_course = log.get('course') or ''
                 if log['memberId'] == data['memberId'] and log['date'] == data['date'] and log_course == data_course:
-                    existing_idx = i
-                    break
+                    continue # Skip to remove
+                filtered_logs.append(log)
             
-            if existing_idx != -1:
-                # Update or delete?
-                if data['status'] == 'unchecked':
-                    logs.pop(existing_idx)
-                else:
-                    logs[existing_idx]['status'] = data['status']
-            else:
-                if data['status'] != 'unchecked':
-                    logs.append(data)
+            if data['status'] != 'unchecked':
+                filtered_logs.append(data)
                 
-            self._write_json('attendance.json', logs)
+            self._write_json('attendance.json', filtered_logs)
             
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
@@ -280,45 +270,29 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     def handle_batch_attendance(self):
         try:
             body = self.get_body()
-            data = json.loads(body) # { memberId, dates: [], status }
+            data = json.loads(body) # { memberId, dates: [], status, course }
             
             logs = self._read_json('attendance.json')
             memberId = data['memberId']
             status = data['status']
             dates = data['dates']
+            batch_course = data.get('course') or ''
 
-            # Update loop
-            for d in dates:
-                 # Find existing
-                 existing_idx = -1
-                 for i, log in enumerate(logs):
-                     if log['memberId'] == memberId and log['date'] == d:
-                         existing_idx = i
-                         break
-                 
-                 if existing_idx != -1:
-                     if status == 'unchecked':
-                         logs.pop(existing_idx)
-                         # Note: popping changes indices, but since we break inner loop and strict match by value, usually ok?
-                         # Wait, if we pop, we must restart search or be careful? 
-                         # Actually safest is to re-read or list comp.
-                         # But for perf, let's just update in place or mark for deletion?
-                         # Simple Python approach:
-                         pass 
-                     else:
-                         logs[existing_idx]['status'] = status
-                 else:
-                     if status != 'unchecked':
-                         logs.append({'memberId': memberId, 'date': d, 'status': status})
+            # Robustly filter out all targeted records
+            filtered_logs = []
+            for log in logs:
+                log_course = log.get('course') or ''
+                # Match target?
+                if log['memberId'] == memberId and log['date'] in dates and log_course == batch_course:
+                    continue # Exclude
+                filtered_logs.append(log)
             
-            # Clean up unchecked if needed (simple robust way: rebuild list)
-            if status == 'unchecked':
-                 # If we just popped inside loop, indexing might break.
-                 # Better: filter at start?
-                 # Re-implementation for robustness:
-                 logs = [l for l in logs if not (l['memberId'] == memberId and l['date'] in dates)]
+            # Add new ones
+            if status != 'unchecked':
+                for d in dates:
+                    filtered_logs.append({'memberId': memberId, 'date': d, 'status': status, 'course': data.get('course')})
             
-            self._write_json('attendance.json', logs)
+            self._write_json('attendance.json', filtered_logs)
             
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
