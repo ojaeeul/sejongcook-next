@@ -1657,5 +1657,23 @@
     "date": "2026-02-05",
     "status": "present",
     "course": "양식기능사"
+  },
+  {
+    "memberId": "1770517017920",
+    "date": "2026-03-10",
+    "status": "present",
+    "course": "양식기능사"
+  },
+  {
+    "memberId": "1770517017920",
+    "date": "2026-03-12",
+    "status": "present",
+    "course": "양식기능사"
+  },
+  {
+    "memberId": "1770517017920",
+    "date": "2026-03-17",
+    "status": "present",
+    "course": "양식기능사"
   }
 ]

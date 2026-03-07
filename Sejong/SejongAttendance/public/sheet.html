@@ -1532,14 +1532,9 @@
             });
             memberRecords.sort((a, b) => a.dateObj - b.dateObj);
 
-            // [엄격 제한] 공휴일만 우선 제외 (기존 기록된 요일은 모두 인정)
-            memberRecords = memberRecords.filter(r => {
-                const dateStr = r.date.split('T')[0];
-                const isHolidayInSys = holidaysData.some(h => h.date === dateStr);
-                const isNationalHoliday = !!KOREAN_HOLIDAYS_MAP[dateStr];
-                const dayOfWeek = r.dateObj.getDay();
-                return !(isHolidayInSys || isNationalHoliday || dayOfWeek === 0);
-            });
+            // [수정] 기 기록된 출석은 요일에 관계없이 모두 인정합니다. (시뮬레이션 시에만 요일 체크)
+            memberRecords = memberRecords.filter(r => true);
+
             let eighthDay = null;
             let isSimulated = false;
             let rollingTotal = 0;
@@ -1575,22 +1570,24 @@
                 }
 
                 if (r.yearNum < year || (r.yearNum === year && r.monthNum < month)) {
-                    // Count past months
+                    // 과거 기록 누적
                     const isMarker = ['[', ']'].includes(r.status);
-                    const isNumericPresent = ['10', '12', '2', '5', '7'].includes(r.status);
+                    const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(r.status);
                     const isAbsent = r.status === 'absent' || (typeof r.status === 'string' && r.status.startsWith('X'));
-                    const isRegular = r.status === 'present' || r.status === 'extension' || isNumericPresent || isAbsent;
+                    // 중요: 연장(Extension)은 주기 계산(레드박스)에서 제외합니다. (사용자 요청 반영)
+                    const isRegular = r.status === 'present' || isNumericPresent || isAbsent;
+
                     if (isMarker || isRegular) {
                         rollingTotal += incAmount;
                         lastRecordDate = r.dateObj;
                         hasAnyAttendance = true;
                     }
                 } else if (r.yearNum === year && r.monthNum === month) {
-                    // Count current month
+                    // 현재 달 처리
                     const isMarker = ['[', ']'].includes(r.status);
-                    const isNumericPresent = ['10', '12', '2', '5', '7'].includes(r.status);
+                    const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(r.status);
                     const isAbsent = r.status === 'absent' || (typeof r.status === 'string' && r.status.startsWith('X'));
-                    const isRegular = r.status === 'present' || r.status === 'extension' || isNumericPresent || isAbsent;
+                    const isRegular = r.status === 'present' || isNumericPresent || isAbsent;
 
                     const prevRolling = rollingTotal;
                     if (isMarker || isRegular) {
@@ -1600,7 +1597,7 @@
                         // 출석부 레드박스(9, 17, 25 주기) 교차 순간 감지
                         let prevCycle = getCycle(prevRolling);
                         let currCycle = getCycle(rollingTotal);
-                        if (currCycle > prevCycle) {
+                        if (currCycle > prevCycle || r.status === '9' || r.status === 9) {
                             eighthDay = r.dateObj.getDate();
                             hitTargetInMonth = true;
                         }
@@ -1616,6 +1613,24 @@
             let eighthMonth = month;
 
             if (!hitTargetInMonth && hasAnyAttendance) {
+                // [사용자 요청] 마지막 출석 기록이 있는 달로부터 최대 1달까지만 시뮬레이션 허용
+                let lastLog = null;
+                for (let i = memberRecords.length - 1; i >= 0; i--) {
+                    const r = memberRecords[i];
+                    if (courseFilter) {
+                        if (!r.course) continue;
+                        if (r.course.replace(/\([^)]*\)/g, '').trim() !== courseFilter.replace(/\([^)]*\)/g, '').trim()) continue;
+                    }
+                    lastLog = r; break;
+                }
+
+                if (lastLog) {
+                    const mDiffSim = (year - lastLog.yearNum) * 12 + (month - lastLog.monthNum);
+                    if (mDiffSim > 1) {
+                        return { scheduledDay: null, eighthMonth: month, isSimulated: false, hasAnyAttendance };
+                    }
+                }
+
                 let simDate = new Date(firstDayOfLastMonth.getTime());
                 if (lastRecordDate && lastRecordDate > firstDayOfLastMonth) {
                     simDate = new Date(lastRecordDate.getTime() + (24 * 60 * 60 * 1000));

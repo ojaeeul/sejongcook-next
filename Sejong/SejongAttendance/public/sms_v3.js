@@ -311,14 +311,8 @@ function processAttendanceData() {
 function getMemberScheduledDate(memberId, courseFilter) {
     const today = new Date();
 
-    // Filter holidays/Sundays like ledger.js
-    let memberRecords = (attendanceByMember[memberId] || []).filter(r => {
-        const dateStr = r.date.split('T')[0];
-        const isHolidayInSys = holidaysData.some(h => h.date === dateStr);
-        const isNationalHoliday = !!KOREAN_HOLIDAYS_MAP[dateStr];
-        const dayOfWeek = r.dateObj.getDay();
-        return !(isHolidayInSys || isNationalHoliday || dayOfWeek === 0);
-    }).sort((a, b) => a.dateObj - b.dateObj);
+    // [수정] 기 기록된 출석은 요일에 관계없이 모두 인정합니다. (시뮬레이션 시에만 요일 체크)
+    let memberRecords = (attendanceByMember[memberId] || []).filter(r => true).sort((a, b) => a.dateObj - b.dateObj);
 
     let rollingTotal = 0;
     let lastRecordDate = null;
@@ -354,15 +348,15 @@ function getMemberScheduledDate(memberId, courseFilter) {
 
         const inc = (r.course && r.course.includes('제과제빵')) ? 0.5 : 1.0;
         const isMarker = ['[', ']'].includes(r.status);
-        const isNumericPresent = ['10', '12', '2', '5', '7'].includes(r.status);
+        const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(r.status);
         const isAbsent = r.status === 'absent' || (typeof r.status === 'string' && r.status.startsWith('X'));
-        const isRegular = r.status === 'present' || r.status === 'extension' || isNumericPresent || isAbsent;
+        const isRegular = r.status === 'present' || isNumericPresent || isAbsent;
 
         if (isMarker || isRegular) {
             const prevCycle = getCycle(rollingTotal);
             rollingTotal += inc;
             const currCycle = getCycle(rollingTotal);
-            if (currCycle > prevCycle) {
+            if (currCycle > prevCycle || r.status === '9' || r.status === 9) {
                 // [Sync Check] Priority to sheet.html's determined date
                 try {
                     const syncData = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
@@ -1560,14 +1554,8 @@ function getMemberAllMilestones(memberId, courseFilter) {
     let milestones = [];
     const today = new Date();
 
-    // Filter records
-    let records = (attendanceByMember[memberId] || []).filter(r => {
-        const dateStr = r.date.split('T')[0];
-        const isHolidayInSys = holidaysData.some(h => h.date === dateStr);
-        const isNationalHoliday = !!KOREAN_HOLIDAYS_MAP[dateStr];
-        const dayOfWeek = r.dateObj.getDay();
-        return !(isHolidayInSys || isNationalHoliday || dayOfWeek === 0);
-    }).sort((a, b) => a.dateObj - b.dateObj);
+    // [수정] 기 기록된 출석은 요일에 관계없이 모두 인정합니다.
+    let records = (attendanceByMember[memberId] || []).filter(r => true).sort((a, b) => a.dateObj - b.dateObj);
 
     let rollingTotal = 0;
     let lastRecordDate = null;
@@ -1602,15 +1590,15 @@ function getMemberAllMilestones(memberId, courseFilter) {
 
         const inc = (r.course && r.course.includes('제과제빵')) ? 0.5 : 1.0;
         const isMarker = ['[', ']'].includes(r.status);
-        const isNumericPresent = ['10', '12', '2', '5', '7'].includes(r.status);
+        const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(r.status);
         const isAbsent = r.status === 'absent' || (typeof r.status === 'string' && r.status.startsWith('X'));
-        const isRegular = r.status === 'present' || r.status === 'extension' || isNumericPresent || isAbsent;
+        const isRegular = r.status === 'present' || isNumericPresent || isAbsent;
 
         if (isMarker || isRegular) {
             const prevCycle = getCycle(rollingTotal);
             rollingTotal += inc;
             const currCycle = getCycle(rollingTotal);
-            if (currCycle > prevCycle) {
+            if (currCycle > prevCycle || r.status === '9' || r.status === 9) {
                 milestones.push({ year: r.yearNum, month: r.monthNum, day: r.dateObj.getDate() });
             }
             lastRecordDate = r.dateObj;
