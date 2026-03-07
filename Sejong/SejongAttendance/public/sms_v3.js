@@ -363,12 +363,40 @@ function getMemberScheduledDate(memberId, courseFilter) {
             rollingTotal += inc;
             const currCycle = getCycle(rollingTotal);
             if (currCycle > prevCycle) {
-                allMilestones.push({ year: r.yearNum, month: r.monthNum, day: r.dateObj.getDate() });
+                // [Sync Check] Priority to sheet.html's determined date
+                try {
+                    const syncData = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
+                    const syncKey = `${memberId}_${r.yearNum}_${r.monthNum}_${courseFilter || 'all'}`;
+                    if (syncData[syncKey]) {
+                        allMilestones.push({ year: r.yearNum, month: r.monthNum, day: syncData[syncKey] });
+                    } else {
+                        allMilestones.push({ year: r.yearNum, month: r.monthNum, day: r.dateObj.getDate() });
+                    }
+                } catch (e) {
+                    allMilestones.push({ year: r.yearNum, month: r.monthNum, day: r.dateObj.getDate() });
+                }
             }
             lastRecordDate = r.dateObj;
             hasAnyAttendance = true;
         }
     }
+
+    // [Sync Check Part 2] Check for calculated but not yet reached months
+    try {
+        const syncData = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
+        for (let mOffset = 0; mOffset <= 2; mOffset++) {
+            const d = new Date(today.getFullYear(), today.getMonth() + mOffset, 1);
+            const y = d.getFullYear();
+            const m = d.getMonth() + 1;
+            const syncKey = `${memberId}_${y}_${m}_${courseFilter || 'all'}`;
+            if (syncData[syncKey]) {
+                const dayNum = syncData[syncKey];
+                if (!allMilestones.some(ms => ms.year === y && ms.month === m)) {
+                    allMilestones.push({ year: y, month: m, day: dayNum });
+                }
+            }
+        }
+    } catch (e) { }
 
     // Simulation like ledger.js
     if (hasAnyAttendance) {
@@ -1583,12 +1611,40 @@ function getMemberAllMilestones(memberId, courseFilter) {
             rollingTotal += inc;
             const currCycle = getCycle(rollingTotal);
             if (currCycle > prevCycle) {
-                milestones.push({ year: r.yearNum, month: r.monthNum, day: r.dateObj.getDate() });
+                // [Sync Check] Priority to sheet.html's determined date
+                try {
+                    const syncData = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
+                    const syncKey = `${memberId}_${r.yearNum}_${r.monthNum}_${courseFilter || 'all'}`;
+                    if (syncData[syncKey]) {
+                        milestones.push({ year: r.yearNum, month: r.monthNum, day: syncData[syncKey] });
+                    } else {
+                        milestones.push({ year: r.yearNum, month: r.monthNum, day: r.dateObj.getDate() });
+                    }
+                } catch (e) {
+                    milestones.push({ year: r.yearNum, month: r.monthNum, day: r.dateObj.getDate() });
+                }
             }
             lastRecordDate = r.dateObj;
             hasAnyAttendance = true;
         }
     }
+
+    // [Sync Check Part 2] Check for calculated but not yet reached months
+    try {
+        const syncData = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
+        for (let mOffset = -2; mOffset <= 2; mOffset++) {
+            const d = new Date(today.getFullYear(), today.getMonth() + mOffset, 1);
+            const y = d.getFullYear();
+            const m = d.getMonth() + 1;
+            const syncKey = `${memberId}_${y}_${m}_${courseFilter || 'all'}`;
+            if (syncData[syncKey]) {
+                const dayNum = syncData[syncKey];
+                if (!milestones.some(ms => ms.year === y && ms.month === m)) {
+                    milestones.push({ year: y, month: m, day: dayNum });
+                }
+            }
+        }
+    } catch (e) { }
 
     if (hasAnyAttendance) {
         const firstDayOfSim = new Date(today.getFullYear(), today.getMonth() - 6, 1);

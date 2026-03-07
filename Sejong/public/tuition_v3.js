@@ -410,13 +410,39 @@ function getMemberEighthDayInMonth(memberId, year, month, courseFilter = null) {
             const currCycle = getCycle(rollingTotal);
 
             if (currCycle > prevCycle) {
-                const milestone = { year: r.yearNum, month: r.monthNum, day: r.dateObj.getDate() };
-                allMilestones.push(milestone);
+                // [Sync Check] Priority to sheet.html's determined date
+                try {
+                    const syncData = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
+                    const syncKey = `${memberId}_${r.yearNum}_${r.monthNum}_${courseFilter || 'all'}`;
+                    if (syncData[syncKey]) {
+                        const syncDay = syncData[syncKey];
+                        const milestone = { year: r.yearNum, month: r.monthNum, day: syncDay };
+                        allMilestones.push(milestone);
 
-                if (milestone.year === year && milestone.month === month) {
-                    eighthDay = milestone;
-                } else if (!eighthDay && (milestone.year > year || (milestone.year === year && milestone.month > month))) {
-                    if (!nextEighthDay) nextEighthDay = milestone;
+                        if (milestone.year === year && milestone.month === month) {
+                            eighthDay = milestone;
+                        } else if (!eighthDay && (milestone.year > year || (milestone.year === year && milestone.month > month))) {
+                            if (!nextEighthDay) nextEighthDay = milestone;
+                        }
+                    } else {
+                        const milestone = { year: r.yearNum, month: r.monthNum, day: r.dateObj.getDate() };
+                        allMilestones.push(milestone);
+
+                        if (milestone.year === year && milestone.month === month) {
+                            eighthDay = milestone;
+                        } else if (!eighthDay && (milestone.year > year || (milestone.year === year && milestone.month > month))) {
+                            if (!nextEighthDay) nextEighthDay = milestone;
+                        }
+                    }
+                } catch (e) {
+                    const milestone = { year: r.yearNum, month: r.monthNum, day: r.dateObj.getDate() };
+                    allMilestones.push(milestone);
+
+                    if (milestone.year === year && milestone.month === month) {
+                        eighthDay = milestone;
+                    } else if (!eighthDay && (milestone.year > year || (milestone.year === year && milestone.month > month))) {
+                        if (!nextEighthDay) nextEighthDay = milestone;
+                    }
                 }
             }
 

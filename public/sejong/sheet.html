@@ -1659,8 +1659,8 @@
                             if (simDate.getFullYear() === year && (simDate.getMonth() + 1) === month) {
                                 foundSimulatedDay = simDate.getDate();
                                 eighthMonth = simDate.getMonth() + 1;
-                                break;
                             }
+                            break;
                         }
                     }
                     simDate.setDate(simDate.getDate() + 1);
@@ -1669,6 +1669,17 @@
                 if (foundSimulatedDay) {
                     eighthDay = foundSimulatedDay;
                     isSimulated = true;
+                }
+            }
+
+            if (!hasAnyAttendance) {
+                eighthDay = null;
+            } else if (lastRecordDate && eighthDay !== null) {
+                let maxYear = lastRecordDate.getFullYear();
+                let maxMonth = lastRecordDate.getMonth() + 2;
+                if (maxMonth > 12) { maxMonth -= 12; maxYear += 1; }
+                if (year > maxYear || (year === maxYear && month > maxMonth)) {
+                    eighthDay = null;
                 }
             }
 
@@ -2398,12 +2409,12 @@
                                     td.style.border = '3px solid red';
                                     td.style.boxShadow = '0 0 5px rgba(255, 0, 0, 0.5)';
 
-                                    // 날짜 표시 로직 추가 ('예' 대신 일자 숫자)
+                                    // 날짜 표시 로직 추가 (기존 일자 숫자 대신 '예'로 표시 요청 반영)
                                     if (!td.innerHTML || td.innerHTML.trim() === '') {
-                                        td.innerHTML = `<div style="color:red; font-size:0.75rem; font-weight:800; display:flex; align-items:center; justify-content:center; height:100%;" title="납부 예정일">${i}</div>`;
+                                        td.innerHTML = `<div style="color:red; font-size:0.75rem; font-weight:800; display:flex; align-items:center; justify-content:center; height:100%;" title="납부 예정일">예</div>`;
                                     } else {
-                                        if (!td.innerHTML.includes(`>${i}<`)) {
-                                            td.innerHTML += `<div style="position:absolute; top:-4px; right:-3px; background:red; color:white; font-size:0.55rem; font-weight:800; padding:1px 3px; border-radius:3px; box-shadow: 0 1px 2px rgba(0,0,0,0.3);" title="납부 예정일">${i}</div>`;
+                                        if (!td.innerHTML.includes(`>예<`)) {
+                                            td.innerHTML += `<div style="position:absolute; top:-4px; right:-3px; background:red; color:white; font-size:0.55rem; font-weight:800; padding:1px 3px; border-radius:3px; box-shadow: 0 1px 2px rgba(0,0,0,0.3);" title="납부 예정일">예</div>`;
                                         }
                                     }
                                 }
