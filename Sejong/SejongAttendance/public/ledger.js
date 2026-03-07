@@ -144,11 +144,28 @@ function processAttendanceData() {
 const GLOBAL_DATA_ADJUSTMENTS = {};
 
 function getLedgerMonthStats(memberId, year, month, courseFilter = null) {
+    // [신규 기믹]: User request to strictly mirror sheet.html dates instead of computing separately
+    try {
+        const syncData = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
+        const syncKey = `${memberId}_${year}_${month}_${courseFilter || 'all'}`;
+
+        // If sheet.html has rendered this cell and decided an exact date, use it directly
+        if (syncData[syncKey]) {
+            return {
+                eighthDay: syncData[syncKey],
+                eighthMonth: month,
+                isSimulated: true,
+                hasAnyAttendance: true
+            };
+        }
+    } catch { }
+
     let rollingTotal = 0;
     let eighthDay = null;
     let isSimulated = false;
     let eighthMonth = month;
     let hasAnyAttendance = false;
+
 
     // [엄격 제한] 공휴일만 필터링 (기존 기록된 요일은 모두 인정) - sheet.html과 동일
     let memberRecords = (attendanceByMember[memberId] || []).filter(r => {
@@ -159,54 +176,21 @@ function getLedgerMonthStats(memberId, year, month, courseFilter = null) {
         return !(isHolidayInSys || isNationalHoliday || dayOfWeek === 0);
     });
 
-    let globalLastRecordDate = null;
-    for (const r of memberRecords) {
-        if (courseFilter) {
-            if (!r.course) continue;
-            const rClean = r.course.replace(/\([^)]*\)/g, '').trim();
-            const fClean = courseFilter.replace(/\([^)]*\)/g, '').trim();
-            if (rClean !== fClean) continue;
-        }
-        const isMarker = ['[', ']'].includes(r.status);
-        const isNumericPresent = ['10', '12', '2', '5', '7'].includes(r.status);
-        const isAbsent = r.status === 'absent' || (typeof r.status === 'string' && r.status.startsWith('X'));
-        const isRegular = r.status === 'present' || r.status === 'extension' || isNumericPresent || isAbsent;
-
-        if (isMarker || isRegular) {
-            globalLastRecordDate = r.dateObj;
-            hasAnyAttendance = true;
-        }
-    }
-
-    // 1개월까지만 시뮬레이션 허용 (지난달은 표시, 이후는 미표시)
-    if (hasAnyAttendance && globalLastRecordDate) {
-        let maxYear = globalLastRecordDate.getFullYear();
-        let maxMonth = globalLastRecordDate.getMonth() + 2; // +1 to make it 1-base, +1 for "next month"
-        if (maxMonth > 12) { maxMonth -= 12; maxYear += 1; }
-        if (year > maxYear || (year === maxYear && month > maxMonth)) {
-            return { eighthDay: null, eighthMonth: month, isSimulated: false, hasAnyAttendance: true };
-        }
-    } else if (!hasAnyAttendance) {
-        return { eighthDay: null, eighthMonth: month, isSimulated: false, hasAnyAttendance: false };
-    }
-
-    try {
-        const syncData = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
-        const syncKey = `${memberId}_${year}_${month}_${courseFilter || 'all'}`;
-        if (syncData[syncKey]) {
-            return { eighthDay: syncData[syncKey], eighthMonth: month, isSimulated: true, hasAnyAttendance: true };
-        }
-    } catch { }
-
+    // [데이터 보정] GLOBAL_DATA_ADJUSTMENTS 반영
     const monthKey = `${year}-${String(month).padStart(2, '0')}`;
     const adj = GLOBAL_DATA_ADJUSTMENTS[String(memberId)]?.[monthKey];
     if (adj && adj.carryOverride !== undefined) {
         rollingTotal = adj.carryOverride;
     }
 
+
+
+
+
     const incAmount = (courseFilter && courseFilter.includes('제과제빵')) ? 0.5 : 1.0;
     let lastRecordDate = null;
     let hitTargetInMonth = false;
+    hasAnyAttendance = false;
 
 
     // sheet.html과 동일한 결제 주기 계산 (9, 17, 25 ...)
@@ -311,8 +295,8 @@ function getLedgerMonthStats(memberId, year, month, courseFilter = null) {
                     if (simDate.getFullYear() === year && (simDate.getMonth() + 1) === month) {
                         foundSimulatedDay = simDate.getDate();
                         eighthMonth = simDate.getMonth() + 1;
+                        break;
                     }
-                    break;
                 }
             }
             simDate.setDate(simDate.getDate() + 1);
@@ -418,7 +402,7 @@ function renderLedger() {
     const bottomRow = document.createElement('div');
     bottomRow.style.cssText = `display: flex; gap: 6px; overflow-x: auto; padding: 5px 0; border-top: 1px solid #e2e8f0; padding-top: 12px;`;
 
-    COURSE_LIST.forEach(course => {
+    ['전체', ...COURSE_LIST].forEach(course => {
         const btn = document.createElement('button');
         btn.textContent = course;
         const isActive = activeCategory === course;
