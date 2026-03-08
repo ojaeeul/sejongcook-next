@@ -15,7 +15,7 @@
     "course": "양식기능사(17:00)",
     "start_date": "2026-01-01",
     "type": "student",
-    "status": "completed",
+    "status": "retaking",
     "timeSlot": "17:00"
   },
   {
@@ -134,7 +134,7 @@
     "timeSlot": "10:00,10:00,10:00,10:00",
     "id": "1770551100795",
     "registeredDate": "2026-02-08",
-    "status": "completed"
+    "status": "retaking"
   },
   {
     "id": "1770551214556",

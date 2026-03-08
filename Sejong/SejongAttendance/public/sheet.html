@@ -1532,9 +1532,14 @@
             });
             memberRecords.sort((a, b) => a.dateObj - b.dateObj);
 
-            // [수정] 기 기록된 출석은 요일에 관계없이 모두 인정합니다. (시뮬레이션 시에만 요일 체크)
-            memberRecords = memberRecords.filter(r => true);
-
+            // [엄격 제한] 공휴일만 우선 제외 (기존 기록된 요일은 모두 인정)
+            memberRecords = memberRecords.filter(r => {
+                const dateStr = r.date.split('T')[0];
+                const isHolidayInSys = holidaysData.some(h => h.date === dateStr);
+                const isNationalHoliday = !!KOREAN_HOLIDAYS_MAP[dateStr];
+                const dayOfWeek = r.dateObj.getDay();
+                return !(isHolidayInSys || isNationalHoliday || dayOfWeek === 0);
+            });
             let eighthDay = null;
             let isSimulated = false;
             let rollingTotal = 0;
@@ -1570,34 +1575,45 @@
                 }
 
                 if (r.yearNum < year || (r.yearNum === year && r.monthNum < month)) {
-                    // 과거 기록 누적
+                    // Count past months
                     const isMarker = ['[', ']'].includes(r.status);
                     const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(r.status);
                     const isAbsent = r.status === 'absent' || (typeof r.status === 'string' && r.status.startsWith('X'));
-                    // 중요: 연장(Extension)은 주기 계산(레드박스)에서 제외합니다. (사용자 요청 반영)
+                    const isExtension = r.status === 'extension' || (typeof r.status === 'string' && (r.status.startsWith('연') || r.status.includes('연장') || r.status.startsWith('E')));
                     const isRegular = r.status === 'present' || isNumericPresent || isAbsent;
 
-                    if (isMarker || isRegular) {
-                        rollingTotal += incAmount;
+                    if (isMarker || isRegular || isExtension) {
+                        if (isExtension) {
+                            extCount++;
+                            if (extCount % 4 === 0) rollingTotal += incAmount;
+                        } else {
+                            rollingTotal += incAmount;
+                        }
                         lastRecordDate = r.dateObj;
                         hasAnyAttendance = true;
                     }
                 } else if (r.yearNum === year && r.monthNum === month) {
-                    // 현재 달 처리
+                    // Count current month
                     const isMarker = ['[', ']'].includes(r.status);
                     const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(r.status);
                     const isAbsent = r.status === 'absent' || (typeof r.status === 'string' && r.status.startsWith('X'));
+                    const isExtension = r.status === 'extension' || (typeof r.status === 'string' && (r.status.startsWith('연') || r.status.includes('연장') || r.status.startsWith('E')));
                     const isRegular = r.status === 'present' || isNumericPresent || isAbsent;
 
                     const prevRolling = rollingTotal;
-                    if (isMarker || isRegular) {
-                        rollingTotal += incAmount;
+                    if (isMarker || isRegular || isExtension) {
+                        if (isExtension) {
+                            extCount++;
+                            if (extCount % 4 === 0) rollingTotal += incAmount;
+                        } else {
+                            rollingTotal += incAmount;
+                        }
                         lastRecordDate = r.dateObj;
                         hasAnyAttendance = true;
                         // 출석부 레드박스(9, 17, 25 주기) 교차 순간 감지
                         let prevCycle = getCycle(prevRolling);
                         let currCycle = getCycle(rollingTotal);
-                        if (currCycle > prevCycle || r.status === '9' || r.status === 9) {
+                        if (currCycle > prevCycle) {
                             eighthDay = r.dateObj.getDate();
                             hitTargetInMonth = true;
                         }
@@ -1613,24 +1629,6 @@
             let eighthMonth = month;
 
             if (!hitTargetInMonth && hasAnyAttendance) {
-                // [사용자 요청] 마지막 출석 기록이 있는 달로부터 최대 1달까지만 시뮬레이션 허용
-                let lastLog = null;
-                for (let i = memberRecords.length - 1; i >= 0; i--) {
-                    const r = memberRecords[i];
-                    if (courseFilter) {
-                        if (!r.course) continue;
-                        if (r.course.replace(/\([^)]*\)/g, '').trim() !== courseFilter.replace(/\([^)]*\)/g, '').trim()) continue;
-                    }
-                    lastLog = r; break;
-                }
-
-                if (lastLog) {
-                    const mDiffSim = (year - lastLog.yearNum) * 12 + (month - lastLog.monthNum);
-                    if (mDiffSim > 1) {
-                        return { scheduledDay: null, eighthMonth: month, isSimulated: false, hasAnyAttendance };
-                    }
-                }
-
                 let simDate = new Date(firstDayOfLastMonth.getTime());
                 if (lastRecordDate && lastRecordDate > firstDayOfLastMonth) {
                     simDate = new Date(lastRecordDate.getTime() + (24 * 60 * 60 * 1000));
@@ -1665,6 +1663,7 @@
 
                     if (isValidDay && !isHoliday) {
                         const prevSim = simRolling;
+                        // Simulation: assuming no new extensions in future days
                         simRolling += incAmount;
 
                         // 9, 17, 25 주기 교차 순간 감지 (시뮬레이션)
@@ -2135,6 +2134,7 @@
                             }
                         }
 
+                        let rollingExtCount = 0;
                         monthsToCalc.forEach(mc => {
                             // [수동 보정 적용] 해당 수강생의 특정 월에 보정값이 있으면 반영
                             const adjustment = GLOBAL_DATA_ADJUSTMENTS[String(m.id)]?.[mc.key];
@@ -2151,15 +2151,26 @@
                             let attendances = 0;
                             let rawPresent = 0;
 
+                            mc.carryFromPrevExtCount = rollingExtCount;
+
                             mLogs.forEach(l => {
                                 const isMakeupMarker = ['[', ']'].includes(l.status);
                                 const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(l.status);
                                 const isAbsent = l.status === 'absent' || (typeof l.status === 'string' && l.status.startsWith('X'));
-                                const isExtension = l.status === 'extension' || (typeof l.status === 'string' && (l.status.startsWith('E') || l.status.includes('연장')));
+                                const isExtension = l.status === 'extension' || (typeof l.status === 'string' && (l.status.startsWith('E') || l.status.includes('연장') || l.status.startsWith('연')));
                                 const isRegularAttendance = l.status === 'present' || isNumericPresent || isAbsent;
 
                                 if (isMakeupMarker) manualMakeup += attendanceIncrement;
-                                if (isRegularAttendance) attendances += attendanceIncrement;
+
+                                if (isRegularAttendance) {
+                                    attendances += attendanceIncrement;
+                                } else if (isExtension) {
+                                    rollingExtCount++;
+                                    // 연장 4개당 1개 출석 인정 (Penalty rule)
+                                    if (rollingExtCount % 4 === 0) {
+                                        attendances += attendanceIncrement;
+                                    }
+                                }
 
                                 // Summary counts for the CURRENT VIEWED month only (for right-side totals)
                                 if (mc.year === currentYear && mc.month === currentMonth) {
@@ -2167,13 +2178,10 @@
                                     else if (isExtension) sumE += attendanceIncrement;
                                 }
 
-                                // General rule: Presence, Absence, and Extensions all contribute to the cumulative count for cycle/summary
-                                // except Extensions shouldn't add to the carryover total based on new requirements.
-                                // It was previously 'isRegularAttendance || isExtension'.
                                 if (l.status === 'present' || isNumericPresent || isAbsent) rawPresent += attendanceIncrement;
                             });
 
-                            // [수동 보정] 당월 출석 수 합계 오버라이드 (레드박스용 attendances 변수 수정)
+                            // [수동 보정] 당월 출석 수 합계 오버라이드
                             if (adjustment && adjustment.presentOverride !== undefined) {
                                 attendances = adjustment.presentOverride;
                             }
@@ -2212,8 +2220,9 @@
                             });
 
                             let runningTotal = currentMC.carryFromPrev;
+                            let runningExtCount = currentMC.carryFromPrevExtCount || 0;
+
                             // 누적합 기준 주기(cycle) 판정. 9일=1, 17일=2, 25일=3... (8일 간격)
-                            // Math.round(val * 10)을 사용하여 0.1 단위 정밀도 유지
                             const getCycle = (val) => {
                                 let vRaw = Math.round(val * 10);
                                 if (vRaw < 90) return 0;
@@ -2232,11 +2241,14 @@
 
                                 if (isRegularAttendance || isMakeupMarker) {
                                     runningTotal += attendanceIncrement;
+                                } else if (isExtension) {
+                                    runningExtCount++;
+                                    if (runningExtCount % 4 === 0) {
+                                        runningTotal += attendanceIncrement;
+                                    }
                                 }
-                                // Extensions ("연장") should not advance the red box cycle, but they should ALSO NOT subtract from it.
-                                // We simply ignore them for cycle progression so the count stays precisely the same.
-                                runningTotal = Math.round(runningTotal * 10) / 10;
 
+                                runningTotal = Math.round(runningTotal * 10) / 10;
                                 let newCycle = getCycle(runningTotal);
 
                                 let shouldShowRedBox = false;

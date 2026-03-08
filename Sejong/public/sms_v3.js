@@ -321,6 +321,7 @@ function getMemberScheduledDate(memberId, courseFilter) {
     }).sort((a, b) => a.dateObj - b.dateObj);
 
     let rollingTotal = 0;
+    let extCount = 0;
     let lastRecordDate = null;
     let allMilestones = [];
     let hasAnyAttendance = false;
@@ -338,7 +339,8 @@ function getMemberScheduledDate(memberId, courseFilter) {
             const d = new Date(today.getFullYear(), today.getMonth() + mOffset, 1);
             const y = d.getFullYear();
             const m = d.getMonth() + 1;
-            const syncKey = `${memberId}_${y}_${m}_${courseFilter || 'all'}`;
+            const cleanF = (courseFilter || 'all').replace(/\([^)]*\)/g, '').trim();
+            const syncKey = `${memberId}_${y}_${m}_${cleanF}`;
             if (syncData[syncKey]) {
                 allMilestones.push({ year: y, month: m, day: syncData[syncKey] });
             }
@@ -352,15 +354,22 @@ function getMemberScheduledDate(memberId, courseFilter) {
             if (rClean !== fClean) continue;
         }
 
-        const inc = (r.course && r.course.includes('제과제빵')) ? 0.5 : 1.0;
+        const courseToCheck = courseFilter || r.course || '';
+        const inc = courseToCheck.includes('제과제빵') ? 0.5 : 1.0;
         const isMarker = ['[', ']'].includes(r.status);
-        const isNumericPresent = ['10', '12', '2', '5', '7'].includes(r.status);
+        const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(r.status);
         const isAbsent = r.status === 'absent' || (typeof r.status === 'string' && r.status.startsWith('X'));
-        const isRegular = r.status === 'present' || r.status === 'extension' || isNumericPresent || isAbsent;
+        const isExtension = r.status === 'extension' || (typeof r.status === 'string' && (r.status.startsWith('연') || r.status.includes('연장') || r.status.startsWith('E')));
+        const isRegular = r.status === 'present' || isNumericPresent || isAbsent;
 
-        if (isMarker || isRegular) {
+        if (isMarker || isRegular || isExtension) {
             const prevCycle = getCycle(rollingTotal);
-            rollingTotal += inc;
+            if (isExtension) {
+                extCount++;
+                if (extCount % 4 === 0) rollingTotal += inc;
+            } else {
+                rollingTotal += inc;
+            }
             const currCycle = getCycle(rollingTotal);
             if (currCycle > prevCycle) {
                 allMilestones.push({ year: r.yearNum, month: r.monthNum, day: r.dateObj.getDate() });
@@ -404,7 +413,8 @@ function getMemberScheduledDate(memberId, courseFilter) {
 
             if (isValidDay && !isHoliday) {
                 const prevSim = simRolling;
-                const inc = (courseFilter && courseFilter.includes('제과제빵')) ? 0.5 : 1.0;
+                const courseToCheck = courseFilter || 'all';
+                const inc = courseToCheck.includes('제과제빵') ? 0.5 : 1.0;
                 simRolling += inc;
                 if (getCycle(simRolling) > getCycle(prevSim)) {
                     allMilestones.push({ year: simDate.getFullYear(), month: simDate.getMonth() + 1, day: simDate.getDate() });
@@ -438,7 +448,7 @@ function processCourses() {
             rawCourse.split(',').forEach(c => {
                 const trimmedC = c.trim();
                 // Strip class times/times in parentheses like (19:00)
-                const subjectName = trimmedC.replace(/\(\d{1,2}:\d{2}\)/g, '').trim() || '미지정';
+                const subjectName = trimmedC.replace(/\([^)]*\)/g, '').trim() || '미지정';
                 if (!groupedCourses[subjectName]) groupedCourses[subjectName] = [];
                 // Prevent duplicate entries of the same student in the same merged group
                 if (!groupedCourses[subjectName].some(em => em.id === m.id)) {
@@ -548,6 +558,7 @@ function renderTargetList() {
 
             mDiv.dataset.id = m.id;
             mDiv.dataset.phone = phone || '';
+            mDiv.dataset.course = cName;
 
             mDiv.style.padding = '8px 20px 8px 40px';
             mDiv.style.fontSize = '0.9rem';
@@ -557,7 +568,7 @@ function renderTargetList() {
             mDiv.style.borderBottom = '1px solid #f1f5f9';
             if (!hasPhone) mDiv.style.opacity = '0.6';
 
-            const isSelected = selectedTargets.some(t => String(t.id) === String(m.id));
+            const isSelected = selectedTargets.some(t => String(t.id) === String(m.id) && t.selectedCourse === cName);
             if (isSelected) mDiv.style.color = '#3b82f6';
 
             const isInactive = m.status === 'trash' || m.status === 'delete';
@@ -601,12 +612,14 @@ function renderTargetList() {
         groupDiv.appendChild(membersDiv);
         listDiv.appendChild(groupDiv);
     });
+    updateSelectedTags();
 }
 
 function updateCheckmarks() {
     document.querySelectorAll('.member-row').forEach(mDiv => {
         const id = mDiv.dataset.id;
-        const isSelected = selectedTargets.some(t => String(t.id) === id);
+        const course = mDiv.dataset.course;
+        const isSelected = selectedTargets.some(t => String(t.id) === id && t.selectedCourse === course);
 
         mDiv.style.color = isSelected ? '#3b82f6' : '';
         const iTag = mDiv.querySelector('i');
@@ -623,18 +636,9 @@ function toggleTarget(member, phone, courseName) {
         return;
     }
 
-    const index = selectedTargets.findIndex(t => String(t.id) === String(member.id));
+    const index = selectedTargets.findIndex(t => String(t.id) === String(member.id) && t.selectedCourse === courseName);
     if (index > -1) {
-        // Find current member to see if phone matches
-        const activeTarget = selectedTargets[index];
-        // If the number being clicked is the same as already selected, turn it off.
-        if (activeTarget.phone === phone) {
-            selectedTargets.splice(index, 1);
-        } else {
-            // If phone type was changed (e.g. was Parent, now clicking Trainee), update it.
-            selectedTargets[index].phone = phone;
-            selectedTargets[index].selectedCourse = courseName;
-        }
+        selectedTargets.splice(index, 1);
     } else {
         selectedTargets.push({ ...member, phone: phone, selectedCourse: courseName });
     }
@@ -757,7 +761,7 @@ function selectAllCourses() {
         membersInCourse.forEach(m => {
             const phone = targetType === 'student' ? m.phone : m.phone_guardian;
             if (phone) {
-                const alreadySelected = selectedTargets.some(t => String(t.id) === String(m.id) && t.phone === phone);
+                const alreadySelected = selectedTargets.some(t => String(t.id) === String(m.id) && t.phone === phone && t.selectedCourse === cName);
                 if (!alreadySelected) {
                     selectedTargets.push({ ...m, phone: phone, selectedCourse: cName });
                 }
@@ -814,7 +818,7 @@ function selectFilteredCourses() {
         membersInCourse.forEach(m => {
             const phone = targetType === 'student' ? m.phone : m.phone_guardian;
             if (phone && phone.trim()) {
-                const alreadySelected = selectedTargets.some(t => String(t.id) === String(m.id) && t.phone === phone);
+                const alreadySelected = selectedTargets.some(t => String(t.id) === String(m.id) && t.selectedCourse === cName);
                 if (!alreadySelected) {
                     selectedTargets.push({ ...m, phone: phone, selectedCourse: cName });
                     totalSelectedNow++;
@@ -1542,6 +1546,7 @@ function getMemberAllMilestones(memberId, courseFilter) {
     }).sort((a, b) => a.dateObj - b.dateObj);
 
     let rollingTotal = 0;
+    let extCount = 0;
     let lastRecordDate = null;
     let hasAnyAttendance = false;
 
@@ -1558,7 +1563,8 @@ function getMemberAllMilestones(memberId, courseFilter) {
             const d = new Date(today.getFullYear(), today.getMonth() + mOffset, 1);
             const y = d.getFullYear();
             const m = d.getMonth() + 1;
-            const syncKey = `${memberId}_${y}_${m}_${courseFilter || 'all'}`;
+            const cleanFilter = (courseFilter || 'all').replace(/\([^)]*\)/g, '').trim();
+            const syncKey = `${memberId}_${y}_${m}_${cleanFilter}`;
             if (syncData[syncKey]) {
                 milestones.push({ year: y, month: m, day: syncData[syncKey] });
             }
@@ -1572,15 +1578,22 @@ function getMemberAllMilestones(memberId, courseFilter) {
             if (rClean !== fClean) continue;
         }
 
-        const inc = (r.course && r.course.includes('제과제빵')) ? 0.5 : 1.0;
+        const courseToCheck = courseFilter || r.course || '';
+        const inc = courseToCheck.includes('제과제빵') ? 0.5 : 1.0;
         const isMarker = ['[', ']'].includes(r.status);
-        const isNumericPresent = ['10', '12', '2', '5', '7'].includes(r.status);
+        const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(r.status);
         const isAbsent = r.status === 'absent' || (typeof r.status === 'string' && r.status.startsWith('X'));
-        const isRegular = r.status === 'present' || r.status === 'extension' || isNumericPresent || isAbsent;
+        const isExtension = r.status === 'extension' || (typeof r.status === 'string' && (r.status.startsWith('연') || r.status.includes('연장') || r.status.startsWith('E')));
+        const isRegular = r.status === 'present' || isNumericPresent || isAbsent;
 
-        if (isMarker || isRegular) {
+        if (isMarker || isRegular || isExtension) {
             const prevCycle = getCycle(rollingTotal);
-            rollingTotal += inc;
+            if (isExtension) {
+                extCount++;
+                if (extCount % 4 === 0) rollingTotal += inc;
+            } else {
+                rollingTotal += inc;
+            }
             const currCycle = getCycle(rollingTotal);
             if (currCycle > prevCycle) {
                 milestones.push({ year: r.yearNum, month: r.monthNum, day: r.dateObj.getDate() });
@@ -1623,7 +1636,8 @@ function getMemberAllMilestones(memberId, courseFilter) {
 
             if (isValidDay && !isHoliday) {
                 const prevSim = simRolling;
-                const inc = (courseFilter && courseFilter.includes('제과제빵')) ? 0.5 : 1.0;
+                const courseToCheck = courseFilter || 'all';
+                const inc = courseToCheck.includes('제과제빵') ? 0.5 : 1.0;
                 simRolling += inc;
                 if (getCycle(simRolling) > getCycle(prevSim)) {
                     milestones.push({ year: simDate.getFullYear(), month: simDate.getMonth() + 1, day: simDate.getDate() });
