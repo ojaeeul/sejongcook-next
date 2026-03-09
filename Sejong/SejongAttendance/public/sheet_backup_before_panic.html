@@ -232,13 +232,13 @@
         }
 
         .stat-absent {
-            color: var(--status-error);
+            color: #000000 !important;
         }
 
         .stat-extension {
             color: #FF0000 !important;
-            background-color: #E6C200;
-            /* Yellowish-brown "Poop" color */
+            background-color: #FFFFFF !important;
+            /* White background as requested */
             font-weight: bold;
         }
 
@@ -573,76 +573,109 @@
 
             /* Table Styles */
             table.attendance-table {
-                width: 99% !important;
+                width: 100% !important;
                 margin: 0 !important;
-                border-collapse: collapse;
-                border: 1px solid #000;
+                border-collapse: collapse !important;
+                border: 1px solid #000000 !important;
                 font-size: 8pt;
-                table-layout: fixed;
+                table-layout: fixed !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
 
             table.attendance-table th,
             table.attendance-table td {
-                height: 18px;
-                padding: 0;
-                border: 1px solid #000;
+                height: 22px !important;
+                padding: 0 !important;
+                border: 1px solid #000000 !important;
                 text-align: center;
                 vertical-align: middle;
+                box-sizing: border-box !important;
+                background-color: transparent !important;
             }
 
-            table.attendance-table th {
-                height: 28px;
+            table.attendance-table thead th {
+                background-color: #f1f5f9 !important;
+                font-weight: bold;
+                border: 1px solid #000000 !important;
             }
 
-            /* Print Column Resets - Ensure they fit */
+            /* Day Column Precision (31 columns * 2.0% = 62%) */
+            .col-day {
+                width: 2.0% !important;
+                min-width: 2.0% !important;
+            }
+
+            /* Fixed width for print summing to 100% approx */
             .col-course {
-                width: 7% !important;
-                min-width: 0 !important;
+                width: 9% !important;
             }
 
             .col-name {
-                width: 7% !important;
-                min-width: 0 !important;
+                width: 7.5% !important;
             }
 
             .col-no {
                 width: 2.5% !important;
-                min-width: 0 !important;
+            }
+
+            .col-stat-sum {
+                width: 3% !important;
             }
 
             .col-note {
-                width: 8% !important;
-                min-width: 0 !important;
+                width: 7% !important;
             }
 
-            .col-day {
-                width: auto !important;
-                min-width: 0 !important;
-            }
-
-            /* Status Colors */
-            .stat-present {
-                color: #00C240 !important;
-            }
-
-            .stat-absent {
-                color: #EF4444 !important;
-            }
-
-            .stat-extension {
-                color: #FF0000 !important;
-                background-color: #E6C200 !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
-
-            .is-holiday-col {
+            .is-holiday-col,
+            .is-sunday {
                 background-color: #FEE2E2 !important;
             }
 
-            td.cell-disabled {
-                background-color: #F3F4F6 !important;
+            .cell-disabled {
+                background-color: #f3f4f6 !important;
             }
+
+            .red-box-cell {
+                outline: 2px solid #ef4444 !important;
+                outline-offset: -2px;
+                border: 1px solid #000000 !important;
+            }
+        }
+
+        /* Red Box Styles for UI and Print */
+        .red-box-cell {
+            border: 3px solid #ef4444 !important;
+            box-shadow: 0 0 5px rgba(239, 68, 68, 0.5);
+            position: relative;
+        }
+
+        .p-scheduled-num {
+            color: #ef4444;
+            font-size: 0.75rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+
+        .text-redbox-num {
+            position: absolute;
+            top: -4px;
+            right: -3px;
+            background: #ef4444;
+            color: white;
+            font-size: 0.55rem;
+            font-weight: 800;
+            padding: 1px 3px;
+            border-radius: 3px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+            z-index: 10;
+        }
+
+        .non-class-day {
+            background-color: #f5f5f5;
         }
 
         /* Thin Arrow Styling */
@@ -1114,6 +1147,12 @@
                                         <div class="dropdown-item" onclick="selectPresentType('7', event)">
                                             <span class="stat-numeric">7</span> 7시 출석
                                         </div>
+                                        <div class="dropdown-item" onclick="selectPresentType('3', event)">
+                                            <span class="stat-numeric">3</span> 3시 출석
+                                        </div>
+                                        <div class="dropdown-item" onclick="selectPresentType('9', event)">
+                                            <span class="stat-numeric">9</span> 9시 출석
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="legend-item" id="brush-absent" onclick="setBrush('absent')"><span
@@ -1298,7 +1337,7 @@
             "2025-10-03": "개천절", "2025-10-05": "추석 연휴", "2025-10-06": "추석", "2025-10-07": "추석 연휴", "2025-10-08": "대체공휴일", "2025-10-09": "한글날",
             "2025-12-25": "성탄절",
             "2026-01-01": "신정", "2026-02-16": "설날 연휴", "2026-02-17": "설날", "2026-02-18": "설날 연휴",
-            "2026-03-01": "삼일절", "2026-03-02": "대체공휴일",
+            "2026-03-01": "삼일절", "2026-03-02": "대체공휴일", "2026-04-15": "국회의원 선거",
             "2026-05-05": "어린이날", "2026-05-24": "부처님오신날", "2026-05-25": "대체공휴일",
             "2026-06-06": "현충일", "2026-08-15": "광복절",
             "2026-09-24": "추석 연휴", "2026-09-25": "추석", "2026-09-26": "추석 연휴",
@@ -1406,7 +1445,7 @@
                 text.textContent = `${type}시`;
             }
 
-            setBrush(type);
+            setBrush(String(type));
         };
 
         async function setBrush(status) {
@@ -1422,7 +1461,7 @@
 
             // Update UI
             document.querySelectorAll('.legend-item').forEach(item => item.classList.remove('active'));
-            if (status === 'present') document.getElementById('brush-present').classList.add('active');
+            if (status === 'present' || ['10', '12', '2', '5', '7', '3', '9'].includes(String(status))) document.getElementById('brush-present').classList.add('active');
             else if (status === 'absent') document.getElementById('brush-absent').classList.add('active');
             else if (status === 'extension') document.getElementById('brush-extension').classList.add('active');
             else if (status === 'arrow') document.getElementById('brush-arrow').classList.add('active');
@@ -1462,6 +1501,7 @@
                     console.error(`Clear failed for ${memberId}`, e);
                 }
             }
+            localStorage.setItem('sejong_attendance_sync', Date.now().toString());
 
             await fetchAttendance();
             renderSheet();
@@ -1532,9 +1572,12 @@
             });
             memberRecords.sort((a, b) => a.dateObj - b.dateObj);
 
-            // [엄격 제한] 공휴일만 우선 제외 (기존 기록된 요일은 모두 인정)
+            // [엄격 제한] 공휴일 및 수강 시작일(start_date) 이전 데이터 제외
+            const startLimit = m.start_date || m.registeredDate;
             memberRecords = memberRecords.filter(r => {
                 const dateStr = r.date.split('T')[0];
+                if (startLimit && dateStr < startLimit) return false;
+
                 const isHolidayInSys = holidaysData.some(h => h.date === dateStr);
                 const isNationalHoliday = !!KOREAN_HOLIDAYS_MAP[dateStr];
                 const dayOfWeek = r.dateObj.getDay();
@@ -1553,16 +1596,24 @@
 
 
 
-            const incAmount = (courseFilter && courseFilter.includes('제과제빵')) ? 0.5 : 1.0;
+            const isDualBakery = (courseFilter && courseFilter.toLowerCase().includes('제과제빵'));
+            const incAmount = isDualBakery ? 0.5 : 1.0;
+
             let lastRecordDate = null;
             let hitTargetInMonth = false;
             let hasAnyAttendance = false;
+            let extCount = 0;
 
-            // sheet.html과 동일한 결제 주기 계산 (9, 17, 25 ...)
+            // [공통] 주기 판정 로직 (제과제빵 8.5일, 일반 8일 기준)
             const getCycle = (val) => {
                 let vRaw = Math.round(val * 10);
-                if (vRaw < 90) return 0;
-                return Math.floor((vRaw - 90) / 80) + 1;
+                if (isDualBakery) {
+                    if (vRaw < 85) return 0;
+                    return Math.floor((vRaw - 85) / 85) + 1;
+                } else {
+                    if (vRaw <= 80) return 0;
+                    return Math.floor((vRaw - 81) / 80) + 1;
+                }
             };
 
 
@@ -1571,31 +1622,37 @@
                     if (!r.course) continue;
                     const rClean = r.course.replace(/\([^)]*\)/g, '').trim();
                     const fClean = courseFilter.replace(/\([^)]*\)/g, '').trim();
-                    if (rClean !== fClean) continue;
+
+                    let match = (rClean === fClean);
+                    // [통합 보정] 제과제빵기능사(통합) 행에서는 양식기능사 기록도 동일 세션으로 인정
+                    if (isDualBakery && rClean === '양식기능사') match = true;
+
+                    if (!match) continue;
                 }
 
                 if (r.yearNum < year || (r.yearNum === year && r.monthNum < month)) {
                     // Count past months
                     const isMarker = ['[', ']'].includes(r.status);
-                    const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(r.status);
+                    const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(String(r.status));
                     const isAbsent = r.status === 'absent' || (typeof r.status === 'string' && r.status.startsWith('X'));
                     const isExtension = r.status === 'extension' || (typeof r.status === 'string' && (r.status.startsWith('연') || r.status.includes('연장') || r.status.startsWith('E')));
                     const isRegular = r.status === 'present' || isNumericPresent || isAbsent;
 
                     if (isMarker || isRegular || isExtension) {
                         if (isExtension) {
+                            rollingTotal -= incAmount;
                             extCount++;
-                            if (extCount % 4 === 0) rollingTotal += incAmount;
                         } else {
                             rollingTotal += incAmount;
                         }
+                        rollingTotal = Math.round(rollingTotal * 10) / 10;
                         lastRecordDate = r.dateObj;
                         hasAnyAttendance = true;
                     }
                 } else if (r.yearNum === year && r.monthNum === month) {
                     // Count current month
                     const isMarker = ['[', ']'].includes(r.status);
-                    const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(r.status);
+                    const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(String(r.status));
                     const isAbsent = r.status === 'absent' || (typeof r.status === 'string' && r.status.startsWith('X'));
                     const isExtension = r.status === 'extension' || (typeof r.status === 'string' && (r.status.startsWith('연') || r.status.includes('연장') || r.status.startsWith('E')));
                     const isRegular = r.status === 'present' || isNumericPresent || isAbsent;
@@ -1603,17 +1660,18 @@
                     const prevRolling = rollingTotal;
                     if (isMarker || isRegular || isExtension) {
                         if (isExtension) {
+                            rollingTotal -= incAmount;
                             extCount++;
-                            if (extCount % 4 === 0) rollingTotal += incAmount;
                         } else {
                             rollingTotal += incAmount;
                         }
+                        rollingTotal = Math.round(rollingTotal * 10) / 10;
                         lastRecordDate = r.dateObj;
                         hasAnyAttendance = true;
-                        // 출석부 레드박스(9, 17, 25 주기) 교차 순간 감지
+                        // 출석부 레드박스(8.5, 17.0 주기 등) 교차 순간 감지
                         let prevCycle = getCycle(prevRolling);
                         let currCycle = getCycle(rollingTotal);
-                        if (currCycle > prevCycle) {
+                        if (currCycle > prevCycle || String(r.status) === '9') {
                             eighthDay = r.dateObj.getDate();
                             hitTargetInMonth = true;
                         }
@@ -1864,7 +1922,7 @@
 
                 const thCourse = document.createElement('th');
                 thCourse.className = 'col-course';
-                thCourse.innerHTML = `<div class="fs-0-9-em lh-1-2 bold c-000">${courseNameDisplay}</div><div class="fs-0-75-em fw-normal c-333">등록일</div>`;
+                thCourse.innerHTML = `<div class="fs-0-9-em lh-1-2 bold c-000">${courseNameDisplay}</div><div class="fs-0-75-em fw-normal c-333">시작일</div>`;
                 trHead.appendChild(thCourse);
 
                 const headers = [
@@ -1943,7 +2001,12 @@
                     } else {
                         courses.forEach(courseFull => {
                             let courseName = courseFull.replace(/\([^)]*\)/g, '').trim();
-                            allCourseRows.push({ member: m, courseFull: courseFull, courseName: courseName });
+                            // 표시용 이름 보정 (제과제빵만 0.5 표시)
+                            let courseDisplay = courseName;
+                            if (courseName.includes('제과제빵')) {
+                                courseDisplay = courseName + '(0.5)';
+                            }
+                            allCourseRows.push({ member: m, courseFull: courseFull, courseName: courseName, courseDisplay: courseDisplay });
                         });
                     }
                 });
@@ -2005,25 +2068,29 @@
 
                 const renderedArrows = new Set(); // memberId_date
 
-                for (let r = 0; r < 20; r++) {
+                const maxRows = Math.max(20, filteredRows.length);
+                for (let r = 0; r < maxRows; r++) {
                     const tr = document.createElement('tr');
                     const rowData = filteredRows[r];
                     const m = rowData ? rowData.member : null;
                     const rowCourseNameScope = rowData ? rowData.courseName : null;
+                    const rowCourseDisplay = rowData ? rowData.courseDisplay : (rowCourseNameScope || '');
 
-                    // Col 1: Registered Date
+                    // Col 1: 수강 과정명 + 시작일
                     const tdCourse = document.createElement('td');
-                    if (m && m.registeredDate) {
-                        // Try to parse YYYY-MM-DD
-                        const dateParts = m.registeredDate.split('-');
+                    // 수강 대장 시작일 표시
+                    const displayStartDate = m ? (m.start_date || m.registeredDate) : null;
+                    if (displayStartDate) {
+                        // Try to parse YYYY-MM-DD or similar
+                        const dateParts = displayStartDate.split('-');
                         if (dateParts.length === 3) {
                             // YY.MM.DD
-                            tdCourse.textContent = `${dateParts[0].slice(2)}.${dateParts[1]}.${dateParts[2]}`;
+                            tdCourse.innerHTML = `<div class="fs-0-9-em lh-1-2 bold c-000">${rowCourseDisplay}</div><div class="fs-0-75-em fw-normal c-333">${dateParts[0].slice(2)}.${dateParts[1]}.${dateParts[2]}</div>`;
                         } else {
-                            tdCourse.textContent = m.registeredDate;
+                            tdCourse.innerHTML = `<div class="fs-0-9-em lh-1-2 bold c-000">${rowCourseDisplay}</div><div class="fs-0-75-em fw-normal c-333">${displayStartDate}</div>`;
                         }
                     } else {
-                        tdCourse.textContent = '';
+                        tdCourse.innerHTML = `<div class="fs-0-9-em lh-1-2 bold c-000">${rowCourseDisplay}</div><div class="fs-0-75-em fw-normal c-333"></div>`;
                     }
                     tr.appendChild(tdCourse);
 
@@ -2050,17 +2117,27 @@
                     let uniqueLogs = [];
 
                     if (m) {
-                        const isDualCourse = rowCourseNameScope && rowCourseNameScope.includes('제과제빵');
-                        const attendanceIncrement = isDualCourse ? 0.5 : 1;
+                        const isDualBakery = rowCourseNameScope && rowCourseNameScope.includes('제과제빵');
+                        const attendanceIncrement = isDualBakery ? 0.5 : 1;
 
                         const rowLogsRaw = attendanceData.filter(l => {
                             if (String(l.memberId) !== String(m.id)) return false;
+
+                            // [결정적 필터] 수강 시작일(start_date) 이전의 기록은 계산에서 제외
+                            if (m.start_date) {
+                                if (l.date < m.start_date) return false;
+                            }
+
                             if (!l.course) return true; // Global logs are always included
                             if (!rowCourseNameScope) return false;
 
                             // Normalize both for comparison
-                            const lCourseClean = l.course.replace(/\([^)]*\)/g, '').trim();
+                            const lCourseClean = l.course ? l.course.replace(/\([^)]*\)/g, '').trim() : '';
                             const rCourseClean = rowCourseNameScope.replace(/\([^)]*\)/g, '').trim();
+
+                            // [통합 보정] 제과제빵기능사(통합) 행에서는 양식기능사 기록도 동일 세션으로 인정 (납부주기가 같으므로)
+                            if (isDualBakery && lCourseClean === '양식기능사') return true;
+
                             return lCourseClean === rCourseClean;
                         });
                         const uniqueRowLogsMap = new Map();
@@ -2123,7 +2200,9 @@
                             latestMonth = lastD.getMonth() + 1;
                         }
 
-                        while (true) {
+                        // Add a safety counter to prevent infinite loops
+                        let safetyCounter = 0;
+                        while (safetyCounter < 200) {
                             const key = `${iterYear}-${String(iterMonth).padStart(2, '0')}`;
                             monthsToCalc.push({ year: iterYear, month: iterMonth, key });
                             if (iterYear === currentYear && iterMonth === currentMonth) break;
@@ -2132,6 +2211,11 @@
                                 iterMonth = 1;
                                 iterYear++;
                             }
+                            // Extra safety: never exceed the current year + 1
+                            if (iterYear > currentYear + 1) {
+                                break;
+                            }
+                            safetyCounter++;
                         }
 
                         let rollingExtCount = 0;
@@ -2155,7 +2239,7 @@
 
                             mLogs.forEach(l => {
                                 const isMakeupMarker = ['[', ']'].includes(l.status);
-                                const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(l.status);
+                                const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(String(l.status));
                                 const isAbsent = l.status === 'absent' || (typeof l.status === 'string' && l.status.startsWith('X'));
                                 const isExtension = l.status === 'extension' || (typeof l.status === 'string' && (l.status.startsWith('E') || l.status.includes('연장') || l.status.startsWith('연')));
                                 const isRegularAttendance = l.status === 'present' || isNumericPresent || isAbsent;
@@ -2167,9 +2251,7 @@
                                 } else if (isExtension) {
                                     rollingExtCount++;
                                     // 연장 4개당 1개 출석 인정 (Penalty rule)
-                                    if (rollingExtCount % 4 === 0) {
-                                        attendances += attendanceIncrement;
-                                    }
+                                    // rollingExtCount++ is done, nothing to advance due to extension
                                 }
 
                                 // Summary counts for the CURRENT VIEWED month only (for right-side totals)
@@ -2222,11 +2304,18 @@
                             let runningTotal = currentMC.carryFromPrev;
                             let runningExtCount = currentMC.carryFromPrevExtCount || 0;
 
-                            // 누적합 기준 주기(cycle) 판정. 9일=1, 17일=2, 25일=3... (8일 간격)
+                            // 누적합 기준 주기(cycle) 판정. 제과제빵기능사(통합)는 17회(8.5일) 기준, 일반은 8일 기준
                             const getCycle = (val) => {
                                 let vRaw = Math.round(val * 10);
-                                if (vRaw < 90) return 0;
-                                return Math.floor((vRaw - 90) / 80) + 1;
+                                if (isDualBakery) {
+                                    // 제과제빵기능사(통합): 8.5일(17회)마다 결제. 8.5=1, 17.0=2...
+                                    if (vRaw < 85) return 0;
+                                    return Math.floor((vRaw - 85) / 85) + 1;
+                                } else {
+                                    // 일반 (제과기능사, 제빵기능사 포함): 9일=1, 17일=2, 25일=3... (8일 간격)
+                                    if (vRaw <= 80) return 0;
+                                    return Math.floor((vRaw - 81) / 80) + 1;
+                                }
                             };
 
                             let currentCycle = getCycle(runningTotal);
@@ -2234,7 +2323,7 @@
 
                             currentMonthLogs.forEach(l => {
                                 const isMakeupMarker = ['[', ']'].includes(l.status);
-                                const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(l.status);
+                                const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(String(l.status));
                                 const isAbsent = l.status === 'absent' || (typeof l.status === 'string' && l.status.startsWith('X'));
                                 const isExtension = l.status === 'extension' || (typeof l.status === 'string' && (l.status.startsWith('E') || l.status.includes('연장') || l.status.startsWith('연')));
                                 const isRegularAttendance = l.status === 'present' || isNumericPresent || isAbsent;
@@ -2242,12 +2331,9 @@
                                 if (isRegularAttendance || isMakeupMarker) {
                                     runningTotal += attendanceIncrement;
                                 } else if (isExtension) {
+                                    runningTotal -= attendanceIncrement;
                                     runningExtCount++;
-                                    if (runningExtCount % 4 === 0) {
-                                        runningTotal += attendanceIncrement;
-                                    }
                                 }
-
                                 runningTotal = Math.round(runningTotal * 10) / 10;
                                 let newCycle = getCycle(runningTotal);
 
@@ -2286,15 +2372,32 @@
                                 });
                             }
 
+                            const isDualBakery = rowCourseNameScope && rowCourseNameScope.includes('제과제빵'); // Re-define for this scope
+
                             if (cyclesThisMonth > 0 || hasManualRedBox) {
-                                // 이번 달에 빨간색 네모박스가 발생했다면 -> 누적 주기의 8배수 전체를 재고출석(J)에 표기
+                                // 이번 달에 빨간색 네모박스가 발생했다면
                                 let actualCycle = endCycle > 0 ? endCycle : (hasManualRedBox ? 1 : 0);
-                                displayMakeup = actualCycle * 8;
-                                displayP = Math.round((runningTotal - (actualCycle * 8)) * 10) / 10;
+                                if (isDualBakery) {
+                                    // 제과제빵기능사(통합): 8.5일(17회)일 때 박스 발생. 사용자 요청: 재고출석(J)은 8.0 단위 기록
+                                    displayMakeup = Math.round((actualCycle * 8.0) * 10) / 10;
+                                } else {
+                                    // 일반 및 단과과정: 기존 방식 (8.0 단위)
+                                    let cycleUnit = 8.0;
+                                    displayMakeup = Math.round(actualCycle * cycleUnit * 10) / 10;
+                                }
+                                displayP = Math.round((runningTotal - displayMakeup) * 10) / 10;
                             } else {
                                 // 이번 달에 발생한 네모박스가 없다면 -> 재고출석(J)은 0, 나머지는 전부 출석(P)에 표기
-                                displayMakeup = 0;
-                                displayP = Math.round((runningTotal - (startCycle * 8)) * 10) / 10;
+                                let startCycleValue = startCycle;
+                                if (isDualBakery) {
+                                    let baseStock = startCycleValue > 0 ? (startCycleValue * 8.0) : 0;
+                                    displayMakeup = 0;
+                                    displayP = Math.round((runningTotal - baseStock) * 10) / 10;
+                                } else {
+                                    let cycleUnit = 8.0;
+                                    displayMakeup = 0;
+                                    displayP = Math.round((runningTotal - (startCycleValue * cycleUnit)) * 10) / 10;
+                                }
                             }
                         }
                     }
@@ -2353,17 +2456,14 @@
                                         isRestricted = true;
                                     }
                                 }
-                                // If courseAllowedDays is null, we assume it's an unrestricted course or missing data (default to open if not Sunday/Holiday)
 
                                 if (isRestricted) {
                                     td.classList.add('cell-disabled');
-                                    // Differentiate colors: Holiday/Sunday (Reddish) vs Non-class day (Gray)
                                     if (!isSundayOrHoliday) {
-                                        td.style.backgroundColor = '#f5f5f5';
+                                        td.classList.add('non-class-day');
                                     }
                                 } else {
-                                    td.classList.remove('cell-disabled');
-                                    td.style.backgroundColor = '#ffffff';
+                                    td.classList.remove('cell-disabled', 'non-class-day');
                                 }
 
                                 // Interactive Cell Configuration
@@ -2371,11 +2471,20 @@
                                 td.dataset.date = dateStr;
                                 td.dataset.course = rowCourseNameScope || '';
 
-                                // UI Lookup using pre-filtered uniqueLogs which cleanly matches course names (ignores time parentheses)
                                 const log = m ? uniqueLogs.find(l => l.date === dateStr) : undefined;
 
                                 const globalArrowLog = m ? attendanceData.find(l => l.memberId === m.id && l.date === dateStr && l.status === 'arrow') : undefined;
                                 let status = globalArrowLog ? 'arrow' : (log ? log.status : 'unchecked');
+
+                                // [Auto-mapping] Map generic 'present' to numeric based on courseFull time slot
+                                if (status === 'present' && rowData.courseFull) {
+                                    const timeMatch = String(rowData.courseFull).match(/\((10|12|14|15|17|19|21):00\)/);
+                                    if (timeMatch) {
+                                        const h = timeMatch[1];
+                                        const hourMapPrefix = { '10': '10', '12': '12', '14': '2', '15': '3', '17': '5', '19': '7', '21': '9' };
+                                        if (hourMapPrefix[h]) status = hourMapPrefix[h];
+                                    }
+                                }
 
                                 // Only show arrow on ONE row for the member
                                 if (status === 'arrow') {
@@ -2394,29 +2503,27 @@
                                     td.removeAttribute('data-note');
                                 }
 
-                                // Visuals (Arrows/Symbols) - Only render if NOT restricted
+                                // Visuals (Arrows/Symbols)
                                 const prevDate = new Date(currentYear, currentMonth - 1, i - 1);
                                 const prevDateStr = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, '0')}-${String(prevDate.getDate()).padStart(2, '0')}`;
                                 const nextDate = new Date(currentYear, currentMonth - 1, i + 1);
                                 const nextDateStr = `${nextDate.getFullYear()}-${String(nextDate.getMonth() + 1).padStart(2, '0')}-${String(nextDate.getDate()).padStart(2, '0')}`;
 
-                                if (isRestricted) {
+                                if (status === 'extension') {
+                                    const prevLog = m ? uniqueLogs.find(l => l.date === prevDateStr) : undefined;
+                                    const isPrevExt = prevLog && prevLog.status === 'extension';
+                                    const nextLog = m ? uniqueLogs.find(l => l.date === nextDateStr) : undefined;
+                                    const isNextExt = nextLog && nextLog.status === 'extension';
+                                    renderExtensionArrow(td, isPrevExt, isNextExt);
+                                } else if (status === 'arrow') {
+                                    const isPrevArrow = m ? !!attendanceData.find(l => l.memberId === m.id && l.date === prevDateStr && l.status === 'arrow') : false;
+                                    const isNextArrow = m ? !!attendanceData.find(l => l.memberId === m.id && l.date === nextDateStr && l.status === 'arrow') : false;
+                                    renderThinArrow(td, isPrevArrow, isNextArrow);
+                                } else if (status !== 'unchecked') {
+                                    setCellSymbol(td, status);
+                                } else if (isRestricted) {
                                     td.innerHTML = '';
                                     td.removeAttribute('data-note');
-                                } else {
-                                    if (status === 'extension') {
-                                        const prevLog = m ? uniqueLogs.find(l => l.date === prevDateStr) : undefined;
-                                        const isPrevExt = prevLog && prevLog.status === 'extension';
-                                        const nextLog = m ? uniqueLogs.find(l => l.date === nextDateStr) : undefined;
-                                        const isNextExt = nextLog && nextLog.status === 'extension';
-                                        renderExtensionArrow(td, isPrevExt, isNextExt);
-                                    } else if (status === 'arrow') {
-                                        const isPrevArrow = m ? !!attendanceData.find(l => l.memberId === m.id && l.date === prevDateStr && l.status === 'arrow') : false;
-                                        const isNextArrow = m ? !!attendanceData.find(l => l.memberId === m.id && l.date === nextDateStr && l.status === 'arrow') : false;
-                                        renderThinArrow(td, isPrevArrow, isNextArrow);
-                                    } else {
-                                        setCellSymbol(td, status);
-                                    }
                                 }
 
                                 // Event Binding
@@ -2433,31 +2540,25 @@
 
                                 // [신규] 납부대장(ledger)의 '예'날짜 동기화 및 표시
                                 if (redBoxDates.has(dateStr) || i === simScheduledDay) {
-                                    td.style.border = '3px solid red';
-                                    td.style.boxShadow = '0 0 5px rgba(255, 0, 0, 0.5)';
-
-                                    // 날짜 표시 로직 추가 ('예' 대신 일자 숫자)
+                                    td.classList.add('red-box-cell');
                                     if (!td.innerHTML || td.innerHTML.trim() === '') {
-                                        td.innerHTML = `<div style="color:red; font-size:0.75rem; font-weight:800; display:flex; align-items:center; justify-content:center; height:100%;" title="납부 예정일">${i}</div>`;
+                                        td.innerHTML = `<div class="p-scheduled-num">${i}</div>`;
                                     } else {
-                                        if (!td.innerHTML.includes(`>${i}<`)) {
-                                            td.innerHTML += `<div style="position:absolute; top:-4px; right:-3px; background:red; color:white; font-size:0.55rem; font-weight:800; padding:1px 3px; border-radius:3px; box-shadow: 0 1px 2px rgba(0,0,0,0.3);" title="납부 예정일">${i}</div>`;
+                                        if (!td.innerHTML.includes(`text-redbox-num`)) {
+                                            td.innerHTML += `<div class="text-redbox-num">${i}</div>`;
                                         }
                                     }
                                 }
                             } else {
                                 // Empty Row
                                 td.style.pointerEvents = 'none';
-                                td.classList.remove('cell-disabled');
-                                td.style.backgroundColor = '';
+                                td.classList.remove('cell-disabled', 'is-holiday-col', 'is-sunday', 'red-box-cell');
                             }
 
-                            if (isHoliday) td.style.backgroundColor = '#FEE2E2';
-                            else if (dayOfWeek === 0) td.style.backgroundColor = '#FEF2F2';
+                            if (isHoliday) td.classList.add('is-holiday-col');
+                            else if (dayOfWeek === 0) td.classList.add('is-sunday');
                         } else {
-                            // Invalid day cells (e.g. Feb 30)
-                            td.classList.add('cell-disabled');
-                            td.style.backgroundColor = '#fcfcfc';
+                            td.classList.add('cell-disabled', 'invalid-day');
                         }
 
                         tr.appendChild(td);
@@ -2575,7 +2676,7 @@
         }
 
         function setCellSymbol(td, status) {
-            td.textContent = '';
+            td.innerHTML = ''; // Start clean for complex symbols
             td.className = 'cell-check';
             td.style.fontSize = '0.75rem';
             td.title = '';
@@ -2583,38 +2684,43 @@
 
             if (!status || status === 'unchecked') return;
 
+            // Simplified Helper to create a circular symbol
+            const createSymbol = (text, cls) => {
+                const s = document.createElement('span');
+                s.textContent = text;
+                s.className = `symbol ${cls}`;
+                if (['10', '12', '2', '5', '7', '3', '9'].includes(String(text))) {
+                    s.classList.add('stat-numeric');
+                }
+                td.appendChild(s);
+                return s;
+            };
+
             if (status === 'present') {
-                td.textContent = 'O';
-                td.classList.add('stat-present');
-            } else if (['10', '12', '2', '5', '7', '3', '9'].includes(status)) {
-                td.textContent = status;
-                td.classList.add('stat-numeric');
+                createSymbol('O', 'stat-present');
+            } else if (['10', '12', '2', '5', '7', '3', '9'].includes(String(status))) {
+                createSymbol('O', 'stat-present');
             } else if (['[', ']'].includes(status)) {
-                td.textContent = status;
-                td.classList.add('stat-makeup');
-                td.classList.add('symbol');
+                createSymbol(status, 'stat-makeup');
             } else if (status === 'absent') {
-                td.textContent = 'X';
-                td.classList.add('stat-absent');
+                createSymbol('X', 'stat-absent');
             } else if (status === 'arrow') {
                 renderThinArrow(td, false, false);
             } else {
                 // Extension or Custom
                 if (status === 'extension' || (typeof status === 'string' && (status.startsWith('연') || status.includes('연장')))) {
-                    td.textContent = '연';
-                    td.classList.add('stat-extension');
-                    // Store the full text as a title attribute so it can be viewed on hover
+                    createSymbol('연', 'stat-extension');
                     td.title = typeof status === 'string' ? status : '';
                 } else if (typeof status === 'string' && status.startsWith('X')) {
-                    td.textContent = 'X';
-                    td.classList.add('stat-absent');
+                    createSymbol('X', 'stat-absent');
                 } else {
                     // Custom Memo - Preview Bubble
-                    if (status.length > 2) {
-                        td.textContent = status.substring(0, 1) + '..';
+                    const text = String(status);
+                    if (text.length > 2) {
+                        td.textContent = text.substring(0, 1) + '..';
                         td.style.fontSize = '0.65rem';
                     } else {
-                        td.textContent = status;
+                        td.textContent = text;
                     }
                     td.classList.add('stat-text');
                 }
@@ -2648,6 +2754,7 @@
                     body: JSON.stringify({ memberId, date: dateStr, status: status || 'unchecked', course: course }),
                     keepalive: true
                 });
+                localStorage.setItem('sejong_attendance_sync', Date.now().toString());
             } catch (e) {
                 console.error("Save failed", e);
                 alert('저장 실패 (Network Error)');
@@ -2778,6 +2885,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ memberId, dates, status: status || 'unchecked', course: course === undefined ? null : course })
                 });
+                localStorage.setItem('sejong_attendance_sync', Date.now().toString());
             } catch (e) {
                 console.error(e);
                 alert('저장에 실패했습니다. 다시 시도해 주세요.');
@@ -2786,46 +2894,7 @@
 
         // ---- Visual Logic ----
         function renderExtensionArrow(td, isPrevExt, isNextExt) {
-            td.innerHTML = '';
-            td.className = ''; // reset
-            td.classList.add('stat-extension');
-            td.style.position = 'relative';
-            td.style.color = 'transparent'; // Hide text if any
-
-            // Draw arrow using CSS or characters
-            // Simplest: use text content with lines
-            // Start: O--
-            // Mid: ---
-            // End: -->
-            // Single: 연장 (Just text)
-
-            if (!isPrevExt && !isNextExt) {
-                // Single cell extension
-                setCellSymbol(td, 'extension');
-                return;
-            }
-
-            // Continuous Arrow
-            const arrowContainer = document.createElement('div');
-            arrowContainer.style.width = '100%';
-            arrowContainer.style.height = '100%';
-            arrowContainer.style.display = 'flex';
-            arrowContainer.style.alignItems = 'center';
-            arrowContainer.style.justifyContent = 'center';
-            arrowContainer.style.fontWeight = 'bold';
-            arrowContainer.style.color = '#d97706'; // Extension color
-
-            if (!isPrevExt && isNextExt) {
-                // Start
-                arrowContainer.textContent = '● ──';
-            } else if (isPrevExt && isNextExt) {
-                // Mid
-                arrowContainer.textContent = '───';
-            } else if (isPrevExt && !isNextExt) {
-                // End
-                arrowContainer.textContent = '── ▶';
-            }
-            td.appendChild(arrowContainer);
+            setCellSymbol(td, 'extension');
         }
 
         function renderThinArrow(td, isPrev, isNext) {
@@ -3060,13 +3129,15 @@
         };
 
         // [신규 - 즉각 동기화] 다른 탭에서 예정일이 변경되면 즉시 반영
-        window.addEventListener('storage', (e) => {
+        window.addEventListener('storage', async (e) => {
             if (e.key === 'sejong_ledger_sync') {
                 window.ledgerSyncData = JSON.parse(e.newValue || '{}');
                 renderSheet();
-            }
-            if (e.key === 'sejong_timetable_sync') {
+            } else if (e.key === 'sejong_timetable_sync') {
                 fetchTimetable().then(() => renderSheet());
+            } else if (e.key === 'sejong_attendance_sync') {
+                await fetchAttendance();
+                renderSheet();
             }
         });
     </script>

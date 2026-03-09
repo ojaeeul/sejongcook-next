@@ -328,8 +328,8 @@ function getMemberScheduledDate(memberId, courseFilter) {
 
     const getCycle = (val) => {
         let vRaw = Math.round(val * 10);
-        if (vRaw < 90) return 0;
-        return Math.floor((vRaw - 90) / 80) + 1;
+        if (vRaw <= 80) return 0;
+        return Math.floor((vRaw - 81) / 80) + 1;
     };
 
     // [1] Check Sync Data
@@ -357,27 +357,54 @@ function getMemberScheduledDate(memberId, courseFilter) {
         const courseToCheck = courseFilter || r.course || '';
         const inc = courseToCheck.includes('제과제빵') ? 0.5 : 1.0;
         const isMarker = ['[', ']'].includes(r.status);
-        const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(r.status);
+        const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(String(r.status));
         const isAbsent = r.status === 'absent' || (typeof r.status === 'string' && r.status.startsWith('X'));
         const isExtension = r.status === 'extension' || (typeof r.status === 'string' && (r.status.startsWith('연') || r.status.includes('연장') || r.status.startsWith('E')));
         const isRegular = r.status === 'present' || isNumericPresent || isAbsent;
 
         if (isMarker || isRegular || isExtension) {
             const prevCycle = getCycle(rollingTotal);
-            if (isExtension) {
-                extCount++;
-                if (extCount % 4 === 0) rollingTotal += inc;
-            } else {
+            if (!isExtension) {
                 rollingTotal += inc;
             }
             const currCycle = getCycle(rollingTotal);
-            if (currCycle > prevCycle) {
-                allMilestones.push({ year: r.yearNum, month: r.monthNum, day: r.dateObj.getDate() });
+            if (currCycle > prevCycle || String(r.status) === '9') {
+                // [Sync Check] Priority to sheet.html's determined date
+                try {
+                    const syncData = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
+                    const cleanF = (courseFilter || 'all').replace(/\([^)]*\)/g, '').trim();
+                    const syncKey = `${memberId}_${r.yearNum}_${r.monthNum}_${cleanF}`;
+                    if (syncData[syncKey]) {
+                        allMilestones.push({ year: r.yearNum, month: r.monthNum, day: syncData[syncKey] });
+                    } else {
+                        allMilestones.push({ year: r.yearNum, month: r.monthNum, day: r.dateObj.getDate() });
+                    }
+                } catch (e) {
+                    allMilestones.push({ year: r.yearNum, month: r.monthNum, day: r.dateObj.getDate() });
+                }
             }
             lastRecordDate = r.dateObj;
             hasAnyAttendance = true;
         }
     }
+
+    // [Sync Check Part 2] Check for calculated but not yet reached months
+    try {
+        const syncData = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
+        for (let mOffset = 0; mOffset <= 2; mOffset++) {
+            const d = new Date(today.getFullYear(), today.getMonth() + mOffset, 1);
+            const y = d.getFullYear();
+            const m = d.getMonth() + 1;
+            const cleanF = (courseFilter || 'all').replace(/\([^)]*\)/g, '').trim();
+            const syncKey = `${memberId}_${y}_${m}_${cleanF}`;
+            if (syncData[syncKey]) {
+                const dayNum = syncData[syncKey];
+                if (!allMilestones.some(ms => ms.year === y && ms.month === m)) {
+                    allMilestones.push({ year: y, month: m, day: dayNum });
+                }
+            }
+        }
+    } catch (e) { }
 
     // Simulation like ledger.js
     if (hasAnyAttendance) {
@@ -612,6 +639,7 @@ function renderTargetList() {
         groupDiv.appendChild(membersDiv);
         listDiv.appendChild(groupDiv);
     });
+    // Ensure selected target labels (badges) are updated with current filter's dates
     updateSelectedTags();
 }
 
@@ -1552,8 +1580,8 @@ function getMemberAllMilestones(memberId, courseFilter) {
 
     const getCycle = (val) => {
         let vRaw = Math.round(val * 10);
-        if (vRaw < 90) return 0;
-        return Math.floor((vRaw - 90) / 80) + 1;
+        if (vRaw <= 80) return 0;
+        return Math.floor((vRaw - 81) / 80) + 1;
     };
 
     // [1] Check Sync Data
@@ -1581,7 +1609,7 @@ function getMemberAllMilestones(memberId, courseFilter) {
         const courseToCheck = courseFilter || r.course || '';
         const inc = courseToCheck.includes('제과제빵') ? 0.5 : 1.0;
         const isMarker = ['[', ']'].includes(r.status);
-        const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(r.status);
+        const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(String(r.status));
         const isAbsent = r.status === 'absent' || (typeof r.status === 'string' && r.status.startsWith('X'));
         const isExtension = r.status === 'extension' || (typeof r.status === 'string' && (r.status.startsWith('연') || r.status.includes('연장') || r.status.startsWith('E')));
         const isRegular = r.status === 'present' || isNumericPresent || isAbsent;
@@ -1647,6 +1675,7 @@ function getMemberAllMilestones(memberId, courseFilter) {
             simDate.setDate(simDate.getDate() + 1);
         }
     }
+    milestones.sort((a, b) => new Date(a.year, a.month - 1, a.day) - new Date(b.year, b.month - 1, b.day));
     return milestones;
 }
 
@@ -1654,3 +1683,10 @@ function syncCalendarSelection() {
     renderRangeCalendar();
     saveAllDrafts(); // Auto save on date change
 }
+
+// [신규 - 즉각 동기화] 다른 탭에서 예정일 및 출석부가 변경되면 즉시 반영
+window.addEventListener('storage', (e) => {
+    if (e.key === 'sejong_ledger_sync' || e.key === 'sejong_attendance_sync' || e.key === 'sejong_timetable_sync' || e.key === 'sejong_payment_sync') {
+        fetchAllData(); // Fetches new data and calls renderTargetList()
+    }
+});

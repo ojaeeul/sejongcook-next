@@ -18,6 +18,16 @@ cp -v "$BASE_DIR/Sejong/SejongAttendance/public/sms.html" "$BASE_DIR/Sejong/publ
 cp -v "$BASE_DIR/Sejong/SejongAttendance/public/sms.html" "$BASE_DIR/public/sejong/sms.html"
 cp -v "$BASE_DIR/Sejong/SejongAttendance/public/sms_v3.js" "$BASE_DIR/Sejong/public/sms_v3.js"
 cp -v "$BASE_DIR/Sejong/SejongAttendance/public/sms_v3.js" "$BASE_DIR/public/sejong/sms_v3.js"
+cp -v "$BASE_DIR/Sejong/SejongAttendance/public/sheet.html" "$BASE_DIR/Sejong/public/sheet.html"
+cp -v "$BASE_DIR/Sejong/SejongAttendance/public/sheet.html" "$BASE_DIR/public/sejong/sheet.html"
+cp -v "$BASE_DIR/Sejong/SejongAttendance/public/ledger.js" "$BASE_DIR/Sejong/public/ledger.js"
+cp -v "$BASE_DIR/Sejong/SejongAttendance/public/ledger.js" "$BASE_DIR/public/sejong/ledger.js"
+cp -v "$BASE_DIR/Sejong/SejongAttendance/public/tuition_v3.js" "$BASE_DIR/Sejong/public/tuition_v3.js"
+cp -v "$BASE_DIR/Sejong/SejongAttendance/public/tuition_v3.js" "$BASE_DIR/public/sejong/tuition_v3.js"
+cp -v "$BASE_DIR/Sejong/SejongAttendance/public/phonebook.html" "$BASE_DIR/Sejong/public/phonebook.html"
+cp -v "$BASE_DIR/Sejong/SejongAttendance/public/phonebook.html" "$BASE_DIR/public/sejong/phonebook.html"
+cp -v "$BASE_DIR/Sejong/SejongAttendance/public/phonebook.js" "$BASE_DIR/Sejong/public/phonebook.js"
+cp -v "$BASE_DIR/Sejong/SejongAttendance/public/phonebook.js" "$BASE_DIR/public/sejong/phonebook.js"
 cp "$BASE_DIR/Sejong/data/"*.json "$BASE_DIR/Sejong/SejongAttendance/data/" 2>/dev/null || true
 
 echo "[2/4] Next.js 웹사이트 서버 (Port 3000) 시작 중..."

@@ -187,17 +187,22 @@ function getLedgerMonthStats(memberId, year, month, courseFilter = null) {
 
 
 
-    const incAmount = (courseFilter && courseFilter.includes('제과제빵')) ? 0.5 : 1.0;
+    const isDualBakery = (courseFilter && courseFilter.includes('제과제빵기능사'));
+    const incAmount = isDualBakery ? 0.5 : 1.0;
     let lastRecordDate = null;
     let hitTargetInMonth = false;
     hasAnyAttendance = false;
 
 
-    // sheet.html과 동일한 결제 주기 계산 (9, 17, 25 ...)
+    // sheet.html과 동일한 결제 주기 계산 (제과제빵기능사(통합)는 17회(8.5일)마다)
+    const targetStep = isDualBakery ? 8.5 : 8.0;
+    const targetStepRaw = Math.round(targetStep * 10);
+    const cycleUnitRaw = isDualBakery ? 85 : 80;
+
     const getCycle = (val) => {
         let vRaw = Math.round(val * 10);
-        if (vRaw < 90) return 0;
-        return Math.floor((vRaw - 90) / 80) + 1;
+        if (vRaw < targetStepRaw) return 0;
+        return Math.floor((vRaw - targetStepRaw) / cycleUnitRaw) + 1;
     };
 
 
@@ -212,30 +217,36 @@ function getLedgerMonthStats(memberId, year, month, courseFilter = null) {
         if (r.yearNum < year || (r.yearNum === year && r.monthNum < month)) {
             // Count past months
             const isMarker = ['[', ']'].includes(r.status);
-            const isNumericPresent = ['10', '12', '2', '5', '7'].includes(r.status);
+            const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(String(r.status));
             const isAbsent = r.status === 'absent' || (typeof r.status === 'string' && r.status.startsWith('X'));
-            const isRegular = r.status === 'present' || r.status === 'extension' || isNumericPresent || isAbsent;
-            if (isMarker || isRegular) {
-                rollingTotal += incAmount;
+            const isExtension = r.status === 'extension' || (typeof r.status === 'string' && (r.status.startsWith('연') || r.status.includes('연장') || r.status.startsWith('E')));
+            const isRegular = r.status === 'present' || isNumericPresent || isAbsent;
+            if (isMarker || isRegular || isExtension) {
+                if (!isExtension) {
+                    rollingTotal += incAmount;
+                }
                 lastRecordDate = r.dateObj;
                 hasAnyAttendance = true;
             }
         } else if (r.yearNum === year && r.monthNum === month) {
             // Count current month
             const isMarker = ['[', ']'].includes(r.status);
-            const isNumericPresent = ['10', '12', '2', '5', '7'].includes(r.status);
+            const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(String(r.status));
             const isAbsent = r.status === 'absent' || (typeof r.status === 'string' && r.status.startsWith('X'));
-            const isRegular = r.status === 'present' || r.status === 'extension' || isNumericPresent || isAbsent;
+            const isExtension = r.status === 'extension' || (typeof r.status === 'string' && (r.status.startsWith('연') || r.status.includes('연장') || r.status.startsWith('E')));
+            const isRegular = r.status === 'present' || isNumericPresent || isAbsent;
 
             const prevRolling = rollingTotal;
-            if (isMarker || isRegular) {
-                rollingTotal += incAmount;
+            if (isMarker || isRegular || isExtension) {
+                if (!isExtension) {
+                    rollingTotal += incAmount;
+                }
                 lastRecordDate = r.dateObj;
                 hasAnyAttendance = true;
                 // 출석부 레드박스(9, 17, 25 주기) 교차 순간 감지
                 let prevCycle = getCycle(prevRolling);
                 let currCycle = getCycle(rollingTotal);
-                if (currCycle > prevCycle) {
+                if (currCycle > prevCycle || String(r.status) === '9') {
                     eighthDay = r.dateObj.getDate();
                     hitTargetInMonth = true;
                 }
@@ -402,7 +413,7 @@ function renderLedger() {
     const bottomRow = document.createElement('div');
     bottomRow.style.cssText = `display: flex; gap: 6px; overflow-x: auto; padding: 5px 0; border-top: 1px solid #e2e8f0; padding-top: 12px;`;
 
-    COURSE_LIST.forEach(course => {
+    ['전체', ...COURSE_LIST].forEach(course => {
         const btn = document.createElement('button');
         btn.textContent = course;
         const isActive = activeCategory === course;
@@ -690,7 +701,7 @@ window.loadExamView = function (key) { window.location.href = `index.html?viewEx
 
 // [신규 - 즉각 동기화] 다른 탭에서 예정일이 변경되면 즉시 반영
 window.addEventListener('storage', (e) => {
-    if (e.key === 'sejong_ledger_sync' || e.key === 'sejong_timetable_sync') {
+    if (e.key === 'sejong_ledger_sync' || e.key === 'sejong_timetable_sync' || e.key === 'sejong_attendance_sync') {
         loadData(window.targetMemberId, currentYear);
     }
 });

@@ -276,7 +276,18 @@ window.saveDailyAttendance = async function () {
     try {
         // Prepare promises for all members in the current active course
         const promises = membersToRender.map(m => {
-            const st = currentAttendanceState[m.id] === null ? 'unchecked' : currentAttendanceState[m.id];
+            let st = currentAttendanceState[m.id] === null ? 'unchecked' : currentAttendanceState[m.id];
+
+            // [New] Automatically map 'present' to numeric hour if course time matches known slots (10, 12, 14, 15, 17, 19, 21)
+            // This ensures numeric indicators (5, 7, etc.) show up in the Monthly Sheet automatically.
+            if (st === 'present' && activeCourse) {
+                const hourMatch = String(activeCourse).match(/\((10|12|14|15|17|19|21):00\)/);
+                if (hourMatch) {
+                    const h = hourMatch[1];
+                    const hourMap = { '10': '10', '12': '12', '14': '2', '15': '3', '17': '5', '19': '7', '21': '9' };
+                    if (hourMap[h]) st = hourMap[h];
+                }
+            }
 
             savedCount += (st !== 'unchecked' ? 1 : 0);
 
@@ -300,6 +311,9 @@ window.saveDailyAttendance = async function () {
         }
         alert(msg);
 
+        // Notify other tabs
+        localStorage.setItem('sejong_attendance_sync', Date.now().toString());
+
         // Refresh from DB naturally
         await fetchAttendance();
 
@@ -319,3 +333,10 @@ window.sendDismissalSms = function () {
         alert('하원 문자가 전송되었습니다.');
     }
 };
+
+window.addEventListener('storage', async (e) => {
+    if (e.key === 'sejong_attendance_sync') {
+        currentAttendanceState = {};
+        await fetchAttendance();
+    }
+});

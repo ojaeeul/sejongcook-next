@@ -31,7 +31,7 @@
     "grade": "",
     "job": "회사원",
     "course": "양식기능사(17:00)",
-    "start_date": "2026-01-01",
+    "start_date": "2025-12-01",
     "type": "general",
     "notes": "\n[보류 2026. 2. 8.] 개인 사정으로 인한 보류 테스트",
     "status": "taking",
@@ -51,7 +51,7 @@
     "job": "회사원",
     "notes": "\n[보류 2026. 2. 8.] Test hold reason for verification - Updated",
     "course": "양식기능사(17:00)",
-    "start_date": "2026-01-01",
+    "start_date": "2025-12-01",
     "type": "general",
     "status": "retaking",
     "timeSlot": "17:00"
@@ -70,7 +70,7 @@
     "job": "회사원",
     "notes": "\n[보류 2026. 2. 8.] Hold reason for 오재을\n[보류 2026. 2. 8.] 오재을바보",
     "course": "양식기능사(17:00)",
-    "start_date": "2026-01-01",
+    "start_date": "2025-12-01",
     "type": "general",
     "status": "retaking",
     "timeSlot": "17:00"
@@ -89,7 +89,7 @@
     "job": "",
     "notes": "",
     "course": "양식기능사(10:00), 제과제빵기능사(17:00)",
-    "start_date": "2026-03-01",
+    "start_date": "2026-02-09",
     "type": "student",
     "status": "taking",
     "timeSlot": "10:00,17:00"
@@ -107,7 +107,7 @@
     "job": "",
     "notes": "",
     "course": "가정요리(10:00), 브런치(12:00)",
-    "start_date": "2026-12-24",
+    "start_date": "2025-12-01",
     "type": "student",
     "timeSlot": "10:00,12:00",
     "registeredDate": "2026-02-22",
@@ -151,7 +151,7 @@
     "notes": "",
     "course": "일식기능사(19:00), 가정요리(17:00), 브런치(17:00)",
     "timeSlot": "19:00,17:00,17:00",
-    "start_date": "2026-04-30",
+    "start_date": "2025-12-01",
     "type": "general"
   },
   {
@@ -167,12 +167,12 @@
     "school_level": "",
     "grade": "",
     "job": "",
-    "start_date": "2026-06-06",
+    "start_date": "2025-12-01",
     "time_select": "10:00",
     "course_select": "제빵기능사",
     "notes": "",
-    "course": "제과기능사(19:00), 제빵기능사(19:00)",
-    "timeSlot": "19:00,19:00",
+    "course": "제과제빵기능사(19:00)",
+    "timeSlot": "19:00",
     "id": "1770556890568",
     "registeredDate": "2026-02-08"
   }

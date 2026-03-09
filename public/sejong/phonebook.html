@@ -5,17 +5,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>전화번호부 - 세종요리</title>
-    <link rel="stylesheet" href="style.css?v=20260302_1">
+    <link rel="stylesheet" href="style.css?v=20260307_5">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="phonebook.js?v=20260302_1" defer></script>
+    <script src="phonebook.js?v=20260307_5" defer></script>
     <style>
         .phone-grid {
             display: flex;
             flex-direction: column;
-            gap: 30px;
-            padding: 20px 0;
+            gap: 5px;
+            /* highly compressed gap */
+            padding: 5px 0;
+            max-height: 80vh;
+            overflow-y: auto;
         }
 
         .chosung-group {
@@ -35,19 +38,26 @@
         .phone-card-list {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 2px;
+            /* ultra thin list gap */
         }
 
         .phone-card {
             background: white;
-            border-radius: 12px;
-            padding: 16px 24px;
+            border-radius: 4px;
+            padding: 0 4px;
+            /* almost 0 padding */
             display: flex;
             align-items: center;
             justify-content: space-between;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            box-shadow: none;
+            /* remove shadow to make it flatter */
             transition: all 0.2s ease;
-            border: 1.5px solid #f1f5f9;
+            border: 1px solid #e2e8f0;
+            /* standard border */
+            font-size: 0.75rem;
+            min-height: auto;
+            /* fit exactly to text height */
         }
 
         .phone-card:hover {
@@ -64,17 +74,17 @@
         }
 
         .member-name {
-            font-size: 0.95rem;
+            font-size: 0.85rem;
             font-weight: 700;
             color: #1e293b;
-            min-width: 70px;
+            min-width: 40px;
         }
 
         .member-reg-date {
-            font-size: 0.75rem;
+            font-size: 0.65rem;
             color: #64748b;
-            margin-top: 2px;
             font-weight: 400;
+            margin-left: 2px;
         }
 
         .contact-info {
@@ -88,10 +98,11 @@
         .contact-box {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 4px;
             background: #f8fafc;
-            padding: 6px 14px;
-            border-radius: 8px;
+            padding: 1px 4px;
+            /* thinnest padding inside */
+            border-radius: 4px;
             border: 1px solid #edf2f7;
             justify-content: space-between;
         }
@@ -104,13 +115,13 @@
         }
 
         .contact-label {
-            font-size: 0.7rem;
+            font-size: 0.6rem;
             font-weight: 800;
             color: #1e40af;
             background: #ebf2ff;
-            padding: 2px 5px;
+            padding: 1px 4px;
             border-radius: 50px;
-            min-width: 40px;
+            min-width: 32px;
             text-align: center;
         }
 
@@ -123,7 +134,7 @@
             font-family: 'Inter', sans-serif;
             font-weight: 600;
             color: #334155;
-            font-size: 0.85rem;
+            font-size: 0.7rem;
             letter-spacing: -0.01em;
         }
 
@@ -133,9 +144,9 @@
         }
 
         .action-icon-btn {
-            width: 28px;
-            height: 28px;
-            border-radius: 6px;
+            width: 22px;
+            height: 22px;
+            border-radius: 4px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -165,20 +176,21 @@
         }
 
         .action-icon-btn i {
-            font-size: 0.9rem;
+            font-size: 0.75rem;
         }
 
         .course-badge-list {
             display: flex;
+            flex-wrap: nowrap;
+            overflow-x: auto;
             gap: 4px;
-            flex-wrap: wrap;
-            max-width: 250px;
-            justify-content: flex-end;
-            align-items: center;
+            max-width: 100%;
+            font-size: 0.65rem;
+            /* slightly smaller to fit more */
         }
 
         .course-badge {
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             color: #475569;
             background: #f8fafc;
             padding: 2px 6px;

@@ -136,7 +136,7 @@ function renderPhonebook() {
                 </div>
             `).join('') : '';
 
-            const getPhoneButtons = (phone) => {
+            const getPhoneButtons = (phone, courseName) => {
                 if (!phone) return '';
                 return `
                     <div class="card-actions">
@@ -146,6 +146,7 @@ function renderPhonebook() {
                         <button class="action-icon-btn sms" onclick="window.location.href='sms:${phone}'" title="문자 보내기">
                             <i class="material-icons">chat_bubble</i>
                         </button>
+                        ${courseName ? `<span style="font-size: 0.65rem; color: #64748b; margin-left: 4px; font-weight: normal;">(${courseName})</span>` : ''}
                     </div>
                 `;
             };
@@ -163,14 +164,14 @@ function renderPhonebook() {
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <span class="contact-label">본인</span>
                                 <span class="phone-number" style="margin-right: 2px;">${m.phone || '-'}</span>
-                                ${getPhoneButtons(m.phone)}
+                                ${getPhoneButtons(m.phone, coursesStr)}
                             </div>
                             
                             ${m.phone_guardian ? `
                             <div style="display: flex; align-items: center; gap: 8px; margin-left: 5px;">
                                 <span class="contact-label guardian">보호자</span>
                                 <span class="phone-number" style="margin-right: 2px;">${m.phone_guardian}</span>
-                                ${getPhoneButtons(m.phone_guardian)}
+                                ${getPhoneButtons(m.phone_guardian, coursesStr)}
                             </div>
                             ` : ''}
                             

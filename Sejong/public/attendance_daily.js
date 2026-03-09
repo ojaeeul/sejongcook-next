@@ -300,6 +300,9 @@ window.saveDailyAttendance = async function () {
         }
         alert(msg);
 
+        // Notify other tabs
+        localStorage.setItem('sejong_attendance_sync', Date.now().toString());
+
         // Refresh from DB naturally
         await fetchAttendance();
 
@@ -319,3 +322,10 @@ window.sendDismissalSms = function () {
         alert('하원 문자가 전송되었습니다.');
     }
 };
+
+window.addEventListener('storage', async (e) => {
+    if (e.key === 'sejong_attendance_sync') {
+        currentAttendanceState = {};
+        await fetchAttendance();
+    }
+});

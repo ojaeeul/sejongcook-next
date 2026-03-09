@@ -18,6 +18,16 @@ copy /y "%ROOT_DIR%Sejong\SejongAttendance\public\sms.html" "%ROOT_DIR%Sejong\pu
 copy /y "%ROOT_DIR%Sejong\SejongAttendance\public\sms.html" "%ROOT_DIR%public\sejong\sms.html"
 copy /y "%ROOT_DIR%Sejong\SejongAttendance\public\sms_v3.js" "%ROOT_DIR%Sejong\public\sms_v3.js"
 copy /y "%ROOT_DIR%Sejong\SejongAttendance\public\sms_v3.js" "%ROOT_DIR%public\sejong\sms_v3.js"
+copy /y "%ROOT_DIR%Sejong\SejongAttendance\public\sheet.html" "%ROOT_DIR%Sejong\public\sheet.html"
+copy /y "%ROOT_DIR%Sejong\SejongAttendance\public\sheet.html" "%ROOT_DIR%public\sejong\sheet.html"
+copy /y "%ROOT_DIR%Sejong\SejongAttendance\public\ledger.js" "%ROOT_DIR%Sejong\public\ledger.js"
+copy /y "%ROOT_DIR%Sejong\SejongAttendance\public\ledger.js" "%ROOT_DIR%public\sejong\ledger.js"
+copy /y "%ROOT_DIR%Sejong\SejongAttendance\public\tuition_v3.js" "%ROOT_DIR%Sejong\public\tuition_v3.js"
+copy /y "%ROOT_DIR%Sejong\SejongAttendance\public\tuition_v3.js" "%ROOT_DIR%public\sejong\tuition_v3.js"
+copy /y "%ROOT_DIR%Sejong\SejongAttendance\public\phonebook.html" "%ROOT_DIR%Sejong\public\phonebook.html"
+copy /y "%ROOT_DIR%Sejong\SejongAttendance\public\phonebook.html" "%ROOT_DIR%public\sejong\phonebook.html"
+copy /y "%ROOT_DIR%Sejong\SejongAttendance\public\phonebook.js" "%ROOT_DIR%Sejong\public\phonebook.js"
+copy /y "%ROOT_DIR%Sejong\SejongAttendance\public\phonebook.js" "%ROOT_DIR%public\sejong\phonebook.js"
 copy /y "%ROOT_DIR%Sejong\data\*.json" "%ROOT_DIR%Sejong\SejongAttendance\data"
 
 echo [2/4] Next.js 웹사이트 서버 (Port 3000) 시작 중...
