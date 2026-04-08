@@ -4,39 +4,139 @@
 
 ▲ Next.js 16.1.4 (Turbopack)
 - Local:         http://localhost:3000
-- Network:       http://192.168.219.100:3000
+- Network:       http://192.168.219.101:3000
 - Environments: .env.local
 
 ✓ Starting...
-○ Compiling proxy ...
-✓ Ready in 7.9s
+✓ Ready in 6.7s
 ○ Compiling / ...
- GET / 200 in 10.6s (compile: 10.3s, render: 297ms)
- GET /api/admin/data/qna/?_t=1772754016115 200 in 816ms (compile: 524ms, render: 292ms)
- GET /api/admin/popups/?_t=1772754016115 200 in 793ms (compile: 468ms, render: 325ms)
- GET /api/admin/data/settings/?_t=1772754016114 200 in 768ms (compile: 411ms, render: 357ms)
- GET /api/admin/data/notice/?_t=1772754016115 200 in 819ms (compile: 390ms, render: 429ms)
- GET /api/admin/data/job-openings/?_t=1772754016115 200 in 819ms (compile: 433ms, render: 386ms)
-○ Compiling /api/admin/data/qna ...
- GET / 200 in 132ms (compile: 5ms, render: 127ms)
- POST /api/visitors/ 200 in 19ms (compile: 13ms, render: 7ms)
- GET /api/hero/?_t=1772754426689 200 in 95ms (compile: 89ms, render: 7ms)
- GET /api/admin/data/qna/?_t=1772754426689 200 in 1314ms (compile: 10ms, render: 1304ms)
- GET /api/admin/data/settings/?_t=1772754426688 200 in 1262ms (compile: 9ms, render: 1254ms)
- GET /api/admin/data/job-openings/?_t=1772754426689 200 in 1334ms (compile: 19ms, render: 1315ms)
- GET /api/admin/data/footer/?_t=1772754426690 200 in 1167ms (compile: 57ms, render: 1111ms)
- GET /api/admin/popups/?_t=1772754426689 200 in 1299ms (compile: 4ms, render: 1295ms)
- GET /api/admin/data/notice/?_t=1772754426689 200 in 1357ms (compile: 26ms, render: 1331ms)
- GET /api/admin/popups/?t=1772754426751 200 in 195ms (compile: 11ms, render: 183ms)
- GET /api/admin/popups/?t=1772754426750 200 in 197ms (compile: 7ms, render: 190ms)
- GET / 200 in 220ms (compile: 8ms, render: 212ms)
- POST /api/visitors/ 200 in 8ms (compile: 4ms, render: 4ms)
- GET /api/hero/?_t=1772754451612 200 in 15ms (compile: 8ms, render: 6ms)
- GET /api/admin/data/notice/?_t=1772754451613 200 in 265ms (compile: 16ms, render: 250ms)
- GET /api/admin/data/qna/?_t=1772754451613 200 in 287ms (compile: 7ms, render: 279ms)
- GET /api/admin/data/job-openings/?_t=1772754451613 200 in 300ms (compile: 23ms, render: 278ms)
- GET /api/admin/popups/?_t=1772754451613 200 in 291ms (compile: 5ms, render: 286ms)
- GET /api/admin/data/settings/?_t=1772754451611 200 in 496ms (compile: 2ms, render: 494ms)
- GET /api/admin/popups/?t=1772754451679 200 in 204ms (compile: 12ms, render: 192ms)
- GET /api/admin/data/footer/?_t=1772754451613 200 in 497ms (compile: 1372µs, render: 495ms)
-[?25h
+ GET / 200 in 3.9s (compile: 3.5s, render: 357ms)
+Read error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/admin/data/footer?_t=1775688355743 500 in 476ms (compile: 376ms, render: 100ms)
+Read error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/admin/data/notice?_t=1775688355743 500 in 450ms (compile: 380ms, render: 69ms)
+Read error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/admin/data/qna?_t=1775688355742 500 in 455ms (compile: 411ms, render: 44ms)
+Read error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/admin/data/settings?_t=1775688355741 500 in 488ms (compile: 466ms, render: 22ms)
+ GET /api/hero?_t=1775688355742 200 in 492ms (compile: 304ms, render: 188ms)
+Read error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/admin/popups?t=1775688355883 500 in 296ms (compile: 247ms, render: 49ms)
+Read error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/admin/data/job-openings?_t=1775688355743 500 in 302ms (compile: 276ms, render: 26ms)
+Read error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/admin/popups?_t=1775688355743 500 in 305ms (compile: 284ms, render: 21ms)
+Read error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/admin/popups?t=1775688355878 500 in 312ms (compile: 288ms, render: 24ms)
+○ Compiling /api/visitors ...
+ POST /api/visitors 200 in 4.5s (compile: 4.4s, render: 79ms)
+ GET /apple-touch-icon.png 404 in 265ms (compile: 135ms, render: 130ms)
+ GET /apple-touch-icon-precomposed.png 404 in 272ms (compile: 160ms, render: 113ms)
+ GET /apple-touch-icon-precomposed.png 404 in 87ms (compile: 10ms, render: 77ms)
+ GET /apple-touch-icon.png 404 in 67ms (compile: 4ms, render: 63ms)
+ GET /admin/login?from=%2Fsejong%2Fledger.html 200 in 496ms (compile: 326ms, proxy.ts: 5ms, render: 165ms)
+ POST /api/visitors 200 in 22ms (compile: 11ms, render: 11ms)
+Read error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/admin/data/footer?_t=1775688467726 500 in 94ms (compile: 79ms, render: 15ms)
+Read error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/admin/data/settings?_t=1775688467721 500 in 101ms (compile: 24ms, render: 77ms)

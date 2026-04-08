@@ -328,20 +328,41 @@ function getMemberScheduledDate(memberId, courseFilter) {
 
     const getCycle = (val) => {
         let vRaw = Math.round(val * 10);
-        if (vRaw <= 80) return 0;
-        return Math.floor((vRaw - 81) / 80) + 1;
+        const isDual = (courseFilter && courseFilter.includes('제과제빵'));
+        if (isDual) {
+            if (vRaw < 85) return 0;
+            return Math.floor((vRaw - 85) / 85) + 1;
+        } else {
+            if (vRaw < 90) return 0;
+            return Math.floor((vRaw - 90) / 80) + 1;
+        }
     };
 
     // [1] Check Sync Data
-    try {
-        const syncData = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
-        for (let mOffset = -6; mOffset <= 6; mOffset++) {
+    // 1단계 동기화: window.ledgerSyncData 최우선 탐색
+    if (window.ledgerSyncData) {
+        for (let mOffset = -12; mOffset <= 24; mOffset++) {
             const d = new Date(today.getFullYear(), today.getMonth() + mOffset, 1);
             const y = d.getFullYear();
             const m = d.getMonth() + 1;
             const cleanF = (courseFilter || 'all').replace(/\([^)]*\)/g, '').trim();
             const syncKey = `${memberId}_${y}_${m}_${cleanF}`;
-            if (syncData[syncKey]) {
+            if (window.ledgerSyncData[syncKey]) {
+                allMilestones.push({ year: y, month: m, day: window.ledgerSyncData[syncKey] });
+            }
+        }
+    }
+
+    try {
+        const syncData = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
+        for (let mOffset = -12; mOffset <= 24; mOffset++) {
+            const d = new Date(today.getFullYear(), today.getMonth() + mOffset, 1);
+            const y = d.getFullYear();
+            const m = d.getMonth() + 1;
+            const cleanF = (courseFilter || 'all').replace(/\([^)]*\)/g, '').trim();
+            const syncKey = `${memberId}_${y}_${m}_${cleanF}`;
+            // 윈도우 동기화 데이터에 없다면 로컬스토리지 백업 확인
+            if (syncData[syncKey] && !allMilestones.some(ms => ms.year === y && ms.month === m)) {
                 allMilestones.push({ year: y, month: m, day: syncData[syncKey] });
             }
         }
@@ -362,12 +383,19 @@ function getMemberScheduledDate(memberId, courseFilter) {
         const isExtension = r.status === 'extension' || (typeof r.status === 'string' && (r.status.startsWith('연') || r.status.includes('연장') || r.status.startsWith('E')));
         const isRegular = r.status === 'present' || isNumericPresent || isAbsent;
 
+        let totalExtAmount = 0; // SMS 모듈에서도 연장 누적분 관리
+
         if (isMarker || isRegular || isExtension) {
-            const prevCycle = getCycle(rollingTotal);
-            if (!isExtension) {
-                rollingTotal += inc;
+            const prevNet = Math.round((rollingTotal - totalExtAmount) * 10) / 10;
+            rollingTotal += inc;
+            if (isExtension) {
+                totalExtAmount += inc;
             }
-            const currCycle = getCycle(rollingTotal);
+            rollingTotal = Math.round(rollingTotal * 10) / 10;
+            const currNet = Math.round((rollingTotal - totalExtAmount) * 10) / 10;
+
+            const prevCycle = getCycle(prevNet);
+            const currCycle = getCycle(currNet);
             if (currCycle > prevCycle || String(r.status) === '9') {
                 // [Sync Check] Priority to sheet.html's determined date
                 try {
@@ -414,38 +442,31 @@ function getMemberScheduledDate(memberId, courseFilter) {
             simDate = new Date(lastRecordDate.getTime() + 86400000);
         }
 
-        const limitDate = new Date(today.getFullYear(), today.getMonth() + 6, 0);
-        let simRolling = rollingTotal;
+        const limitDate = new Date(3000, 11, 31);
+        let currentNetSim = Math.round((rollingTotal - totalExtAmount) * 10) / 10;
 
         while (simDate <= limitDate) {
+            const dateStr = simDate.toISOString().split('T')[0];
             const dayOfWeek = simDate.getDay();
-            const y_sim = simDate.getFullYear();
-            const m_sim = String(simDate.getMonth() + 1).padStart(2, '0');
-            const d_sim = String(simDate.getDate()).padStart(2, '0');
-            const dateStr = `${y_sim}-${m_sim}-${d_sim}`;
-            const isHoliday = holidaysData.some(h => h.date === dateStr) || !!KOREAN_HOLIDAYS_MAP[dateStr];
+            const isNationalHoliday = !!KOREAN_HOLIDAYS_MAP[dateStr];
+            const isHolidayInSys = holidaysData.some(h => h.date === dateStr);
+            const isHoliday = isHolidayInSys || isNationalHoliday;
 
-            let isValidDay = false;
-            if (courseFilter) {
-                const cleanFilter = courseFilter.replace(/\([^)]*\)/g, '').trim();
-                const schedule = COURSE_SCHEDULES[cleanFilter];
-                if (schedule) {
-                    if (schedule.includes(dayOfWeek)) isValidDay = true;
-                } else {
-                    if (dayOfWeek !== 0) isValidDay = true;
-                }
-            } else {
-                if (dayOfWeek !== 0) isValidDay = true;
+            // 과정별 유효 요일 확인
+            let isValidDay = true;
+            if (courseFilter && COURSE_SCHEDULES[courseFilter]) {
+                isValidDay = COURSE_SCHEDULES[courseFilter].includes(dayOfWeek);
             }
 
-            if (isValidDay && !isHoliday) {
-                const prevSim = simRolling;
-                const courseToCheck = courseFilter || 'all';
-                const inc = courseToCheck.includes('제과제빵') ? 0.5 : 1.0;
-                simRolling += inc;
-                if (getCycle(simRolling) > getCycle(prevSim)) {
+            if (isValidDay && !isHoliday && dayOfWeek !== 0) {
+                const prevCycleSim = getCycle(currentNetSim);
+                currentNetSim += inc;
+                currentNetSim = Math.round(currentNetSim * 10) / 10;
+
+                if (getCycle(currentNetSim) > prevCycleSim) {
                     allMilestones.push({ year: simDate.getFullYear(), month: simDate.getMonth() + 1, day: simDate.getDate() });
-                    if (allMilestones.length > 10) break;
+                    // 시뮬레이션은 당분간 6개월치만
+                    if (simDate > new Date(today.getFullYear(), today.getMonth() + 7, 0)) break;
                 }
             }
             simDate.setDate(simDate.getDate() + 1);
@@ -1580,8 +1601,14 @@ function getMemberAllMilestones(memberId, courseFilter) {
 
     const getCycle = (val) => {
         let vRaw = Math.round(val * 10);
-        if (vRaw <= 80) return 0;
-        return Math.floor((vRaw - 81) / 80) + 1;
+        const isDual = (courseFilter && courseFilter.includes('제과제빵'));
+        if (isDual) {
+            if (vRaw < 85) return 0;
+            return Math.floor((vRaw - 85) / 85) + 1;
+        } else {
+            if (vRaw < 90) return 0;
+            return Math.floor((vRaw - 90) / 80) + 1;
+        }
     };
 
     // [1] Check Sync Data
@@ -1599,6 +1626,7 @@ function getMemberAllMilestones(memberId, courseFilter) {
         }
     } catch (e) { }
 
+    let totalExtAmount = 0; // [수정] ReferenceError 방지 위해 선언
     for (const r of records) {
         if (courseFilter) {
             const rClean = (r.course || '').replace(/\([^)]*\)/g, '').trim();
@@ -1607,7 +1635,7 @@ function getMemberAllMilestones(memberId, courseFilter) {
         }
 
         const courseToCheck = courseFilter || r.course || '';
-        const inc = courseToCheck.includes('제과제빵') ? 0.5 : 1.0;
+        const inc = courseToCheck.replace(/\s/g, '').includes('제과제빵') ? 0.5 : 1.0;
         const isMarker = ['[', ']'].includes(r.status);
         const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(String(r.status));
         const isAbsent = r.status === 'absent' || (typeof r.status === 'string' && r.status.startsWith('X'));
@@ -1615,14 +1643,14 @@ function getMemberAllMilestones(memberId, courseFilter) {
         const isRegular = r.status === 'present' || isNumericPresent || isAbsent;
 
         if (isMarker || isRegular || isExtension) {
-            const prevCycle = getCycle(rollingTotal);
+            const prevCycle = getCycle(rollingTotal - totalExtAmount);
             if (isExtension) {
-                extCount++;
-                if (extCount % 4 === 0) rollingTotal += inc;
+                totalExtAmount = Math.round((totalExtAmount + inc) * 10) / 10;
             } else {
                 rollingTotal += inc;
             }
-            const currCycle = getCycle(rollingTotal);
+            rollingTotal = Math.round(rollingTotal * 10) / 10;
+            const currCycle = getCycle(rollingTotal - totalExtAmount);
             if (currCycle > prevCycle) {
                 milestones.push({ year: r.yearNum, month: r.monthNum, day: r.dateObj.getDate() });
             }
@@ -1638,40 +1666,36 @@ function getMemberAllMilestones(memberId, courseFilter) {
             simDate = new Date(lastRecordDate.getTime() + 86400000);
         }
 
-        const limitDate = new Date(today.getFullYear(), today.getMonth() + 6, 0);
-        let simRolling = rollingTotal;
+        const limitDate = new Date(3000, 11, 31);
+        let currentNetSim = Math.round((rollingTotal - totalExtAmount) * 10) / 10;
 
         while (simDate <= limitDate) {
+            const courseToCheck = courseFilter || 'all';
+            const inc = courseToCheck.includes('제과제빵') ? 0.5 : 1.0;
+
+            const dateStr = simDate.toISOString().split('T')[0];
             const dayOfWeek = simDate.getDay();
-            const y_sim = simDate.getFullYear();
-            const m_sim = String(simDate.getMonth() + 1).padStart(2, '0');
-            const d_sim = String(simDate.getDate()).padStart(2, '0');
-            const dateStr = `${y_sim}-${m_sim}-${d_sim}`;
-            const isHoliday = holidaysData.some(h => h.date === dateStr) || !!KOREAN_HOLIDAYS_MAP[dateStr];
+            const isNationalHoliday = !!KOREAN_HOLIDAYS_MAP[dateStr];
+            const isHolidayInSys = holidaysData.some(h => h.date === dateStr);
+            const isHoliday = isHolidayInSys || isNationalHoliday;
 
-            let isValidDay = false;
-            if (courseFilter) {
-                const cleanFilter = courseFilter.replace(/\([^)]*\)/g, '').trim();
-                const schedule = COURSE_SCHEDULES[cleanFilter];
-                if (schedule) {
-                    if (schedule.includes(dayOfWeek)) isValidDay = true;
-                } else {
-                    if (dayOfWeek !== 0) isValidDay = true;
-                }
-            } else {
-                if (dayOfWeek !== 0) isValidDay = true;
+            // 과정별 유효 요일 확인
+            let isValidDay = true;
+            if (courseFilter && COURSE_SCHEDULES[courseFilter]) {
+                isValidDay = COURSE_SCHEDULES[courseFilter].includes(dayOfWeek);
             }
 
-            if (isValidDay && !isHoliday) {
-                const prevSim = simRolling;
-                const courseToCheck = courseFilter || 'all';
-                const inc = courseToCheck.includes('제과제빵') ? 0.5 : 1.0;
-                simRolling += inc;
-                if (getCycle(simRolling) > getCycle(prevSim)) {
+            if (isValidDay && !isHoliday && dayOfWeek !== 0) {
+                const prevCycleSim = getCycle(currentNetSim);
+                currentNetSim += inc;
+                currentNetSim = Math.round(currentNetSim * 10) / 10;
+
+                if (getCycle(currentNetSim) > prevCycleSim) {
                     milestones.push({ year: simDate.getFullYear(), month: simDate.getMonth() + 1, day: simDate.getDate() });
+                    // 시뮬레이션은 당분간 6개월치만
+                    if (simDate > new Date(today.getFullYear(), today.getMonth() + 7, 0)) break;
                 }
             }
-            if (milestones.length > 20) break;
             simDate.setDate(simDate.getDate() + 1);
         }
     }

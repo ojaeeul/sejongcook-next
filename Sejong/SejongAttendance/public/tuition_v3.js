@@ -395,9 +395,27 @@ function getMemberEighthDayInMonth(memberId, year, month, courseFilter = null) {
 
 
     let rollingTotalUpToToday = 0;
+    let totalExtAmount = 0;
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+
+    // sheet.html과 동일한 결제 주기 계산 (제과제빵기능사(통합)는 17회(8.5일)마다)
+    const getCycle = (val, isDual) => {
+        let vRaw = Math.round(val * 10);
+        if (isDual) {
+            if (vRaw < 85) return 0;
+            return Math.floor((vRaw - 85) / 85) + 1;
+        } else {
+            if (vRaw < 90) return 0;
+            return Math.floor((vRaw - 90) / 80) + 1;
+        }
+    };
+
+    // [신규] 시뮬레이션에서도 동일한 증가분 적용을 위해 최상단에서 정의
+    const memberObj = (window.membersData || []).find(m => String(m.id) === String(memberId));
+    const isDualBakery = (courseFilter && courseFilter.replace(/\s/g, '').includes('제과제빵')) || (memberObj && memberObj.course && memberObj.course.replace(/\s/g, '').includes('제과제빵'));
+    const incAmountVal = isDualBakery ? 0.5 : 1.0;
 
     for (const r of memberRecords) {
         if (r.yearNum < startYear || (r.yearNum === startYear && r.monthNum < startMonth)) continue;
@@ -411,42 +429,27 @@ function getMemberEighthDayInMonth(memberId, year, month, courseFilter = null) {
         // 연도 범위 제한 (미래 기록 포함)
         if (r.yearNum > year + 1) continue;
 
-        const isDualBakery = (r.course && r.course.includes('제과제빵'));
-        const inc = isDualBakery ? 0.5 : 1.0;
         const isMarker = ['[', ']'].includes(r.status);
         const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(String(r.status));
         const isAbsent = r.status === 'absent' || (typeof r.status === 'string' && r.status.startsWith('X'));
         const isExtension = r.status === 'extension' || (typeof r.status === 'string' && (r.status.startsWith('연') || r.status.includes('연장') || r.status.startsWith('E')));
         const isRegular = r.status === 'present' || isNumericPresent || isAbsent;
 
-        let totalExtAmount = 0;
-        if (adj && adj.carryOverrideExtAmount !== undefined) {
-            totalExtAmount = adj.carryOverrideExtAmount * inc;
+        if (adj && adj.carryOverrideExtAmount !== undefined && totalExtAmount === 0) {
+            totalExtAmount = adj.carryOverrideExtAmount * incAmountVal;
         }
 
         const prevNet = Math.round((rollingTotal - totalExtAmount) * 10) / 10;
         if (isMarker || isRegular || isExtension) {
-            rollingTotal += inc;
+            rollingTotal += incAmountVal;
             if (isExtension) {
-                totalExtAmount += inc;
+                totalExtAmount += incAmountVal;
             }
             rollingTotal = Math.round(rollingTotal * 10) / 10;
             const currNet = Math.round((rollingTotal - totalExtAmount) * 10) / 10;
 
-            // sheet.html과 동일한 결제 주기 계산 (제과제빵기능사(통합)는 17회(8.5일)마다)
-            const getCycle = (val) => {
-                let vRaw = Math.round(val * 10);
-                if (isDualBakery) {
-                    if (vRaw < 85) return 0;
-                    return Math.floor((vRaw - 85) / 85) + 1;
-                } else {
-                    if (vRaw < 90) return 0;
-                    return Math.floor((vRaw - 90) / 80) + 1;
-                }
-            };
-
-            const prevCycle = getCycle(prevNet);
-            const currCycle = getCycle(currNet);
+            const prevCycle = getCycle(prevNet, isDualBakery);
+            const currCycle = getCycle(currNet, isDualBakery);
 
             if (currCycle > prevCycle || String(r.status) === '9') {
                 const milestone = { year: r.yearNum, month: r.monthNum, day: r.dateObj.getDate() };
@@ -459,9 +462,9 @@ function getMemberEighthDayInMonth(memberId, year, month, courseFilter = null) {
                 }
             }
 
-            // "오늘까지"의 진행 상태를 위해 오늘 이전 기록만 별도로 합산
+            // "오늘까지"의 진행 상태를 위해 오늘 이전 기록만 별도로 합산 (연장분 차감 반영)
             if (r.dateObj <= today) {
-                rollingTotalUpToToday += inc;
+                rollingTotalUpToToday = Math.round((rollingTotal - totalExtAmount) * 10) / 10;
             }
         }
     }
@@ -487,11 +490,11 @@ function getMemberEighthDayInMonth(memberId, year, month, courseFilter = null) {
             }
 
             if (isCourseDay && !isHolidayInSys && !isNationalHoliday && dayOfWeek !== 0) {
-                const prevCycleSim = getCycle(currentNetSim);
-                currentNetSim += inc;
+                const prevCycleSim = getCycle(currentNetSim, isDualBakery);
+                currentNetSim += incAmountVal;
                 currentNetSim = Math.round(currentNetSim * 10) / 10;
 
-                if (getCycle(currentNetSim) > prevCycleSim) {
+                if (getCycle(currentNetSim, isDualBakery) > prevCycleSim) {
                     if (simDate.getFullYear() === year && (simDate.getMonth() + 1) === month) {
                         foundSimulatedDay = simDate.getDate();
                         eighthMonth = simDate.getMonth() + 1;
@@ -510,10 +513,10 @@ function getMemberEighthDayInMonth(memberId, year, month, courseFilter = null) {
     // 진행 상황 계산 (제과제빵기능사(통합)는 17회 기준 반복)
     const getProgressCount = (val) => {
         let vRaw = Math.round(val * 10);
-        const isDual = (courseFilter && courseFilter.includes('제과제빵기능사'));
+        const isDual = (courseFilter && courseFilter.replace(/\s/g, '').includes('제과제빵'));
         if (isDual) {
             if (vRaw < 85) return vRaw / 10;
-            return ((vRaw - 85) % 85 + 5) / 10;
+            return ((vRaw - 85) % 85 + 85) / 10; // Ensure 8.5 is showing correctly or wrapping
         } else {
             if (vRaw <= 80) return vRaw / 10;
             let pRaw = vRaw - 80;

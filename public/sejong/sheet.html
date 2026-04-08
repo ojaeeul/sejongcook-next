@@ -9,7 +9,7 @@
     <meta name="keywords" content="세종요리, 김포요리, 세종요리학원, 김포요리학원, 요리학원, 출석관리, 수강생관리, 요리자격증">
     <meta property="og:title" content="세종요리제과학원 월간 출석부">
     <meta property="og:description" content="수강생들의 출석 현황을 한눈에 확인하세요.">
-    <link rel="stylesheet" href="style.css?v=20260228_6">
+    <link rel="stylesheet" href="style.css?v=20260313_1">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -18,12 +18,43 @@
         .sheet-container {
             background: white;
             padding: 32px;
+            width: 100%;
             max-width: 100%;
             margin: 0 auto;
             border: 1px solid #e2e8f0;
             border-radius: 12px;
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
-            overflow-x: auto;
+            box-sizing: border-box;
+        }
+
+        .table-responsive {
+            display: block;
+            width: 100%;
+            max-width: 100%;
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 25px; /* Significant padding for scrollbar */
+            margin-bottom: 1.5rem;
+            scrollbar-width: auto; /* Force standard scrollbar visibility */
+        }
+
+        .table-responsive::-webkit-scrollbar {
+            height: 12px;
+        }
+
+        .table-responsive::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 6px;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb {
+            background: #94a3b8;
+            border-radius: 6px;
+            border: 2px solid #f1f5f9;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
         }
 
         .sheet-header {
@@ -100,12 +131,11 @@
         }
 
         table.attendance-table {
-            width: max-content;
-            min-width: 100%;
+            width: 100%;
+            min-width: 1200px;
             margin: 0 auto;
             border-collapse: collapse;
             font-size: 0.75rem;
-            table-layout: fixed;
             border: 1px solid #cbd5e1;
         }
 
@@ -232,14 +262,14 @@
         }
 
         .stat-absent {
-            color: var(--status-error);
+            color: #000000 !important;
         }
 
         .stat-extension {
             color: #FF0000 !important;
-            background-color: #E6C200;
-            /* Yellowish-brown "Poop" color */
+            background-color: transparent !important;
             font-weight: bold;
+            border: 1px solid #FF0000 !important;
         }
 
         .stat-text {
@@ -525,6 +555,11 @@
                 /* Remove padding to allow full control via @page */
             }
 
+            @page {
+                size: landscape;
+                margin: 5mm;
+            }
+
             /* Hide UI Elements */
             .sidebar,
             .top-header,
@@ -532,6 +567,7 @@
             .month-nav button,
             .help-tip,
             .legend,
+            .tab-btn,
             .course-tabs {
                 display: none !important;
             }
@@ -540,7 +576,8 @@
             .app-container,
             .main-wrapper,
             .content-scroll,
-            .sheet-container {
+            .sheet-container,
+            .table-responsive {
                 display: block !important;
                 width: 100% !important;
                 max-width: 100% !important;
@@ -561,88 +598,96 @@
             }
 
             .header-left {
-                width: auto;
+                width: 100%;
+                justify-content: center;
             }
 
             .sheet-title {
-                font-size: 1.1rem;
+                font-size: 1.4rem;
                 margin: 0;
-                font-weight: bold;
+                font-weight: 900;
                 text-align: center;
+                letter-spacing: -0.5px;
             }
 
             /* Table Styles */
             table.attendance-table {
-                width: 99% !important;
+                width: 100% !important;
+                min-width: 0 !important;
                 margin: 0 !important;
                 border-collapse: collapse;
-                border: 1px solid #000;
-                font-size: 8pt;
+                border: 1px solid #000 !important;
+                font-size: 7.5pt !important;
                 table-layout: fixed;
             }
 
             table.attendance-table th,
             table.attendance-table td {
-                height: 18px;
-                padding: 0;
-                border: 1px solid #000;
+                height: 22px !important;
+                padding: 0 !important;
+                border: 0.5px solid #000 !important;
                 text-align: center;
                 vertical-align: middle;
             }
 
             table.attendance-table th {
-                height: 28px;
+                height: 32px !important;
+                background-color: #f8fafc !important;
+                color: #000 !important;
+                font-weight: 800 !important;
             }
 
             /* Print Column Resets - Ensure they fit */
             .col-course {
-                width: 7% !important;
-                min-width: 0 !important;
+                width: 10% !important;
             }
 
             .col-name {
-                width: 7% !important;
-                min-width: 0 !important;
+                width: 8% !important;
             }
 
             .col-no {
-                width: 2.5% !important;
-                min-width: 0 !important;
+                width: 3% !important;
             }
 
             .col-note {
-                width: 8% !important;
-                min-width: 0 !important;
+                width: 12% !important;
             }
 
             .col-day {
                 width: auto !important;
-                min-width: 0 !important;
             }
 
             /* Status Colors */
             .stat-present {
-                color: #00C240 !important;
+                color: #008000 !important; /* Deeper green for print */
             }
 
             .stat-absent {
-                color: #EF4444 !important;
+                color: #000000 !important;
             }
 
             .stat-extension {
                 color: #FF0000 !important;
-                background-color: #E6C200 !important;
+                background-color: #fff !important;
+                border: 1px solid #FF0000 !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
 
             .is-holiday-col {
-                background-color: #FEE2E2 !important;
+                background-color: #ffffff !important; /* White for print */
+                color: #000 !important;
             }
 
             td.cell-disabled {
-                background-color: #F3F4F6 !important;
+                background-color: #ffffff !important;
             }
+
+            /* Summary stats in print */
+            .sum-p { color: #008000 !important; font-weight: bold !important; }
+            .sum-a { color: #000000 !important; font-weight: bold !important; }
+            .sum-e { color: #FF0000 !important; font-weight: bold !important; }
         }
 
         /* Thin Arrow Styling */
@@ -1179,14 +1224,16 @@
                             <button class="tab-btn" onclick="filterTime('19:00')" data-time="19:00">오후 07:00</button>
                         </div>
 
-                        <table class="attendance-table" id="sheetTable">
-                            <thead id="tableHead">
-                                <!-- JS Injected -->
-                            </thead>
-                            <tbody id="sheetBody">
-                                <!-- JS Injected -->
-                            </tbody>
-                        </table>
+                        <div class="table-responsive" style="width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch;">
+                            <table class="attendance-table" id="sheetTable">
+                                <thead id="tableHead">
+                                    <!-- JS Injected -->
+                                </thead>
+                                <tbody id="sheetBody">
+                                    <!-- JS Injected -->
+                                </tbody>
+                            </table>
+                        </div>
 
                         <div class="help-tip">
                             * 날짜 숫자 클릭: 휴일 지정 | 상단 범례 클릭: 해당 모드로 고정 | 셀 클릭: 상태 변경 | * 년월 클릭 시 달력 선택 가능
@@ -1557,7 +1604,7 @@
 
 
 
-            const isDualBakery = (courseFilter && courseFilter.includes('제과제빵'));
+            const isDualBakery = (courseFilter && courseFilter.replace(/\s/g, '').includes('제과제빵'));
             const incAmount = isDualBakery ? 0.5 : 1.0;
             let lastRecordDate = null;
             let hitTargetInMonth = false;
@@ -1566,8 +1613,8 @@
             const getCycle = (val) => {
                 let vRaw = Math.round(val * 10);
                 if (isDualBakery) {
-                    if (vRaw < 85) return 0; // 8.5=1, 17.0=2...
-                    return Math.floor((vRaw - 85) / 85) + 1;
+                    if (vRaw < 80) return 0; // 8.0=1, 16.0=2...
+                    return Math.floor((vRaw - 80) / 80) + 1;
                 } else {
                     if (vRaw < 90) return 0; // 9.0=1, 17.0=2...
                     return Math.floor((vRaw - 90) / 80) + 1;
@@ -2013,7 +2060,8 @@
 
                 const renderedArrows = new Set(); // memberId_date
 
-                for (let r = 0; r < 20; r++) {
+                const maxRows = Math.max(20, filteredRows.length);
+                for (let r = 0; r < maxRows; r++) {
                     const tr = document.createElement('tr');
                     const rowData = filteredRows[r];
                     const m = rowData ? rowData.member : null;
@@ -2058,8 +2106,9 @@
                     const redBoxDates = new Set();
                     let uniqueLogs = [];
 
+                    var isDualCourse = false; // Use var for broader function scope visibility
                     if (m) {
-                        const isDualCourse = rowCourseNameScope && rowCourseNameScope.includes('제과제빵');
+                        isDualCourse = rowCourseNameScope && rowCourseNameScope.replace(/\s/g, '').includes('제과제빵');
                         const attendanceIncrement = isDualCourse ? 0.5 : 1;
 
                         const rowLogsRaw = attendanceData.filter(l => {
@@ -2175,7 +2224,6 @@
                                 if (isRegularAttendance) {
                                     attendances += attendanceIncrement;
                                 } else if (isExtension) {
-                                    attendances -= attendanceIncrement;
                                     rollingExtCount++;
                                 }
 
@@ -2229,12 +2277,12 @@
                             let runningTotal = currentMC.carryFromPrev;
                             let runningExtCount = currentMC.carryFromPrevExtCount || 0;
 
-                            // 누적합 기준 주기(cycle) 판정. 제과제빵기능사(통합)는 17회(8.5일) 기준, 일반은 8일 기준
+                            // 누적합 기준 주기(cycle) 판정. 제과제빵기능사(통합)는 16회(8.0일) 기준, 일반은 8일 기준
                             const getCycle = (val) => {
                                 let vRaw = Math.round(val * 10);
                                 if (isDualCourse) {
-                                    if (vRaw < 85) return 0;
-                                    return Math.floor((vRaw - 85) / 85) + 1;
+                                    if (vRaw < 80) return 0;
+                                    return Math.floor((vRaw - 80) / 80) + 1;
                                 } else {
                                     if (vRaw < 90) return 0;
                                     return Math.floor((vRaw - 90) / 80) + 1;
@@ -2254,13 +2302,19 @@
                                 const isRegularAttendance = l.status === 'present' || isNumericPresent || isAbsent;
 
                                 if (isRegularAttendance || isMakeupMarker || isExtension) {
-                                    const prevNet = Math.round((runningTotal - ((currentMC.carryFromPrevExtAmount || 0) + monthExtCount) * 0.5) * 10) / 10;
+                                    const prevExtCount = (currentMC.carryFromPrevExtCount || 0) + monthExtCount;
+                                    const prevExtDeduction = isDualCourse ? (prevExtCount * 0.5) : (prevExtCount * 1.0);
+                                    const prevNet = Math.round((runningTotal - prevExtDeduction) * 10) / 10;
 
-                                    runningTotal += attendanceIncrement;
+                                    if (isRegularAttendance || isMakeupMarker) {
+                                        runningTotal += attendanceIncrement;
+                                    }
                                     if (isExtension) monthExtCount++;
 
                                     runningTotal = Math.round(runningTotal * 10) / 10;
-                                    const currNet = Math.round((runningTotal - ((currentMC.carryFromPrevExtAmount || 0) + monthExtCount) * 0.5) * 10) / 10;
+                                    const currExtCount = (currentMC.carryFromPrevExtCount || 0) + monthExtCount;
+                                    const currExtDeduction = isDualCourse ? (currExtCount * 0.5) : (currExtCount * 1.0);
+                                    const currNet = Math.round((runningTotal - currExtDeduction) * 10) / 10;
 
                                     let newCycle = getCycle(currNet);
 
@@ -2285,9 +2339,14 @@
                             });
 
                             // [결정적 J/P 수정] - 당월의 주기(네모박스) 변화만 감지
-                            // [수정] 연장(연)은 중간에 빼지 않고 8.5 도달 시 감산되도록 netProgress 기준 관리
-                            const startNet = Math.round((currentMC.carryFromPrev - (currentMC.carryFromPrevExtAmount || 0) * 0.5) * 10) / 10;
-                            const endNet = Math.round((runningTotal - ((currentMC.carryFromPrevExtAmount || 0) + monthExtCount) * 0.5) * 10) / 10;
+                            // [수정] 연장(연)은 2개당 0.5씩 빼도록 netProgress 기준 관리
+                            const startExtCount = (currentMC.carryFromPrevExtCount || 0);
+                            const startExtDeduction = isDualCourse ? (startExtCount * 0.5) : (startExtCount * 1.0);
+                            const startNet = Math.round((currentMC.carryFromPrev - startExtDeduction) * 10) / 10;
+                            
+                            const endExtCount = (currentMC.carryFromPrevExtCount || 0) + monthExtCount;
+                            const endExtDeduction = isDualCourse ? (endExtCount * 0.5) : (endExtCount * 1.0);
+                            const endNet = Math.round((runningTotal - endExtDeduction) * 10) / 10;
 
                             // 실제로는 loop 내부에서 이미 netProgress를 기준으로 cycle 판정을 마쳤으므로 
                             // 여기서는 redBoxDates 활성화 여부와 최종 runningTotal을 사용함
@@ -2305,19 +2364,21 @@
                                 });
                             }
 
+                            const totalExtThisMonth = (currentMC.carryFromPrevExtCount || 0) + monthExtCount;
+                            const finalExtDeduction = isDualCourse ? (totalExtThisMonth * 0.5) : (totalExtThisMonth * 1.0);
+                            
                             if (cyclesThisMonth > 0 || hasManualRedBox) {
                                 let actualCycle = endCycle > 0 ? endCycle : (hasManualRedBox ? 1 : 0);
                                 displayMakeup = Math.round((actualCycle * 8.0) * 10) / 10;
-                                // 8.5 이상이 되면 연장(-0.5)을 빼라는 요청 반영
-                                // 총 출석(P) = 총 누적(Gross) - 재고(J) - (누적 연장 * 0.5)
-                                const totalExtThisMonth = (currentMC.carryFromPrevExtAmount || 0) + monthExtCount;
-                                displayP = Math.round((runningTotal - displayMakeup - (totalExtThisMonth * 0.5)) * 10) / 10;
+                                // 8.0(16회) 이상이 되면 연장(2개당 0.5)을 빼라는 요청 반영
+                                // 총 출석(P) = 총 누적(Gross) - 재고(J) - (누적 연장 차감분)
+                                displayP = Math.round((runningTotal - displayMakeup - finalExtDeduction) * 10) / 10;
                             } else {
                                 let startCycleValue = startCycle;
                                 let baseStock = startCycleValue > 0 ? (startCycleValue * 8.0) : 0;
                                 displayMakeup = 0;
-                                // 평상시에는 연장분을 빼지 않고 Gross로 보여줌 (중간에 빼지 말라는 요청)
-                                displayP = Math.round((runningTotal - baseStock) * 10) / 10;
+                                // 평상시에도 연장분(연)은 차감하여 표시
+                                displayP = Math.round((runningTotal - baseStock - finalExtDeduction) * 10) / 10;
                             }
 
                         }
@@ -2429,11 +2490,7 @@
                                     td.removeAttribute('data-note');
                                 } else {
                                     if (status === 'extension') {
-                                        const prevLog = m ? uniqueLogs.find(l => l.date === prevDateStr) : undefined;
-                                        const isPrevExt = prevLog && prevLog.status === 'extension';
-                                        const nextLog = m ? uniqueLogs.find(l => l.date === nextDateStr) : undefined;
-                                        const isNextExt = nextLog && nextLog.status === 'extension';
-                                        renderExtensionArrow(td, isPrevExt, isNextExt);
+                                        setCellSymbol(td, status);
                                     } else if (status === 'arrow') {
                                         const isPrevArrow = m ? !!attendanceData.find(l => l.memberId === m.id && l.date === prevDateStr && l.status === 'arrow') : false;
                                         const isNextArrow = m ? !!attendanceData.find(l => l.memberId === m.id && l.date === nextDateStr && l.status === 'arrow') : false;
@@ -2497,27 +2554,6 @@
                         let displayVal = val;
                         if ((idx === 0 || idx === 1) && displayMakeup === 0 && displayP === 0) {
                             displayVal = '';
-                        }
-
-                        // User Request Fix: Hide J/P carryover if the user has no logs in the current month AND the month is in the future relative to their last record
-                        if (m && typeof latestYear !== 'undefined' && typeof latestMonth !== 'undefined') {
-                            if ((idx === 0 || idx === 1) && (currentYear > latestYear || (currentYear === latestYear && currentMonth > latestMonth))) {
-                                displayVal = '';
-                            }
-                        }
-
-                        // User Request Fix: "을의 월간 출석부에 1월 출석체크가 없는데 0.5가 표시되고 있습니다" 
-                        // If there are literally no attendance logs for this user IN THIS SPECIFIC COURSE for the current month, hide the carrying totals (J and P).
-                        if (idx === 0 || idx === 1) {
-                            if (sumA === 0 && sumE === 0 && displayMakeup === 0 && displayP > 0) {
-                                // We must check if `attendances` for THIS month in `currentMC` was 0.
-                                if (m && typeof monthsToCalc !== 'undefined') {
-                                    const currentMC = monthsToCalc[monthsToCalc.length - 1];
-                                    if (currentMC && currentMC.attendances === 0 && currentMC.manualMakeup === 0 && sumA === 0 && sumE === 0) {
-                                        displayVal = '';
-                                    }
-                                }
-                            }
                         }
 
                         // User Request Fix: Hide any "0" completely from the summary table to keep it blank

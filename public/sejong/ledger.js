@@ -172,11 +172,11 @@ function getLedgerMonthStats(memberId, year, month, courseFilter = null) {
     } catch { }
 
     let rollingTotal = 0;
+    let extCount = 0;
     let eighthDay = null;
     let isSimulated = false;
     let eighthMonth = month;
     let hasAnyAttendance = false;
-
 
     // [엄격 제한] 공휴일만 필터링 (기존 기록된 요일은 모두 인정) - sheet.html과 동일
     let memberRecords = (attendanceByMember[memberId] || []).filter(r => {
@@ -193,27 +193,23 @@ function getLedgerMonthStats(memberId, year, month, courseFilter = null) {
     const adj = GLOBAL_DATA_ADJUSTMENTS[String(memberId)]?.[monthKey];
     if (adj && adj.carryOverride !== undefined) {
         rollingTotal = adj.carryOverride;
+        if (adj.carryOverrideExtAmount !== undefined) {
+            extCount = adj.carryOverrideExtAmount;
+        }
         startYear = year;
         startMonth = month;
     }
 
-
-
-
-
-    const isDualBakery = (courseFilter && courseFilter.includes('제과제빵'));
-    const incAmount = isDualBakery ? 0.5 : 1.0;
     let lastRecordDate = null;
     let hitTargetInMonth = false;
     hasAnyAttendance = false;
 
-
     // sheet.html과 동일한 결제 주기 계산 (제과제빵기능사(통합)는 17회(8.5일)마다)
-    const getCycle = (val) => {
+    const getCycle = (val, isDual) => {
         let vRaw = Math.round(val * 10);
-        if (isDualBakery) {
-            if (vRaw < 85) return 0;
-            return Math.floor((vRaw - 85) / 85) + 1;
+        if (isDual) {
+            if (vRaw < 80) return 0;
+            return Math.floor((vRaw - 80) / 80) + 1;
         } else {
             if (vRaw < 90) return 0;
             return Math.floor((vRaw - 90) / 80) + 1;
@@ -222,6 +218,9 @@ function getLedgerMonthStats(memberId, year, month, courseFilter = null) {
 
 
     for (const r of memberRecords) {
+        const isDualBakeryRecord = (r.course && r.course.replace(/\s/g, '').includes('제과제빵'));
+        const incAmount = isDualBakeryRecord ? 0.5 : 1.0;
+
         if (courseFilter) {
             if (!r.course) continue;
             const rClean = r.course.replace(/\([^)]*\)/g, '').trim();
@@ -230,10 +229,9 @@ function getLedgerMonthStats(memberId, year, month, courseFilter = null) {
         }
         if (r.yearNum < startYear || (r.yearNum === startYear && r.monthNum < startMonth)) continue;
 
-        let totalExtAmount = 0;
-        if (adj && adj.carryOverrideExtAmount !== undefined) {
-            totalExtAmount = adj.carryOverrideExtAmount * incAmount;
-        }
+
+        // [수정] 연장 차감액 계산 함수: 제과제빵은 1번당 0.5 차감 (2번에 1.0)
+        const getExtDeduction = (count, isDual) => isDual ? (count * 0.5) : (count * 1.0);
 
         if (r.yearNum < year || (r.yearNum === year && r.monthNum < month)) {
             // Count past months
@@ -245,7 +243,7 @@ function getLedgerMonthStats(memberId, year, month, courseFilter = null) {
             if (isMarker || isRegular || isExtension) {
                 rollingTotal += incAmount;
                 if (isExtension) {
-                    totalExtAmount += incAmount;
+                    extCount++; // 개수만 증가
                 }
                 lastRecordDate = r.dateObj;
                 hasAnyAttendance = true;
@@ -258,19 +256,23 @@ function getLedgerMonthStats(memberId, year, month, courseFilter = null) {
             const isExtension = r.status === 'extension' || (typeof r.status === 'string' && (r.status.startsWith('연') || r.status.includes('연장') || r.status.startsWith('E')));
             const isRegular = r.status === 'present' || isNumericPresent || isAbsent;
 
-            const prevNet = Math.round((rollingTotal - totalExtAmount) * 10) / 10;
+            const prevExtAmount = getExtDeduction(extCount, isDualBakeryRecord);
+            const prevNet = Math.round((rollingTotal - prevExtAmount) * 10) / 10;
+            
             if (isMarker || isRegular || isExtension) {
                 rollingTotal += incAmount;
                 if (isExtension) {
-                    totalExtAmount += incAmount;
+                    extCount++; // 개수 증가
                 }
                 rollingTotal = Math.round(rollingTotal * 10) / 10;
-                const currNet = Math.round((rollingTotal - totalExtAmount) * 10) / 10;
+                
+                const currExtAmount = getExtDeduction(extCount, isDualBakeryRecord);
+                const currNet = Math.round((rollingTotal - currExtAmount) * 10) / 10;
 
                 lastRecordDate = r.dateObj;
                 hasAnyAttendance = true;
 
-                if (getCycle(currNet) > getCycle(prevNet) || String(r.status) === '9') {
+                if (getCycle(currNet, isDualBakeryRecord) > getCycle(prevNet, isDualBakeryRecord) || String(r.status) === '9') {
                     eighthDay = r.dateObj.getDate();
                     hitTargetInMonth = true;
                 }
@@ -286,17 +288,23 @@ function getLedgerMonthStats(memberId, year, month, courseFilter = null) {
 
 
     if (!hitTargetInMonth && hasAnyAttendance) {
-        let simDate = new Date(firstDayOfLastMonth.getTime());
-        if (lastRecordDate && lastRecordDate > firstDayOfLastMonth) {
+        let simDate;
+        if (lastRecordDate) {
             simDate = new Date(lastRecordDate.getTime() + (24 * 60 * 60 * 1000));
-        } else if (!lastRecordDate) {
+        } else {
             simDate = new Date(firstDayOfLastMonth.getTime());
         }
 
-        // [수정] 1-2달 후가 아니라 3000년까지 시뮬레이션
+        const member = membersData.find(m => String(m.id) === String(memberId));
+        const isDualForSim = (courseFilter && courseFilter.replace(/\s/g, '').includes('제과제빵')) || 
+                             (!courseFilter && member && member.course && member.course.replace(/\s/g, '').includes('제과제빵'));
+        const simIncAmount = isDualForSim ? 0.5 : 1.0;
+        
         const limitDate = new Date(3000, 11, 31);
-        let currentNetSim = Math.round((rollingTotal - totalExtAmount) * 10) / 10;
+        const finalExtAmountForSim = isDualForSim ? (extCount * 0.5) : (extCount * 1.0);
+        let currentNetSim = Math.round((rollingTotal - finalExtAmountForSim) * 10) / 10;
         let foundSimulatedDay = null;
+        let futureCycleCount = 0; // 유저 요청: 1달(1회분)만 미리보기 제한
 
         while (simDate <= limitDate) {
             const dateStr = simDate.toISOString().split('T')[0];
@@ -311,16 +319,21 @@ function getLedgerMonthStats(memberId, year, month, courseFilter = null) {
             }
 
             if (isCourseDay && !isHolidayInSys && !isNationalHoliday && dayOfWeek !== 0) {
-                const prevCycleSim = getCycle(currentNetSim);
-                currentNetSim += incAmount;
+                const prevCycleSim = getCycle(currentNetSim, isDualForSim);
+                currentNetSim += simIncAmount;
                 currentNetSim = Math.round(currentNetSim * 10) / 10;
 
-                if (getCycle(currentNetSim) > prevCycleSim) {
+                if (getCycle(currentNetSim, isDualForSim) > prevCycleSim) {
+                    futureCycleCount++; // 새로운 미래 예정일 발견
+                    
                     if (simDate.getFullYear() === year && (simDate.getMonth() + 1) === month) {
                         foundSimulatedDay = simDate.getDate();
                         eighthMonth = simDate.getMonth() + 1;
                         break;
-                    } else if (simDate.getFullYear() > year || (simDate.getFullYear() === year && (simDate.getMonth() + 1) > month)) {
+                    }
+                    
+                    // 1달(1개의 결제일)만 미리보기 제한 처리
+                    if (futureCycleCount >= 1) {
                         break;
                     }
                 }

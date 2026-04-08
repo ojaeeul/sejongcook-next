@@ -1626,6 +1626,7 @@ function getMemberAllMilestones(memberId, courseFilter) {
         }
     } catch (e) { }
 
+    let totalExtAmount = 0; // [수정] ReferenceError 방지 위해 선언
     for (const r of records) {
         if (courseFilter) {
             const rClean = (r.course || '').replace(/\([^)]*\)/g, '').trim();
@@ -1634,7 +1635,7 @@ function getMemberAllMilestones(memberId, courseFilter) {
         }
 
         const courseToCheck = courseFilter || r.course || '';
-        const inc = courseToCheck.includes('제과제빵') ? 0.5 : 1.0;
+        const inc = courseToCheck.replace(/\s/g, '').includes('제과제빵') ? 0.5 : 1.0;
         const isMarker = ['[', ']'].includes(r.status);
         const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(String(r.status));
         const isAbsent = r.status === 'absent' || (typeof r.status === 'string' && r.status.startsWith('X'));
@@ -1642,13 +1643,14 @@ function getMemberAllMilestones(memberId, courseFilter) {
         const isRegular = r.status === 'present' || isNumericPresent || isAbsent;
 
         if (isMarker || isRegular || isExtension) {
-            const prevCycle = getCycle(rollingTotal);
+            const prevCycle = getCycle(rollingTotal - totalExtAmount);
             if (isExtension) {
-                rollingTotal -= inc;
+                totalExtAmount = Math.round((totalExtAmount + inc) * 10) / 10;
             } else {
                 rollingTotal += inc;
             }
-            const currCycle = getCycle(rollingTotal);
+            rollingTotal = Math.round(rollingTotal * 10) / 10;
+            const currCycle = getCycle(rollingTotal - totalExtAmount);
             if (currCycle > prevCycle) {
                 milestones.push({ year: r.yearNum, month: r.monthNum, day: r.dateObj.getDate() });
             }
