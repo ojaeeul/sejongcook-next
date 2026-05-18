@@ -395,7 +395,6 @@ function getMemberEighthDayInMonth(memberId, year, month, courseFilter = null) {
 
 
     let rollingTotalUpToToday = 0;
-    let totalExtAmount = 0;
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -431,22 +430,13 @@ function getMemberEighthDayInMonth(memberId, year, month, courseFilter = null) {
 
         const isMarker = ['[', ']'].includes(r.status);
         const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(String(r.status));
-        const isAbsent = r.status === 'absent' || (typeof r.status === 'string' && r.status.startsWith('X'));
-        const isExtension = r.status === 'extension' || (typeof r.status === 'string' && (r.status.startsWith('연') || r.status.includes('연장') || r.status.startsWith('E')));
         const isRegular = r.status === 'present' || isNumericPresent || isAbsent;
 
-        if (adj && adj.carryOverrideExtAmount !== undefined && totalExtAmount === 0) {
-            totalExtAmount = adj.carryOverrideExtAmount * incAmountVal;
-        }
-
-        const prevNet = Math.round((rollingTotal - totalExtAmount) * 10) / 10;
-        if (isMarker || isRegular || isExtension) {
+        const prevNet = rollingTotal;
+        if (isMarker || isRegular) {
             rollingTotal += incAmountVal;
-            if (isExtension) {
-                totalExtAmount += incAmountVal;
-            }
             rollingTotal = Math.round(rollingTotal * 10) / 10;
-            const currNet = Math.round((rollingTotal - totalExtAmount) * 10) / 10;
+            const currNet = rollingTotal;
 
             const prevCycle = getCycle(prevNet, isDualBakery);
             const currCycle = getCycle(currNet, isDualBakery);
@@ -462,9 +452,9 @@ function getMemberEighthDayInMonth(memberId, year, month, courseFilter = null) {
                 }
             }
 
-            // "오늘까지"의 진행 상태를 위해 오늘 이전 기록만 별도로 합산 (연장분 차감 반영)
+            // "오늘까지"의 진행 상태를 위해 오늘 이전 기록만 별도로 합산 (연장 무시 로직 적용)
             if (r.dateObj <= today) {
-                rollingTotalUpToToday = Math.round((rollingTotal - totalExtAmount) * 10) / 10;
+                rollingTotalUpToToday = rollingTotal;
             }
         }
     }
@@ -474,7 +464,7 @@ function getMemberEighthDayInMonth(memberId, year, month, courseFilter = null) {
         let lastDate = memberRecords.length > 0 ? new Date(memberRecords[memberRecords.length - 1].dateObj) : new Date(year, month - 2, 1);
         let simDate = new Date(lastDate.getTime() + (24 * 60 * 60 * 1000));
         const limitDate = new Date(3000, 11, 31);
-        let currentNetSim = Math.round((rollingTotal - totalExtAmount) * 10) / 10;
+        let currentNetSim = rollingTotal;
         let foundSimulatedDay = null;
 
         while (simDate <= limitDate) {

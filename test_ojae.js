@@ -1,4 +1,4 @@
-const fs = require('fs');
+import fs from 'fs';
 const members = JSON.parse(fs.readFileSync('Sejong/SejongAttendance/data/members.json'));
 const attendance = JSON.parse(fs.readFileSync('Sejong/SejongAttendance/data/attendance.json'));
 

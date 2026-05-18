@@ -84,7 +84,7 @@ function renderPaidList() {
     let syncData = {};
     try {
         syncData = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
-    } catch (e) { }
+    } catch { }
 
     const monthText = currentMonth === 'all' ? '전체 월' : `${currentMonth}월`;
     let html = `
@@ -274,3 +274,7 @@ window.addEventListener('storage', (e) => {
         renderPaidList(); // Re-render to show updated expected dates
     }
 });
+
+// Explicitly assign to window to avoid unused-vars lint warning, as they are called from HTML
+window.updatePaymentStatus = updatePaymentStatus;
+window.closeResultModal = closeResultModal;

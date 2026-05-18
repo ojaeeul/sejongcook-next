@@ -8,7 +8,7 @@ const getFilePath = (fileName: string) => {
     return path.join(process.cwd(), 'data', fileName);
 };
 
-export async function GET(req: NextRequest) {
+export async function GET() {
     try {
         const filePath = getFilePath('settings.json');
         if (!fs.existsSync(filePath)) {
@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
 
         fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
         return NextResponse.json({ success: true });
-    } catch (e: any) {
-        return NextResponse.json({ error: e.message }, { status: 500 });
+    } catch (e) {
+        return NextResponse.json({ error: e instanceof Error ? e.message : 'Unknown error' }, { status: 500 });
     }
 }

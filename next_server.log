@@ -8,9 +8,9 @@
 - Environments: .env.local
 
 ✓ Starting...
-✓ Ready in 6.7s
-○ Compiling / ...
- GET / 200 in 3.9s (compile: 3.5s, render: 357ms)
+○ Compiling proxy ...
+✓ Ready in 7.2s
+ GET / 200 in 3.4s (compile: 3.1s, render: 345ms)
 Read error: {
   message: 'TypeError: fetch failed',
   details: 'TypeError: fetch failed\n' +
@@ -22,7 +22,7 @@ Read error: {
   hint: '',
   code: ''
 }
- GET /api/admin/data/footer?_t=1775688355743 500 in 476ms (compile: 376ms, render: 100ms)
+ GET /api/admin/data/notice?_t=1775863155777 500 in 377ms (compile: 276ms, render: 101ms)
 Read error: {
   message: 'TypeError: fetch failed',
   details: 'TypeError: fetch failed\n' +
@@ -34,7 +34,7 @@ Read error: {
   hint: '',
   code: ''
 }
- GET /api/admin/data/notice?_t=1775688355743 500 in 450ms (compile: 380ms, render: 69ms)
+ GET /api/admin/data/qna?_t=1775863155777 500 in 381ms (compile: 308ms, render: 74ms)
 Read error: {
   message: 'TypeError: fetch failed',
   details: 'TypeError: fetch failed\n' +
@@ -46,7 +46,7 @@ Read error: {
   hint: '',
   code: ''
 }
- GET /api/admin/data/qna?_t=1775688355742 500 in 455ms (compile: 411ms, render: 44ms)
+ GET /api/admin/data/footer?_t=1775863155779 500 in 409ms (compile: 368ms, render: 41ms)
 Read error: {
   message: 'TypeError: fetch failed',
   details: 'TypeError: fetch failed\n' +
@@ -58,8 +58,8 @@ Read error: {
   hint: '',
   code: ''
 }
- GET /api/admin/data/settings?_t=1775688355741 500 in 488ms (compile: 466ms, render: 22ms)
- GET /api/hero?_t=1775688355742 200 in 492ms (compile: 304ms, render: 188ms)
+ GET /api/admin/data/settings?_t=1775863155776 500 in 444ms (compile: 424ms, render: 20ms)
+ GET /api/hero?_t=1775863155777 200 in 443ms (compile: 281ms, render: 162ms)
 Read error: {
   message: 'TypeError: fetch failed',
   details: 'TypeError: fetch failed\n' +
@@ -71,7 +71,7 @@ Read error: {
   hint: '',
   code: ''
 }
- GET /api/admin/popups?t=1775688355883 500 in 296ms (compile: 247ms, render: 49ms)
+ GET /api/admin/popups?t=1775863155902 500 in 240ms (compile: 194ms, render: 46ms)
 Read error: {
   message: 'TypeError: fetch failed',
   details: 'TypeError: fetch failed\n' +
@@ -83,7 +83,7 @@ Read error: {
   hint: '',
   code: ''
 }
- GET /api/admin/data/job-openings?_t=1775688355743 500 in 302ms (compile: 276ms, render: 26ms)
+ GET /api/admin/popups?t=1775863155899 500 in 249ms (compile: 207ms, render: 42ms)
 Read error: {
   message: 'TypeError: fetch failed',
   details: 'TypeError: fetch failed\n' +
@@ -95,7 +95,7 @@ Read error: {
   hint: '',
   code: ''
 }
- GET /api/admin/popups?_t=1775688355743 500 in 305ms (compile: 284ms, render: 21ms)
+ GET /api/admin/data/job-openings?_t=1775863155777 500 in 263ms (compile: 244ms, render: 19ms)
 Read error: {
   message: 'TypeError: fetch failed',
   details: 'TypeError: fetch failed\n' +
@@ -107,15 +107,10 @@ Read error: {
   hint: '',
   code: ''
 }
- GET /api/admin/popups?t=1775688355878 500 in 312ms (compile: 288ms, render: 24ms)
-○ Compiling /api/visitors ...
- POST /api/visitors 200 in 4.5s (compile: 4.4s, render: 79ms)
- GET /apple-touch-icon.png 404 in 265ms (compile: 135ms, render: 130ms)
- GET /apple-touch-icon-precomposed.png 404 in 272ms (compile: 160ms, render: 113ms)
- GET /apple-touch-icon-precomposed.png 404 in 87ms (compile: 10ms, render: 77ms)
- GET /apple-touch-icon.png 404 in 67ms (compile: 4ms, render: 63ms)
- GET /admin/login?from=%2Fsejong%2Fledger.html 200 in 496ms (compile: 326ms, proxy.ts: 5ms, render: 165ms)
- POST /api/visitors 200 in 22ms (compile: 11ms, render: 11ms)
+ GET /api/admin/popups?_t=1775863155777 500 in 269ms (compile: 249ms, render: 19ms)
+○ Compiling /api/admin/data/settings ...
+ POST /api/visitors 200 in 6.2s (compile: 6.1s, render: 97ms)
+ GET / 200 in 90ms (compile: 5ms, render: 85ms)
 Read error: {
   message: 'TypeError: fetch failed',
   details: 'TypeError: fetch failed\n' +
@@ -127,7 +122,8 @@ Read error: {
   hint: '',
   code: ''
 }
- GET /api/admin/data/footer?_t=1775688467726 500 in 94ms (compile: 79ms, render: 15ms)
+ GET /api/admin/data/settings?_t=1775863725238 500 in 35ms (compile: 7ms, render: 28ms)
+ GET /api/hero?_t=1775863725239 200 in 43ms (compile: 24ms, render: 19ms)
 Read error: {
   message: 'TypeError: fetch failed',
   details: 'TypeError: fetch failed\n' +
@@ -139,4 +135,238 @@ Read error: {
   hint: '',
   code: ''
 }
- GET /api/admin/data/settings?_t=1775688467721 500 in 101ms (compile: 24ms, render: 77ms)
+ GET /api/admin/data/notice?_t=1775863725239 500 in 22ms (compile: 7ms, render: 16ms)
+Read error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/admin/data/footer?_t=1775863725240 500 in 24ms (compile: 11ms, render: 12ms)
+Read error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/admin/data/qna?_t=1775863725239 500 in 32ms (compile: 16ms, render: 17ms)
+Read error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/admin/data/job-openings?_t=1775863725239 500 in 32ms (compile: 23ms, render: 9ms)
+Read error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/admin/popups?_t=1775863725239 500 in 14ms (compile: 4ms, render: 10ms)
+Read error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/admin/popups?t=1775863725330 500 in 30ms (compile: 2ms, render: 28ms)
+Read error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/admin/popups?t=1775863725331 500 in 39ms (compile: 9ms, render: 30ms)
+ GET / 200 in 73ms (compile: 3ms, render: 70ms)
+Read error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/admin/data/settings?_t=1775863729316 500 in 27ms (compile: 5ms, render: 22ms)
+ GET /api/hero?_t=1775863729316 200 in 36ms (compile: 14ms, render: 21ms)
+Read error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/admin/data/footer?_t=1775863729317 500 in 10ms (compile: 2ms, render: 7ms)
+Read error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/admin/data/qna?_t=1775863729316 500 in 20ms (compile: 4ms, render: 16ms)
+Read error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/admin/data/notice?_t=1775863729316 500 in 28ms (compile: 9ms, render: 19ms)
+Read error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/admin/data/job-openings?_t=1775863729317 500 in 35ms (compile: 20ms, render: 14ms)
+Read error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/admin/popups?_t=1775863729317 500 in 24ms (compile: 15ms, render: 8ms)
+Read error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/admin/popups?t=1775863729385 500 in 15ms (compile: 5ms, render: 10ms)
+Read error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/admin/popups?t=1775863729386 500 in 19ms (compile: 8ms, render: 10ms)
+ GET /admin/login?from=%2Fsejong%2Fsheet.html 200 in 206ms (compile: 128ms, proxy.ts: 3ms, render: 75ms)
+Read error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/admin/data/settings?_t=1775863736145 500 in 24ms (compile: 4ms, render: 20ms)
+Read error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/admin/data/footer?_t=1775863736147 500 in 29ms (compile: 13ms, render: 16ms)
+ GET /admin/login?from=%2Fsejong%2Fsheet.html 200 in 61ms (compile: 3ms, proxy.ts: 2ms, render: 56ms)
+Read error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/admin/data/settings?_t=1775863737464 500 in 18ms (compile: 5ms, render: 13ms)
+Read error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND nhbsogecuwldftiqdulq.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/admin/data/footer?_t=1775863737465 500 in 21ms (compile: 11ms, render: 10ms)
+  Downloading swc package @next/swc-wasm-nodejs... to /Users/ojaeeul/Library/Caches/next-swc
+⚠ Attempted to load @next/swc-darwin-x64, but an error occurred: dlopen(/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejk 4/sejongcook-next/node_modules/@next/swc-darwin-x64/next-swc.darwin-x64.node, 0x0001): tried: '/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejk 4/sejongcook-next/node_modules/@next/swc-darwin-x64/next-swc.darwin-x64.node' (code signature in <580E2130-7F92-3018-B152-EF2F3C16AB70> '/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejk 4/sejongcook-next/node_modules/@next/swc-darwin-x64/next-swc.darwin-x64.node' not valid for use in process: library load denied by system policy), '/System/Volumes/Preboot/Cryptexes/OS/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejk 4/sejongcook-next/node_modules/@next/swc-darwin-x64/next-swc.darwin-x64.node' (no such file), '/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejk 4/sejongcook-next/node_modules/@next/swc-darwin-x64/next-swc.darwin-x64.node' (code signature in <580E2130-7F92-3018-B152-EF2F3C16AB70> '/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejk 4/sejongcook-next/node_modules/@next/swc-darwin-x64/next-swc.darwin-x64.node' not valid for use in process: library load denied by system policy)
+⚠ TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: getaddrinfo ENOTFOUND registry.npmjs.org
+      at ignore-listed frames {
+    errno: -3008,
+    code: 'ENOTFOUND',
+    syscall: 'getaddrinfo',
+    hostname: 'registry.npmjs.org'
+  }
+}
+⨯ Failed to load SWC binary for darwin/x64, see more info here: https://nextjs.org/docs/messages/failed-loading-swc
+[?25h

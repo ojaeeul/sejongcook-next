@@ -112,7 +112,7 @@ h4,
     font-weight: 800;
     margin-bottom: 20px;
     line-height: 1.2;
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    text-shadow: 0 4px 15px rgba(0, 0, 0, 0.8);
 }
 
 .hero-subtitle {
@@ -121,6 +121,7 @@ h4,
     margin-bottom: 40px;
     opacity: 0.9;
     line-height: 1.6;
+    text-shadow: 0 4px 15px rgba(0, 0, 0, 0.8);
 }
 
 .hero-buttons {
@@ -599,7 +600,7 @@ h4,
     font-size: 3rem;
     font-weight: 800;
     margin-bottom: 15px;
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    text-shadow: 0 4px 15px rgba(0, 0, 0, 0.8);
 }
 
 .modern-sub-breadcrumb {

@@ -99,7 +99,7 @@ export default function HeroBackground({ images }: HeroBackgroundProps) {
                     />
                 </div>
             ))}
-            <div className="absolute inset-0 bg-black/50 z-10 pointer-events-none" />
+            <div className="absolute inset-0 bg-black/30 z-10 pointer-events-none" />
 
             {/* Navigation Dots */}
             <div className="absolute bottom-8 left-0 right-0 z-30 flex justify-center gap-3">

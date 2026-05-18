@@ -383,16 +383,11 @@ function getMemberScheduledDate(memberId, courseFilter) {
         const isExtension = r.status === 'extension' || (typeof r.status === 'string' && (r.status.startsWith('연') || r.status.includes('연장') || r.status.startsWith('E')));
         const isRegular = r.status === 'present' || isNumericPresent || isAbsent;
 
-        let totalExtAmount = 0; // SMS 모듈에서도 연장 누적분 관리
-
-        if (isMarker || isRegular || isExtension) {
-            const prevNet = Math.round((rollingTotal - totalExtAmount) * 10) / 10;
+        if (isMarker || isRegular) {
+            const prevNet = rollingTotal;
             rollingTotal += inc;
-            if (isExtension) {
-                totalExtAmount += inc;
-            }
             rollingTotal = Math.round(rollingTotal * 10) / 10;
-            const currNet = Math.round((rollingTotal - totalExtAmount) * 10) / 10;
+            const currNet = rollingTotal;
 
             const prevCycle = getCycle(prevNet);
             const currCycle = getCycle(currNet);
@@ -443,7 +438,7 @@ function getMemberScheduledDate(memberId, courseFilter) {
         }
 
         const limitDate = new Date(3000, 11, 31);
-        let currentNetSim = Math.round((rollingTotal - totalExtAmount) * 10) / 10;
+        let currentNetSim = rollingTotal;
 
         while (simDate <= limitDate) {
             const dateStr = simDate.toISOString().split('T')[0];
@@ -1626,7 +1621,6 @@ function getMemberAllMilestones(memberId, courseFilter) {
         }
     } catch (e) { }
 
-    let totalExtAmount = 0; // [수정] ReferenceError 방지 위해 선언
     for (const r of records) {
         if (courseFilter) {
             const rClean = (r.course || '').replace(/\([^)]*\)/g, '').trim();
@@ -1639,18 +1633,13 @@ function getMemberAllMilestones(memberId, courseFilter) {
         const isMarker = ['[', ']'].includes(r.status);
         const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(String(r.status));
         const isAbsent = r.status === 'absent' || (typeof r.status === 'string' && r.status.startsWith('X'));
-        const isExtension = r.status === 'extension' || (typeof r.status === 'string' && (r.status.startsWith('연') || r.status.includes('연장') || r.status.startsWith('E')));
         const isRegular = r.status === 'present' || isNumericPresent || isAbsent;
 
-        if (isMarker || isRegular || isExtension) {
-            const prevCycle = getCycle(rollingTotal - totalExtAmount);
-            if (isExtension) {
-                totalExtAmount = Math.round((totalExtAmount + inc) * 10) / 10;
-            } else {
-                rollingTotal += inc;
-            }
+        if (isMarker || isRegular) {
+            const prevCycle = getCycle(rollingTotal);
+            rollingTotal += inc;
             rollingTotal = Math.round(rollingTotal * 10) / 10;
-            const currCycle = getCycle(rollingTotal - totalExtAmount);
+            const currCycle = getCycle(rollingTotal);
             if (currCycle > prevCycle) {
                 milestones.push({ year: r.yearNum, month: r.monthNum, day: r.dateObj.getDate() });
             }
@@ -1667,7 +1656,7 @@ function getMemberAllMilestones(memberId, courseFilter) {
         }
 
         const limitDate = new Date(3000, 11, 31);
-        let currentNetSim = Math.round((rollingTotal - totalExtAmount) * 10) / 10;
+        let currentNetSim = rollingTotal;
 
         while (simDate <= limitDate) {
             const courseToCheck = courseFilter || 'all';

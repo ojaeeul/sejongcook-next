@@ -472,8 +472,50 @@
   },
   {
     "memberId": "1770517693101",
+    "date": "2026-01-06",
+    "status": "absent",
+    "course": "제과제빵기능사"
+  },
+  {
+    "memberId": "1770517693101",
+    "date": "2026-01-08",
+    "status": "absent",
+    "course": "제과제빵기능사"
+  },
+  {
+    "memberId": "1770517693101",
+    "date": "2026-01-12",
+    "status": "absent",
+    "course": "제과제빵기능사"
+  },
+  {
+    "memberId": "1770517693101",
+    "date": "2026-01-13",
+    "status": "absent",
+    "course": "제과제빵기능사"
+  },
+  {
+    "memberId": "1770517693101",
+    "date": "2026-01-14",
+    "status": "absent",
+    "course": "제과제빵기능사"
+  },
+  {
+    "memberId": "1770517693101",
     "date": "2026-01-15",
     "status": "absent",
+    "course": "제과제빵기능사"
+  },
+  {
+    "memberId": "1770517693101",
+    "date": "2026-01-19",
+    "status": "extension",
+    "course": "제과제빵기능사"
+  },
+  {
+    "memberId": "1770517693101",
+    "date": "2026-01-21",
+    "status": "extension",
     "course": "제과제빵기능사"
   },
   {
@@ -486,6 +528,12 @@
     "memberId": "1770517693101",
     "date": "2026-01-29",
     "status": "present",
+    "course": "제과제빵기능사"
+  },
+  {
+    "memberId": "1770517693101",
+    "date": "2026-01-20",
+    "status": "absent",
     "course": "제과제빵기능사"
   },
   {
@@ -916,6 +964,12 @@
   },
   {
     "memberId": "1770517693101",
+    "date": "2026-01-07",
+    "status": "present",
+    "course": "제과제빵기능사"
+  },
+  {
+    "memberId": "1770517693101",
     "date": "2026-01-26",
     "status": "present",
     "course": "제과제빵기능사"
@@ -979,6 +1033,12 @@
     "date": "2026-02-14",
     "status": "present",
     "course": "브런치"
+  },
+  {
+    "memberId": "1770517693101",
+    "date": "2026-02-02",
+    "status": "extension",
+    "course": "제과제빵기능사"
   },
   {
     "memberId": "1770517693101",
@@ -3200,162 +3260,6 @@
   {
     "memberId": "1770556890568",
     "date": "2026-04-24",
-    "status": "present",
-    "course": "제과제빵기능사"
-  },
-  {
-    "memberId": "1770556890568",
-    "date": "2026-01-06",
-    "status": "present",
-    "course": "제과제빵기능사"
-  },
-  {
-    "memberId": "1770556890568",
-    "date": "2026-01-07",
-    "status": "present",
-    "course": "제과제빵기능사"
-  },
-  {
-    "memberId": "1770556890568",
-    "date": "2026-01-08",
-    "status": "present",
-    "course": "제과제빵기능사"
-  },
-  {
-    "memberId": "1770556890568",
-    "date": "2026-01-12",
-    "status": "present",
-    "course": "제과제빵기능사"
-  },
-  {
-    "memberId": "1770556890568",
-    "date": "2026-01-13",
-    "status": "present",
-    "course": "제과제빵기능사"
-  },
-  {
-    "memberId": "1770556890568",
-    "date": "2026-01-14",
-    "status": "present",
-    "course": "제과제빵기능사"
-  },
-  {
-    "memberId": "1770556890568",
-    "date": "2026-01-15",
-    "status": "present",
-    "course": "제과제빵기능사"
-  },
-  {
-    "memberId": "1770556890568",
-    "date": "2026-01-19",
-    "status": "present",
-    "course": "제과제빵기능사"
-  },
-  {
-    "memberId": "1770556890568",
-    "date": "2026-01-20",
-    "status": "present",
-    "course": "제과제빵기능사"
-  },
-  {
-    "memberId": "1770556890568",
-    "date": "2026-01-22",
-    "status": "present",
-    "course": "제과제빵기능사"
-  },
-  {
-    "memberId": "1770556890568",
-    "date": "2026-01-26",
-    "status": "present",
-    "course": "제과제빵기능사"
-  },
-  {
-    "memberId": "1770556890568",
-    "date": "2026-01-27",
-    "status": "present",
-    "course": "제과제빵기능사"
-  },
-  {
-    "memberId": "1770556890568",
-    "date": "2026-01-28",
-    "status": "present",
-    "course": "제과제빵기능사"
-  },
-  {
-    "memberId": "1770556890568",
-    "date": "2026-01-29",
-    "status": "present",
-    "course": "제과제빵기능사"
-  },
-  {
-    "memberId": "1770517693101",
-    "date": "2026-01-07",
-    "status": "present",
-    "course": "제과제빵기능사"
-  },
-  {
-    "memberId": "1770517693101",
-    "date": "2026-01-06",
-    "status": "present",
-    "course": "제과제빵기능사"
-  },
-  {
-    "memberId": "1770517693101",
-    "date": "2026-01-08",
-    "status": "present",
-    "course": "제과제빵기능사"
-  },
-  {
-    "memberId": "1770517693101",
-    "date": "2026-01-19",
-    "status": "present",
-    "course": "제과제빵기능사"
-  },
-  {
-    "memberId": "1770517693101",
-    "date": "2026-01-20",
-    "status": "present",
-    "course": "제과제빵기능사"
-  },
-  {
-    "memberId": "1770517693101",
-    "date": "2026-01-21",
-    "status": "present",
-    "course": "제과제빵기능사"
-  },
-  {
-    "memberId": "1770517693101",
-    "date": "2026-01-22",
-    "status": "present",
-    "course": "제과제빵기능사"
-  },
-  {
-    "memberId": "1770517693101",
-    "date": "2026-01-14",
-    "status": "present",
-    "course": "제과제빵기능사"
-  },
-  {
-    "memberId": "1770517693101",
-    "date": "2026-02-02",
-    "status": "present",
-    "course": "제과제빵기능사"
-  },
-  {
-    "memberId": "1770517693101",
-    "date": "2026-01-12",
-    "status": "present",
-    "course": "제과제빵기능사"
-  },
-  {
-    "memberId": "1770517693101",
-    "date": "2026-01-13",
-    "status": "present",
-    "course": "제과제빵기능사"
-  },
-  {
-    "memberId": "1770556890568",
-    "date": "2026-01-21",
     "status": "present",
     "course": "제과제빵기능사"
   }

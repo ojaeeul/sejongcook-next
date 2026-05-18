@@ -1622,7 +1622,7 @@
             };
 
 
-            let totalExtAmount = 0; // [신규] 연장 누적분
+
 
             for (const r of memberRecords) {
                 if (r.yearNum < startYear || (r.yearNum === startYear && r.monthNum < startMonth)) continue;
@@ -1642,11 +1642,8 @@
                     const isExtension = r.status === 'extension' || (typeof r.status === 'string' && (r.status.startsWith('연') || r.status.includes('연장') || r.status.startsWith('E')));
                     const isRegular = r.status === 'present' || isNumericPresent || isAbsent;
 
-                    if (isMarker || isRegular || isExtension) {
+                    if (isMarker || isRegular) {
                         rollingTotal += incAmount;
-                        if (isExtension) {
-                            totalExtAmount += incAmount;
-                        }
                         rollingTotal = Math.round(rollingTotal * 10) / 10;
                         lastRecordDate = r.dateObj;
                         hasAnyAttendance = true;
@@ -1659,14 +1656,11 @@
                     const isExtension = r.status === 'extension' || (typeof r.status === 'string' && (r.status.startsWith('연') || r.status.includes('연장') || r.status.startsWith('E')));
                     const isRegular = r.status === 'present' || isNumericPresent || isAbsent;
 
-                    const prevNet = Math.round((rollingTotal - totalExtAmount) * 10) / 10;
-                    if (isMarker || isRegular || isExtension) {
+                    const prevNet = rollingTotal;
+                    if (isMarker || isRegular) {
                         rollingTotal += incAmount;
-                        if (isExtension) {
-                            totalExtAmount += incAmount;
-                        }
                         rollingTotal = Math.round(rollingTotal * 10) / 10;
-                        const currNet = Math.round((rollingTotal - totalExtAmount) * 10) / 10;
+                        const currNet = rollingTotal;
 
                         lastRecordDate = r.dateObj;
                         hasAnyAttendance = true;
@@ -1697,8 +1691,8 @@
 
                 // [사용자 요청] 제과제빵 등 모든 과정의 결제 주기가 긴 경우를 대비해 시뮬레이션 한계를 3000년까지 확장
                 const limitDate = new Date(3000, 11, 31);
-                let startCarry = Math.round((rollingTotal - totalExtAmount) * 10) / 10; // Net rolling total without extensions
-                let simRolling = rollingTotal; // This will accumulate all attendance, including extensions
+                let startCarry = rollingTotal; // Net rolling total without extensions
+                let simRolling = rollingTotal; // This will accumulate all attendance
                 let foundSimulatedDay = null;
 
                 while (simDate <= limitDate) {
@@ -2278,11 +2272,18 @@
                             let runningExtCount = currentMC.carryFromPrevExtCount || 0;
 
                             // [수정] 월 시작 시점의 Net 주기를 먼저 계산하여 문턱값(threshold)을 정확히 판정
-                            const startExtDeductionInitial = isDualCourse ? ((currentMC.carryFromPrevExtCount || 0) * 0.5) : ((currentMC.carryFromPrevExtCount || 0) * 1.0);
-                            let currentCycle = getCycle(Math.round((currentMC.carryFromPrev - startExtDeductionInitial) * 10) / 10);
+                            const getCycle = (val) => {
+                                let vRaw = Math.round(val * 10);
+                                if (isDualCourse) {
+                                    if (vRaw < 85) return 0;
+                                    return Math.floor((vRaw - 85) / 85) + 1;
+                                } else {
+                                    if (vRaw < 90) return 0;
+                                    return Math.floor((vRaw - 90) / 80) + 1;
+                                }
+                            };
+                            let currentCycle = getCycle(currentMC.carryFromPrev);
                             const adjustment = GLOBAL_DATA_ADJUSTMENTS[String(m.id)]?.[currentMC.key];
-
-                            let monthExtCount = 0;
 
                             currentMonthLogs.forEach(l => {
                                 const isMakeupMarker = ['[', ']'].includes(l.status);
@@ -2291,22 +2292,11 @@
                                 const isExtension = l.status === 'extension' || (typeof l.status === 'string' && (l.status.startsWith('E') || l.status.includes('연장') || l.status.startsWith('연')));
                                 const isRegularAttendance = l.status === 'present' || isNumericPresent || isAbsent;
 
-                                if (isRegularAttendance || isMakeupMarker || isExtension) {
-                                    const prevExtCount = (currentMC.carryFromPrevExtCount || 0) + monthExtCount;
-                                    const prevExtDeduction = isDualCourse ? (prevExtCount * 0.5) : (prevExtCount * 1.0);
-                                    const prevNet = Math.round((runningTotal - prevExtDeduction) * 10) / 10;
-
-                                    if (isRegularAttendance || isMakeupMarker) {
-                                        runningTotal += attendanceIncrement;
-                                    }
-                                    if (isExtension) monthExtCount++;
-
+                                if (isRegularAttendance || isMakeupMarker) {
+                                    runningTotal += attendanceIncrement;
                                     runningTotal = Math.round(runningTotal * 10) / 10;
-                                    const currExtCount = (currentMC.carryFromPrevExtCount || 0) + monthExtCount;
-                                    const currExtDeduction = isDualCourse ? (currExtCount * 0.5) : (currExtCount * 1.0);
-                                    const currNet = Math.round((runningTotal - currExtDeduction) * 10) / 10;
 
-                                    let newCycle = getCycle(currNet);
+                                    let newCycle = getCycle(runningTotal);
 
                                     let shouldShowRedBox = false;
                                     if (newCycle > currentCycle) {
@@ -2329,17 +2319,10 @@
                             });
 
                             // [결정적 J/P 수정] - 당월의 주기(네모박스) 변화만 감지
-                            // [수정] 연장(연)은 2개당 0.5씩 빼도록 netProgress 기준 관리
-                            const startExtCount = (currentMC.carryFromPrevExtCount || 0);
-                            const startExtDeduction = isDualCourse ? (startExtCount * 0.5) : (startExtCount * 1.0);
-                            const startNet = Math.round((currentMC.carryFromPrev - startExtDeduction) * 10) / 10;
-                            
-                            const endExtCount = (currentMC.carryFromPrevExtCount || 0) + monthExtCount;
-                            const endExtDeduction = isDualCourse ? (endExtCount * 0.5) : (endExtCount * 1.0);
-                            const endNet = Math.round((runningTotal - endExtDeduction) * 10) / 10;
+                            // [수정] 연장은 무시되므로 순수 출석(runningTotal) 기준으로만 cycle 판정
+                            const startNet = currentMC.carryFromPrev;
+                            const endNet = runningTotal;
 
-                            // 실제로는 loop 내부에서 이미 netProgress를 기준으로 cycle 판정을 마쳤으므로 
-                            // 여기서는 redBoxDates 활성화 여부와 최종 runningTotal을 사용함
                             const startCycle = getCycle(startNet);
                             const endCycle = getCycle(endNet);
                             const cyclesThisMonth = endCycle - startCycle;
@@ -2353,24 +2336,18 @@
                                     if (adjustment.forceRedBoxDates.includes(l.date)) hasManualRedBox = true;
                                 });
                             }
-
-                            const totalExtThisMonth = (currentMC.carryFromPrevExtCount || 0) + monthExtCount;
-                            const finalExtDeduction = isDualCourse ? (totalExtThisMonth * 0.5) : (totalExtThisMonth * 1.0);
-                            
                             if (cyclesThisMonth > 0 || hasManualRedBox) {
                                 let actualCycle = endCycle > 0 ? endCycle : (hasManualRedBox ? 1 : 0);
                                 displayMakeup = Math.round((actualCycle * (isDualCourse ? 8.5 : 8.0)) * 10) / 10;
-                                // 8.5(17회) 이상이 되면 연장(2개당 0.5)을 빼라는 요청 반영
-                                // 총 출석(P) = 총 누적(Gross) - 재고(J) - (누적 연장 차감분)
-                                displayP = Math.round((runningTotal - displayMakeup - finalExtDeduction) * 10) / 10;
+                                // 총 출석(P) = 총 누적(Gross) - 재고(J) (연장 무시 로직 적용)
+                                displayP = Math.round((runningTotal - displayMakeup) * 10) / 10;
                             } else {
                                 let startCycleValue = startCycle;
                                 let baseStock = startCycleValue > 0 ? (startCycleValue * (isDualCourse ? 8.5 : 8.0)) : 0;
                                 displayMakeup = 0;
-                                // 평상시에도 연장분(연)은 차감하여 표시
-                                displayP = Math.round((runningTotal - baseStock - finalExtDeduction) * 10) / 10;
+                                // 평상시 출석표시 (연장 무시 로직 적용)
+                                displayP = Math.round((runningTotal - baseStock) * 10) / 10;
                             }
-
                         }
                     }
 
