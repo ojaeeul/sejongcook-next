@@ -208,6 +208,12 @@ export default function Home() {
             <Link href={heroData?.btn2Link || "/inquiry"} className="btn-hero btn-outline" id="hero-btn-secondary">
               {heroData?.btn2Text || "상담문의"}
             </Link>
+            <a href="https://open.kakao.com/o/gw4q3s9h" target="_blank" rel="noopener noreferrer" className="btn-hero" style={{ backgroundColor: '#FEE500', color: '#3A1D1D', borderColor: '#FEE500', fontWeight: 'bold' }}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: '6px' }}>
+                  <path d="M12 3c-5.52 0-10 3.58-10 8 0 2.87 1.76 5.4 4.47 6.88-.28 1-.98 3.52-1.02 3.73-.06.23.08.23.18.17.13-.08 3.23-2.18 4.54-3.08.6.08 1.22.13 1.83.13 5.52 0 10-3.58 10-8s-4.48-8-10-8z"/>
+              </svg>
+              카카오톡 상담
+            </a>
           </div>
           {/* Phone Banner Layout - Moved inside hero-content for correct flow */}
           {heroData?.phoneVisible && (
