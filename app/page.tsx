@@ -449,26 +449,6 @@ export default function Home() {
               </ul>
             </div>
 
-            {/* Preview (Popups) */}
-            <div className="update-column" style={{ background: '#fff', padding: '30px', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
-              <div className="column-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #f5a623', paddingBottom: '15px', marginBottom: '20px' }}>
-                <h3 style={{ fontSize: '1.3rem', fontWeight: 700, margin: 0 }}>미리보기</h3>
-                <Link href="/" className="more-link" style={{ color: '#f5a623', fontSize: '0.9rem', fontWeight: 600 }}>전체보기</Link>
-              </div>
-              <ul className="latest-list space-y-3">
-                {previewData.slice(0, 5).map(item => (
-                  <li key={item.id} className="flex justify-between items-center group cursor-pointer" style={{ borderBottom: '1px solid #f0f0f0', paddingBottom: '10px' }}>
-                    <div className="text-gray-700 hover:text-[#f5a623] transition-colors truncate flex-1 text-sm font-medium block">
-                      {item.title}
-                    </div>
-                    <span className="text-xs text-gray-400 ml-2 whitespace-nowrap">{item.date}</span>
-                  </li>
-                ))}
-                {previewData.length === 0 && (
-                  <li className="text-gray-400 text-sm italic py-2">활성 팝업이 없습니다.</li>
-                )}
-              </ul>
-            </div>
           </div>
         </div>
       </section >
