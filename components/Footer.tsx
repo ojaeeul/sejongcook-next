@@ -15,7 +15,7 @@ export default function Footer() {
     });
 
     useEffect(() => {
-        const url = '/api/admin/data/footer?_t=' + Date.now();
+        const url = '/data/footer.json?_t=' + Date.now();
 
         fetch(url, { cache: 'no-store' })
             .then(res => {

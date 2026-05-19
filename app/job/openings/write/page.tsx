@@ -22,7 +22,7 @@ function WriteForm() {
         const load = async () => {
             if (isEdit && idx) {
                 try {
-                    const url = '/api/admin/data/job-openings?_t=' + Date.now();
+                    const url = '/data/job_openings_data.json?_t=' + Date.now();
                     const res = await fetch(url);
                     const data = await res.json();
 
@@ -51,7 +51,7 @@ function WriteForm() {
 
         try {
             const isProd = process.env.NODE_ENV === 'production';
-            const endpoint = '/api/admin/data/job-openings';
+            const endpoint = '/data/job_openings_data.json';
             const method = isEdit ? 'PUT' : 'POST';
 
             const postData = {

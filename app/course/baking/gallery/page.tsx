@@ -30,7 +30,7 @@ export default function BakingGalleryPage() {
         const fetchPosts = async () => {
             try {
                 // Use cache buster for latest data
-                const url = '/api/admin/data/baking?_t=' + Date.now();
+                const url = '/data/baking_posts.json?_t=' + Date.now();
 
                 const res = await fetch(url);
                 if (!res.ok) throw new Error('Failed to fetch baking posts');

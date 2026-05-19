@@ -48,7 +48,7 @@ function LocationContent() {
 
     // Load content on mount
     useEffect(() => {
-        fetch('/api/admin/data/intro')
+        fetch('/data/intro_data.json')
             .then(res => res.json())
             .then(data => {
                 if (data.location) {
@@ -61,7 +61,7 @@ function LocationContent() {
     const handleSave = async () => {
         if (confirm("저장하시겠습니까?")) {
             try {
-                const res = await fetch('/api/admin/data/intro', {
+                const res = await fetch('/data/intro_data.json', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({

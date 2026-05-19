@@ -91,9 +91,9 @@ export default function Home() {
     // Load Q&A Data dynamically
     const fetchDashboardData = async () => {
       const endpoints = [
-        { url: '/api/admin/data/qna/', setter: setLatestQna },
-        { url: '/api/admin/data/notice/', setter: setNoticeData },
-        { url: '/api/admin/data/job-openings/', setter: setJobData },
+        { url: '/data/qna_data.json/', setter: setLatestQna },
+        { url: '/data/notice_data.json/', setter: setNoticeData },
+        { url: '/data/job_openings_data.json/', setter: setJobData },
         { url: '/api/admin/popups/', setter: setPreviewData }
       ];
 

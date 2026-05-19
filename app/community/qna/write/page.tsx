@@ -23,7 +23,7 @@ function WriteForm() {
         const loadPost = async () => {
             if (isEdit && idx) {
                 try {
-                    const url = '/api/admin/data/qna?_t=' + Date.now();
+                    const url = '/data/qna_data.json?_t=' + Date.now();
                     const res = await fetch(url);
                     const data = await res.json();
 
@@ -55,7 +55,7 @@ function WriteForm() {
 
         try {
             const isProd = process.env.NODE_ENV === 'production';
-            const endpoint = '/api/admin/data/qna';
+            const endpoint = '/data/qna_data.json';
             const method = isEdit ? 'PUT' : 'POST';
 
             const postData = {

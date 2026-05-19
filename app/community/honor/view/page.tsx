@@ -19,7 +19,7 @@ function HonorViewContent() {
         const fetchPost = async () => {
             try {
                 // Fetch from PHP bridge in production, local JSON otherwise
-                const url = '/api/admin/data/honor?_t=' + Date.now();
+                const url = '/data/honor_data.json?_t=' + Date.now();
                 const res = await fetch(url);
                 const list = await res.json();
                 const data = list.find((i: { id: string | number }) => String(i.id) === String(idx));

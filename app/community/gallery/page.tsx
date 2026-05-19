@@ -16,7 +16,7 @@ export default function GalleryPage() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const url = '/api/admin/data/gallery?_t=' + Date.now();
+        const url = '/data/gallery_data.json?_t=' + Date.now();
         fetch(url)
             .then(res => res.json())
             .then(data => {

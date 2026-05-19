@@ -13,7 +13,7 @@ export default function Header({ initialShowAuthLinks = true }: { initialShowAut
 
     useEffect(() => {
         // Fetch global settings on mount to ensure client is in sync if navigation happened
-        fetch('/api/admin/data/settings?_t=' + Date.now(), { cache: 'no-store' })
+        fetch('/data/settings.json?_t=' + Date.now(), { cache: 'no-store' })
             .then(res => {
                 if (!res.ok) throw new Error('Settings fetch failed');
                 return res.json();
@@ -251,29 +251,14 @@ export default function Header({ initialShowAuthLinks = true }: { initialShowAut
                     <nav className={`lg:!hidden overflow-hidden transition-all duration-300 ease-in-out ${isMobileMenuOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
                         <ul className="flex flex-col text-white pb-6 pt-2 space-y-1">
                             {navigation.map((item, index) => (
-                                <li key={index} className="border-b border-amber-400/30 pb-2">
+                                <li key={index}>
                                     <Link
                                         href={item.href}
-                                        className="block py-2 px-4 rounded-md hover:bg-[#e6a840] transition-colors font-bold"
+                                        className="block py-3 px-4 rounded-md hover:bg-[#e6a840] transition-colors"
                                         onClick={handleMenuClick}
                                     >
                                         {item.label}
                                     </Link>
-                                    {item.submenu && (
-                                        <ul className="pl-6 mt-1 flex flex-col space-y-1">
-                                            {item.submenu.map((subItem, subIndex) => (
-                                                <li key={subIndex}>
-                                                    <Link
-                                                        href={subItem.href}
-                                                        className="block py-1.5 px-4 text-sm text-amber-50 hover:bg-[#e6a840] rounded-md transition-colors"
-                                                        onClick={handleMenuClick}
-                                                    >
-                                                        {subItem.label}
-                                                    </Link>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    )}
                                 </li>
                             ))}
                         </ul>
