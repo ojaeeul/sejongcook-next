@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import path from 'path';
 
-const DATA_FILE_PATH = path.join(process.cwd(), 'public', 'data', 'timetable_data.json');
+const DATA_FILE_PATH = path.join(process.cwd(), 'public', 'data', 'timetable_page.json');
 
 export async function GET() {
     try {

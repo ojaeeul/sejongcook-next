@@ -264,7 +264,7 @@ export default function AdminTeachersPage() {
                             key={teacher.id}
                             className={`bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex items-center gap-6 transition-opacity ${isEditing !== null && isEditing !== teacher.id ? 'opacity-50 pointer-events-none' : ''}`}
                         >
-                            <div className="w-[80px] h-[100px] bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 border border-gray-200">
+                            <div className="relative w-[80px] h-[100px] bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 border border-gray-200">
                                 {teacher.image ? (
                                     <Image src={teacher.image} alt={teacher.name} fill className="object-cover" unoptimized />
                                 ) : (

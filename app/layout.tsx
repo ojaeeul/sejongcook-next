@@ -159,6 +159,9 @@ export default async function RootLayout({
         />
       </head>
       <body className="antialiased" suppressHydrationWarning>
+        <div className="sr-only" aria-hidden="true">
+          #김포요리학원 #세종요리제과기술학원 #김포제과제빵학원 #김포제빵학원 #김포제과학원 #취미요리 #풍무동요리학원 #사우동요리학원 #운양동요리학원 #구레동요리학원 #고촌요리학원 #김포요리 #쿠킹클래스 #원데이클래스 #브런치 #케익수업 #가정요리
+        </div>
         <AuthProvider>
           <VisitorTracker />
           <Header initialShowAuthLinks={settings.showAuthLinks} />

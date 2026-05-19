@@ -1,157 +1,108 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from './sejongDataHandler';
+import { promises as fs } from 'fs';
+import path from 'path';
+
+function getFilePath(board: string) {
+    let filename = `${board.replace(/-/g, '_')}_data.json`;
+    if (board === 'settings') filename = 'settings.json';
+    return path.join(process.cwd(), 'public', 'data', filename);
+}
+
+async function readData(board: string) {
+    try {
+        const fileContent = await fs.readFile(getFilePath(board), 'utf8');
+        return JSON.parse(fileContent);
+    } catch (error) {
+        return [];
+    }
+}
+
+async function writeData(board: string, data: any) {
+    const filePath = getFilePath(board);
+    const dirPath = path.dirname(filePath);
+    try {
+        await fs.access(dirPath);
+    } catch {
+        await fs.mkdir(dirPath, { recursive: true });
+    }
+    await fs.writeFile(filePath, JSON.stringify(data, null, 4), 'utf8');
+}
 
 export async function handleReplace(request: NextRequest, board: string) {
-    const body = await request.json();
-
     try {
+        const body = await request.json();
         if (!Array.isArray(body)) {
             return NextResponse.json({ error: 'Invalid data format. Expected array.' }, { status: 400 });
         }
-
-        // To replace all data, we first delete existing records for this board_type
-        await supabase.from('board_posts').delete().eq('board_type', board);
-
-        if (body.length > 0) {
-            const isCustom = ['gallery', 'popups', 'honor', 'sites', 'footer', 'settings'].includes(board);
-            const preparedData = body.map(item => ({
-                board_type: board,
-                id: String(item.id),
-                title: item.title || '',
-                author: item.author || '',
-                content: isCustom ? JSON.stringify(item) : (item.content || ''),
-                date: item.date || new Date().toISOString().split('T')[0],
-                hit: Number(item.hit) || 0,
-                status: item.status || null,
-                link: item.link || null,
-                institution: item.institution || null,
-                file: item.file || null
-            }));
-
-            const { error } = await supabase.from('board_posts').insert(preparedData);
-            if (error) throw error;
-        }
-
+        await writeData(board, body);
         return NextResponse.json({ success: true });
-    } catch (error: unknown) {
-        console.error('Replace error:', error);
-        return NextResponse.json({ error: 'Failed to save data', details: error instanceof Error ? error.message : String(error) }, { status: 500 });
+    } catch (error: any) {
+        return NextResponse.json({ error: 'Failed to save data', details: error.message }, { status: 500 });
     }
 }
 
 export async function handleGet(request: NextRequest, board: string) {
     try {
-        const { data, error } = await supabase
-            .from('board_posts')
-            .select('*')
-            .eq('board_type', board)
-            .order('id', { ascending: true }); // Depending on frontend expectation, might need numeric sorting
-
-        if (error) throw error;
-
-        const isCustom = ['gallery', 'popups', 'honor', 'sites', 'footer', 'settings'].includes(board);
-        const mappedData = (data || []).map(row => {
-            if (isCustom && row.content) {
-                try {
-                    const parsed = JSON.parse(row.content);
-                    return { ...row, ...parsed };
-                } catch {
-                    return row;
-                }
-            }
-            return row;
-        });
-
-        return NextResponse.json(mappedData);
-    } catch (error: unknown) {
-        console.error('Read error:', error);
-        return NextResponse.json({
-            error: 'Failed to read data',
-            details: error instanceof Error ? error.message : String(error)
-        }, { status: 500 });
+        const data = await readData(board);
+        return NextResponse.json(data);
+    } catch (error: any) {
+        return NextResponse.json({ error: 'Failed to read data', details: error.message }, { status: 500 });
     }
 }
 
 export async function handlePost(request: NextRequest, board: string) {
     try {
         const body = await request.json();
-
-        // Special handling for full array replacement
         if (Array.isArray(body)) {
             return await handleReplace(request, board);
         }
 
-        // Generate a new ID based on existing records
-        const { data: existingData } = await supabase
-            .from('board_posts')
-            .select('id')
-            .eq('board_type', board);
+        const data = await readData(board);
+        
+        if (body.id) {
+            const index = data.findIndex((p: any) => String(p.id) === String(body.id));
+            if (index !== -1) {
+                data[index] = { ...data[index], ...body };
+                await writeData(board, data);
+                return NextResponse.json({ success: true, item: data[index] });
+            }
+        }
 
-        const newId = (existingData && existingData.length > 0)
-            ? String(Math.max(...existingData.map(item => Number(item.id) || 0)) + 1)
+        const newId = data.length > 0
+            ? String(Math.max(...data.map((item: any) => Number(item.id) || 0)) + 1)
             : "1";
 
-        const isCustom = ['gallery', 'popups', 'honor', 'sites', 'footer', 'settings'].includes(board);
         const newItem = {
-            board_type: board,
             id: newId,
-            title: body.title || '',
-            author: body.author || '',
-            content: isCustom ? JSON.stringify(body) : (body.content || ''),
+            ...body,
             date: body.date || new Date().toISOString().split('T')[0],
-            hit: body.hit || 0,
-            status: body.status || null,
-            link: body.link || null,
-            institution: body.institution || null,
-            file: body.file || null
+            hit: body.hit || "0"
         };
 
-        const { error } = await supabase.from('board_posts').insert(newItem);
-        if (error) throw error;
-
+        data.unshift(newItem);
+        await writeData(board, data);
         return NextResponse.json({ success: true, item: newItem });
-    } catch (error: unknown) {
-        console.error('Write error:', error);
-        return NextResponse.json({ error: 'Failed to save data', details: error instanceof Error ? error.message : String(error) }, { status: 500 });
+    } catch (error: any) {
+        return NextResponse.json({ error: 'Failed to save data', details: error.message }, { status: 500 });
     }
 }
 
 export async function handlePut(request: NextRequest, board: string) {
     try {
         const body = await request.json();
-
         if (!body.id) return NextResponse.json({ error: 'Missing item ID' }, { status: 400 });
 
-        const isCustom = ['gallery', 'popups', 'honor', 'sites', 'footer', 'settings'].includes(board);
-        const updateData = {
-            title: body.title || '',
-            author: body.author || '',
-            content: isCustom ? JSON.stringify(body) : (body.content || ''),
-            date: body.date || new Date().toISOString().split('T')[0],
-            hit: body.hit || 0,
-            status: body.status || null,
-            link: body.link || null,
-            institution: body.institution || null,
-            file: body.file || null
-        };
+        const data = await readData(board);
+        const index = data.findIndex((item: any) => String(item.id) === String(body.id));
+        
+        if (index === -1) return NextResponse.json({ error: 'Item not found' }, { status: 404 });
 
-        // Update record in Supabase
-        // We ensure we only update the record belonging to this board_type
-        const { data, error } = await supabase
-            .from('board_posts')
-            .update(updateData)
-            .eq('board_type', board)
-            .eq('id', String(body.id))
-            .select()
-            .single();
+        data[index] = { ...data[index], ...body };
+        await writeData(board, data);
 
-        if (error) throw error;
-        if (!data) return NextResponse.json({ error: 'Item not found' }, { status: 404 });
-
-        return NextResponse.json({ success: true, item: data });
-    } catch (error: unknown) {
-        console.error('Update error:', error);
-        return NextResponse.json({ error: 'Failed to update data', details: error instanceof Error ? error.message : String(error) }, { status: 500 });
+        return NextResponse.json({ success: true, item: data[index] });
+    } catch (error: any) {
+        return NextResponse.json({ error: 'Failed to update data', details: error.message }, { status: 500 });
     }
 }
 
@@ -162,17 +113,13 @@ export async function handleDelete(request: NextRequest, board: string) {
 
         if (!id) return NextResponse.json({ error: 'Invalid request: missing id' }, { status: 400 });
 
-        const { error } = await supabase
-            .from('board_posts')
-            .delete()
-            .eq('board_type', board)
-            .eq('id', id);
+        let data = await readData(board);
+        data = data.filter((item: any) => String(item.id) !== String(id));
 
-        if (error) throw error;
+        await writeData(board, data);
 
         return NextResponse.json({ success: true });
-    } catch (error: unknown) {
-        console.error('Delete error:', error);
-        return NextResponse.json({ error: 'Failed to delete data', details: error instanceof Error ? error.message : String(error) }, { status: 500 });
+    } catch (error: any) {
+        return NextResponse.json({ error: 'Failed to delete data', details: error.message }, { status: 500 });
     }
 }
