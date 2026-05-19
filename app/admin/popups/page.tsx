@@ -84,12 +84,13 @@ export default function AdminPopupsPage() {
 
     const savePopups = async (data: Popup[]) => {
         try {
-            const url = '/api/admin/data/popups?_t=' + Date.now();
-            await fetch(url, {
+            const url = '/api/admin/popups?_t=' + Date.now();
+            const res = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data),
             });
+            if (!res.ok) throw new Error('Save failed');
         } catch (error) {
             console.error('Failed to save', error);
             alert('저장 실패');
