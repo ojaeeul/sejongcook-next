@@ -2,9 +2,27 @@ import { NextRequest, NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import path from 'path';
 
+const boardToFileMap: Record<string, string> = {
+    'baking': 'baking_posts.json',
+    'cake': 'cake_posts.json',
+    'cooking': 'cooking_posts.json',
+    'dessert': 'dessert_posts.json',
+    'popups': 'popups.json',
+    'teachers': 'teachers.json',
+    'attendance': 'attendance.json',
+    'visitors': 'visitors.json',
+    'members': 'members.json',
+    'payments': 'payments.json',
+    'holidays': 'holidays.json',
+    'settings': 'settings.json',
+    'timetable': 'timetable_page.json'
+};
+
 function getFilePath(board: string) {
+    if (boardToFileMap[board]) {
+        return path.join(process.cwd(), 'public', 'data', boardToFileMap[board]);
+    }
     let filename = `${board.replace(/-/g, '_')}_data.json`;
-    if (board === 'settings') filename = 'settings.json';
     return path.join(process.cwd(), 'public', 'data', filename);
 }
 
