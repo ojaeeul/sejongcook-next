@@ -89,6 +89,7 @@ export default function AdminLayout({
                 await supabase.auth.signOut();
             }
             document.cookie = "admin_auth=; path=/; max-age=0"; // Clear cookie
+            localStorage.removeItem('adminToken'); // Clear backdoor token
             router.push('/admin/login');
         } catch (error) {
             console.error('Logout failed', error);
