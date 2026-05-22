@@ -90,7 +90,7 @@ export default function HeroBackground({ images }: HeroBackgroundProps) {
                 >
                     <Image
                         src={img}
-                        alt={`Hero slide ${index + 1}`}
+                        alt={`김포요리학원 세종요리제과기술학원 대표 이미지 ${index + 1}`}
                         fill
                         priority={index === 0}
                         quality={75}

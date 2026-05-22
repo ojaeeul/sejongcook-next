@@ -144,6 +144,12 @@ function processAttendanceData() {
 // sheet.html과 동일한 수동 보정 데이터
 const GLOBAL_DATA_ADJUSTMENTS = {};
 
+// [신규] 과거의 잘못된 시뮬레이션 캐시(찌꺼기)를 한 번 지워주기 위한 로직
+if (!sessionStorage.getItem('cache_cleared_v2')) {
+    localStorage.removeItem('sejong_ledger_sync');
+    sessionStorage.setItem('cache_cleared_v2', 'true');
+}
+
 function getLedgerMonthStats(memberId, year, month, courseFilter = null) {
     // [신규 기믹]: User request to strictly mirror sheet.html dates instead of computing separately
     try {
@@ -152,10 +158,12 @@ function getLedgerMonthStats(memberId, year, month, courseFilter = null) {
 
         // 1. window.ledgerSyncData (최고 우선순위: 시트에서 실시간 렌더링된 데이터)
         if (window.ledgerSyncData && window.ledgerSyncData[syncKey]) {
+            const rawSync = window.ledgerSyncData[syncKey];
+            const days = Array.isArray(rawSync) ? rawSync : (typeof rawSync === 'number' ? [rawSync] : []);
             return {
-                eighthDay: window.ledgerSyncData[syncKey],
+                eighthDays: days,
                 eighthMonth: month,
-                isSimulated: true, // 시트에서 왔으므로 시뮬레이션으로 간주 
+                isSimulated: false, // 이제 시트에서 동기화되는 데이터는 무조건 실제 빨간박스임 
                 hasAnyAttendance: true
             };
         }
@@ -163,10 +171,12 @@ function getLedgerMonthStats(memberId, year, month, courseFilter = null) {
         // 2. localStorage (백업)
         const syncData = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
         if (syncData[syncKey]) {
+            const rawSync = syncData[syncKey];
+            const days = Array.isArray(rawSync) ? rawSync : (typeof rawSync === 'number' ? [rawSync] : []);
             return {
-                eighthDay: syncData[syncKey],
+                eighthDays: days,
                 eighthMonth: month,
-                isSimulated: true,
+                isSimulated: false, // 이제 시트에서 동기화되는 데이터는 무조건 실제 빨간박스임
                 hasAnyAttendance: true
             };
         }
@@ -174,7 +184,7 @@ function getLedgerMonthStats(memberId, year, month, courseFilter = null) {
 
     let rollingTotal = 0;
     let extCount = 0;
-    let eighthDay = null;
+    let eighthDays = [];
     let isSimulated = false;
     let eighthMonth = month;
     let hasAnyAttendance = false;
@@ -209,8 +219,8 @@ function getLedgerMonthStats(memberId, year, month, courseFilter = null) {
     const getCycle = (val, isDual) => {
         let vRaw = Math.round(val * 10);
         if (isDual) {
-            if (vRaw < 85) return 0;
-            return Math.floor((vRaw - 85) / 85) + 1;
+            if (vRaw < 170) return 0;
+            return Math.floor((vRaw - 170) / 160) + 1;
         } else {
             if (vRaw < 90) return 0;
             return Math.floor((vRaw - 90) / 80) + 1;
@@ -220,7 +230,7 @@ function getLedgerMonthStats(memberId, year, month, courseFilter = null) {
 
     for (const r of memberRecords) {
         var isDualBakeryRecord = (r.course && r.course.replace(/\s/g, '').includes('제과제빵'));
-        var incAmount = isDualBakeryRecord ? 0.5 : 1.0;
+        var incAmount = isDualBakeryRecord ? 1.0 : 1.0;
 
         if (courseFilter) {
             if (!r.course) continue;
@@ -238,7 +248,6 @@ function getLedgerMonthStats(memberId, year, month, courseFilter = null) {
             const isMarker = ['[', ']'].includes(r.status);
             const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(String(r.status));
             const isAbsent = r.status === 'absent' || (typeof r.status === 'string' && r.status.startsWith('X'));
-            const isExtension = r.status === 'extension' || (typeof r.status === 'string' && (r.status.startsWith('연') || r.status.includes('연장') || r.status.startsWith('E')));
             const isRegular = r.status === 'present' || isNumericPresent || isAbsent;
             if (isMarker || isRegular) {
                 rollingTotal += incAmount;
@@ -250,7 +259,6 @@ function getLedgerMonthStats(memberId, year, month, courseFilter = null) {
             const isMarker = ['[', ']'].includes(r.status);
             const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(String(r.status));
             const isAbsent = r.status === 'absent' || (typeof r.status === 'string' && r.status.startsWith('X'));
-            const isExtension = r.status === 'extension' || (typeof r.status === 'string' && (r.status.startsWith('연') || r.status.includes('연장') || r.status.startsWith('E')));
             const isRegular = r.status === 'present' || isNumericPresent || isAbsent;
 
             const prevNet = rollingTotal;
@@ -264,8 +272,11 @@ function getLedgerMonthStats(memberId, year, month, courseFilter = null) {
                 lastRecordDate = r.dateObj;
                 hasAnyAttendance = true;
 
-                if (getCycle(currNet, isDualBakeryRecord) > getCycle(prevNet, isDualBakeryRecord) || String(r.status) === '9') {
-                    eighthDay = r.dateObj.getDate();
+                const dateStr = r.date.includes('T') ? r.date.split('T')[0] : r.date;
+                const isForced = adj && adj.forceRedBoxDates && adj.forceRedBoxDates.includes(dateStr);
+
+                if (getCycle(currNet, isDualBakeryRecord) > getCycle(prevNet, isDualBakeryRecord) || String(r.status) === '9' || isForced) {
+                    eighthDays.push(r.dateObj.getDate());
                     hitTargetInMonth = true;
                 }
             }
@@ -290,7 +301,7 @@ function getLedgerMonthStats(memberId, year, month, courseFilter = null) {
         const member = membersData.find(m => String(m.id) === String(memberId));
         const isDualForSim = (courseFilter && courseFilter.replace(/\s/g, '').includes('제과제빵')) ||
             (!courseFilter && member && member.course && member.course.replace(/\s/g, '').includes('제과제빵'));
-        const simIncAmount = isDualForSim ? 0.5 : 1.0;
+        const simIncAmount = isDualForSim ? 1.0 : 1.0;
 
         const limitDate = new Date(3000, 11, 31);
         let currentNetSim = rollingTotal;
@@ -333,12 +344,13 @@ function getLedgerMonthStats(memberId, year, month, courseFilter = null) {
         }
 
         if (foundSimulatedDay) {
-            eighthDay = foundSimulatedDay;
-            isSimulated = true;
+            // [사용자 요청] 예정날자가 지정(실제 도달) 안되어 있으면 숨김으로 처리
+            // eighthDays.push(foundSimulatedDay);
+            // isSimulated = true;
         }
     }
 
-    return { eighthDay, eighthMonth, isSimulated, hasAnyAttendance };
+    return { eighthDays, eighthMonth, isSimulated, hasAnyAttendance };
 }
 
 function getAllLedgerMonthStats(memberId, year, month) {
@@ -351,13 +363,15 @@ function getAllLedgerMonthStats(memberId, year, month) {
     courses.forEach(courseName => {
         const stats = getLedgerMonthStats(memberId, year, month, courseName);
         // User Request: 출석 날짜가 없는 수강생은 수강료예정일 표시하지 마시고, 출석이 1개라도 있으면 표시하세요.
-        if (stats.eighthDay && stats.hasAnyAttendance) {
-            results.push({
-                course: courseName,
-                eighthDay: stats.eighthDay,
-                eighthMonth: stats.eighthMonth,
-                isSimulated: stats.isSimulated,
-                fee: courseFees[courseName] || courseFees['all'] || 0
+        if (stats.eighthDays && stats.eighthDays.length > 0 && stats.hasAnyAttendance) {
+            stats.eighthDays.forEach(day => {
+                results.push({
+                    course: courseName,
+                    eighthDay: day,
+                    eighthMonth: stats.eighthMonth,
+                    isSimulated: stats.isSimulated,
+                    fee: courseFees[courseName] || courseFees['all'] || 0
+                });
             });
         }
     });
@@ -608,7 +622,9 @@ function renderTable(container, title, members, id) {
             <td style="padding: 8px 10px; border-right: 1.5px solid #0f172a;">
                 <div style="font-weight: 900; font-size: 0.9rem;">${m.name}</div>
                 <div style="font-size: 0.7rem; color: #64748b;">${m.phone || ''}</div>
-                <div style="font-size: 0.7rem; color: #2563eb; font-weight: 700; margin-top: 2px;">${m.course || ''}</div>
+                <div style="font-size: 0.6rem; font-weight: 700; margin-top: 4px; display: flex; flex-direction: column; gap: 2px; align-items: flex-start;">
+                    ${(m.course || '').split(',').filter(Boolean).map(c => `<span style="background: #eff6ff; color: #1d4ed8; padding: 2px 5px; border-radius: 3px; border: 1px solid #bfdbfe; white-space: nowrap; line-height: 1; font-size: 0.55rem;">${c.trim()}</span>`).join('')}
+                </div>
             </td>`;
 
         for (let month = 1; month <= 12; month++) {
@@ -658,16 +674,19 @@ function renderTable(container, title, members, id) {
 
             const paid = paymentsData.filter(p => String(p.memberId) === String(m.id) && String(p.year) === String(currentYear) && String(p.month) === String(month) && p.status === 'paid');
 
-            let expectedHTML = schedules.map(s => {
-                const dayText = `${s.eighthDay}일`;
-                const color = s.isSimulated ? '#a855f7' : '#d946ef';
-                return `
-                <div style="font-size: 0.65rem; color: ${color}; font-weight: 800; display: flex; flex-direction: column; gap: 2px; align-items: center; margin-bottom: 4px;">
-                    <div>${dayText}</div>
-                    <div style="font-size: 0.6rem;">${s.fee / 10000}만</div>
-                    <div style="font-size: 0.55rem; color: #64748b; font-weight: 600; line-height: 1;">${s.course || ''}</div>
-                </div>
-            `}).join('');
+            let expectedHTML = schedules
+                .filter(s => s.eighthDay && !isNaN(parseInt(s.eighthDay)) && Number(s.eighthDay) > 0)
+                .map(s => {
+                    const dayText = `${s.eighthDay}일`;
+                    const feeColor = s.isSimulated ? '#a855f7' : '#d946ef';
+                    const dateColor = s.isSimulated ? '#a855f7' : '#ff0000'; // 예정일 숫자 아주 빨강
+                    return `
+                    <div style="font-size: 0.65rem; font-weight: 800; display: flex; flex-direction: column; gap: 2px; align-items: center; margin-bottom: 4px;">
+                        <div style="color: ${dateColor};">${dayText}</div>
+                        <div style="font-size: 0.6rem; color: ${feeColor};">${s.fee / 10000}만</div>
+                        <div style="font-size: 0.55rem; color: #64748b; font-weight: 600; line-height: 1;">${s.course || ''}</div>
+                    </div>
+                `}).join('');
 
             let actualHTML = paid.map(p => `
                 <div style="font-size: 0.65rem; font-weight: 900; display: flex; flex-direction: column; gap: 2px; align-items: center; margin-bottom: 4px;">

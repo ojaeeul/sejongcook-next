@@ -32,6 +32,9 @@ const nanumPen = Nanum_Pen_Script({
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.sejongcook.co.kr'),
+  alternates: {
+    canonical: 'https://www.sejongcook.co.kr',
+  },
   title: {
     default: "세종요리제과기술학원 | 김포요리학원 - 국비지원, 자격증, 취업",
     template: "%s | 세종요리제과기술학원"
@@ -123,7 +126,7 @@ export default async function RootLayout({
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               "@context": "https://schema.org",
-              "@type": "EducationalOrganization",
+              "@type": ["EducationalOrganization", "LocalBusiness"],
               "name": "세종요리제과기술학원",
               "alternateName": ["김포요리학원", "세종요리학원", "세종요리제과학원"],
               "description": "김포 사우동 위치한 전문 요리 및 제과제빵 교육기관. 국비지원 과정 운영.",
@@ -135,7 +138,7 @@ export default async function RootLayout({
                 "streetAddress": "김포대로 841, 6층 (사우동, 제우스프라자)",
                 "addressLocality": "김포시",
                 "addressRegion": "경기도",
-                "postalCode": "10111",
+                "postalCode": "10110",
                 "addressCountry": "KR"
               },
               "geo": {
@@ -159,9 +162,6 @@ export default async function RootLayout({
         />
       </head>
       <body className="antialiased" suppressHydrationWarning>
-        <div className="sr-only" aria-hidden="true">
-          #김포요리학원 #세종요리제과기술학원 #김포제과제빵학원 #김포제빵학원 #김포제과학원 #취미요리 #풍무동요리학원 #사우동요리학원 #운양동요리학원 #구레동요리학원 #고촌요리학원 #김포요리 #쿠킹클래스 #원데이클래스 #브런치 #케익수업 #가정요리
-        </div>
         <AuthProvider>
           <VisitorTracker />
           <Header initialShowAuthLinks={settings.showAuthLinks} />

@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="attendance_daily.js?v=20260302_1" defer></script>
+    <script src="attendance_daily.js?v=3" defer></script>
     <style>
         .daily-container {
             display: flex;
@@ -226,8 +226,11 @@
         .stat-makeup {
             color: #d946ef;
         }
-
         /* 보강: 보라 */
+        .stat-extension {
+            color: #d97706;
+        }
+        /* 연장: 주황/갈색 */
 
         /* Main Table */
         .table-container {
@@ -334,6 +337,12 @@
             background: #d946ef;
             color: white;
             border-color: #d946ef;
+        }
+
+        .status-btn.active[data-type="extension"] {
+            background: #d97706;
+            color: white;
+            border-color: #d97706;
         }
 
         /* Footer Bar */
@@ -449,6 +458,7 @@
             .status-btn.active[data-type="late"]::after { content: " (지각)"; }
             .status-btn.active[data-type="early"]::after { content: " (조퇴)"; }
             .status-btn.active[data-type="makeup"]::after { content: " (보강)"; }
+            .status-btn.active[data-type="extension"]::after { content: " (연장)"; }
         }
     </style>
 </head>
@@ -664,9 +674,9 @@
                             <div class="stat-label">조퇴</div>
                             <div class="stat-value" id="statEarly">0</div>
                         </div>
-                        <div class="stat-item stat-makeup">
-                            <div class="stat-label">보강</div>
-                            <div class="stat-value" id="statMakeup">0</div>
+                        <div class="stat-item stat-extension">
+                            <div class="stat-label">연장</div>
+                            <div class="stat-value" id="statExtension">0</div>
                         </div>
                     </div>
 

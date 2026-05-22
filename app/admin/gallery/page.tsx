@@ -31,9 +31,93 @@ export default function GalleryPage() {
         setShowAlert(true);
     };
 
+    const [uploading, setUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState('');
+
+    const processUpload = async (files: FileList) => {
+        const imageFiles = Array.from(files).filter(file => file.type.startsWith('image/') || /\.(png|jpe?g|gif|webp)$/i.test(file.name));
+        if (imageFiles.length === 0) {
+            triggerAlert('업로드할 이미지 파일이 없습니다.', 'warning');
+            return;
+        }
+
+        setUploading(true);
+        let successCount = 0;
+        const newUploadedItems: ImageItem[] = [];
+
+        for (let i = 0; i < imageFiles.length; i++) {
+            const file = imageFiles[i];
+            setUploadProgress(`업로드 중... (${i + 1}/${imageFiles.length}): ${file.name}`);
+            
+            try {
+                // 1. Upload file to server
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                const uploadRes = await fetch('/api/admin/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!uploadRes.ok) {
+                    throw new Error('서버 업로드 실패');
+                }
+                
+                const uploadData = await uploadRes.json();
+                if (!uploadData.success || !uploadData.url) {
+                    throw new Error('서버 반환 오류');
+                }
+                
+                // 2. Save image metadata to gallery db
+                const dbRes = await fetch('/api/admin/data/gallery', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: file.name,
+                        url: uploadData.url,
+                        path: uploadData.url.replace(/^\//, '') // strip leading slash
+                    })
+                });
+                
+                if (dbRes.ok) {
+                    const dbData = await dbRes.json();
+                    if (dbData.success && dbData.item) {
+                        newUploadedItems.push(dbData.item);
+                        successCount++;
+                    }
+                }
+            } catch (err) {
+                console.error(`File upload failed: ${file.name}`, err);
+            }
+        }
+
+        if (newUploadedItems.length > 0) {
+            if (images) {
+                mutate([...newUploadedItems, ...images]);
+            } else {
+                mutate(newUploadedItems);
+            }
+        }
+
+        setUploading(false);
+        setUploadProgress('');
+        
+        if (successCount === imageFiles.length) {
+            triggerAlert(`${successCount}개의 이미지가 성공적으로 업로드되었습니다.`, 'success');
+        } else {
+            triggerAlert(`${successCount}개 이미지 업로드 완료 (실패: ${imageFiles.length - successCount}개)`, successCount > 0 ? 'warning' : 'error');
+        }
+    };
+
     const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!e.target.files?.length) return;
-        alert('이미지 업로드 기능은 현재 서버 설정상 제한되어 있습니다. public/data/gallery_data.json 파일을 직접 편집해주세요.');
+        await processUpload(e.target.files);
+        e.target.value = '';
+    };
+
+    const handleFolderUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.files?.length) return;
+        await processUpload(e.target.files);
         e.target.value = '';
     };
 
@@ -91,25 +175,61 @@ export default function GalleryPage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <h1 className="text-2xl font-bold text-gray-800">갤러리 / 이미지 관리</h1>
-                <div className="relative">
-                    <input
-                        type="file"
-                        id="file-upload"
-                        className="hidden"
-                        accept="image/*"
-                        onChange={handleUpload}
-                    />
-                    <label
-                        htmlFor="file-upload"
-                        className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors cursor-pointer"
-                    >
-                        <Upload size={16} />
-                        이미지 업로드
-                    </label>
+                <div className="flex flex-wrap items-center gap-3">
+                    {/* Multi-file upload */}
+                    <div className="relative">
+                        <input
+                            type="file"
+                            id="file-upload"
+                            className="hidden"
+                            accept="image/*"
+                            multiple
+                            onChange={handleUpload}
+                            disabled={uploading}
+                        />
+                        <label
+                            htmlFor="file-upload"
+                            className={`flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors cursor-pointer text-sm font-medium ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                            <Upload size={16} />
+                            파일 다중 업로드
+                        </label>
+                    </div>
+
+                    {/* Folder upload */}
+                    <div className="relative">
+                        <input
+                            type="file"
+                            id="folder-upload"
+                            className="hidden"
+                            {...{ webkitdirectory: "", directory: "" }}
+                            multiple
+                            accept="image/*"
+                            onChange={handleFolderUpload}
+                            disabled={uploading}
+                        />
+                        <label
+                            htmlFor="folder-upload"
+                            className={`flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors cursor-pointer text-sm font-medium ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                            <Upload size={16} />
+                            폴더 업로드
+                        </label>
+                    </div>
                 </div>
             </div>
+
+            {/* Upload progress banner */}
+            {uploading && (
+                <div className="p-4 bg-indigo-50 border border-indigo-100 rounded-xl flex items-center justify-between animate-pulse">
+                    <div className="flex items-center gap-3">
+                        <div className="w-5 h-5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+                        <span className="text-sm font-semibold text-indigo-700">{uploadProgress}</span>
+                    </div>
+                </div>
+            )}
 
             {loading ? (
                 <div className="text-center p-8 text-gray-500">이미지 로딩 중...</div>

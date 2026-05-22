@@ -254,7 +254,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             data_course = data.get('course') or ''
             for i, log in enumerate(logs):
                 log_course = log.get('course') or ''
-                if log['memberId'] == data['memberId'] and log['date'] == data['date'] and log_course == data_course:
+                if str(log['memberId']) == str(data['memberId']) and log['date'] == data['date'] and log_course == data_course:
                     existing_idx = i
                     break
             
@@ -283,40 +283,27 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             data = json.loads(body) # { memberId, dates: [], status }
             
             logs = self._read_json('attendance.json')
-            memberId = data['memberId']
+            memberId_str = str(data['memberId'])
             status = data['status']
             dates = data['dates']
+            course = data.get('course')
+            course_str = course if course else ''
 
-            # Update loop
-            for d in dates:
-                 # Find existing
-                 existing_idx = -1
-                 for i, log in enumerate(logs):
-                     if log['memberId'] == memberId and log['date'] == d:
-                         existing_idx = i
-                         break
-                 
-                 if existing_idx != -1:
-                     if status == 'unchecked':
-                         logs.pop(existing_idx)
-                         # Note: popping changes indices, but since we break inner loop and strict match by value, usually ok?
-                         # Wait, if we pop, we must restart search or be careful? 
-                         # Actually safest is to re-read or list comp.
-                         # But for perf, let's just update in place or mark for deletion?
-                         # Simple Python approach:
-                         pass 
-                     else:
-                         logs[existing_idx]['status'] = status
-                 else:
-                     if status != 'unchecked':
-                         logs.append({'memberId': memberId, 'date': d, 'status': status})
-            
-            # Clean up unchecked if needed (simple robust way: rebuild list)
             if status == 'unchecked':
-                 # If we just popped inside loop, indexing might break.
-                 # Better: filter at start?
-                 # Re-implementation for robustness:
-                 logs = [l for l in logs if not (l['memberId'] == memberId and l['date'] in dates)]
+                logs = [l for l in logs if not (str(l['memberId']) == memberId_str and l['date'] in dates and (l.get('course') or '') == course_str)]
+            else:
+                for d in dates:
+                     existing_idx = -1
+                     for i, log in enumerate(logs):
+                         if str(log['memberId']) == memberId_str and log['date'] == d and (log.get('course') or '') == course_str:
+                             existing_idx = i
+                             break
+                     
+                     if existing_idx != -1:
+                         logs[existing_idx]['status'] = status
+                         logs[existing_idx]['course'] = course
+                     else:
+                         logs.append({'memberId': data['memberId'], 'date': d, 'status': status, 'course': course})
             
             self._write_json('attendance.json', logs)
             
@@ -413,6 +400,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self.send_error(500, str(e))
 
 print(f"Attendance Server running at http://localhost:{PORT}/")
-socketserver.TCPServer.allow_reuse_address = True
-with socketserver.TCPServer(("", PORT), Handler) as httpd:
+socketserver.ThreadingTCPServer.allow_reuse_address = True
+with socketserver.ThreadingTCPServer(("", PORT), Handler) as httpd:
     httpd.serve_forever()
+

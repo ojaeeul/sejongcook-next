@@ -55,6 +55,7 @@ interface BoardItem {
   id: string | number;
   title: string;
   date: string;
+  link?: string;
 }
 
 export default function Home() {
@@ -91,10 +92,10 @@ export default function Home() {
     // Load Q&A Data dynamically
     const fetchDashboardData = async () => {
       const endpoints = [
-        { url: '/data/qna_data.json/', setter: setLatestQna },
-        { url: '/data/notice_data.json/', setter: setNoticeData },
-        { url: '/data/job_openings_data.json/', setter: setJobData },
-        { url: '/api/admin/popups/', setter: setPreviewData }
+        { url: '/data/qna_data.json', setter: setLatestQna },
+        { url: '/data/notice_data.json', setter: setNoticeData },
+        { url: '/data/job_openings_data.json', setter: setJobData },
+        { url: '/data/popups.json', setter: setPreviewData }
       ];
 
       await Promise.allSettled(endpoints.map(async ({ url, setter }) => {
@@ -199,7 +200,7 @@ export default function Home() {
             fontSize: heroData?.longDescSize || '1.2rem',
             fontWeight: heroData?.longDescBold ? '900' : '400' // Keeping 900 for longDesc as it was font-black
           }}>
-            {heroData?.longDesc || "최고의 강사진이 여러분의 꿈을 현실로 만들어드립니다.\n자격증 취득부터 창업까지, 전문가가 함께합니다."}
+            {heroData?.longDesc || "최고의 강사진이 여러분의 꿈을 현실로 만들어드립니다.\n김포요리학원은 자격증, 창업까지, 전문가가 함께합니다."}
           </p>
           <div className="hero-buttons pointer-events-auto">
             <Link href={heroData?.btn1Link || "/course/baking"} className="btn-hero btn-primary" id="hero-btn-primary">
@@ -284,14 +285,14 @@ export default function Home() {
             <div style={{ height: '240px', overflow: 'hidden' }}>
               <ActionCardSlider
                 images={Array.isArray(heroData.photos[0]) ? heroData.photos[0] : []}
-                alt="Academy"
+                alt="김포요리학원 세종요리제과기술학원 학원소개"
                 imgStyle={{ objectPosition: 'left bottom' }}
               />
             </div>
             <div className="card-content">
               <div className="card-icon">🏢</div>
               <h3 className="card-title">학원소개</h3>
-              <p className="card-text">강사진을 갖춘 글로벌 스탠다드 교육 학원입니다.</p>
+              <p className="card-text">김포요리학원 <span className="sr-only">세종요리제과기술학원</span> 최고의 강사진을 갖춘 글로벌 스탠다드 교육 학원입니다.</p>
             </div>
           </Link>
 
@@ -300,13 +301,13 @@ export default function Home() {
             <div style={{ height: '240px', overflow: 'hidden' }}>
               <ActionCardSlider
                 images={Array.isArray(heroData.photos[1]) ? heroData.photos[1] : []}
-                alt="Patisserie"
+                alt="김포제과제빵학원 세종요리제과기술학원 제과제빵과정"
               />
             </div>
             <div className="card-content">
               <div className="card-icon">🥖</div>
               <h3 className="card-title">제과제빵과정</h3>
-              <p className="card-text">제과제빵부터 트렌디한 디저트까지 마스터하는 과정입니다.</p>
+              <p className="card-text">제과제빵부터 트렌디한 디저트까지 마스터하는 김포제과제빵학원의 특화 과정입니다.</p>
             </div>
           </Link>
 
@@ -315,13 +316,13 @@ export default function Home() {
             <div style={{ height: '240px', overflow: 'hidden' }}>
               <ActionCardSlider
                 images={Array.isArray(heroData.photos[2]) ? heroData.photos[2] : []}
-                alt="Culinary"
+                alt="김포요리학원 세종요리제과기술학원 조리교육과정"
               />
             </div>
             <div className="card-content">
               <div className="card-icon">🍳</div>
               <h3 className="card-title">조리교육과정</h3>
-              <p className="card-text">한식, 양식, 중식, 일식. 기능사 및 가정요리, 브런치 전문 조리 테크닉을 전수합니다.</p>
+              <p className="card-text">한식, 양식, 중식, 일식 기능사 및 가정요리 등 김포요리학원만의 조리 테크닉을 전수합니다.</p>
             </div>
           </Link>
 
@@ -330,13 +331,13 @@ export default function Home() {
             <div style={{ height: '240px', overflow: 'hidden' }}>
               <ActionCardSlider
                 images={Array.isArray(heroData.photos[3]) ? heroData.photos[3] : []}
-                alt="Certification"
+                alt="김포요리학원 국가기술자격증 및 진학"
               />
             </div>
             <div className="card-content">
               <div className="card-icon">📜</div>
               <h3 className="card-title">자격증 & 진학</h3>
-              <p className="card-text">국가기술자격증 및 해외 유학, 진학을 위한 체계적인 솔루션.</p>
+              <p className="card-text">국가기술자격증 취득 및 전문 진학을 책임지는 김포요리학원만의 <span className="sr-only">세종요리제과기술학원</span> 체계적인 솔루션을 만나보세요.</p>
             </div>
           </Link>
 
@@ -345,13 +346,13 @@ export default function Home() {
             <div style={{ height: '240px', overflow: 'hidden' }}>
               <ActionCardSlider
                 images={Array.isArray(heroData.photos[4]) ? heroData.photos[4] : []}
-                alt="Career"
+                alt="김포요리학원 브런치 창업 실무"
               />
             </div>
             <div className="card-content">
               <div className="card-icon">🤝</div>
               <h3 className="card-title">브런치 & 창업</h3>
-              <p className="card-text">레스토랑 취업/창업 연계 프로그램.</p>
+              <p className="card-text">성공적인 취업 및 창업 연계를 위한 김포요리학원 실무 중심 프로그램.</p>
             </div>
           </Link>
 
@@ -360,13 +361,13 @@ export default function Home() {
             <div style={{ height: '240px', overflow: 'hidden' }}>
               <ActionCardSlider
                 images={Array.isArray(heroData.photos[5]) ? heroData.photos[5] : []}
-                alt="Community"
+                alt="세종요리제과기술학원 커뮤니티"
               />
             </div>
             <div className="card-content">
               <div className="card-icon">💬</div>
               <h3 className="card-title">커뮤니티</h3>
-              <p className="card-text">수료생 네트워크, 창업 정보 공유 등 활발한 소통의 장.</p>
+              <p className="card-text">수료생 네트워크 및 정보 공유가 이루어지는 세종요리제과기술학원만의 활발한 소통의 장.</p>
             </div>
           </Link>
         </div>
@@ -397,7 +398,7 @@ export default function Home() {
         <div style={{ position: 'relative', zIndex: 1, maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
           <div style={{ textAlign: 'center', marginBottom: '50px' }}>
             <h2 style={{ fontSize: '2.5rem', fontWeight: 800, color: '#1a1a1a', marginBottom: '15px' }}>새로운 소식</h2>
-            <p style={{ fontSize: '1.1rem', color: '#666' }}>세종요리제과기술학원의 새로운 소식입니다.</p>
+            <p style={{ fontSize: '1.1rem', color: '#666' }}>김포요리학원 세종요리제과기술학원의 새로운 소식입니다.</p>
           </div>
 
           <div className="updates-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', minHeight: '300px' }}>
@@ -452,6 +453,26 @@ export default function Home() {
                     <span className="text-xs text-gray-400 ml-2 whitespace-nowrap">{item.date}</span>
                   </li>
                 ))}
+              </ul>
+            </div>
+            {/* Preview (Popups) */}
+            <div className="update-column" style={{ background: '#fff', padding: '30px', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
+              <div className="column-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #f5a623', paddingBottom: '15px', marginBottom: '20px' }}>
+                <h3 style={{ fontSize: '1.3rem', fontWeight: 700, margin: 0 }}>미리보기</h3>
+                <Link href="/" className="more-link" style={{ color: '#f5a623', fontSize: '0.9rem', fontWeight: 600 }}>전체보기</Link>
+              </div>
+              <ul className="latest-list space-y-3">
+                {previewData.slice(0, 5).map(item => (
+                  <li key={item.id} className="flex justify-between items-center group cursor-pointer" style={{ borderBottom: '1px solid #f0f0f0', paddingBottom: '10px' }}>
+                    <Link href={item.link || '#'} className="text-gray-700 hover:text-[#f5a623] transition-colors truncate flex-1 text-sm font-medium block">
+                      {item.title}
+                    </Link>
+                    <span className="text-xs text-gray-400 ml-2 whitespace-nowrap">{item.date}</span>
+                  </li>
+                ))}
+                {previewData.length === 0 && (
+                  <li className="text-gray-400 text-sm italic py-2">활성 팝업이 없습니다.</li>
+                )}
               </ul>
             </div>
 

@@ -3,7 +3,7 @@ const API_BASE = window.location.hostname === 'localhost' || window.location.hos
 let allMembers = [];
 let groupedCourses = {};
 let activeCourse = '';
-let currentDate = new Date().toISOString().split('T')[0];
+let currentDate = sessionStorage.getItem('sejong_daily_date') || new Date().toISOString().split('T')[0];
 
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('attendanceDate').value = currentDate;
@@ -14,7 +14,9 @@ document.addEventListener('DOMContentLoaded', () => {
             currentDate = new Date().toISOString().split('T')[0];
             e.target.value = currentDate;
         }
-        renderAttendanceTbody();
+        sessionStorage.setItem('sejong_daily_date', currentDate);
+        currentAttendanceState = {};
+        fetchAttendance();
     });
 
     document.getElementById('includeInactive').addEventListener('change', renderCourseList);
@@ -27,8 +29,8 @@ let attendanceData = [];
 async function fetchMembers() {
     try {
         const [resMembers, resAttendance] = await Promise.all([
-            fetch(`${API_BASE}/members`),
-            fetch(`${API_BASE}/attendance?date=${currentDate}`)
+            fetch(`${API_BASE}/members?t=${Date.now()}`),
+            fetch(`${API_BASE}/attendance?date=${currentDate}&t=${Date.now()}`)
         ]);
         allMembers = await resMembers.json();
         attendanceData = await resAttendance.json();
@@ -41,7 +43,7 @@ async function fetchMembers() {
 
 async function fetchAttendance() {
     try {
-        const res = await fetch(`${API_BASE}/attendance?date=${currentDate}`);
+        const res = await fetch(`${API_BASE}/attendance?date=${currentDate}&t=${Date.now()}`);
         attendanceData = await res.json();
         renderAttendanceTbody();
     } catch (err) {
@@ -93,9 +95,12 @@ function renderCourseList() {
         cDiv.innerHTML = `<span>${cName}</span><i class="material-icons" style="font-size:1rem;">chevron_right</i>`;
 
         cDiv.onclick = () => {
-            activeCourse = cName;
-            renderCourseList(); // Re-render to update active styling
-            renderAttendanceTbody(); // Re-render table
+            if (activeCourse !== cName) {
+                activeCourse = cName;
+                currentAttendanceState = {}; // Clear state when switching tabs
+                renderCourseList(); // Re-render to update active styling
+                renderAttendanceTbody(); // Re-render table
+            }
         };
 
         listDiv.appendChild(cDiv);
@@ -146,8 +151,25 @@ function renderAttendanceTbody() {
     // Initialize from DB or preserve local changes
     membersToRender.forEach(m => {
         if (currentAttendanceState[m.id] === undefined) {
-            const dbRecord = attendanceData.find(a => String(a.memberId) === String(m.id) && a.course === activeCourse);
-            currentAttendanceState[m.id] = dbRecord ? dbRecord.status : null; // null means 'unset'
+            const dbRecord = attendanceData.find(a => {
+                if (String(a.memberId) !== String(m.id)) return false;
+                if (!a.course) return true; // Global logs are always included
+                const aCourseClean = a.course.replace(/\([^)]*\)/g, '').trim();
+                const activeCourseClean = activeCourse.replace(/\([^)]*\)/g, '').trim();
+                const aCoursesList = aCourseClean.split(',').map(c => c.trim());
+                return aCoursesList.includes(activeCourseClean);
+            });
+            let st = dbRecord ? dbRecord.status : null; // null means 'unset'
+            
+            if (st) {
+                if (['10', '12', '2', '3', '5', '7', '9', 10, 12, 2, 3, 5, 7, 9, '출석', 'present'].includes(st) || (typeof st === 'string' && st.includes('출석'))) st = 'present';
+                else if (st === 'X' || st === '결석' || st === 'absent' || (typeof st === 'string' && (st.startsWith('X') || st.includes('결석')))) st = 'absent';
+                else if (st === '연' || st === 'extension' || (typeof st === 'string' && st.includes('연장'))) st = 'extension';
+                else if (st === '지각' || st === 'late') st = 'late';
+                else if (st === '조퇴' || st === 'early') st = 'early';
+            }
+            
+            currentAttendanceState[m.id] = st;
         }
     });
 
@@ -173,7 +195,7 @@ function renderAttendanceTbody() {
                 <button class="status-btn ${st === 'absent' ? 'active' : ''}" data-type="absent" onclick="setStatus(${m.id}, 'absent', this)">결석</button>
                 <button class="status-btn ${st === 'late' ? 'active' : ''}" data-type="late" onclick="setStatus(${m.id}, 'late', this)">지각</button>
                 <button class="status-btn ${st === 'early' ? 'active' : ''}" data-type="early" onclick="setStatus(${m.id}, 'early', this)">조퇴</button>
-                <button class="status-btn ${st === 'makeup' ? 'active' : ''}" data-type="makeup" onclick="setStatus(${m.id}, 'makeup', this)">보강</button>
+                <button class="status-btn ${st === 'extension' ? 'active' : ''}" data-type="extension" onclick="setStatus(${m.id}, 'extension', this)">연장</button>
             </div>
         `;
 
@@ -185,20 +207,49 @@ function renderAttendanceTbody() {
     updateStats();
 }
 
-// Ensure the functions are available globally for onclick attributes
-window.setStatus = function (memberId, statusType, btnElement) {
+window.setStatus = async function (memberId, statusType, btnElement) {
     const tr = btnElement.closest('tr');
     tr.querySelectorAll('.status-btn').forEach(b => b.classList.remove('active'));
 
     // If clicking the already active button, toggle it off (set to null)
+    let finalStatus = statusType;
     if (currentAttendanceState[memberId] === statusType) {
         currentAttendanceState[memberId] = null;
+        finalStatus = 'unchecked';
     } else {
         btnElement.classList.add('active');
         currentAttendanceState[memberId] = statusType;
     }
 
     updateStats();
+
+    // Auto-save silently in the background
+    try {
+        await fetch(`${API_BASE}/attendance`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                memberId: memberId,
+                date: currentDate,
+                status: finalStatus,
+                course: activeCourse
+            })
+        });
+
+        // Update local array so it survives re-renders
+        const idx = attendanceData.findIndex(a => String(a.memberId) === String(memberId) && (a.course === activeCourse || (!a.course && !activeCourse)));
+        if (idx > -1) {
+            if (finalStatus === 'unchecked') attendanceData.splice(idx, 1);
+            else attendanceData[idx].status = finalStatus;
+        } else {
+            if (finalStatus !== 'unchecked') attendanceData.push({ memberId: memberId, date: currentDate, status: finalStatus, course: finalCourse });
+        }
+
+        // Notify Monthly sheet to sync automatically
+        localStorage.setItem('sejong_attendance_sync', Date.now().toString());
+    } catch (err) {
+        console.error('Failed auto-save:', err);
+    }
 };
 
 window.changeDate = function (offset) {
@@ -206,6 +257,7 @@ window.changeDate = function (offset) {
     d.setDate(d.getDate() + offset);
     currentDate = d.toISOString().split('T')[0];
     document.getElementById('attendanceDate').value = currentDate;
+    sessionStorage.setItem('sejong_daily_date', currentDate);
 
     // Clear temporary state on date change and fetch DB
     currentAttendanceState = {};
@@ -233,7 +285,7 @@ window.markAllPresent = function () {
 };
 
 function updateStats() {
-    const stats = { present: 0, absent: 0, late: 0, early: 0, makeup: 0 };
+    const stats = { present: 0, absent: 0, late: 0, early: 0, extension: 0 };
 
     if (activeCourse && groupedCourses[activeCourse]) {
         let membersToRender = groupedCourses[activeCourse];
@@ -254,7 +306,7 @@ function updateStats() {
     document.getElementById('statAbsent').textContent = stats.absent;
     document.getElementById('statLate').textContent = stats.late;
     document.getElementById('statEarly').textContent = stats.early;
-    document.getElementById('statMakeup').textContent = stats.makeup;
+    document.getElementById('statExtension').textContent = stats.extension;
 }
 
 window.saveDailyAttendance = async function () {

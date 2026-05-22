@@ -3,14 +3,8 @@ const API_BASE = window.location.hostname === 'localhost' || window.location.hos
 
 
 
-// Control Test: Fetch a static file to check server reachability
-fetch(`${window.location.origin}/sejong/questions_data.js?v=${Date.now()}`)
-    .then(res => {
+// Control Test removed (caused redundant 404 requests)
 
-    })
-    .catch(err => {
-
-    });
 
 // Daum Postcode Search Function
 function execDaumPostcode(targetId, detailId) {
@@ -1704,6 +1698,10 @@ function renderMembers() {
                 { val: 'hold', text: '보류' },
                 { val: 'trash', text: '휴지통' }
             ];
+            
+            if (status === 'trash' || currentFilter === 'trash') {
+                statuses.push({ val: 'delete', text: '영구삭제' });
+            }
 
             const optionsHtml = statuses.map(s =>
                 `<option value="${s.val}" ${status === s.val ? 'selected' : ''}>${s.text}</option>`

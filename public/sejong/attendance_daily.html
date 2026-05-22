@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="attendance_daily.js?v=20260302_1" defer></script>
+    <script src="attendance_daily.js?v=3" defer></script>
     <style>
         .daily-container {
             display: flex;
@@ -226,8 +226,11 @@
         .stat-makeup {
             color: #d946ef;
         }
-
         /* 보강: 보라 */
+        .stat-extension {
+            color: #d97706;
+        }
+        /* 연장: 주황/갈색 */
 
         /* Main Table */
         .table-container {
@@ -313,9 +316,9 @@
         }
 
         .status-btn.active[data-type="absent"] {
-            background: #ef4444;
+            background: #000000;
             color: white;
-            border-color: #ef4444;
+            border-color: #000000;
         }
 
         .status-btn.active[data-type="late"] {
@@ -336,6 +339,12 @@
             border-color: #d946ef;
         }
 
+        .status-btn.active[data-type="extension"] {
+            background: #d97706;
+            color: white;
+            border-color: #d97706;
+        }
+
         /* Footer Bar */
         .footer-action-bar {
             background: white;
@@ -350,6 +359,106 @@
             position: sticky;
             bottom: 0;
             box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        @media print {
+            @page {
+                size: portrait;
+                margin: 10mm;
+            }
+
+            body {
+                background: white;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            /* Hide Sidebar and UI */
+            .sidebar, .sidebar-overlay, .top-action-bar, .stats-box, .edit-btn, .footer-action-bar, .daily-panel-left, .hamburger-btn {
+                display: none !important;
+            }
+
+            .app-container, .main-wrapper, .daily-container, .daily-panel-main {
+                display: block !important;
+                width: 100% !important;
+                height: auto !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                overflow: visible !important;
+            }
+
+            .daily-panel-main {
+                gap: 0 !important;
+            }
+
+            .top-header {
+                padding: 0 !important;
+                margin-bottom: 10px !important;
+                justify-content: center !important;
+            }
+
+            .page-title-text {
+                font-size: 24pt !important;
+                font-weight: 900 !important;
+                color: black !important;
+            }
+
+            .table-container {
+                border: none !important;
+                box-shadow: none !important;
+                overflow: visible !important;
+            }
+
+            table {
+                width: 100% !important;
+                border-collapse: collapse !important;
+                border: 2px solid #000 !important;
+            }
+
+            th {
+                background: #f1f5f9 !important;
+                color: black !important;
+                border: 1px solid #000 !important;
+                font-size: 14pt !important;
+                padding: 15px !important;
+            }
+
+            td {
+                border: 1px solid #000 !important;
+                padding: 12px 15px !important;
+                font-size: 12pt !important;
+                color: black !important;
+            }
+
+            .student-cell span {
+                font-size: 14pt !important;
+                font-weight: 900 !important;
+            }
+
+            /* Modify Buttons to look like text in print */
+            .status-btn {
+                border: 1px solid #ccc !important;
+                background: white !important;
+                color: #ccc !important;
+                padding: 5px 10px !important;
+                font-size: 10pt !important;
+                flex: none !important;
+                width: 60px !important;
+            }
+
+            .status-btn.active {
+                border: 2px solid #000 !important;
+                color: #000 !important;
+                font-weight: 900 !important;
+                background-color: #f1f5f9 !important;
+            }
+
+            .status-btn.active[data-type="present"]::after { content: " (출석)"; }
+            .status-btn.active[data-type="absent"]::after { content: " (결석)"; }
+            .status-btn.active[data-type="late"]::after { content: " (지각)"; }
+            .status-btn.active[data-type="early"]::after { content: " (조퇴)"; }
+            .status-btn.active[data-type="makeup"]::after { content: " (보강)"; }
+            .status-btn.active[data-type="extension"]::after { content: " (연장)"; }
         }
     </style>
 </head>
@@ -565,9 +674,9 @@
                             <div class="stat-label">조퇴</div>
                             <div class="stat-value" id="statEarly">0</div>
                         </div>
-                        <div class="stat-item stat-makeup">
-                            <div class="stat-label">보강</div>
-                            <div class="stat-value" id="statMakeup">0</div>
+                        <div class="stat-item stat-extension">
+                            <div class="stat-label">연장</div>
+                            <div class="stat-value" id="statExtension">0</div>
                         </div>
                     </div>
 

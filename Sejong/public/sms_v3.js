@@ -330,8 +330,8 @@ function getMemberScheduledDate(memberId, courseFilter) {
         let vRaw = Math.round(val * 10);
         const isDual = (courseFilter && courseFilter.includes('제과제빵'));
         if (isDual) {
-            if (vRaw < 85) return 0;
-            return Math.floor((vRaw - 85) / 85) + 1;
+            if (vRaw < 170) return 0;
+            return Math.floor((vRaw - 170) / 160) + 1;
         } else {
             if (vRaw < 90) return 0;
             return Math.floor((vRaw - 90) / 80) + 1;
@@ -376,7 +376,7 @@ function getMemberScheduledDate(memberId, courseFilter) {
         }
 
         const courseToCheck = courseFilter || r.course || '';
-        const inc = courseToCheck.includes('제과제빵') ? 0.5 : 1.0;
+        const inc = courseToCheck.includes('제과제빵') ? 1.0 : 1.0;
         const isMarker = ['[', ']'].includes(r.status);
         const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(String(r.status));
         const isAbsent = r.status === 'absent' || (typeof r.status === 'string' && r.status.startsWith('X'));
@@ -1598,8 +1598,8 @@ function getMemberAllMilestones(memberId, courseFilter) {
         let vRaw = Math.round(val * 10);
         const isDual = (courseFilter && courseFilter.includes('제과제빵'));
         if (isDual) {
-            if (vRaw < 85) return 0;
-            return Math.floor((vRaw - 85) / 85) + 1;
+            if (vRaw < 170) return 0;
+            return Math.floor((vRaw - 170) / 160) + 1;
         } else {
             if (vRaw < 90) return 0;
             return Math.floor((vRaw - 90) / 80) + 1;
@@ -1629,7 +1629,7 @@ function getMemberAllMilestones(memberId, courseFilter) {
         }
 
         const courseToCheck = courseFilter || r.course || '';
-        const inc = courseToCheck.replace(/\s/g, '').includes('제과제빵') ? 0.5 : 1.0;
+        const inc = courseToCheck.replace(/\s/g, '').includes('제과제빵') ? 1.0 : 1.0;
         const isMarker = ['[', ']'].includes(r.status);
         const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(String(r.status));
         const isAbsent = r.status === 'absent' || (typeof r.status === 'string' && r.status.startsWith('X'));
@@ -1660,7 +1660,7 @@ function getMemberAllMilestones(memberId, courseFilter) {
 
         while (simDate <= limitDate) {
             const courseToCheck = courseFilter || 'all';
-            const inc = courseToCheck.includes('제과제빵') ? 0.5 : 1.0;
+            const inc = courseToCheck.includes('제과제빵') ? 1.0 : 1.0;
 
             const dateStr = simDate.toISOString().split('T')[0];
             const dayOfWeek = simDate.getDay();

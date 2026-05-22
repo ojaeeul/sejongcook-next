@@ -8,7 +8,7 @@ export const DEFAULT_HERO_DATA = {
     desc: "꿈을 향한 맛있는 도전",
     descSize: "0.6em",     // Default relative size
     descBold: false,       // Default normal (from current code 500/400 mix logic, but explicit setting is better)
-    longDesc: "최고의 강사진이 여러분의 꿈을 현실로 만들어드립니다.\n자격증 취득부터 창업까지, 전문가가 함께합니다.",
+    longDesc: "최고의 강사진이 여러분의 꿈을 현실로 만들어드립니다.\n김포요리학원은 자격증, 창업까지, 전문가가 함께합니다.",
     longDescSize: "1.2rem", // Default size
     longDescBold: true,     // Default bold (current is font-black/900)
     photos: [

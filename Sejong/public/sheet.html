@@ -1568,8 +1568,8 @@
 
         // --- [신규 기믹] 수강료 납부대장의 '예정일' 사전 계산 로직 (sheet.html 이식) ---
         function getSheetSimulatedScheduledDate(memberId, year, month, courseFilter = null) {
-            if (!window.attendanceData) return { scheduledDay: null, isSimulated: false, hasAnyAttendance: false };
-            let memberRecords = window.attendanceData.filter(a => String(a.memberId) === String(memberId));
+            if (!attendanceData) return { scheduledDays: [], isSimulated: false, hasAnyAttendance: false };
+            let memberRecords = attendanceData.filter(a => String(a.memberId) === String(memberId));
 
             // 객체화 보정 (sheet.js 용)
             memberRecords.forEach(a => {
@@ -1587,7 +1587,7 @@
                 const dayOfWeek = r.dateObj.getDay();
                 return !(isHolidayInSys || isNationalHoliday || dayOfWeek === 0);
             });
-            let eighthDay = null;
+            let scheduledDays = [];
             let isSimulated = false;
             let rollingTotal = 0;
             // [데이터 보정] GLOBAL_DATA_ADJUSTMENTS 반영
@@ -1605,7 +1605,7 @@
 
 
             const isDualBakery = (courseFilter && courseFilter.replace(/\s/g, '').includes('제과제빵'));
-            const incAmount = isDualBakery ? 0.5 : 1.0;
+            const incAmount = isDualBakery ? 1.0 : 1.0;
             let lastRecordDate = null;
             let hitTargetInMonth = false;
             let hasAnyAttendance = false;
@@ -1613,8 +1613,8 @@
             const getCycle = (val) => {
                 let vRaw = Math.round(val * 10);
                 if (isDualBakery) {
-                    if (vRaw < 85) return 0; // 8.5=1, 17.0=2...
-                    return Math.floor((vRaw - 85) / 85) + 1;
+                    if (vRaw < 170) return 0; // 17.0=1
+                    return Math.floor((vRaw - 170) / 160) + 1; // 16.0=next cycle
                 } else {
                     if (vRaw < 90) return 0; // 9.0=1, 17.0=2...
                     return Math.floor((vRaw - 90) / 80) + 1;
@@ -1639,7 +1639,6 @@
                     const isMarker = ['[', ']'].includes(r.status);
                     const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(r.status);
                     const isAbsent = r.status === 'absent' || (typeof r.status === 'string' && r.status.startsWith('X'));
-                    const isExtension = r.status === 'extension' || (typeof r.status === 'string' && (r.status.startsWith('연') || r.status.includes('연장') || r.status.startsWith('E')));
                     const isRegular = r.status === 'present' || isNumericPresent || isAbsent;
 
                     if (isMarker || isRegular) {
@@ -1653,7 +1652,6 @@
                     const isMarker = ['[', ']'].includes(r.status);
                     const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(r.status);
                     const isAbsent = r.status === 'absent' || (typeof r.status === 'string' && r.status.startsWith('X'));
-                    const isExtension = r.status === 'extension' || (typeof r.status === 'string' && (r.status.startsWith('연') || r.status.includes('연장') || r.status.startsWith('E')));
                     const isRegular = r.status === 'present' || isNumericPresent || isAbsent;
 
                     const prevNet = rollingTotal;
@@ -1667,8 +1665,10 @@
 
                         let prevCycle = getCycle(prevNet);
                         let currCycle = getCycle(currNet);
-                        if (currCycle > prevCycle || r.status === '9' || r.status === 9) {
-                            eighthDay = r.dateObj.getDate();
+                        const dateStr = r.date.includes('T') ? r.date.split('T')[0] : r.date;
+                        const isForced = adj && adj.forceRedBoxDates && adj.forceRedBoxDates.includes(dateStr);
+                        if (currCycle > prevCycle || r.status === '9' || r.status === 9 || isForced) {
+                            scheduledDays.push(r.dateObj.getDate());
                             hitTargetInMonth = true;
                         }
                     }
@@ -1706,7 +1706,7 @@
                     let isValidDay = false;
                     if (courseFilter) {
                         const cleanFilter = courseFilter.replace(/\([^)]*\)/g, '').trim();
-                        const schedule = COURSE_SCHEDULES[cleanFilter];
+                        const schedule = timetableData[cleanFilter];
                         if (schedule) {
                             if (schedule.includes(dayOfWeek)) isValidDay = true;
                         } else {
@@ -1737,16 +1737,13 @@
                 }
 
                 if (foundSimulatedDay) {
-                    eighthDay = foundSimulatedDay;
-                    isSimulated = true;
+                    // [사용자 요청] 예정날자가 지정(실제 도달) 안되어 있으면 숨김으로 처리
+                    // scheduledDays.push(foundSimulatedDay);
+                    // isSimulated = true;
                 }
             }
 
-            if (!hasAnyAttendance) {
-                eighthDay = null;
-            }
-
-            return { scheduledDay: eighthDay, isSimulated: isSimulated, hasAnyAttendance: hasAnyAttendance };
+            return { scheduledDays: scheduledDays, isSimulated: isSimulated, hasAnyAttendance: hasAnyAttendance };
         }
 
         async function initSheet() {
@@ -1809,6 +1806,7 @@
             const res = await fetch(`${SHEET_API_BASE}/attendance?t=${Date.now()}`);
             if (!res.ok) throw new Error('Attendance fetch failed: ' + res.status);
             attendanceData = await res.json();
+            window.attendanceData = attendanceData;
         }
 
         async function fetchHolidays() {
@@ -2039,7 +2037,7 @@
                         // 당월 예정일 계산
                         const stats = getSheetSimulatedScheduledDate(m.id, currentYear, currentMonth, rowCourseNameScope);
                         const syncKeyNow = `${m.id}_${currentYear}_${currentMonth}_${rowCourseNameScope || 'all'}`;
-                        window.ledgerSyncData[syncKeyNow] = stats.scheduledDay;
+                        window.ledgerSyncData[syncKeyNow] = stats.scheduledDays;
 
                         // 익월 예정일 미리 계산
                         const nextDate = new Date(currentYear, currentMonth, 1);
@@ -2047,7 +2045,7 @@
                         const nMonth = nextDate.getMonth() + 1;
                         const nextStats = getSheetSimulatedScheduledDate(m.id, nYear, nMonth, rowCourseNameScope);
                         const syncKeyNext = `${m.id}_${nYear}_${nMonth}_${rowCourseNameScope || 'all'}`;
-                        window.ledgerSyncData[syncKeyNext] = nextStats.scheduledDay;
+                        window.ledgerSyncData[syncKeyNext] = nextStats.scheduledDays;
                     }
                 });
                 localStorage.setItem('sejong_ledger_sync', JSON.stringify(window.ledgerSyncData));
@@ -2103,7 +2101,7 @@
                     var isDualCourse = false; // Use var for broader function scope visibility
                     if (m) {
                         isDualCourse = rowCourseNameScope && rowCourseNameScope.replace(/\s/g, '').includes('제과제빵');
-                        const attendanceIncrement = isDualCourse ? 0.5 : 1;
+                        const attendanceIncrement = isDualCourse ? 1.0 : 1;
 
                         const rowLogsRaw = attendanceData.filter(l => {
                             if (String(l.memberId) !== String(m.id)) return false;
@@ -2275,8 +2273,8 @@
                             const getCycle = (val) => {
                                 let vRaw = Math.round(val * 10);
                                 if (isDualCourse) {
-                                    if (vRaw < 85) return 0;
-                                    return Math.floor((vRaw - 85) / 85) + 1;
+                                    if (vRaw < 170) return 0;
+                                    return Math.floor((vRaw - 170) / 160) + 1;
                                 } else {
                                     if (vRaw < 90) return 0;
                                     return Math.floor((vRaw - 90) / 80) + 1;
@@ -2338,12 +2336,12 @@
                             }
                             if (cyclesThisMonth > 0 || hasManualRedBox) {
                                 let actualCycle = endCycle > 0 ? endCycle : (hasManualRedBox ? 1 : 0);
-                                displayMakeup = Math.round((actualCycle * (isDualCourse ? 8.5 : 8.0)) * 10) / 10;
+                                displayMakeup = Math.round((actualCycle * (isDualCourse ? 16.0 : 8.0)) * 10) / 10;
                                 // 총 출석(P) = 총 누적(Gross) - 재고(J) (연장 무시 로직 적용)
                                 displayP = Math.round((runningTotal - displayMakeup) * 10) / 10;
                             } else {
                                 let startCycleValue = startCycle;
-                                let baseStock = startCycleValue > 0 ? (startCycleValue * (isDualCourse ? 8.5 : 8.0)) : 0;
+                                let baseStock = startCycleValue > 0 ? (startCycleValue * (isDualCourse ? 16.0 : 8.0)) : 0;
                                 displayMakeup = 0;
                                 // 평상시 출석표시 (연장 무시 로직 적용)
                                 displayP = Math.round((runningTotal - baseStock) * 10) / 10;
@@ -2352,14 +2350,16 @@
                     }
 
                     // [동기화 데이터 활용] 위에서 계산된 전체 동기화 데이터에서 가져오기
-                    let syncScheduledDay = null;
+                    let syncScheduledDays = [];
                     if (m && m.id) {
                         const syncKeyNow = `${m.id}_${currentYear}_${currentMonth}_${rowCourseNameScope || 'all'}`;
-                        syncScheduledDay = window.ledgerSyncData[syncKeyNow];
+                        const rawSync = window.ledgerSyncData[syncKeyNow];
+                        if (Array.isArray(rawSync)) {
+                            syncScheduledDays = rawSync;
+                        } else if (typeof rawSync === 'number') {
+                            syncScheduledDays = [rawSync];
+                        }
                     }
-
-
-                    let simScheduledDay = typeof syncScheduledDay !== 'undefined' ? syncScheduledDay : null; // UI 표시를 위해 변수명 유지
 
 
 
@@ -2480,7 +2480,7 @@
                                 };
 
                                 // [신규] 납부대장(ledger)의 예정날짜 동기화 및 표시
-                                if (redBoxDates.has(dateStr) || i === simScheduledDay) {
+                                if (redBoxDates.has(dateStr) || syncScheduledDays.includes(i)) {
                                     td.style.border = '3px solid red';
                                     td.style.boxShadow = '0 0 5px rgba(255, 0, 0, 0.5)';
 
@@ -2531,9 +2531,10 @@
                         if (m && displayVal !== '') {
                             let formattedVal = (displayVal % 1 === 0 ? displayVal : displayVal.toFixed(1));
 
-                            const maxJ = isDualCourse ? 8.5 : 8.0;
-                            if (idx === 0 && displayVal >= maxJ) {
-                                td.textContent = (displayVal % 1 === 0 ? displayVal : displayVal.toFixed(1)); 
+                            const maxJ = isDualCourse ? 16.0 : 8.0;
+                            if (idx === 0 && displayVal > maxJ) {
+                                const multiple = Math.round(displayVal / maxJ);
+                                td.innerHTML = `${maxJ}<sup>${multiple}</sup>`;
                             } else {
                                 td.textContent = formattedVal;
                             }
@@ -2662,6 +2663,7 @@
             if (status && status !== 'unchecked') {
                 attendanceData.push({ memberId, date: dateStr, status: status, course: course });
             }
+            window.attendanceData = attendanceData;
 
             // Re-render immediately
             renderSheet();
@@ -2795,6 +2797,7 @@
                     }
                 });
             }
+            window.attendanceData = attendanceData;
             renderSheet(); // Re-render first to show arrow
 
             // Send to server
@@ -3096,8 +3099,6 @@
             }
         });
     </script>
-
-    <script src="questions_data.js" defer></script>
 </body>
 
 </html>

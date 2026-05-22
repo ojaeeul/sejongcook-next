@@ -24,6 +24,8 @@ copy /y "%ROOT_DIR%Sejong\SejongAttendance\public\ledger.js" "%ROOT_DIR%Sejong\p
 copy /y "%ROOT_DIR%Sejong\SejongAttendance\public\ledger.js" "%ROOT_DIR%public\sejong\ledger.js"
 copy /y "%ROOT_DIR%Sejong\SejongAttendance\public\tuition_v3.js" "%ROOT_DIR%Sejong\public\tuition_v3.js"
 copy /y "%ROOT_DIR%Sejong\SejongAttendance\public\tuition_v3.js" "%ROOT_DIR%public\sejong\tuition_v3.js"
+copy /y "%ROOT_DIR%Sejong\SejongAttendance\public\tuition.html" "%ROOT_DIR%Sejong\public\tuition.html"
+copy /y "%ROOT_DIR%Sejong\SejongAttendance\public\tuition.html" "%ROOT_DIR%public\sejong\tuition.html"
 copy /y "%ROOT_DIR%Sejong\SejongAttendance\public\phonebook.html" "%ROOT_DIR%Sejong\public\phonebook.html"
 copy /y "%ROOT_DIR%Sejong\SejongAttendance\public\phonebook.html" "%ROOT_DIR%public\sejong\phonebook.html"
 copy /y "%ROOT_DIR%Sejong\SejongAttendance\public\phonebook.js" "%ROOT_DIR%Sejong\public\phonebook.js"

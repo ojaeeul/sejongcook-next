@@ -45,6 +45,10 @@ export default function Footer() {
                         <br />
                         TEL. {data.tel} &nbsp; FAX. {data.fax} &nbsp; 이메일 : {data.email} &nbsp; 사업자 등록번호 : {data.bizNum}
                     </p>
+                    <p style={{ fontSize: '12px', color: '#888', marginTop: '10px', marginBottom: '10px', lineHeight: '1.6' }}>
+                        <strong>세종요리제과기술학원</strong>은 경기 김포 지역을 대표하는 <strong>김포요리학원</strong>이자 <strong>김포제과제빵학원</strong>으로서, 실무 중심의 맞춤형 교육을 제공합니다. 
+                        국비지원 과정, 한식·양식·일식·중식 조리기능사, 제과기능사 및 제빵기능사 자격증 취득은 물론, 원데이클래스(쿠킹클래스)와 바리스타 교육까지 최고의 강사진이 여러분의 성공적인 진학과 취업, 창업을 돕습니다.
+                    </p>
                     <p className="footer-copyright" id="footer-copyright" style={{ fontSize: '13px', color: '#666', marginTop: '5px' }}>
                         {data.copyright}
                         <a href="/login" className="text-gray-300 hover:text-gray-500 transition-colors inline-block ml-2 align-middle" title="관리자 로그인">

@@ -403,8 +403,8 @@ function getMemberEighthDayInMonth(memberId, year, month, courseFilter = null) {
     const getCycle = (val, isDual) => {
         let vRaw = Math.round(val * 10);
         if (isDual) {
-            if (vRaw < 85) return 0;
-            return Math.floor((vRaw - 85) / 85) + 1;
+            if (vRaw < 170) return 0;
+            return Math.floor((vRaw - 170) / 160) + 1;
         } else {
             if (vRaw < 90) return 0;
             return Math.floor((vRaw - 90) / 80) + 1;
@@ -414,7 +414,7 @@ function getMemberEighthDayInMonth(memberId, year, month, courseFilter = null) {
     // [신규] 시뮬레이션에서도 동일한 증가분 적용을 위해 최상단에서 정의
     const memberObj = (window.membersData || []).find(m => String(m.id) === String(memberId));
     const isDualBakery = (courseFilter && courseFilter.replace(/\s/g, '').includes('제과제빵')) || (memberObj && memberObj.course && memberObj.course.replace(/\s/g, '').includes('제과제빵'));
-    const incAmountVal = isDualBakery ? 0.5 : 1.0;
+    const incAmountVal = isDualBakery ? 1.0 : 1.0;
 
     for (const r of memberRecords) {
         if (r.yearNum < startYear || (r.yearNum === startYear && r.monthNum < startMonth)) continue;
@@ -430,6 +430,7 @@ function getMemberEighthDayInMonth(memberId, year, month, courseFilter = null) {
 
         const isMarker = ['[', ']'].includes(r.status);
         const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(String(r.status));
+        const isAbsent = r.status === 'absent' || (typeof r.status === 'string' && r.status.startsWith('X'));
         const isRegular = r.status === 'present' || isNumericPresent || isAbsent;
 
         const prevNet = rollingTotal;
@@ -505,8 +506,8 @@ function getMemberEighthDayInMonth(memberId, year, month, courseFilter = null) {
         let vRaw = Math.round(val * 10);
         const isDual = (courseFilter && courseFilter.replace(/\s/g, '').includes('제과제빵'));
         if (isDual) {
-            if (vRaw < 85) return vRaw / 10;
-            return ((vRaw - 85) % 85 + 85) / 10; // Ensure 8.5 is showing correctly or wrapping
+            if (vRaw < 170) return vRaw / 10;
+            return ((vRaw - 170) % 160 + 160) / 10; // Ensure 16.0 is showing correctly or wrapping
         } else {
             if (vRaw <= 80) return vRaw / 10;
             let pRaw = vRaw - 80;
@@ -622,6 +623,10 @@ function renderTable() {
 
     tbody.innerHTML = '';
 
+    let countEnrolled = 0;
+    let countUnpaid = 0;
+    let countPaid = 0;
+
     const rows = [];
     membersData.forEach(m => {
         // Course Filter (UI Dropdown)
@@ -712,6 +717,15 @@ function renderTable() {
             const amount = imminentCourses.length > 0 ? totalDueAmount : courseFee;
             const totalPaidInSelectedMonth = isPaidRecord ? (payment.amount || amount) : 0;
 
+            // [추가] 탭별 카운팅 (필터링 전 수행)
+            if (isPaidRecord) {
+                countPaid++;
+            } else if (rowStatus === 'unpaid') {
+                countUnpaid++;
+            } else {
+                countEnrolled++;
+            }
+
             // 탭 필터링
             if (window.currentState.tab === 'enrolled') {
                 if (rowStatus !== 'enrolled') return;
@@ -742,6 +756,14 @@ function renderTable() {
             });
         });
     });
+
+    // [추가] 탭 엘리먼트 텍스트(카운트) 동적 갱신
+    const btnEnrolled = document.querySelector('.tab-enrolled');
+    const btnUnpaid = document.querySelector('.tab-unpaid');
+    const btnPaid = document.querySelector('.tab-paid');
+    if (btnEnrolled) btnEnrolled.innerHTML = `<span class="material-icons">person</span> 수강중 (${countEnrolled})`;
+    if (btnUnpaid) btnUnpaid.innerHTML = `<span class="material-icons">priority_high</span> 미납 (${countUnpaid})`;
+    if (btnPaid) btnPaid.innerHTML = `<span class="material-icons">check_circle</span> 납부완료 (${countPaid})`;
 
     if (rows.length === 0) {
         if (window.currentState.viewMode === 'total') {
