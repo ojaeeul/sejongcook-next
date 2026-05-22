@@ -18,9 +18,9 @@ echo "    📁 $BASE_DIR/Sejong/SejongAttendance/public/"
 echo "   (이 폴더가 정본입니다. 다른 곳을 수정하면 다음 저장 시 덮어씌워집니다)"
 echo ""
 
-echo "[1/3] JSON 데이터 동기화 (Sejong/data → SejongAttendance/data) 중..."
-cp "$BASE_DIR/Sejong/data/"*.json "$BASE_DIR/Sejong/SejongAttendance/data/" 2>/dev/null || true
-echo "    ✅ 데이터 동기화 완료"
+echo "[1/3] JSON 데이터 동기화 (SejongAttendance/data → Sejong/data 백업) 중..."
+cp "$BASE_DIR/Sejong/SejongAttendance/data/"*.json "$BASE_DIR/Sejong/data/" 2>/dev/null || true
+echo "    ✅ 데이터 동기화 및 백업 완료"
 echo ""
 
 echo "[2/3] Next.js 웹사이트 서버 (Port 3000) 시작 중..."

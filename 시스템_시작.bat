@@ -30,7 +30,10 @@ copy /y "%ROOT_DIR%Sejong\SejongAttendance\public\phonebook.html" "%ROOT_DIR%Sej
 copy /y "%ROOT_DIR%Sejong\SejongAttendance\public\phonebook.html" "%ROOT_DIR%public\sejong\phonebook.html"
 copy /y "%ROOT_DIR%Sejong\SejongAttendance\public\phonebook.js" "%ROOT_DIR%Sejong\public\phonebook.js"
 copy /y "%ROOT_DIR%Sejong\SejongAttendance\public\phonebook.js" "%ROOT_DIR%public\sejong\phonebook.js"
-copy /y "%ROOT_DIR%Sejong\data\*.json" "%ROOT_DIR%Sejong\SejongAttendance\data"
+echo [1/3] JSON 데이터 동기화 (SejongAttendance\data -^> Sejong\data 백업) 중...
+xcopy "%ROOT_DIR%Sejong\SejongAttendance\data\*.json" "%ROOT_DIR%Sejong\data\" /Y /Q > nul
+echo     ✅ 데이터 동기화 및 백업 완료
+echo.
 
 echo [2/4] Next.js 웹사이트 서버 (Port 3000) 시작 중...
 start "NEXT.JS - 3000" cmd /c "npm run dev"
