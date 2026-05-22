@@ -46,8 +46,8 @@ const KOREAN_HOLIDAYS_MAP = {
     "2027-12-25": "성탄절"
 };
 window.currentState = {
-    year: parseInt(sessionStorage.getItem('sejong_tuition_currentYear')) || new Date().getFullYear(),
-    month: parseInt(sessionStorage.getItem('sejong_tuition_currentMonth')) || new Date().getMonth() + 1,
+    year: parseInt(localStorage.getItem('sejong_tuition_currentYear')) || new Date().getFullYear(),
+    month: parseInt(localStorage.getItem('sejong_tuition_currentMonth')) || new Date().getMonth() + 1,
     course: 'all',
     statusFilter: 'all',
     tab: 'enrolled',
@@ -120,7 +120,7 @@ function initFilters() {
     if (yearSelect) {
         yearSelect.addEventListener('change', (e) => {
             window.currentState.year = parseInt(e.target.value);
-            sessionStorage.setItem('sejong_tuition_currentYear', window.currentState.year);
+            localStorage.setItem('sejong_tuition_currentYear', window.currentState.year);
             renderTable();
         });
     }
@@ -130,7 +130,7 @@ function initFilters() {
         monthSelect.value = window.currentState.month;
         monthSelect.addEventListener('change', (e) => {
             window.currentState.month = parseInt(e.target.value);
-            sessionStorage.setItem('sejong_tuition_currentMonth', window.currentState.month);
+            localStorage.setItem('sejong_tuition_currentMonth', window.currentState.month);
             renderTable();
         });
     }
@@ -167,8 +167,8 @@ function changeMonth(delta) {
     if (yearSelect) yearSelect.value = window.currentState.year;
     if (monthSelect) monthSelect.value = window.currentState.month;
 
-    sessionStorage.setItem('sejong_tuition_currentYear', window.currentState.year);
-    sessionStorage.setItem('sejong_tuition_currentMonth', window.currentState.month);
+    localStorage.setItem('sejong_tuition_currentYear', window.currentState.year);
+    localStorage.setItem('sejong_tuition_currentMonth', window.currentState.month);
 
     renderTable();
 }

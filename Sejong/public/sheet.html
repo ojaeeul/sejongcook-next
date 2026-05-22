@@ -1170,16 +1170,16 @@
                                 <div class="legend-item" id="brush-makeup" onclick="toggleMakeupDropdown(event)">
                                     <div class="flex-center gap-4">
                                         <span class="symbol stat-makeup" id="current-makeup-symbol">[</span>
-                                        <span id="current-makeup-text">진입출석</span>
+                                        <span id="current-makeup-text">첫출석</span>
                                         <span class="material-icons icon-muted">arrow_drop_down</span>
                                     </div>
                                     <!-- Makeup Dropdown Menu -->
                                     <div class="dropdown-menu" id="makeup-dropdown">
                                         <div class="dropdown-item" onclick="selectPresentType('[', event)">
-                                            <span class="symbol stat-makeup">[</span> 첫수업
+                                            <span class="symbol stat-makeup">[</span> 첫출석
                                         </div>
                                         <div class="dropdown-item" onclick="selectPresentType(']', event)">
-                                            <span class="symbol stat-makeup">]</span> 마지막
+                                            <span class="symbol stat-makeup">]</span> 종료출석
                                         </div>
                                     </div>
                                 </div>
@@ -1330,8 +1330,8 @@
 
         let lastCellClickTime = 0;
         // Debouncer to prevent Safari modal glitching on rapid clicks
-        let currentYear = parseInt(sessionStorage.getItem('sejong_currentYear')) || new Date().getFullYear();
-        let currentMonth = parseInt(sessionStorage.getItem('sejong_currentMonth')) || new Date().getMonth() + 1;
+        let currentYear = parseInt(localStorage.getItem('sejong_currentYear')) || new Date().getFullYear();
+        let currentMonth = parseInt(localStorage.getItem('sejong_currentMonth')) || new Date().getMonth() + 1;
         let membersData = [];
         let attendanceData = [];
         let holidaysData = [];
@@ -1445,7 +1445,7 @@
                 const mText = document.getElementById('current-makeup-text');
                 if (mSymbol) {
                     mSymbol.textContent = type;
-                    mText.textContent = type === '[' ? '첫수업' : '마지막';
+                    mText.textContent = type === '[' ? '첫출석' : '종료출석';
                 }
             } else {
                 symbol.className = 'stat-numeric';
@@ -1524,12 +1524,12 @@
             // Select Listeners
             document.getElementById('yearSelect').addEventListener('change', (e) => {
                 currentYear = parseInt(e.target.value);
-                sessionStorage.setItem('sejong_currentYear', currentYear);
+                localStorage.setItem('sejong_currentYear', currentYear);
                 renderSheet();
             });
             document.getElementById('monthSelect').addEventListener('change', (e) => {
                 currentMonth = parseInt(e.target.value);
-                sessionStorage.setItem('sejong_currentMonth', currentMonth);
+                localStorage.setItem('sejong_currentMonth', currentMonth);
                 renderSheet();
             });
         });
@@ -1874,8 +1874,8 @@
             document.getElementById('yearSelect').value = currentYear;
             document.getElementById('monthSelect').value = currentMonth;
 
-            sessionStorage.setItem('sejong_currentYear', currentYear);
-            sessionStorage.setItem('sejong_currentMonth', currentMonth);
+            localStorage.setItem('sejong_currentYear', currentYear);
+            localStorage.setItem('sejong_currentMonth', currentMonth);
 
             renderSheet();
         }
@@ -2620,6 +2620,8 @@
                 td.textContent = status;
                 td.classList.add('stat-makeup');
                 td.classList.add('symbol');
+                if (status === '[') td.title = '첫출석';
+                if (status === ']') td.title = '종료출석';
             } else if (status === 'absent') {
                 td.textContent = 'X';
                 td.classList.add('stat-absent');
@@ -2636,32 +2638,57 @@
                     td.textContent = 'X';
                     td.classList.add('stat-absent');
                 } else {
-                    // Custom Memo - Preview Bubble
-                    if (status.length > 2) {
-                        td.textContent = status.substring(0, 1) + '..';
-                        td.style.fontSize = '0.65rem';
+                    // Map English keys from daily attendance
+                    if (status === 'late' || status === '지각') {
+                        td.innerHTML = '<span style="font-weight:900;">△</span>';
+                        td.style.color = '#9333ea';
+                        td.classList.add('stat-text');
+                    } else if (status === 'early' || status === '조퇴') {
+                        td.textContent = '조퇴';
+                        td.style.color = '#2563eb';
+                        td.style.fontWeight = 'bold';
+                        td.classList.add('stat-text');
                     } else {
-                        td.textContent = status;
+                        // Custom Memo - Preview Bubble
+                        if (status.length > 2) {
+                            td.textContent = status.substring(0, 1) + '..';
+                            td.style.fontSize = '0.65rem';
+                        } else {
+                            td.textContent = status;
+                        }
+                        td.classList.add('stat-text');
                     }
-                    td.classList.add('stat-text');
                 }
             }
         }
 
-        async function saveAttendance(memberId, dateStr, status, course) {
-            // Aggressively remove any existing record for this slot to prevent duplicates
-            attendanceData = attendanceData.filter(l => {
-                const sameMember = l.memberId === memberId;
-                const sameDate = l.date === dateStr;
-                // Normalize course comparison: treat null/undefined as empty string
-                const c1 = l.course || '';
-                const c2 = course || '';
-                const sameCourse = c1 === c2;
-                return !(sameMember && sameDate && sameCourse);
+                function findCourseLog(logs, mId, dStr, scopeCourse) {
+            return logs.find(l => {
+                if (String(l.memberId) !== String(mId) || l.date !== dStr) return false;
+                if (!l.course && !scopeCourse) return true;
+                if (!l.course || !scopeCourse) return false;
+                if (l.course === scopeCourse) return true;
+                
+                const lClean = l.course.replace(/\([^)]*\)/g, '').trim();
+                const scopeClean = scopeCourse.replace(/\([^)]*\)/g, '').trim();
+                const lList = lClean.split(',').map(c => c.trim());
+                const scopeList = scopeClean.split(',').map(c => c.trim());
+                return lList.some(lc => scopeList.includes(lc));
             });
+        }
+
+        async function saveAttendance(memberId, dateStr, status, course) {
+            // Find existing log to reuse its exact course string (prevents duplicates)
+            const existingLog = findCourseLog(attendanceData, memberId, dateStr, course);
+            const finalCourse = existingLog ? existingLog.course : course;
+
+            // Remove existing record locally
+            if (existingLog) {
+                attendanceData = attendanceData.filter(l => l !== existingLog);
+            }
 
             if (status && status !== 'unchecked') {
-                attendanceData.push({ memberId, date: dateStr, status: status, course: course });
+                attendanceData.push({ memberId, date: dateStr, status: status, course: finalCourse });
             }
             window.attendanceData = attendanceData;
 
@@ -2673,12 +2700,14 @@
                 await fetch(`${SHEET_API_BASE}/attendance`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ memberId, date: dateStr, status: status || 'unchecked', course: course }),
-                    keepalive: true
+                    body: JSON.stringify({ memberId, date: dateStr, status: status || 'unchecked', course: finalCourse }),
+                    
                 });
+                // Notify other tabs
+                localStorage.setItem('sejong_attendance_sync', Date.now().toString());
             } catch (e) {
                 console.error("Save failed", e);
-                alert('저장 실패 (Network Error)');
+                alert('저장 실패: ' + e.message + ' \n' + e.stack);
             }
         }
 
@@ -2780,14 +2809,24 @@
 
             // Update local state first for speed
             if (status === 'unchecked') {
-                attendanceData = attendanceData.filter(l =>
-                    !(l.memberId === memberId && dates.includes(l.date) && (course === undefined || l.course === (course || null)))
-                );
+                attendanceData = attendanceData.filter(l => {
+                    if (!(l.memberId === memberId && dates.includes(l.date))) return true; // keep
+                    
+                    if (course === undefined) return false; // remove
+                    
+                    const scopeClean = typeof course === 'string' ? course.replace(/\([^)]*\)/g, '').replace(/\s+/g, '') : '';
+                    const lcClean = typeof l.course === 'string' ? l.course.replace(/\([^)]*\)/g, '').replace(/\s+/g, '') : '';
+                    const scopeList = scopeClean ? scopeClean.split(',') : [];
+                    const lcList = lcClean ? lcClean.split(',') : [];
+                    
+                    const match = (!course && !l.course) || scopeList.some(s => lcList.includes(s));
+                    return !match; // remove if match
+                });
             } else {
                 filteredDates.forEach(date => {
-                    // Check matches for specific course or null (arrow)
-                    const target = course || null;
-                    const idx = attendanceData.findIndex(l => l.memberId === memberId && l.date === date && (l.course === target || (!l.course && !target)));
+                    const existingLog = findCourseLog(attendanceData, memberId, date, course);
+                    const target = existingLog ? existingLog.course : (course || null);
+                    const idx = attendanceData.indexOf(existingLog);
 
                     if (idx !== -1) {
                         attendanceData[idx].status = status;
@@ -2807,6 +2846,8 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ memberId, dates, status: status || 'unchecked', course: course === undefined ? null : course })
                 });
+                // Notify other tabs
+                localStorage.setItem('sejong_attendance_sync', Date.now().toString());
             } catch (e) {
                 console.error(e);
                 alert('저장에 실패했습니다. 다시 시도해 주세요.');
@@ -2914,7 +2955,7 @@
                 }
 
                 const targetCourse = activeStatusBrush === 'arrow' ? null : course;
-                const log = attendanceData.find(l => l.memberId === memberId && l.date === dateStr && (l.course === targetCourse || (!l.course && !targetCourse)));
+                const log = findCourseLog(attendanceData, memberId, dateStr, targetCourse);
                 const currentStatus = log ? log.status : 'unchecked';
 
                 // Toggle off if same brush
@@ -2935,7 +2976,7 @@
                 return;
             }
 
-            const log = attendanceData.find(l => l.memberId === memberId && l.date === dateStr && (l.course === course || (!l.course && !course)));
+            const log = findCourseLog(attendanceData, memberId, dateStr, course);
             const currentStatus = log ? log.status : 'unchecked';
 
             let nextStatus = 'present';
@@ -2946,10 +2987,12 @@
                     return;
                 }
 
-                // O -> X -> 연 -> 빈공간 순환
+                // O -> X -> 연 -> △(지각) -> 조(조퇴) -> 빈공간 순환
                 if (log.status === 'present') nextStatus = 'absent';
                 else if (log.status === 'absent') nextStatus = 'extension';
-                else if (log.status === 'extension' || log.status === '연') nextStatus = 'unchecked'; // 빈공간으로
+                else if (log.status === 'extension' || log.status === '연') nextStatus = 'late';
+                else if (log.status === 'late' || (typeof log.status === 'string' && (log.status.includes('지각') || log.status === '△'))) nextStatus = 'early';
+                else if (log.status === 'early' || (typeof log.status === 'string' && log.status.includes('조퇴'))) nextStatus = 'unchecked'; // 빈공간으로
                 else nextStatus = 'present';
             }
 
@@ -3096,6 +3139,9 @@
             }
             if (e.key === 'sejong_timetable_sync') {
                 fetchTimetable().then(() => renderSheet());
+            }
+            if (e.key === 'sejong_attendance_sync') {
+                fetchAttendance().then(() => renderSheet());
             }
         });
     </script>

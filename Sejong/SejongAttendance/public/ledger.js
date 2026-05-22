@@ -46,12 +46,12 @@ let courseFees = {};
 let attendanceByMember = {}; // Optimized lookup
 window.targetMemberId = null;
 
-let currentYear = parseInt(sessionStorage.getItem('sejong_ledger_currentYear')) || new Date().getFullYear();
+let currentYear = parseInt(localStorage.getItem('sejong_ledger_currentYear')) || new Date().getFullYear();
 
 document.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
     const targetId = params.get('memberId');
-    const targetYear = params.get('year') || sessionStorage.getItem('sejong_ledger_currentYear') || new Date().getFullYear();
+    const targetYear = params.get('year') || localStorage.getItem('sejong_ledger_currentYear') || new Date().getFullYear();
     currentYear = parseInt(targetYear);
 
     if (typeof initializeYearSelect === 'function') {
@@ -145,9 +145,9 @@ function processAttendanceData() {
 const GLOBAL_DATA_ADJUSTMENTS = {};
 
 // [신규] 과거의 잘못된 시뮬레이션 캐시(찌꺼기)를 한 번 지워주기 위한 로직
-if (!sessionStorage.getItem('cache_cleared_v2')) {
+if (!localStorage.getItem('cache_cleared_v2')) {
     localStorage.removeItem('sejong_ledger_sync');
-    sessionStorage.setItem('cache_cleared_v2', 'true');
+    localStorage.setItem('cache_cleared_v2', 'true');
 }
 
 function getLedgerMonthStats(memberId, year, month, courseFilter = null) {
@@ -393,7 +393,7 @@ function initializeYearSelect() {
     }
     select.onchange = (e) => {
         currentYear = parseInt(e.target.value);
-        sessionStorage.setItem('sejong_ledger_currentYear', currentYear);
+        localStorage.setItem('sejong_ledger_currentYear', currentYear);
         renderLedger();
     };
 }

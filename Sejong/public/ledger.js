@@ -46,12 +46,12 @@ let courseFees = {};
 let attendanceByMember = {}; // Optimized lookup
 window.targetMemberId = null;
 
-let currentYear = parseInt(sessionStorage.getItem('sejong_ledger_currentYear')) || new Date().getFullYear();
+let currentYear = parseInt(localStorage.getItem('sejong_ledger_currentYear')) || new Date().getFullYear();
 
 document.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
     const targetId = params.get('memberId');
-    const targetYear = params.get('year') || sessionStorage.getItem('sejong_ledger_currentYear') || new Date().getFullYear();
+    const targetYear = params.get('year') || localStorage.getItem('sejong_ledger_currentYear') || new Date().getFullYear();
     currentYear = parseInt(targetYear);
 
     if (typeof initializeYearSelect === 'function') {
@@ -145,9 +145,9 @@ function processAttendanceData() {
 const GLOBAL_DATA_ADJUSTMENTS = {};
 
 // [신규] 과거의 잘못된 시뮬레이션 캐시(찌꺼기)를 한 번 지워주기 위한 로직
-if (!sessionStorage.getItem('cache_cleared_v2')) {
+if (!localStorage.getItem('cache_cleared_v2')) {
     localStorage.removeItem('sejong_ledger_sync');
-    sessionStorage.setItem('cache_cleared_v2', 'true');
+    localStorage.setItem('cache_cleared_v2', 'true');
 }
 
 function getLedgerMonthStats(memberId, year, month, courseFilter = null) {
@@ -393,7 +393,7 @@ function initializeYearSelect() {
     }
     select.onchange = (e) => {
         currentYear = parseInt(e.target.value);
-        sessionStorage.setItem('sejong_ledger_currentYear', currentYear);
+        localStorage.setItem('sejong_ledger_currentYear', currentYear);
         renderLedger();
     };
 }
@@ -622,7 +622,9 @@ function renderTable(container, title, members, id) {
             <td style="padding: 8px 10px; border-right: 1.5px solid #0f172a;">
                 <div style="font-weight: 900; font-size: 0.9rem;">${m.name}</div>
                 <div style="font-size: 0.7rem; color: #64748b;">${m.phone || ''}</div>
-                <div style="font-size: 0.7rem; color: #2563eb; font-weight: 700; margin-top: 2px;">${m.course || ''}</div>
+                <div style="font-size: 0.6rem; font-weight: 700; margin-top: 4px; display: flex; flex-direction: column; gap: 2px; align-items: flex-start;">
+                    ${(m.course || '').split(',').filter(Boolean).map(c => `<span style="background: #eff6ff; color: #1d4ed8; padding: 2px 5px; border-radius: 3px; border: 1px solid #bfdbfe; white-space: nowrap; line-height: 1; font-size: 0.55rem;">${c.trim()}</span>`).join('')}
+                </div>
             </td>`;
 
         for (let month = 1; month <= 12; month++) {
@@ -676,11 +678,12 @@ function renderTable(container, title, members, id) {
                 .filter(s => s.eighthDay && !isNaN(parseInt(s.eighthDay)) && Number(s.eighthDay) > 0)
                 .map(s => {
                     const dayText = `${s.eighthDay}일`;
-                    const color = s.isSimulated ? '#a855f7' : '#d946ef';
+                    const feeColor = s.isSimulated ? '#a855f7' : '#d946ef';
+                    const dateColor = s.isSimulated ? '#a855f7' : '#ff0000'; // 예정일 숫자 아주 빨강
                     return `
-                    <div style="font-size: 0.65rem; color: ${color}; font-weight: 800; display: flex; flex-direction: column; gap: 2px; align-items: center; margin-bottom: 4px;">
-                        <div>${dayText}</div>
-                        <div style="font-size: 0.6rem;">${s.fee / 10000}만</div>
+                    <div style="font-size: 0.65rem; font-weight: 800; display: flex; flex-direction: column; gap: 2px; align-items: center; margin-bottom: 4px;">
+                        <div style="color: ${dateColor};">${dayText}</div>
+                        <div style="font-size: 0.6rem; color: ${feeColor};">${s.fee / 10000}만</div>
                         <div style="font-size: 0.55rem; color: #64748b; font-weight: 600; line-height: 1;">${s.course || ''}</div>
                     </div>
                 `}).join('');

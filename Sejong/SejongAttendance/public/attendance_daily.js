@@ -3,7 +3,7 @@ const API_BASE = window.location.hostname === 'localhost' || window.location.hos
 let allMembers = [];
 let groupedCourses = {};
 let activeCourse = '';
-let currentDate = sessionStorage.getItem('sejong_daily_date') || new Date().toISOString().split('T')[0];
+let currentDate = localStorage.getItem('sejong_daily_date') || new Date().toISOString().split('T')[0];
 
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('attendanceDate').value = currentDate;
@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
             currentDate = new Date().toISOString().split('T')[0];
             e.target.value = currentDate;
         }
-        sessionStorage.setItem('sejong_daily_date', currentDate);
+        localStorage.setItem('sejong_daily_date', currentDate);
         currentAttendanceState = {};
         fetchAttendance();
     });
@@ -167,6 +167,8 @@ function renderAttendanceTbody() {
                 else if (st === '연' || st === 'extension' || (typeof st === 'string' && st.includes('연장'))) st = 'extension';
                 else if (st === '지각' || st === 'late') st = 'late';
                 else if (st === '조퇴' || st === 'early') st = 'early';
+                else if (st === '[' || st === '첫출석' || st === '진입출석' || st === 'entry') st = 'entry';
+                else if (st === ']' || st === '종료출석' || st === '마감출석' || st === 'exit') st = 'exit';
             }
             
             currentAttendanceState[m.id] = st;
@@ -191,11 +193,13 @@ function renderAttendanceTbody() {
         const st = currentAttendanceState[m.id];
         tdActions.innerHTML = `
             <div class="status-btn-group">
+                <button class="status-btn ${st === 'entry' ? 'active' : ''}" data-type="entry" style="${st === 'entry' ? 'background:#3b82f6;color:white;border-color:#3b82f6;' : ''}" onclick="setStatus(${m.id}, 'entry', this)">첫출석</button>
                 <button class="status-btn ${st === 'present' ? 'active' : ''}" data-type="present" onclick="setStatus(${m.id}, 'present', this)">출석</button>
                 <button class="status-btn ${st === 'absent' ? 'active' : ''}" data-type="absent" onclick="setStatus(${m.id}, 'absent', this)">결석</button>
                 <button class="status-btn ${st === 'late' ? 'active' : ''}" data-type="late" onclick="setStatus(${m.id}, 'late', this)">지각</button>
                 <button class="status-btn ${st === 'early' ? 'active' : ''}" data-type="early" onclick="setStatus(${m.id}, 'early', this)">조퇴</button>
                 <button class="status-btn ${st === 'extension' ? 'active' : ''}" data-type="extension" onclick="setStatus(${m.id}, 'extension', this)">연장</button>
+                <button class="status-btn ${st === 'exit' ? 'active' : ''}" data-type="exit" style="${st === 'exit' ? 'background:#6366f1;color:white;border-color:#6366f1;' : ''}" onclick="setStatus(${m.id}, 'exit', this)">종료출석</button>
             </div>
         `;
 
@@ -218,6 +222,15 @@ window.setStatus = async function (memberId, statusType, btnElement) {
         finalStatus = 'unchecked';
     } else {
         btnElement.classList.add('active');
+        if (statusType === 'entry') {
+            btnElement.style.background = '#3b82f6';
+            btnElement.style.color = 'white';
+            btnElement.style.borderColor = '#3b82f6';
+        } else if (statusType === 'exit') {
+            btnElement.style.background = '#6366f1';
+            btnElement.style.color = 'white';
+            btnElement.style.borderColor = '#6366f1';
+        }
         currentAttendanceState[memberId] = statusType;
     }
 
@@ -225,24 +238,30 @@ window.setStatus = async function (memberId, statusType, btnElement) {
 
     // Auto-save silently in the background
     try {
+        // Map back to display codes for saving if needed, but the server just stores the string
+        let savedStatus = finalStatus;
+        if (finalStatus === 'entry') savedStatus = '[';
+        if (finalStatus === 'exit') savedStatus = ']';
+
         await fetch(`${API_BASE}/attendance`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 memberId: memberId,
                 date: currentDate,
-                status: finalStatus,
+                status: savedStatus,
                 course: activeCourse
             })
         });
 
         // Update local array so it survives re-renders
         const idx = attendanceData.findIndex(a => String(a.memberId) === String(memberId) && (a.course === activeCourse || (!a.course && !activeCourse)));
+
         if (idx > -1) {
             if (finalStatus === 'unchecked') attendanceData.splice(idx, 1);
-            else attendanceData[idx].status = finalStatus;
+            else attendanceData[idx].status = savedStatus;
         } else {
-            if (finalStatus !== 'unchecked') attendanceData.push({ memberId: memberId, date: currentDate, status: finalStatus, course: finalCourse });
+            if (finalStatus !== 'unchecked') attendanceData.push({ memberId: memberId, date: currentDate, status: savedStatus, course: activeCourse });
         }
 
         // Notify Monthly sheet to sync automatically
@@ -257,7 +276,7 @@ window.changeDate = function (offset) {
     d.setDate(d.getDate() + offset);
     currentDate = d.toISOString().split('T')[0];
     document.getElementById('attendanceDate').value = currentDate;
-    sessionStorage.setItem('sejong_daily_date', currentDate);
+    localStorage.setItem('sejong_daily_date', currentDate);
 
     // Clear temporary state on date change and fetch DB
     currentAttendanceState = {};
@@ -285,7 +304,7 @@ window.markAllPresent = function () {
 };
 
 function updateStats() {
-    const stats = { present: 0, absent: 0, late: 0, early: 0, extension: 0 };
+    const stats = { present: 0, absent: 0, late: 0, early: 0, extension: 0, entry: 0, exit: 0 };
 
     if (activeCourse && groupedCourses[activeCourse]) {
         let membersToRender = groupedCourses[activeCourse];
@@ -302,6 +321,8 @@ function updateStats() {
         });
     }
 
+    if(document.getElementById('statEntry')) document.getElementById('statEntry').textContent = stats.entry;
+    if(document.getElementById('statExit')) document.getElementById('statExit').textContent = stats.exit;
     document.getElementById('statPresent').textContent = stats.present;
     document.getElementById('statAbsent').textContent = stats.absent;
     document.getElementById('statLate').textContent = stats.late;
@@ -339,6 +360,10 @@ window.saveDailyAttendance = async function () {
                     const hourMap = { '10': '10', '12': '12', '14': '2', '15': '3', '17': '5', '19': '7', '21': '9' };
                     if (hourMap[h]) st = hourMap[h];
                 }
+            } else if (st === 'entry') {
+                st = '[';
+            } else if (st === 'exit') {
+                st = ']';
             }
 
             savedCount += (st !== 'unchecked' ? 1 : 0);

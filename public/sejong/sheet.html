@@ -1170,16 +1170,16 @@
                                 <div class="legend-item" id="brush-makeup" onclick="toggleMakeupDropdown(event)">
                                     <div class="flex-center gap-4">
                                         <span class="symbol stat-makeup" id="current-makeup-symbol">[</span>
-                                        <span id="current-makeup-text">진입출석</span>
+                                        <span id="current-makeup-text">첫출석</span>
                                         <span class="material-icons icon-muted">arrow_drop_down</span>
                                     </div>
                                     <!-- Makeup Dropdown Menu -->
                                     <div class="dropdown-menu" id="makeup-dropdown">
                                         <div class="dropdown-item" onclick="selectPresentType('[', event)">
-                                            <span class="symbol stat-makeup">[</span> 첫수업
+                                            <span class="symbol stat-makeup">[</span> 첫출석
                                         </div>
                                         <div class="dropdown-item" onclick="selectPresentType(']', event)">
-                                            <span class="symbol stat-makeup">]</span> 마지막
+                                            <span class="symbol stat-makeup">]</span> 종료출석
                                         </div>
                                     </div>
                                 </div>
@@ -1330,8 +1330,8 @@
 
         let lastCellClickTime = 0;
         // Debouncer to prevent Safari modal glitching on rapid clicks
-        let currentYear = parseInt(sessionStorage.getItem('sejong_currentYear')) || new Date().getFullYear();
-        let currentMonth = parseInt(sessionStorage.getItem('sejong_currentMonth')) || new Date().getMonth() + 1;
+        let currentYear = parseInt(localStorage.getItem('sejong_currentYear')) || new Date().getFullYear();
+        let currentMonth = parseInt(localStorage.getItem('sejong_currentMonth')) || new Date().getMonth() + 1;
         let membersData = [];
         let attendanceData = [];
         let holidaysData = [];
@@ -1445,7 +1445,7 @@
                 const mText = document.getElementById('current-makeup-text');
                 if (mSymbol) {
                     mSymbol.textContent = type;
-                    mText.textContent = type === '[' ? '첫수업' : '마지막';
+                    mText.textContent = type === '[' ? '첫출석' : '종료출석';
                 }
             } else {
                 symbol.className = 'stat-numeric';
@@ -1524,12 +1524,12 @@
             // Select Listeners
             document.getElementById('yearSelect').addEventListener('change', (e) => {
                 currentYear = parseInt(e.target.value);
-                sessionStorage.setItem('sejong_currentYear', currentYear);
+                localStorage.setItem('sejong_currentYear', currentYear);
                 renderSheet();
             });
             document.getElementById('monthSelect').addEventListener('change', (e) => {
                 currentMonth = parseInt(e.target.value);
-                sessionStorage.setItem('sejong_currentMonth', currentMonth);
+                localStorage.setItem('sejong_currentMonth', currentMonth);
                 renderSheet();
             });
         });
@@ -1874,8 +1874,8 @@
             document.getElementById('yearSelect').value = currentYear;
             document.getElementById('monthSelect').value = currentMonth;
 
-            sessionStorage.setItem('sejong_currentYear', currentYear);
-            sessionStorage.setItem('sejong_currentMonth', currentMonth);
+            localStorage.setItem('sejong_currentYear', currentYear);
+            localStorage.setItem('sejong_currentMonth', currentMonth);
 
             renderSheet();
         }
@@ -2620,6 +2620,8 @@
                 td.textContent = status;
                 td.classList.add('stat-makeup');
                 td.classList.add('symbol');
+                if (status === '[') td.title = '첫출석';
+                if (status === ']') td.title = '종료출석';
             } else if (status === 'absent') {
                 td.textContent = 'X';
                 td.classList.add('stat-absent');

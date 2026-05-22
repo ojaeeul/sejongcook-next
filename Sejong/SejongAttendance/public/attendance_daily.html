@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="attendance_daily.js?v=3" defer></script>
+    <script src="attendance_daily.js?v=4" defer></script>
     <style>
         .daily-container {
             display: flex;
@@ -658,6 +658,10 @@
                     </div>
 
                     <div class="stats-box">
+                        <div class="stat-item stat-entry" style="color: #3b82f6;">
+                            <div class="stat-label">첫출석</div>
+                            <div class="stat-value" id="statEntry">0</div>
+                        </div>
                         <div class="stat-item stat-present">
                             <div class="stat-label">출석</div>
                             <div class="stat-value" id="statPresent">0</div>
@@ -677,6 +681,10 @@
                         <div class="stat-item stat-extension">
                             <div class="stat-label">연장</div>
                             <div class="stat-value" id="statExtension">0</div>
+                        </div>
+                        <div class="stat-item stat-exit" style="color: #6366f1;">
+                            <div class="stat-label">종료출석</div>
+                            <div class="stat-value" id="statExit">0</div>
                         </div>
                     </div>
 

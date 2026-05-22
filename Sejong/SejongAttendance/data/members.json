@@ -156,5 +156,27 @@
     "timeSlot": "19:00",
     "id": "1770556890568",
     "registeredDate": "2026-02-08"
+  },
+  {
+    "name": "이햐이",
+    "resident_num": "200822-2332221",
+    "phone": "010-3136-2073",
+    "phone_home": "",
+    "phone_guardian": "010-8882-8282",
+    "address": "인천 계양구 아라로 491",
+    "address_detail": "",
+    "type": "general",
+    "school": "",
+    "school_level": "",
+    "grade": "",
+    "job": "사업가",
+    "start_date": "2026-05-17",
+    "course_select": "한식기능사",
+    "time_select": "10:00",
+    "notes": "",
+    "course": "한식기능사(10:00)",
+    "timeSlot": "10:00",
+    "id": "1779483095353",
+    "registeredDate": "2026-05-23"
   }
 ]
