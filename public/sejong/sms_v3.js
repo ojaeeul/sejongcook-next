@@ -4,7 +4,7 @@ function getFetchUrl(endpoint, isPost = false) {
     return isPost ? url : url + (url.includes('?') ? '&' : '?') + `t=${Date.now()}`;
 }
 
-const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:8000/api' : '../api.php?board=sejong_';
+const API_BASE = '/api/sejong';
 
 const GLOBAL_DATA_ADJUSTMENTS = {};
 let allMembers = [];
@@ -1309,9 +1309,7 @@ function showFullPreview() {
 window.syncSmsDate = async function(val) {
     if (!val) return;
     try {
-        const fetchUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-            ? `${API_BASE}/sms_history` 
-            : `${API_BASE}sms_history`;
+        const fetchUrl = `${API_BASE}/sms_history`;
         
         const res = await fetch(fetchUrl);
         let historyData = [];
@@ -1364,9 +1362,7 @@ window.confirmSmsSend = async function() {
     
     // Save to API
     try {
-        const fetchUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-            ? `${API_BASE}/sms_history` 
-            : `${API_BASE}sms_history`;
+        const fetchUrl = `${API_BASE}/sms_history`;
             
         await fetch(fetchUrl, {
             method: 'POST',

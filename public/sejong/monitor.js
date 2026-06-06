@@ -5,7 +5,7 @@ function getFetchUrl(endpoint, isPost = false) {
     return isPost ? url : url + (url.includes('?') ? '&' : '?') + `t=${Date.now()}`;
 }
 
-const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:8000/api' : '../api.php?board=sejong_';
+const API_BASE = '/api/sejong';
 let currentInput = "";
 let stream = null;
 let currentMode = 'home';
