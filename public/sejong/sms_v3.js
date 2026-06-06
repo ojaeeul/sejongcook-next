@@ -359,7 +359,7 @@ function processAttendanceData() {
 }
 
 function getMemberScheduledDate(memberId, courseFilter) {
-    const allDue = getMemberAllMilestones(memberId, courseFilter);
+    const allDue = getMemberAllMilestones(memberId, courseFilter, startRange.getFullYear(), startRange.getMonth() + 1);
     return allDue.length > 0 ? allDue[0] : null;
 }
 
@@ -1626,11 +1626,11 @@ function getAllMilestonesForMonth(memberId, courseFilter, year, month) {
     return getAllMilestonesForRange(memberId, courseFilter, startRange, endRange);
 }
 
-function getMemberAllMilestones(memberId, courseFilter, limitDate = null) {
+function getMemberAllMilestones(memberId, courseFilter, anchorYear = null, anchorMonth = null) {
     let milestones = [];
     const today = new Date();
-    const currentYear = today.getFullYear();
-    const currentMonth = today.getMonth() + 1;
+    const currentYear = anchorYear !== null ? anchorYear : today.getFullYear();
+    const currentMonth = anchorMonth !== null ? anchorMonth : today.getMonth() + 1;
     
     const memberObj = allMembers.find(m => String(m.id) === String(memberId));
     if (!memberObj) return [];
