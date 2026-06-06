@@ -1668,22 +1668,6 @@ function getMemberAllMilestones(memberId, courseFilter, anchorYear = null, ancho
         if (m > 12) { m -= 12; y++; }
         if (m < 1) { m += 12; y--; }
         
-        const syncKey = `${memberId}_${y}_${m}_${courseFilter || 'all'}`;
-        let syncData = {};
-        try {
-            const parsed = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
-            syncData = window.ledgerSyncData || parsed || {};
-        } catch(e) {
-            syncData = {};
-        }
-        
-        if (syncData && syncData[syncKey]) {
-            const rawSync = syncData[syncKey];
-            const days = Array.isArray(rawSync) ? rawSync : (typeof rawSync === 'number' ? [rawSync] : []);
-            days.forEach(d => milestones.push({ year: y, month: m, day: d }));
-            continue;
-        }
-
         if (typeof window.calculateRedBoxesForMonth === 'function') {
             const result = window.calculateRedBoxesForMonth(memberObj, y, m, attendanceData || [], courseFilter, GLOBAL_DATA_ADJUSTMENTS);
             if (result && result.redDays && result.redDays.length > 0) {
