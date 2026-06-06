@@ -1,4 +1,21 @@
 
+function getFetchUrl(endpoint, isPost = false) {
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    let url = '';
+    if (isLocal) {
+        if (endpoint === 'settings') {
+            url = 'http://localhost:8000/api/admin/data/settings';
+        } else {
+            url = `http://localhost:8000/api/${endpoint}`;
+        }
+        return isPost ? url : url + `?t=${Date.now()}`;
+    } else {
+        const base = `../api.php?board=sejong_${endpoint}`;
+        return isPost ? base : base + `&t=${Date.now()}`;
+    }
+}
+
+
 let membersData = [];
 let paymentsData = [];
 let currentYear = parseInt(localStorage.getItem('sejong_paidlist_currentYear')) || new Date().getFullYear();
@@ -9,8 +26,8 @@ async function loadData() {
     const container = document.getElementById('paidListContainer');
     try {
         const [mRes, pRes] = await Promise.all([
-            fetch('http://localhost:8000/api/members?t=' + Date.now()),
-            fetch('http://localhost:8000/api/payments?t=' + Date.now())
+            fetch(getFetchUrl('members')),
+            fetch(getFetchUrl('payments'))
         ]);
 
         const rawMembers = await mRes.json();
@@ -173,7 +190,7 @@ async function updatePaymentStatus(memberId, year, month, course, newStatus) {
                     updatedAt: new Date().toISOString()
                 };
 
-                const res = await fetch('http://localhost:8000/api/payments', {
+                const res = await fetch(getFetchUrl('payments', true), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)

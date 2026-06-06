@@ -1,4 +1,21 @@
-const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:8000/api' : '/api/sejong';
+
+function getFetchUrl(endpoint, isPost = false) {
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    let url = '';
+    if (isLocal) {
+        if (endpoint === 'settings') {
+            url = 'http://localhost:8000/api/admin/data/settings';
+        } else {
+            url = `http://localhost:8000/api/${endpoint}`;
+        }
+        return isPost ? url : url + `?t=${Date.now()}`;
+    } else {
+        const base = `../api.php?board=sejong_${endpoint}`;
+        return isPost ? base : base + `&t=${Date.now()}`;
+    }
+}
+
+const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:8000/api' : '../api.php?board=sejong_';
 
 let COURSE_SCHEDULES = {
     '한식기능사': [1, 3],
@@ -68,12 +85,12 @@ async function loadData(targetId) {
     try {
         const cacheBuster = `?t=${Date.now()}`;
         const [mRes, pRes, aRes, sRes, hRes, tRes] = await Promise.all([
-            fetch(`${API_BASE}/members${cacheBuster}`),
-            fetch(`${API_BASE}/payments${cacheBuster}`),
-            fetch(`${API_BASE}/attendance${cacheBuster}`),
-            fetch(`http://localhost:8000/api/admin/data/settings${cacheBuster}`),
-            fetch(`${API_BASE}/holidays${cacheBuster}`),
-            fetch(`${API_BASE}/timetable${cacheBuster}`)
+            fetch(getFetchUrl('members')),
+            fetch(getFetchUrl('payments')),
+            fetch(getFetchUrl('attendance')),
+            fetch(getFetchUrl('settings')),
+            fetch(getFetchUrl('holidays')),
+            fetch(getFetchUrl('timetable'))
         ]);
 
         if (!mRes.ok || !pRes.ok || !aRes.ok || !sRes.ok || !hRes.ok || !tRes.ok) {
@@ -82,7 +99,7 @@ async function loadData(targetId) {
 
         const rawMembers = await mRes.json();
         // Include 'hold' and 'completed' to ensure full visibility of all historical records
-        membersData = Array.isArray(rawMembers) ? rawMembers.filter(m => !['delete', 'trash'].includes(m.status)) : [];
+        membersData = Array.isArray(rawMembers) ? rawMembers.filter(m => !['delete', 'trash', 'hold', 'completed'].includes(m.status)) : [];
 
         paymentsData = await pRes.json();
         attendanceData = await aRes.json();
@@ -150,207 +167,201 @@ if (!localStorage.getItem('cache_cleared_v2')) {
     localStorage.setItem('cache_cleared_v2', 'true');
 }
 
-function getLedgerMonthStats(memberId, year, month, courseFilter = null) {
-    // [신규 기믹]: User request to strictly mirror sheet.html dates instead of computing separately
-    try {
-        const cleanF = (courseFilter || 'all').replace(/\([^)]*\)/g, '').trim();
-        const syncKey = `${memberId}_${year}_${month}_${cleanF}`;
+function getLedgerMonthStats(memberId, targetYear, targetMonth, courseFilter = null) {
+    const syncKey = `${memberId}_${targetYear}_${targetMonth}_${courseFilter || 'all'}`;
+    const syncData = window.ledgerSyncData || JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
+    
+    // 1. Check real milestone
+    if (syncData[syncKey]) {
+        const rawSync = syncData[syncKey];
+        const days = Array.isArray(rawSync) ? rawSync : (typeof rawSync === 'number' ? [rawSync] : []);
+        if (days.length > 0) {
+            return { eighthDays: days, eighthMonth: targetMonth, isSimulated: false, hasAnyAttendance: true };
+        }
+    }
 
-        // 1. window.ledgerSyncData (최고 우선순위: 시트에서 실시간 렌더링된 데이터)
-        if (window.ledgerSyncData && window.ledgerSyncData[syncKey]) {
-            const rawSync = window.ledgerSyncData[syncKey];
-            const days = Array.isArray(rawSync) ? rawSync : (typeof rawSync === 'number' ? [rawSync] : []);
-            return {
-                eighthDays: days,
-                eighthMonth: month,
-                isSimulated: false, // 이제 시트에서 동기화되는 데이터는 무조건 실제 빨간박스임 
-                hasAnyAttendance: true
-            };
+    const backupSyncData = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
+    if (backupSyncData[syncKey]) {
+        const rawSync = backupSyncData[syncKey];
+        const days = Array.isArray(rawSync) ? rawSync : (typeof rawSync === 'number' ? [rawSync] : []);
+        if (days.length > 0) {
+            return { eighthDays: days, eighthMonth: targetMonth, isSimulated: false, hasAnyAttendance: true };
+        }
+    }
+
+    // --- EXACT SIMULATION ENGINE COPIED FROM SHEET.HTML RENDER LOOP ---
+    const m = membersData.find(m => String(m.id) === String(memberId));
+    if (!m) return { eighthDays: [], eighthMonth: targetMonth, isSimulated: false, hasAnyAttendance: false };
+
+    const isDualCourse = (courseFilter && courseFilter.replace(/\s/g, '').includes('제과제빵')) || (!courseFilter && String(m.course).replace(/\s/g, '').includes('제과제빵'));
+    const attendanceIncrement = isDualCourse ? 1.0 : 1.0;
+
+    let rowLogsRaw = attendanceData.filter(l => String(l.memberId) === String(memberId));
+    if (courseFilter) {
+        rowLogsRaw = rowLogsRaw.filter(l => {
+            if (!l.course) return true; // global arrow
+            const cClean = l.course.replace(/\([^)]*\)/g, '').trim();
+            const fClean = courseFilter.replace(/\([^)]*\)/g, '').trim();
+            return cClean === fClean;
+        });
+    }
+
+    const uniqueRowLogsMap = new Map();
+    rowLogsRaw.forEach(l => {
+        const dateStr = l.date ? (l.date.includes('T') ? l.date.split('T')[0] : l.date) : (l.dateObj ? l.dateObj.toISOString().split('T')[0] : '');
+        uniqueRowLogsMap.set(`${dateStr}_${l.course || ''}`, { ...l, date: dateStr });
+    });
+    const uniqueLogs = Array.from(uniqueRowLogsMap.values()).sort((a, b) => a.date.localeCompare(b.date));
+
+    let earliestYear = targetYear;
+    let earliestMonth = targetMonth;
+    const displayStartDate = m.start_date || m.registeredDate;
+    if (displayStartDate) {
+        const rd = new Date(displayStartDate);
+        if (!isNaN(rd)) {
+            earliestYear = rd.getFullYear();
+            earliestMonth = rd.getMonth() + 1;
+        }
+    }
+
+    if (uniqueLogs.length > 0) {
+        const d = new Date(uniqueLogs[0].date);
+        const firstLogYear = d.getFullYear();
+        const firstLogMonth = d.getMonth() + 1;
+        if (firstLogYear < earliestYear || (firstLogYear === earliestYear && firstLogMonth < earliestMonth)) {
+            earliestYear = firstLogYear;
+            earliestMonth = firstLogMonth;
+        }
+    }
+
+    if (Number(earliestYear) > Number(targetYear) || (Number(earliestYear) === Number(targetYear) && Number(earliestMonth) > Number(targetMonth))) {
+        earliestYear = Number(targetYear);
+        earliestMonth = Number(targetMonth);
+    }
+
+    let iterYear = earliestYear;
+    let iterMonth = earliestMonth;
+    let monthsToCalc = [];
+    let safetyCounter = 0;
+    while (safetyCounter < 300) {
+        safetyCounter++;
+        const key = `${iterYear}-${String(iterMonth).padStart(2, '0')}`;
+        monthsToCalc.push({ year: iterYear, month: iterMonth, key });
+        if (Number(iterYear) === Number(targetYear) && Number(iterMonth) === Number(targetMonth)) break;
+        iterMonth++;
+        if (iterMonth > 12) {
+            iterMonth = 1;
+            iterYear++;
+        }
+    }
+
+    let carryOverP = 0;
+    let rollingExtCount = 0;
+    monthsToCalc.forEach(mc => {
+        const adjustment = (typeof GLOBAL_DATA_ADJUSTMENTS !== "undefined" ? GLOBAL_DATA_ADJUSTMENTS : {})[String(m.id)]?.[mc.key];
+        if (adjustment && adjustment.carryOverride !== undefined) {
+            carryOverP = parseFloat(adjustment.carryOverride) || 0;
         }
 
-        // 2. localStorage (백업)
-        const syncData = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
-        if (syncData[syncKey]) {
-            const rawSync = syncData[syncKey];
-            const days = Array.isArray(rawSync) ? rawSync : (typeof rawSync === 'number' ? [rawSync] : []);
-            return {
-                eighthDays: days,
-                eighthMonth: month,
-                isSimulated: false, // 이제 시트에서 동기화되는 데이터는 무조건 실제 빨간박스임
-                hasAnyAttendance: true
-            };
+        const mLogs = uniqueLogs.filter(l => {
+            const ld = new Date(l.date);
+            return ld.getFullYear() === mc.year && (ld.getMonth() + 1) === mc.month;
+        });
+
+        let manualMakeup = 0;
+        let attendances = 0;
+        mc.carryFromPrevExtCount = rollingExtCount;
+
+        mLogs.forEach(l => {
+            const isMakeupMarker = ['[', ']'].includes(l.status);
+            const strStatus = String(l.status);
+            const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(strStatus);
+            const isAbsent = l.status === 'absent' || strStatus.startsWith('X') || strStatus.includes('결석');
+            const isEarly = l.status === 'early' || strStatus.includes('조퇴');
+            const isTardy = l.status === 'tardy' || l.status === 'late' || strStatus.includes('지각') || strStatus.includes('△');
+            const isFirstLast = strStatus.includes('첫') || strStatus.includes('종료') || strStatus === '[' || strStatus === ']';
+            const isExtension = l.status === 'extension' || strStatus.startsWith('연') || strStatus.includes('연장') || strStatus.startsWith('E');
+            const isPresent = l.status === 'present' || strStatus.startsWith('O') || strStatus.startsWith('o') || isNumericPresent;
+            const isRegularAttendance = isPresent || isAbsent || isEarly || isTardy || isFirstLast;
+
+            if (isMakeupMarker) manualMakeup += attendanceIncrement;
+            if (isRegularAttendance) attendances += attendanceIncrement;
+            else if (isExtension) rollingExtCount++;
+        });
+
+        if (adjustment && adjustment.presentOverride !== undefined) {
+            attendances = adjustment.presentOverride;
         }
-    } catch { }
 
-    let rollingTotal = 0;
-    let extCount = 0;
-    let eighthDays = [];
-    let isSimulated = false;
-    let eighthMonth = month;
-    let hasAnyAttendance = false;
-
-    // [엄격 제한] 공휴일만 필터링 (기존 기록된 요일은 모두 인정) - sheet.html과 동일
-    let memberRecords = (attendanceByMember[memberId] || []).filter(r => {
-        const dateStr = r.date.split('T')[0];
-        const isHolidayInSys = holidaysData.some(h => h.date === dateStr);
-        const isNationalHoliday = !!KOREAN_HOLIDAYS_MAP[dateStr];
-        const dayOfWeek = r.dateObj.getDay();
-        return !(isHolidayInSys || isNationalHoliday || dayOfWeek === 0);
+        let totalCombined = Math.round((carryOverP + manualMakeup + attendances) * 10) / 10;
+        mc.carryFromPrev = carryOverP;
+        carryOverP = totalCombined;
     });
 
-    // [데이터 보정] GLOBAL_DATA_ADJUSTMENTS 반영
-    let startYear = 1900, startMonth = 1;
-    const monthKey = `${year}-${String(month).padStart(2, '0')}`;
-    const adj = GLOBAL_DATA_ADJUSTMENTS[String(memberId)]?.[monthKey];
-    if (adj && adj.carryOverride !== undefined) {
-        rollingTotal = adj.carryOverride;
-        if (adj.carryOverrideExtAmount !== undefined) {
-            extCount = adj.carryOverrideExtAmount;
-        }
-        startYear = year;
-        startMonth = month;
-    }
+    const currentMC = monthsToCalc[monthsToCalc.length - 1];
+    let eighthDays = [];
+    let hasAnyAttendance = uniqueLogs.length > 0;
 
-    let lastRecordDate = null;
-    let hitTargetInMonth = false;
-    hasAnyAttendance = false;
+    if (currentMC) {
+        const currentMonthLogs = uniqueLogs.filter(l => {
+            const ld = new Date(l.date);
+            return ld.getFullYear() === currentMC.year && (ld.getMonth() + 1) === currentMC.month;
+        });
 
-    // sheet.html과 동일한 결제 주기 계산 (제과제빵기능사(통합)는 17회(8.5일)마다)
-    const getCycle = (val, isDual) => {
-        let vRaw = Math.round(val * 10);
-        if (isDual) {
-            if (vRaw < 170) return 0;
-            return Math.floor((vRaw - 170) / 160) + 1;
-        } else {
-            if (vRaw < 90) return 0;
-            return Math.floor((vRaw - 90) / 80) + 1;
-        }
-    };
-
-
-    for (const r of memberRecords) {
-        var isDualBakeryRecord = (r.course && r.course.replace(/\s/g, '').includes('제과제빵'));
-        var incAmount = isDualBakeryRecord ? 1.0 : 1.0;
-
-        if (courseFilter) {
-            if (!r.course) continue;
-            const rClean = r.course.replace(/\([^)]*\)/g, '').trim();
-            const fClean = courseFilter.replace(/\([^)]*\)/g, '').trim();
-            if (rClean !== fClean) continue;
-        }
-        if (r.yearNum < startYear || (r.yearNum === startYear && r.monthNum < startMonth)) continue;
-
-
-
-
-        if (r.yearNum < year || (r.yearNum === year && r.monthNum < month)) {
-            // Count past months
-            const isMarker = ['[', ']'].includes(r.status);
-            const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(String(r.status));
-            const isAbsent = r.status === 'absent' || (typeof r.status === 'string' && r.status.startsWith('X'));
-            const isRegular = r.status === 'present' || isNumericPresent || isAbsent;
-            if (isMarker || isRegular) {
-                rollingTotal += incAmount;
-                lastRecordDate = r.dateObj;
-                hasAnyAttendance = true;
+        let runningTotal = currentMC.carryFromPrev;
+        const getCycle = (val) => {
+            let vRaw = Math.round(val * 10);
+            if (isDualCourse) {
+                if (vRaw < 170) return 0;
+                return Math.floor((vRaw - 170) / 160) + 1;
+            } else {
+                if (vRaw < 90) return 0;
+                return Math.floor((vRaw - 90) / 80) + 1;
             }
-        } else if (r.yearNum === year && r.monthNum === month) {
-            // Count current month
-            const isMarker = ['[', ']'].includes(r.status);
-            const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(String(r.status));
-            const isAbsent = r.status === 'absent' || (typeof r.status === 'string' && r.status.startsWith('X'));
-            const isRegular = r.status === 'present' || isNumericPresent || isAbsent;
+        };
 
-            const prevNet = rollingTotal;
+        let currentCycle = getCycle(currentMC.carryFromPrev);
+        if (isNaN(currentCycle)) currentCycle = 0;
+        const adjustment = (typeof GLOBAL_DATA_ADJUSTMENTS !== "undefined" ? GLOBAL_DATA_ADJUSTMENTS : {})[String(m.id)]?.[currentMC.key];
 
-            if (isMarker || isRegular) {
-                rollingTotal += incAmount;
-                rollingTotal = Math.round(rollingTotal * 10) / 10;
+        currentMonthLogs.forEach(l => {
+            const isMakeupMarker = ['[', ']'].includes(l.status);
+            const strStatus = String(l.status);
+            const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(strStatus);
+            const isAbsent = l.status === 'absent' || strStatus.startsWith('X') || strStatus.includes('결석');
+            const isEarly = l.status === 'early' || strStatus.includes('조퇴');
+            const isTardy = l.status === 'tardy' || l.status === 'late' || strStatus.includes('지각') || strStatus.includes('△');
+            const isFirstLast = strStatus.includes('첫') || strStatus.includes('종료') || strStatus === '[' || strStatus === ']';
+            const isPresentExt = l.status === 'present' || strStatus.startsWith('O') || strStatus.startsWith('o') || strStatus.startsWith('O^') || strStatus.startsWith('o^'); 
+            const isRegularAttendance = isPresentExt || isNumericPresent || isAbsent || isEarly || isTardy || isFirstLast;
 
-                const currNet = rollingTotal;
+            if (isRegularAttendance || isMakeupMarker) {
+                runningTotal += attendanceIncrement;
+                runningTotal = Math.round(runningTotal * 10) / 10;
 
-                lastRecordDate = r.dateObj;
-                hasAnyAttendance = true;
+                let newCycle = getCycle(runningTotal);
+                if (isNaN(newCycle)) newCycle = 0;
 
-                const dateStr = r.date.includes('T') ? r.date.split('T')[0] : r.date;
-                const isForced = adj && adj.forceRedBoxDates && adj.forceRedBoxDates.includes(dateStr);
+                let shouldShowRedBox = false;
+                if (newCycle > currentCycle) {
+                    shouldShowRedBox = true;
+                    currentCycle = newCycle;
+                }
 
-                if (getCycle(currNet, isDualBakeryRecord) > getCycle(prevNet, isDualBakeryRecord) || String(r.status) === '9' || isForced) {
-                    eighthDays.push(r.dateObj.getDate());
-                    hitTargetInMonth = true;
+                if (shouldShowRedBox) {
+                    const dayToPush = new Date(l.date).getDate();
+                    if (!eighthDays.includes(dayToPush)) eighthDays.push(dayToPush);
+                }
+
+                if (adjustment && adjustment.forceRedBoxDates && adjustment.forceRedBoxDates.includes(l.date)) {
+                    const forcedDay = new Date(l.date).getDate();
+                    if (!eighthDays.includes(forcedDay)) eighthDays.push(forcedDay);
                 }
             }
-        }
+        });
     }
 
-    // --- Simulation Logic ---
-    // Simulate from the 1st of the PREVIOUS month to ensure last month's scheduled payments don't disappear
-    const firstDayOfLastMonth = new Date(year, month - 2, 1);
-
-    eighthMonth = month;
-
-
-    if (!hitTargetInMonth && hasAnyAttendance) {
-        let simDate;
-        if (lastRecordDate) {
-            simDate = new Date(lastRecordDate.getTime() + (24 * 60 * 60 * 1000));
-        } else {
-            simDate = new Date(firstDayOfLastMonth.getTime());
-        }
-
-        const member = membersData.find(m => String(m.id) === String(memberId));
-        const isDualForSim = (courseFilter && courseFilter.replace(/\s/g, '').includes('제과제빵')) ||
-            (!courseFilter && member && member.course && member.course.replace(/\s/g, '').includes('제과제빵'));
-        const simIncAmount = isDualForSim ? 1.0 : 1.0;
-
-        const limitDate = new Date(3000, 11, 31);
-        let currentNetSim = rollingTotal;
-        let foundSimulatedDay = null;
-        let futureCycleCount = 0; // 유저 요청: 1달(1회분)만 미리보기 제한
-
-        while (simDate <= limitDate) {
-            const dateStr = simDate.toISOString().split('T')[0];
-            const dayOfWeek = simDate.getDay();
-            const isHolidayInSys = holidaysData.some(h => h.date === dateStr);
-            const isNationalHoliday = !!KOREAN_HOLIDAYS_MAP[dateStr];
-
-            // 요일 체크
-            let isCourseDay = true;
-            if (courseFilter && COURSE_SCHEDULES[courseFilter]) {
-                isCourseDay = COURSE_SCHEDULES[courseFilter].includes(dayOfWeek);
-            }
-
-            if (isCourseDay && !isHolidayInSys && !isNationalHoliday && dayOfWeek !== 0) {
-                const prevCycleSim = getCycle(currentNetSim, isDualForSim);
-                currentNetSim += simIncAmount;
-                currentNetSim = Math.round(currentNetSim * 10) / 10;
-
-                if (getCycle(currentNetSim, isDualForSim) > prevCycleSim) {
-                    futureCycleCount++; // 새로운 미래 예정일 발견
-
-                    if (simDate.getFullYear() === year && (simDate.getMonth() + 1) === month) {
-                        foundSimulatedDay = simDate.getDate();
-                        eighthMonth = simDate.getMonth() + 1;
-                        break;
-                    }
-
-                    // 1달(1개의 결제일)만 미리보기 제한 처리
-                    if (futureCycleCount >= 1) {
-                        break;
-                    }
-                }
-            }
-            simDate.setDate(simDate.getDate() + 1);
-        }
-
-        if (foundSimulatedDay) {
-            // [사용자 요청] 예정날자가 지정(실제 도달) 안되어 있으면 숨김으로 처리
-            // eighthDays.push(foundSimulatedDay);
-            // isSimulated = true;
-        }
-    }
-
-    return { eighthDays, eighthMonth, isSimulated, hasAnyAttendance };
+    return { eighthDays, eighthMonth: targetMonth, isSimulated: false, hasAnyAttendance };
 }
 
 function getAllLedgerMonthStats(memberId, year, month) {

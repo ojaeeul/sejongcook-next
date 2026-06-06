@@ -1,4 +1,21 @@
-const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:8000/api' : '/api/sejong';
+
+function getFetchUrl(endpoint, isPost = false) {
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    let url = '';
+    if (isLocal) {
+        if (endpoint === 'settings') {
+            url = 'http://localhost:8000/api/admin/data/settings';
+        } else {
+            url = `http://localhost:8000/api/${endpoint}`;
+        }
+        return isPost ? url : url + `?t=${Date.now()}`;
+    } else {
+        const base = `../api.php?board=sejong_${endpoint}`;
+        return isPost ? base : base + `&t=${Date.now()}`;
+    }
+}
+
+const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:8000/api' : '../api.php?board=sejong_';
 
 let COURSE_SCHEDULES = {
     '한식기능사': [1, 3],
@@ -68,12 +85,12 @@ async function loadData(targetId) {
     try {
         const cacheBuster = `?t=${Date.now()}`;
         const [mRes, pRes, aRes, sRes, hRes, tRes] = await Promise.all([
-            fetch(`${API_BASE}/members${cacheBuster}`),
-            fetch(`${API_BASE}/payments${cacheBuster}`),
-            fetch(`${API_BASE}/attendance${cacheBuster}`),
-            fetch(`http://localhost:8000/api/admin/data/settings${cacheBuster}`),
-            fetch(`${API_BASE}/holidays${cacheBuster}`),
-            fetch(`${API_BASE}/timetable${cacheBuster}`)
+            fetch(getFetchUrl('members')),
+            fetch(getFetchUrl('payments')),
+            fetch(getFetchUrl('attendance')),
+            fetch(getFetchUrl('settings')),
+            fetch(getFetchUrl('holidays')),
+            fetch(getFetchUrl('timetable'))
         ]);
 
         if (!mRes.ok || !pRes.ok || !aRes.ok || !sRes.ok || !hRes.ok || !tRes.ok) {
@@ -216,6 +233,7 @@ function getLedgerMonthStats(memberId, year, month, courseFilter = null) {
     hasAnyAttendance = false;
 
     // sheet.html과 동일한 결제 주기 계산 (제과제빵기능사(통합)는 17회(8.5일)마다)
+    const isDualBakeryGlobal = (courseFilter && courseFilter.replace(/\s/g, "").includes("제과제빵")) || (!courseFilter && membersData.find(m => String(m.id) === String(memberId))?.course?.replace(/\s/g, "").includes("제과제빵"));
     const getCycle = (val, isDual) => {
         let vRaw = Math.round(val * 10);
         if (isDual) {
@@ -232,8 +250,7 @@ function getLedgerMonthStats(memberId, year, month, courseFilter = null) {
         var isDualBakeryRecord = (r.course && r.course.replace(/\s/g, '').includes('제과제빵'));
         var incAmount = isDualBakeryRecord ? 1.0 : 1.0;
 
-        if (courseFilter) {
-            if (!r.course) continue;
+        if (courseFilter && r.course) {
             const rClean = r.course.replace(/\([^)]*\)/g, '').trim();
             const fClean = courseFilter.replace(/\([^)]*\)/g, '').trim();
             if (rClean !== fClean) continue;
@@ -246,39 +263,52 @@ function getLedgerMonthStats(memberId, year, month, courseFilter = null) {
         if (r.yearNum < year || (r.yearNum === year && r.monthNum < month)) {
             // Count past months
             const isMarker = ['[', ']'].includes(r.status);
-            const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(String(r.status));
-            const isAbsent = r.status === 'absent' || (typeof r.status === 'string' && r.status.startsWith('X'));
-            const isRegular = r.status === 'present' || isNumericPresent || isAbsent;
-            if (isMarker || isRegular) {
-                rollingTotal += incAmount;
+            const strStatus = String(r.status);
+            const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(strStatus);
+            const isAbsent = r.status === 'absent' || strStatus.startsWith('X') || strStatus.includes('결석');
+            const isEarly = r.status === 'early' || strStatus.includes('조퇴');
+            const isTardy = r.status === 'tardy' || r.status === 'late' || strStatus.includes('지각') || strStatus.includes('△');
+            const isFirstLast = strStatus.includes('첫') || strStatus.includes('종료') || strStatus === '[' || strStatus === ']';
+            const isExtension = r.status === 'extension' || strStatus.startsWith('연') || strStatus.includes('연장') || strStatus.startsWith('E');
+            const isRegular = r.status === 'present' || isNumericPresent || isAbsent || isEarly || isTardy || isFirstLast;
+            if (isMarker || isRegular || isExtension) {
+                if (isMarker || isRegular) {
+                    rollingTotal += incAmount;
+                }
                 lastRecordDate = r.dateObj;
                 hasAnyAttendance = true;
             }
         } else if (r.yearNum === year && r.monthNum === month) {
             // Count current month
             const isMarker = ['[', ']'].includes(r.status);
-            const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(String(r.status));
-            const isAbsent = r.status === 'absent' || (typeof r.status === 'string' && r.status.startsWith('X'));
-            const isRegular = r.status === 'present' || isNumericPresent || isAbsent;
+            const strStatus = String(r.status);
+            const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(strStatus);
+            const isAbsent = r.status === 'absent' || strStatus.startsWith('X') || strStatus.includes('결석');
+            const isEarly = r.status === 'early' || strStatus.includes('조퇴');
+            const isTardy = r.status === 'tardy' || r.status === 'late' || strStatus.includes('지각') || strStatus.includes('△');
+            const isFirstLast = strStatus.includes('첫') || strStatus.includes('종료') || strStatus === '[' || strStatus === ']';
+            const isExtension = r.status === 'extension' || strStatus.startsWith('연') || strStatus.includes('연장') || strStatus.startsWith('E');
+            const isRegular = r.status === 'present' || isNumericPresent || isAbsent || isEarly || isTardy || isFirstLast;
 
             const prevNet = rollingTotal;
 
-            if (isMarker || isRegular) {
-                rollingTotal += incAmount;
-                rollingTotal = Math.round(rollingTotal * 10) / 10;
+            if (isMarker || isRegular || isExtension) {
+                if (isMarker || isRegular) {
+                    rollingTotal += incAmount;
+                    rollingTotal = Math.round(rollingTotal * 10) / 10;
 
-                const currNet = rollingTotal;
+                    const currNet = rollingTotal;
 
+                    const dateStr = r.date.includes('T') ? r.date.split('T')[0] : r.date;
+                    const isForced = adj && adj.forceRedBoxDates && adj.forceRedBoxDates.includes(dateStr);
+
+                    if (getCycle(currNet, isDualBakeryGlobal) > getCycle(prevNet, isDualBakeryGlobal) || String(r.status) === '9' || isForced) {
+                        eighthDays.push(r.dateObj.getDate());
+                        hitTargetInMonth = true;
+                    }
+                }
                 lastRecordDate = r.dateObj;
                 hasAnyAttendance = true;
-
-                const dateStr = r.date.includes('T') ? r.date.split('T')[0] : r.date;
-                const isForced = adj && adj.forceRedBoxDates && adj.forceRedBoxDates.includes(dateStr);
-
-                if (getCycle(currNet, isDualBakeryRecord) > getCycle(prevNet, isDualBakeryRecord) || String(r.status) === '9' || isForced) {
-                    eighthDays.push(r.dateObj.getDate());
-                    hitTargetInMonth = true;
-                }
             }
         }
     }
@@ -620,7 +650,12 @@ function renderTable(container, title, members, id) {
         html += `<tr id="${rowId}" style="border-bottom: 1px solid #0f172a; ${isTarget ? 'background: #fffbeb;' : ''}">
             <td style="text-align: center; font-weight: 700; border-right: 1.5px solid #0f172a;">${idx + 1}</td>
             <td style="padding: 8px 10px; border-right: 1.5px solid #0f172a;">
-                <div style="font-weight: 900; font-size: 0.9rem;">${m.name}</div>
+                <div style="font-weight: 900; font-size: 0.9rem; display: flex; justify-content: space-between; align-items: flex-start;">
+                    <span>${m.name}</span>
+                    <span onclick="deleteMemberFromLedger('${m.id}', '${m.name ? m.name.replace(/'/g, "\\'") : ''}')" style="cursor: pointer; color: #ef4444; margin-left: 5px; padding: 2px;" title="수강생 삭제">
+                        <span class="material-icons" style="font-size: 14px; vertical-align: middle;">close</span>
+                    </span>
+                </div>
                 <div style="font-size: 0.7rem; color: #64748b;">${m.phone || ''}</div>
                 <div style="font-size: 0.6rem; font-weight: 700; margin-top: 4px; display: flex; flex-direction: column; gap: 2px; align-items: flex-start;">
                     ${(m.course || '').split(',').filter(Boolean).map(c => `<span style="background: #eff6ff; color: #1d4ed8; padding: 2px 5px; border-radius: 3px; border: 1px solid #bfdbfe; white-space: nowrap; line-height: 1; font-size: 0.55rem;">${c.trim()}</span>`).join('')}
@@ -743,4 +778,36 @@ window.addEventListener('storage', (e) => {
         loadData(window.targetMemberId, currentYear);
     }
 });
+
+// [신규 - 수강생 삭제 로직]
+window.deleteMemberFromLedger = async function(memberId, memberName) {
+    if (!confirm(`정말 '${memberName}' 회원을 수강료 납부대장에서 삭제하시겠습니까?\n(휴지통으로 이동되며, 전체 수강생 관리 메뉴에서 복구할 수 있습니다)`)) {
+        return;
+    }
+    const member = membersData.find(m => String(m.id) === String(memberId));
+    if (!member) {
+        alert("회원 정보를 찾을 수 없습니다.");
+        return;
+    }
+    
+    member.status = 'trash';
+    try {
+        await fetch(getFetchUrl('members', true), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(member)
+        });
+        
+        // Remove from local array so it disappears immediately
+        membersData = membersData.filter(m => String(m.id) !== String(memberId));
+        renderLedger();
+        
+        // Notify other tabs
+        localStorage.setItem('sejong_ledger_sync', Date.now().toString());
+        alert("성공적으로 삭제되었습니다.");
+    } catch (e) {
+        console.error("Failed to delete member", e);
+        alert("회원 삭제 중 오류가 발생했습니다.");
+    }
+};
 

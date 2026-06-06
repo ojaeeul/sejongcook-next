@@ -1,93 +1,15 @@
-127.0.0.1 - - [23/May/2026 00:39:54] "GET /ledger.html HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 00:39:54] "GET /style.css?v=20260228_6 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 00:39:54] "GET /ledger.js?v=20260522_214800 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 00:39:55] "GET /api/members?t=1779464395323 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 00:39:55] "GET /api/payments?t=1779464395323 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 00:39:55] "GET /api/attendance?t=1779464395323 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 00:39:55] "GET /api/admin/data/settings?t=1779464395323 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 00:39:55] "GET /api/holidays?t=1779464395323 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 00:39:55] "GET /api/timetable?t=1779464395323 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 00:39:55] "GET /api/members?t=1779464395455 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 00:39:55] "GET /api/payments?t=1779464395455 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 00:39:55] "GET /api/attendance?t=1779464395455 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 00:39:55] "GET /api/admin/data/settings?t=1779464395455 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 00:39:55] "GET /api/holidays?t=1779464395455 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 00:39:55] "GET /api/timetable?t=1779464395455 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 00:39:55] code 404, message File not found
-127.0.0.1 - - [23/May/2026 00:39:55] "GET /apple-touch-icon-precomposed.png HTTP/1.1" 404 -
-127.0.0.1 - - [23/May/2026 00:39:55] code 404, message File not found
-127.0.0.1 - - [23/May/2026 00:39:55] "GET /apple-touch-icon.png HTTP/1.1" 404 -
-127.0.0.1 - - [23/May/2026 00:39:55] code 404, message File not found
-127.0.0.1 - - [23/May/2026 00:39:55] "GET /favicon.ico HTTP/1.1" 404 -
-127.0.0.1 - - [23/May/2026 05:43:22] "GET /sheet.html HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 05:43:22] code 404, message File not found
-127.0.0.1 - - [23/May/2026 05:43:22] "GET /sejong/questions_data.js?v=1779482602575 HTTP/1.1" 404 -
-127.0.0.1 - - [23/May/2026 05:43:22] "GET /api/members?t=1779482602580 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 05:43:22] "GET /api/holidays?t=1779482602580 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 05:43:22] "GET /api/timetable?t=1779482602580 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 05:43:22] "GET /api/attendance?t=1779482602580 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 05:43:34] "GET /ledger.html HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 05:43:34] "GET /style.css?v=20260228_6 HTTP/1.1" 304 -
-127.0.0.1 - - [23/May/2026 05:43:34] "GET /ledger.js?v=20260522_214800 HTTP/1.1" 304 -
-127.0.0.1 - - [23/May/2026 05:43:34] code 404, message File not found
-127.0.0.1 - - [23/May/2026 05:43:34] "GET /sejong/questions_data.js?v=1779482614740 HTTP/1.1" 404 -
-127.0.0.1 - - [23/May/2026 05:43:34] "GET /api/members HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 05:43:34] "GET /api/attendance?date=2026-05-22 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 05:43:34] "GET /api/members?t=1779482614753 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 05:43:34] "GET /api/payments?t=1779482614753 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 05:43:34] "GET /api/attendance?t=1779482614753 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 05:43:34] "GET /api/admin/data/settings?t=1779482614753 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 05:43:34] "GET /api/holidays?t=1779482614753 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 05:43:34] "GET /api/timetable?t=1779482614753 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 05:43:35] code 404, message File not found
-127.0.0.1 - - [23/May/2026 05:43:35] "GET /apple-touch-icon-precomposed.png HTTP/1.1" 404 -
-127.0.0.1 - - [23/May/2026 05:43:35] code 404, message File not found
-127.0.0.1 - - [23/May/2026 05:43:35] "GET /apple-touch-icon.png HTTP/1.1" 404 -
-127.0.0.1 - - [23/May/2026 05:43:35] code 404, message File not found
-127.0.0.1 - - [23/May/2026 05:43:35] "GET /favicon.ico HTTP/1.1" 404 -
-127.0.0.1 - - [23/May/2026 05:44:11] code 404, message File not found
-127.0.0.1 - - [23/May/2026 05:44:11] "GET /sejong/questions_data.js?v=1779482651024 HTTP/1.1" 404 -
-127.0.0.1 - - [23/May/2026 05:44:11] "GET /api/members?t=1779482651027 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 05:44:11] "GET /api/attendance?t=1779482651027 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 05:44:11] "GET /api/timetable?t=1779482651027 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 05:44:11] "GET /api/holidays?t=1779482651027 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 05:44:20] "GET /attendance_daily.html HTTP/1.1" 304 -
-127.0.0.1 - - [23/May/2026 05:44:20] "GET /style.css?v=20260302_1 HTTP/1.1" 304 -
-127.0.0.1 - - [23/May/2026 05:44:20] "GET /attendance_daily.js?v=3 HTTP/1.1" 304 -
-127.0.0.1 - - [23/May/2026 05:44:20] "GET /api/members?t=1779482660138 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 05:44:20] "GET /api/attendance?date=2026-05-22&t=1779482660138 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 05:44:23] "GET /api/attendance?date=2026-05-21&t=1779482663820 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 05:44:24] "GET /api/attendance?date=2026-05-20&t=1779482664517 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 05:44:25] "GET /api/attendance?date=2026-05-19&t=1779482665044 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 05:44:25] "GET /api/attendance?date=2026-05-18&t=1779482665236 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 05:44:25] "GET /api/attendance?date=2026-05-17&t=1779482665428 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 05:44:25] "GET /api/attendance?date=2026-05-16&t=1779482665605 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 05:44:25] "GET /api/attendance?date=2026-05-15&t=1779482665796 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 05:44:25] "GET /api/attendance?date=2026-05-14&t=1779482665943 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 05:44:30] "GET /api/attendance?date=2026-01-01&t=1779482670726 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 05:44:32] "GET /api/attendance?date=2026-01-13&t=1779482672636 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 05:44:48] code 404, message File not found
-127.0.0.1 - - [23/May/2026 05:44:48] "GET /sejong/questions_data.js?v=1779482688849 HTTP/1.1" 404 -
-127.0.0.1 - - [23/May/2026 05:44:48] "GET /api/members?t=1779482688851 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 05:44:48] "GET /api/attendance?t=1779482688851 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 05:44:48] "GET /api/holidays?t=1779482688851 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 05:44:48] "GET /api/timetable?t=1779482688851 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 05:44:56] "GET /api/members?t=1779482696352 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 05:44:56] "GET /api/attendance?date=2026-01-13&t=1779482696352 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 05:45:02] "POST /api/attendance HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 05:45:05] code 404, message File not found
-127.0.0.1 - - [23/May/2026 05:45:05] "GET /sejong/questions_data.js?v=1779482705188 HTTP/1.1" 404 -
-127.0.0.1 - - [23/May/2026 05:45:05] "GET /api/members?t=1779482705190 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 05:45:05] "GET /api/attendance?t=1779482705191 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 05:45:05] "GET /api/timetable?t=1779482705191 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 05:45:05] "GET /api/holidays?t=1779482705191 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 05:45:08] "POST /api/attendance HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 05:45:12] "POST /api/attendance HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 05:45:15] "GET /api/members?t=1779482715398 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 05:45:15] "GET /api/attendance?date=2026-01-13&t=1779482715398 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 05:45:18] code 404, message File not found
-127.0.0.1 - - [23/May/2026 05:45:18] "GET /sejong/questions_data.js?v=1779482718470 HTTP/1.1" 404 -
-127.0.0.1 - - [23/May/2026 05:45:18] "GET /api/members?t=1779482718472 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 05:45:18] "GET /api/attendance?t=1779482718472 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 05:45:18] "GET /api/holidays?t=1779482718472 HTTP/1.1" 200 -
-127.0.0.1 - - [23/May/2026 05:45:18] "GET /api/timetable?t=1779482718472 HTTP/1.1" 200 -
+127.0.0.1 - - [05/Jun/2026 23:36:02] "GET /api/members HTTP/1.1" 200 -
+127.0.0.1 - - [05/Jun/2026 23:37:16] "GET /sheet.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Jun/2026 23:37:16] code 404, message File not found
+127.0.0.1 - - [05/Jun/2026 23:37:16] "GET /apple-touch-icon-precomposed.png HTTP/1.1" 404 -
+127.0.0.1 - - [05/Jun/2026 23:37:16] "GET /sheet.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Jun/2026 23:37:16] code 404, message File not found
+127.0.0.1 - - [05/Jun/2026 23:37:16] "GET /apple-touch-icon.png HTTP/1.1" 404 -
+127.0.0.1 - - [05/Jun/2026 23:37:16] code 404, message File not found
+127.0.0.1 - - [05/Jun/2026 23:37:16] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [05/Jun/2026 23:37:16] code 404, message File not found
+127.0.0.1 - - [05/Jun/2026 23:37:16] "GET /apple-touch-icon-precomposed.png HTTP/1.1" 404 -
+127.0.0.1 - - [05/Jun/2026 23:37:16] code 404, message File not found
+127.0.0.1 - - [05/Jun/2026 23:37:16] "GET /apple-touch-icon.png HTTP/1.1" 404 -
+127.0.0.1 - - [05/Jun/2026 23:37:16] code 404, message File not found
+127.0.0.1 - - [05/Jun/2026 23:37:16] "GET /favicon.ico HTTP/1.1" 404 -

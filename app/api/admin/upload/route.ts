@@ -1,15 +1,11 @@
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
-import { writeFile } from 'fs/promises';
+import { createClient } from '@supabase/supabase-js';
 
-export const config = {
-    api: {
-        bodyParser: false,
-    },
-};
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 export async function POST(req: NextRequest) {
     try {
@@ -24,18 +20,22 @@ export async function POST(req: NextRequest) {
         // Use a simple timestamp + sanitization for filename
         const filename = Date.now() + '_' + file.name.replace(/\s/g, '_');
 
-        // Ensure directory exists
-        const uploadDir = path.join(process.cwd(), 'public/img_up/tmp');
-        if (!fs.existsSync(uploadDir)) {
-            fs.mkdirSync(uploadDir, { recursive: true });
+        const { data, error } = await supabase.storage
+            .from('public_assets')
+            .upload(filename, buffer, {
+                contentType: file.type,
+                upsert: true
+            });
+
+        if (error) {
+            throw error;
         }
 
-        const filepath = path.join(uploadDir, filename);
-        await writeFile(filepath, buffer);
+        const { data: publicUrlData } = supabase.storage.from('public_assets').getPublicUrl(filename);
 
         return NextResponse.json({
             success: true,
-            url: `/img_up/tmp/${filename}`
+            url: publicUrlData.publicUrl
         });
 
     } catch (error) {

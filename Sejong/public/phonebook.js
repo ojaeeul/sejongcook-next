@@ -1,4 +1,21 @@
-const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:8000/api' : '/api/sejong';
+
+function getFetchUrl(endpoint, isPost = false) {
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    let url = '';
+    if (isLocal) {
+        if (endpoint === 'settings') {
+            url = 'http://localhost:8000/api/admin/data/settings';
+        } else {
+            url = `http://localhost:8000/api/${endpoint}`;
+        }
+        return isPost ? url : url + (url.includes('?') ? '&' : '?') + `t=${Date.now()}`;
+    } else {
+        const base = `../api.php?board=sejong_${endpoint}`;
+        return isPost ? base : base + `&t=${Date.now()}`;
+    }
+}
+
+const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:8000/api' : '../api.php?board=sejong_';
 
 let members = [];
 let uniqueCourses = [];
@@ -19,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function fetchMembers() {
     try {
-        const res = await fetch(`${API_BASE}/members`);
+        const res = await fetch(getFetchUrl('members'));
         members = await res.json();
 
         // Filter out inactive statuses

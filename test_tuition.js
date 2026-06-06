@@ -43,22 +43,25 @@ const puppeteer = require('puppeteer');
       
       const tabData = {};
       
+      const getOverdueRows = () => {
+        const rows = document.querySelectorAll('tr');
+        const overdueRows = [];
+        rows.forEach(r => {
+          if (r.innerText.includes('(미납)') || r.innerHTML.includes('#e11d48')) {
+            overdueRows.push(r.innerText.replace(/\n/g, ' '));
+          }
+        });
+        return overdueRows;
+      };
+      
       // 1. Check currently active tab (usually 'enrolled')
-      tabData.enrolled = getTabResults();
+      tabData.enrolled_overdue = getOverdueRows();
       
       // 2. Click 'unpaid' tab
       const unpaidTab = document.querySelector('.status-tab.tab-unpaid');
       if (unpaidTab) {
         unpaidTab.click();
-        // Allow DOM to update synchronously (since renderTable is sync)
-        tabData.unpaid = getTabResults();
-      }
-      
-      // 3. Click 'paid' tab
-      const paidTab = document.querySelector('.status-tab.tab-paid');
-      if (paidTab) {
-        paidTab.click();
-        tabData.paid = getTabResults();
+        tabData.unpaid_overdue = getOverdueRows();
       }
       
       return {
@@ -70,11 +73,8 @@ const puppeteer = require('puppeteer');
     
     console.log('--- DOM INSPECTION RESULTS ---');
     console.log('Selected Year/Month:', results.selectedYear, '/', results.selectedMonth);
-    console.log('Enrolled tab rows:', results.tabData.enrolled.rowCount);
-    console.log('Unpaid tab rows:', results.tabData.unpaid ? results.tabData.unpaid.rowCount : 'N/A');
-    console.log('Unpaid tab row details:', results.tabData.unpaid ? results.tabData.unpaid.rowDetails : []);
-    console.log('Paid tab rows:', results.tabData.paid ? results.tabData.paid.rowCount : 'N/A');
-    console.log('Paid tab row details:', results.tabData.paid ? results.tabData.paid.rowDetails : []);
+    console.log('Enrolled overdue:', results.tabData.enrolled_overdue);
+    console.log('Unpaid overdue:', results.tabData.unpaid_overdue);
     console.log('------------------------------');
   } catch (e) {
     console.error('Page navigation failed:', e.message);

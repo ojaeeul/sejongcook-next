@@ -65,6 +65,9 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         elif parsed.path == '/api/admin/data/settings' or parsed.path == '/api/settings':
             self.handle_get_settings()
             return
+        elif parsed.path == '/api/sms_history':
+            self.handle_get_sms_history()
+            return
             
         self._map_static_path()
         super().do_GET()
@@ -98,6 +101,9 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             return
         if path == '/api/holidays':
             self.handle_save_holiday()
+            return
+        if path == '/api/sms_history':
+            self.handle_save_sms_history()
             return
             
         self.send_error(404, "API Endpoint not found")
@@ -197,6 +203,45 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         self.send_header('Content-Type', 'application/json')
         self.end_headers()
         self.wfile.write(json.dumps(settings).encode('utf-8'))
+
+    def handle_get_sms_history(self):
+        history = self._read_json('sms_history.json')
+        self.send_response(200)
+        self.send_header('Content-Type', 'application/json')
+        self.end_headers()
+        self.wfile.write(json.dumps(history).encode('utf-8'))
+
+    def handle_save_sms_history(self):
+        try:
+            body = self.get_body()
+            if not body:
+                self.send_error(400, "Empty payload")
+                return
+
+            new_record = json.loads(body)
+            history = self._read_json('sms_history.json')
+            if not isinstance(history, list):
+                history = []
+            
+            date_entry = next((entry for entry in history if entry.get('date') == new_record.get('date')), None)
+            
+            if date_entry:
+                if 'messages' not in date_entry:
+                    date_entry['messages'] = []
+                date_entry['messages'].extend(new_record.get('messages', []))
+            else:
+                history.append({
+                    "date": new_record.get('date'),
+                    "messages": new_record.get('messages', [])
+                })
+                
+            self._write_json('sms_history.json', history)
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({"status": "success"}).encode('utf-8'))
+        except Exception as e:
+            self.send_error(500, str(e))
 
     def handle_save_member(self):
         try:
@@ -334,9 +379,16 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             existing_idx = -1
             if 'memberId' in data and 'year' in data and 'month' in data:
                 for i, p in enumerate(payments):
+                    p_course = p.get('course')
+                    d_course = data.get('course')
+                    # Normalize empty courses to None or empty string for comparison
+                    if not p_course or p_course == 'null': p_course = ''
+                    if not d_course or d_course == 'null': d_course = ''
+                    
                     if (p.get('memberId') == data['memberId'] and 
                         str(p.get('year')) == str(data['year']) and 
-                        str(p.get('month')) == str(data['month'])):
+                        str(p.get('month')) == str(data['month']) and
+                        p_course.strip() == d_course.strip()):
                         existing_idx = i
                         break
             

@@ -1,10 +1,25 @@
 // Main Configuration
-const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:8000/api' : '/api/sejong';
+
+function getFetchUrl(endpoint, isPost = false) {
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    let url = '';
+    if (isLocal) {
+        if (endpoint === 'settings') {
+            url = 'http://localhost:8000/api/admin/data/settings';
+        } else {
+            url = `http://localhost:8000/api/${endpoint}`;
+        }
+        return isPost ? url : url + (url.includes('?') ? '&' : '?') + `t=${Date.now()}`;
+    } else {
+        const base = `../api.php?board=sejong_${endpoint}`;
+        return isPost ? base : base + `&t=${Date.now()}`;
+    }
+}
+
+const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:8000/api' : '../api.php?board=sejong_';
 let currentInput = "";
 let stream = null;
 let currentMode = 'home';
-let autoDetectInterval = null;
-let isDetecting = false;
 
 const video = document.getElementById('video');
 const canvas = document.getElementById('canvas');
@@ -35,7 +50,6 @@ const mirrorSection = document.getElementById('mirrorSection');
 function switchMode(mode) {
     currentMode = mode;
     clearNum();
-    stopAutoDetection();
     if (statusMsg) statusMsg.textContent = "";
 
     if (mode === 'home') {
@@ -55,35 +69,18 @@ function switchMode(mode) {
             stopCamera();
         }
         else if (mode === 'face_only') {
-            setupUI("얼굴 출석", "카메라를 정면으로 바라봐주세요 (자동으로 출석됩니다)", false, true, true);
+            setupUI("얼굴 출석", "카메라를 바라보고 아래 버튼을 누르세요", false, true, true);
             if (mirrorSection) mirrorSection.style.opacity = '1';
-            const btn = document.querySelector('#faceOnlyPanel button');
-            if (btn) {
-                btn.disabled = true;
-                btn.textContent = "AI 카메라 준비 중...";
-                btn.style.opacity = "0.7";
-            }
             startCamera();
-            loadFaceModels().then(() => {
-                if (currentMode === 'face_only') startAutoDetection();
-            });
+            loadFaceModels(); // Preload ML
         }
         else if (mode === 'register') {
-            setupUI("신규 얼굴 등록", "번호 입력 시부터 얼굴을 추적해 등록합니다", true, false, true);
+            setupUI("신규 얼굴 등록", "번호 입력 후 얼굴을 촬영하세요", true, false, true);
             if (mirrorSection) mirrorSection.style.opacity = '1';
-
-            // hide manual face submit button since we'll auto-capture
-            if (faceSubmitBtn) {
-                faceSubmitBtn.style.display = 'block';
-                faceSubmitBtn.innerHTML = "자동 촬영됨<br>(번호입력시)";
-                faceSubmitBtn.disabled = true;
-            }
+            if (faceSubmitBtn) faceSubmitBtn.style.display = 'block';
             if (mainSubmitBtn) mainSubmitBtn.style.display = 'none';
-
             startCamera();
-            loadFaceModels().then(() => {
-                if (currentMode === 'register') startAutoDetection('register');
-            });
+            loadFaceModels(); // Preload ML
         }
     }
 }
@@ -143,113 +140,20 @@ async function submitAttendance() {
     if (mainSubmitBtn) { mainSubmitBtn.disabled = false; mainSubmitBtn.textContent = "출석"; mainSubmitBtn.style.opacity = "1"; }
 }
 
-let steadyFrames = 0;
-
-function startAutoDetection() {
-    stopAutoDetection();
-    if (currentMode !== 'face_only') return;
-
-    showStatus("붉은선 네모박스가 얼굴을 추적하면 자동으로 출석됩니다...", "#059669");
-    const btn = document.querySelector('#faceOnlyPanel button');
-    if (btn) {
-        btn.textContent = "얼굴을 찾는 중입니다...";
-    }
-
-    const overlayCanvas = document.getElementById('overlayCanvas');
-    const ctx = overlayCanvas ? overlayCanvas.getContext('2d') : null;
-
-    autoDetectInterval = setInterval(async () => {
-        if (currentMode !== 'face_only' || isDetecting || !modelsLoaded) return;
-
-        isDetecting = true;
-        try {
-            if (video.videoWidth > 0 && ctx) {
-                const displaySize = { width: video.videoWidth, height: video.videoHeight };
-                faceapi.matchDimensions(overlayCanvas, displaySize);
-
-                // Use fast detection without descriptors/landmarks for tracking
-                const detection = await faceapi.detectSingleFace(video);
-
-                ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
-
-                if (detection) {
-                    const resized = faceapi.resizeResults(detection, displaySize);
-                    const box = resized.box;
-
-                    steadyFrames++;
-
-                    // Draw focus box
-                    ctx.strokeStyle = steadyFrames >= 4 ? '#10b981' : '#ef4444'; // Green when focusing, Red for tracking
-                    ctx.lineWidth = 4;
-
-                    // Box corners for a "camera focus" look
-                    const len = 30;
-                    ctx.beginPath();
-                    // Top-Left
-                    ctx.moveTo(box.x, box.y + len); ctx.lineTo(box.x, box.y); ctx.lineTo(box.x + len, box.y);
-                    // Top-Right
-                    ctx.moveTo(box.x + box.width - len, box.y); ctx.lineTo(box.x + box.width, box.y); ctx.lineTo(box.x + box.width, box.y + len);
-                    // Bottom-Right
-                    ctx.moveTo(box.x + box.width, box.y + box.height - len); ctx.lineTo(box.x + box.width, box.y + box.height); ctx.lineTo(box.x + box.width - len, box.y + box.height);
-                    // Bottom-Left
-                    ctx.moveTo(box.x + len, box.y + box.height); ctx.lineTo(box.x, box.y + box.height); ctx.lineTo(box.x, box.y + box.height - len);
-                    ctx.stroke();
-
-                    // Faint full box
-                    ctx.lineWidth = 1;
-                    ctx.strokeRect(box.x, box.y, box.width, box.height);
-
-                    if (steadyFrames >= 5) { // ~1 sec of steady tracking
-                        stopAutoDetection(); // Pause tracking
-
-                        // Proceed to full recognition
-                        const fullDetection = await faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor();
-                        if (fullDetection) {
-                            recognizeAndAttend(fullDetection);
-                        } else {
-                            startAutoDetection(); // Retry if lost
-                        }
-                    }
-                } else {
-                    steadyFrames = 0;
-                }
-            }
-        } catch (e) {
-            // ignore errors during background tracking
-        } finally {
-            if (currentMode === 'face_only') {
-                isDetecting = false;
-            }
-        }
-    }, 200); // 200ms interval = 5 FPS for smooth tracking
-}
-
-function stopAutoDetection() {
-    if (autoDetectInterval) clearInterval(autoDetectInterval);
-    isDetecting = false;
-    steadyFrames = 0;
-
-    const overlayCanvas = document.getElementById('overlayCanvas');
-    if (overlayCanvas) {
-        const ctx = overlayCanvas.getContext('2d');
-        if (ctx) ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
-    }
-}
-
-async function recognizeAndAttend(preDetection = null) {
+async function recognizeAndAttend() {
     if (!modelsLoaded) {
-        showStatus("AI 엔진 모델 로딩 중입니다. 잠시 후 시도해주세요.", "orange");
+        showStatus("AI 엔진 모델 로딩 중입니다. 잠시 후 10초 뒤 시도해주세요.", "orange");
         return;
     }
 
     const btn = document.querySelector('#faceOnlyPanel button');
     if (btn) {
         btn.disabled = true;
-        btn.textContent = "AI 분석 처리 중...";
+        btn.textContent = "AI 분석 대기중...";
         btn.style.opacity = "0.7";
     }
 
-    showStatus("찰칵! 특징을 분석 중입니다. (이제 움직이셔도 됩니다)", "#3b82f6");
+    showStatus("얼굴 특징을 분석 중입니다. 가만히 바라봐주세요...", "#3b82f6");
     if (shutter) shutter.style.opacity = '1';
     setTimeout(() => { if (shutter) shutter.style.opacity = '0'; }, 150);
 
@@ -257,29 +161,29 @@ async function recognizeAndAttend(preDetection = null) {
     await new Promise(r => setTimeout(r, 50));
 
     try {
-        // 즉시 화면 캡처 본을 생성 (사용자가 이제 움직여도 인식됨)
-        const context = canvas.getContext('2d');
-        context.drawImage(video, 0, 0, 640, 480);
-        const captureData = canvas.toDataURL('image/jpeg', 0.5);
-
-        // API 연동(멤버 정보 가져오기)과 ML 모델 인식을 병렬로 동시에 실행하여 체감속도 2배 이상 향상
-        const [detection, rawMembers] = await Promise.all([
-            preDetection ? Promise.resolve(preDetection) : faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor(),
-            fetch(`${API_BASE}/members?t=` + Date.now()).then(res => res.json())
-        ]);
+        const detection = await faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor();
 
         if (!detection) {
             showStatus("얼굴이 감지되지 않았습니다. 밝은 곳에서 시도하세요.", "red");
-            setTimeout(() => { if (currentMode === 'face_only') startAutoDetection(); }, 2000);
             return;
         }
 
+        showStatus("서버 데이터를 불러오는 중...", "#059669");
+        await new Promise(r => setTimeout(r, 20));
+
+        const res = await fetch(getFetchUrl('members') + '&t=' + Date.now());
+        const rawMembers = await res.json();
         const members = Array.isArray(rawMembers) ? rawMembers.filter(m => !['delete', 'trash', 'hold', 'completed'].includes(m.status)) : [];
 
         showStatus("매칭되는 회원을 찾는 중...", "#059669");
 
         let bestMatch = null;
         let smallestDistance = 0.65; // Confidence matching threshold - increased for better recognition
+
+        // Save current frame for the popup overlay instead of stored photo
+        const context = canvas.getContext('2d');
+        context.drawImage(video, 0, 0, 640, 480);
+        const captureData = canvas.toDataURL('image/jpeg', 0.5);
 
         for (const m of members) {
             if (m.faceDescriptor) {
@@ -298,18 +202,16 @@ async function recognizeAndAttend(preDetection = null) {
             await processAttendance(phone8, captureData);
         } else {
             showStatus("등록된 얼굴을 찾을 수 없습니다. 신규 등록을 이용해보세요.", "red");
-            setTimeout(() => { if (currentMode === 'face_only') startAutoDetection(); }, 3000);
         }
     } catch (e) {
         showStatus("인식 시스템 오류!", "red");
         console.error(e);
-        setTimeout(() => { if (currentMode === 'face_only') startAutoDetection(); }, 3000);
     } finally {
-        if (btn) { btn.disabled = true; btn.textContent = "자동 인식 중..."; }
+        if (btn) { btn.disabled = false; btn.textContent = "얼굴로 출석하기"; btn.style.opacity = "1"; }
     }
 }
 
-async function capturePhoto(preDetection = null) {
+async function capturePhoto() {
     if (currentInput.length !== 8) {
         showStatus("먼저 뒷번호 8자리를 입력해주세요.", "red");
         return;
@@ -326,13 +228,7 @@ async function capturePhoto(preDetection = null) {
         faceSubmitBtn.style.background = "#94a3b8";
     }
 
-    // Play camera shutter sound
-    try {
-        const audio = new Audio('https://www.soundjay.com/mechanical/camera-shutter-click-03.mp3');
-        audio.play().catch(e => { }); // Ignore play errors (mobile interaction policies)
-    } catch (e) { }
-
-    showStatus("찰칵! 사진을 인식중입니다. (이제 움직이셔도 됩니다)", "#3b82f6");
+    showStatus("사진 촬영 및 얼굴 특징을 추출 중입니다...", "#3b82f6");
     if (shutter) shutter.style.opacity = '1';
     setTimeout(() => { if (shutter) shutter.style.opacity = '0'; }, 150);
 
@@ -344,24 +240,24 @@ async function capturePhoto(preDetection = null) {
         context.drawImage(video, 0, 0, 640, 480);
         const photoDataUrl = canvas.toDataURL('image/jpeg', 0.7);
 
-        // API 연동과 ML 모델 얼굴 분석을 동시 병렬로 실행
-        const [rawMembers, detection] = await Promise.all([
-            fetch(`${API_BASE}/members?t=` + Date.now()).then(res => res.json()),
-            preDetection ? Promise.resolve(preDetection) : faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor()
-        ]);
-
+        showStatus("회원 정보를 조회 중입니다...", "#3b82f6");
+        const res = await fetch(getFetchUrl('members') + '&t=' + Date.now());
+        const rawMembers = await res.json();
         const members = Array.isArray(rawMembers) ? rawMembers.filter(m => !['delete', 'trash', 'hold', 'completed'].includes(m.status)) : [];
         const member = members.find(m => m.phone && m.phone.replace(/-/g, '').endsWith(currentInput));
 
         if (!member) {
-            showStatus("뒷번호 8자리와 일치하는 회원이 없습니다.", "red");
-            setTimeout(() => { if (currentMode === 'register') startAutoDetection(); }, 2000);
+            showStatus("뒷번호 8자리와 일치하는 수강생 대장 회원이 없습니다.", "red");
             return;
         }
 
+        showStatus("얼굴 데이터를 병합 분석 중입니다. 가만히 계세요...", "#3b82f6");
+        await new Promise(r => setTimeout(r, 50));
+
+        const detection = await faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor();
+
         if (!detection) {
             showStatus("얼굴이 명확히 인식되지 않았습니다. 밝은 곳에서 시도해주세요.", "red");
-            setTimeout(() => { if (currentMode === 'register') startAutoDetection(); }, 2000);
             return;
         }
 
@@ -370,13 +266,13 @@ async function capturePhoto(preDetection = null) {
         member.photo = photoDataUrl;
         member.faceDescriptor = Array.from(detection.descriptor); // Store for euclidean comparison
 
-        await fetch(`${API_BASE}/members`, {
+        await fetch(getFetchUrl('members', true), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(member)
         });
 
-        showStatus("얼굴 등록 완료! 출석 체크를 진행합니다...", "#059669");
+        showStatus("얼굴 등록 완료! 자동으로 출석 체크를 진행합니다...", "#059669");
         await processAttendance(member, photoDataUrl);
     } catch (e) {
         console.error('Registration Error:', e);
@@ -421,7 +317,7 @@ async function processAttendance(inputNumOrObj, overridePhoto = null) {
         if (typeof inputNumOrObj === 'object' && inputNumOrObj !== null) {
             member = inputNumOrObj;
         } else {
-            const res = await fetch(`${API_BASE}/members?t=` + Date.now());
+            const res = await fetch(getFetchUrl('members') + '&t=' + Date.now());
             const rawMembers = await res.json();
             const members = Array.isArray(rawMembers) ? rawMembers.filter(m => !['delete', 'trash', 'hold', 'completed'].includes(m.status)) : [];
             member = members.find(m => m.phone && m.phone.replace(/-/g, '').endsWith(inputNumOrObj));
@@ -435,7 +331,7 @@ async function processAttendance(inputNumOrObj, overridePhoto = null) {
         const today = new Date().toISOString().split('T')[0];
         const status = determineAttendanceStatus(member);
 
-        const postRes = await fetch(`${API_BASE}/attendance`, {
+        const postRes = await fetch(getFetchUrl('attendance', true), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ memberId: member.id, date: today, status: status })
@@ -457,15 +353,9 @@ function updateDisplay() { if (inputDisplay) inputDisplay.textContent = currentI
 
 async function startCamera() {
     try {
-        stream = await navigator.mediaDevices.getUserMedia({
-            video: {
-                width: { ideal: 1280 },
-                height: { ideal: 720 },
-                facingMode: "user"
-            }
-        });
+        stream = await navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 } });
         if (video) video.srcObject = stream;
-    } catch (e) { showStatus("카메라 속성 에러! 접근 권한을 확인하세요.", "red"); console.log("Camera error", e); }
+    } catch (e) { showStatus("카메라 에러", "red"); }
 }
 
 function stopCamera() {

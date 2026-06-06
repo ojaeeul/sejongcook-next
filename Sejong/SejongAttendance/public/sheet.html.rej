@@ -1,0 +1,10 @@
+@@ -1745,7 +1745,8 @@
+ 
+             return {
+                 scheduledDays,
+-                isSimulated
++                isSimulated,
++                foundSimulatedDay
+             };
+         };
+ 

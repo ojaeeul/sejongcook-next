@@ -1,0 +1,11 @@
+--- Sejong/SejongAttendance/public/tuition_v3.js
++++ Sejong/SejongAttendance/public/tuition_v3.js
+@@ -406,7 +406,7 @@
+         const syncData = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
+         const syncKey = `${memberId}_${year}_${month}_${courseFilter || 'all'}`;
+ 
+-        if (syncData[syncKey]) {
++        if (syncData[syncKey] && (!Array.isArray(syncData[syncKey]) || syncData[syncKey].length > 0)) {
+             const dayNum = syncData[syncKey];
+             eighthDay = { year, month, day: dayNum };
+         }

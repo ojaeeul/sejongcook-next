@@ -1,4 +1,21 @@
-const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:8000/api' : '/api/sejong';
+
+function getFetchUrl(endpoint, isPost = false) {
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    let url = '';
+    if (isLocal) {
+        if (endpoint === 'settings') {
+            url = 'http://localhost:8000/api/admin/data/settings';
+        } else {
+            url = `http://localhost:8000/api/${endpoint}`;
+        }
+        return isPost ? url : url + (url.includes('?') ? '&' : '?') + `t=${Date.now()}`;
+    } else {
+        const base = `../api.php?board=sejong_${endpoint}`;
+        return isPost ? base : base + `&t=${Date.now()}`;
+    }
+}
+
+const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:8000/api' : '../api.php?board=sejong_';
 
 let allMembers = [];
 let groupedCourses = {};
@@ -29,8 +46,8 @@ let attendanceData = [];
 async function fetchMembers() {
     try {
         const [resMembers, resAttendance] = await Promise.all([
-            fetch(`${API_BASE}/members?t=${Date.now()}`),
-            fetch(`${API_BASE}/attendance?date=${currentDate}&t=${Date.now()}`)
+            fetch(getFetchUrl('members')),
+            fetch(getFetchUrl('attendance') + `&date=${currentDate}`)
         ]);
         allMembers = await resMembers.json();
         attendanceData = await resAttendance.json();
@@ -43,7 +60,7 @@ async function fetchMembers() {
 
 async function fetchAttendance() {
     try {
-        const res = await fetch(`${API_BASE}/attendance?date=${currentDate}&t=${Date.now()}`);
+        const res = await fetch(getFetchUrl('attendance') + `&date=${currentDate}`);
         attendanceData = await res.json();
         renderAttendanceTbody();
     } catch (err) {
@@ -153,6 +170,7 @@ function renderAttendanceTbody() {
         if (currentAttendanceState[m.id] === undefined) {
             const dbRecord = attendanceData.find(a => {
                 if (String(a.memberId) !== String(m.id)) return false;
+                if (a.date !== currentDate) return false; // MUST match current date!
                 if (!a.course) return true; // Global logs are always included
                 const aCourseClean = a.course.replace(/\([^)]*\)/g, '').trim();
                 const activeCourseClean = activeCourse.replace(/\([^)]*\)/g, '').trim();
@@ -243,7 +261,7 @@ window.setStatus = async function (memberId, statusType, btnElement) {
         if (finalStatus === 'entry') savedStatus = '[';
         if (finalStatus === 'exit') savedStatus = ']';
 
-        await fetch(`${API_BASE}/attendance`, {
+        await fetch(getFetchUrl('attendance', true), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -255,7 +273,7 @@ window.setStatus = async function (memberId, statusType, btnElement) {
         });
 
         // Update local array so it survives re-renders
-        const idx = attendanceData.findIndex(a => String(a.memberId) === String(memberId) && (a.course === activeCourse || (!a.course && !activeCourse)));
+        const idx = attendanceData.findIndex(a => String(a.memberId) === String(memberId) && a.date === currentDate && (a.course === activeCourse || (!a.course && !activeCourse)));
 
         if (idx > -1) {
             if (finalStatus === 'unchecked') attendanceData.splice(idx, 1);
@@ -368,7 +386,7 @@ window.saveDailyAttendance = async function () {
 
             savedCount += (st !== 'unchecked' ? 1 : 0);
 
-            return fetch(`${API_BASE}/attendance`, {
+            return fetch(getFetchUrl('attendance', true), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

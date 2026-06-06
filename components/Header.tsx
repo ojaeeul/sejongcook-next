@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import InstallPWA from '@/components/InstallPWA';
 
 export default function Header({ initialShowAuthLinks = true }: { initialShowAuthLinks?: boolean }) {
     const { isAdmin, logout } = useAuth();
@@ -179,22 +180,26 @@ export default function Header({ initialShowAuthLinks = true }: { initialShowAut
                             )}
                         </div>
                         <div className="h-3 w-[1px] bg-gray-300"></div>
-                        <button onClick={() => alert('스마트폰에서만 전화를 연결할 수 있습니다.')} className="font-bold text-gray-800 hover:text-amber-600 transition-colors">
+                        <button onClick={() => alert('스마트폰에서만 전화를 연결할 수 있습니다.')} className="font-bold text-gray-800 hover:text-amber-600 transition-colors mr-2">
                             전화걸기
                         </button>
+                        <InstallPWA />
                     </div>
 
                     {/* Mobile Menu Button */}
-                    <button
-                        className="lg:!hidden p-2 text-gray-600 hover:text-amber-500 flex items-center gap-2"
-                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                    >
-                        <span className="font-bold text-lg">MENU</span>
-                        {/* Hamburger Icon */}
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-8 h-8">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-                        </svg>
-                    </button>
+                    <div className="lg:!hidden flex items-center gap-2">
+                        <InstallPWA />
+                        <button
+                            className="p-2 text-gray-600 hover:text-amber-500 flex items-center gap-2"
+                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                        >
+                            <span className="font-bold text-lg">MENU</span>
+                            {/* Hamburger Icon */}
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-8 h-8">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                            </svg>
+                        </button>
+                    </div>
                 </div>
             </div>
 

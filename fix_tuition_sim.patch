@@ -1,0 +1,11 @@
+--- public/sejong/tuition_v3.js
++++ public/sejong/tuition_v3.js
+@@ -442,7 +442,7 @@
+         const isRegular = r.status === 'present' || isNumericPresent || isAbsent || isEarly || isTardy || isFirstLast;
+ 
+         const prevNet = rollingTotal;
+-        if (isMarker || isRegular || isExtension) {
++        if ((isMarker || isRegular || isExtension) && (r.yearNum < year || (r.yearNum === year && r.monthNum <= month))) {
+             globalLastRecordDateForSim = r.dateObj;
+         }
+ 

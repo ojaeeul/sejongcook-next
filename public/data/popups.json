@@ -1,5 +1,21 @@
 [
     {
+        "id": 4,
+        "title": "여름방학 특강 팝업",
+        "type": "image",
+        "imageUrl": "/img_up/tmp/1780711662780_a4.png",
+        "link": "/course/baking",
+        "isActive": false,
+        "position": {
+            "top": 150,
+            "left": 100
+        },
+        "size": {
+            "width": 500,
+            "height": 500
+        }
+    },
+    {
         "id": 1,
         "type": "template",
         "templateId": "course_recruit_v1",

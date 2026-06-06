@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 
-export const dynamic = 'force-dynamic';
 
 const getFilePath = (fileName: string) => {
     return path.join(process.cwd(), 'data', fileName);

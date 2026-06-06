@@ -1,4 +1,21 @@
-const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:8000/api' : '/api/sejong';
+
+function getFetchUrl(endpoint, isPost = false) {
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    let url = '';
+    if (isLocal) {
+        if (endpoint === 'settings') {
+            url = 'http://localhost:8000/api/admin/data/settings';
+        } else {
+            url = `http://localhost:8000/api/${endpoint}`;
+        }
+        return isPost ? url : url + (url.includes('?') ? '&' : '?') + `t=${Date.now()}`;
+    } else {
+        const base = `../api.php?board=sejong_${endpoint}`;
+        return isPost ? base : base + `&t=${Date.now()}`;
+    }
+}
+
+const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:8000/api' : '../api.php?board=sejong_';
 
 let allMembers = [];
 let groupedCourses = {};
@@ -25,15 +42,35 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 let attendanceData = [];
+let timetableData = {
+    '한식기능사': [1, 3],
+    '양식기능사': [2, 4],
+    '일식기능사': [2, 4],
+    '중식기능사': [2, 4],
+    '제과기능사': [1, 3],
+    '제빵기능사': [2, 4],
+    '제과제빵기능사': [1, 2, 3, 4],
+    '복어기능사': [5],
+    '산업기사': [5],
+    '가정요리': [2, 4],
+    '브런치': [5]
+};
 
 async function fetchMembers() {
     try {
-        const [resMembers, resAttendance] = await Promise.all([
-            fetch(`${API_BASE}/members?t=${Date.now()}`),
-            fetch(`${API_BASE}/attendance?date=${currentDate}&t=${Date.now()}`)
+        const [resMembers, resAttendance, resTimetable] = await Promise.all([
+            fetch(getFetchUrl('members')),
+            fetch(getFetchUrl('attendance') + `&date=${currentDate}`),
+            fetch(getFetchUrl('timetable'))
         ]);
         allMembers = await resMembers.json();
         attendanceData = await resAttendance.json();
+        if (resTimetable.ok) {
+            const apiData = await resTimetable.json();
+            if (apiData && Object.keys(apiData).length > 0) {
+                timetableData = { ...timetableData, ...apiData };
+            }
+        }
         processCourses();
         renderCourseList();
     } catch (err) {
@@ -43,7 +80,7 @@ async function fetchMembers() {
 
 async function fetchAttendance() {
     try {
-        const res = await fetch(`${API_BASE}/attendance?date=${currentDate}&t=${Date.now()}`);
+        const res = await fetch(getFetchUrl('attendance') + `&date=${currentDate}`);
         attendanceData = await res.json();
         renderAttendanceTbody();
     } catch (err) {
@@ -136,6 +173,27 @@ function renderAttendanceTbody() {
         return;
     }
 
+    // --- NEW: Check if the current date is a valid day for the active course ---
+    let isValidDayForCourse = true;
+    if (activeCourse && activeCourse !== '미지정') {
+        const cDateObj = new Date(currentDate);
+        const dayOfWeek = cDateObj.getDay();
+        const cleanCourseName = activeCourse.replace(/\([^)]*\)/g, '').trim();
+        
+        if (timetableData[cleanCourseName]) {
+            isValidDayForCourse = timetableData[cleanCourseName].includes(dayOfWeek);
+        } else if (timetableData[cleanCourseName.replace(/\s/g, '')]) {
+            isValidDayForCourse = timetableData[cleanCourseName.replace(/\s/g, '')].includes(dayOfWeek);
+        }
+    }
+
+    if (!isValidDayForCourse) {
+        tbody.innerHTML = `<tr><td colspan="2" style="text-align:center; padding:30px; color:#ef4444; font-weight:bold;">해당 요일은 '${activeCourse}' 과정의 수업 요일이 아닙니다.<br><span style="font-size:0.9rem; font-weight:normal; color:#94a3b8; display:block; margin-top:8px;">(전체 과정 수업 요일 설정 확인)</span></td></tr>`;
+        updateStats();
+        return;
+    }
+    // -------------------------------------------------------------------------
+
     const includeInactive = document.getElementById('includeInactive').checked;
     let membersToRender = groupedCourses[activeCourse];
 
@@ -153,6 +211,7 @@ function renderAttendanceTbody() {
         if (currentAttendanceState[m.id] === undefined) {
             const dbRecord = attendanceData.find(a => {
                 if (String(a.memberId) !== String(m.id)) return false;
+                if (a.date !== currentDate) return false; // MUST match current date!
                 if (!a.course) return true; // Global logs are always included
                 const aCourseClean = a.course.replace(/\([^)]*\)/g, '').trim();
                 const activeCourseClean = activeCourse.replace(/\([^)]*\)/g, '').trim();
@@ -243,7 +302,7 @@ window.setStatus = async function (memberId, statusType, btnElement) {
         if (finalStatus === 'entry') savedStatus = '[';
         if (finalStatus === 'exit') savedStatus = ']';
 
-        await fetch(`${API_BASE}/attendance`, {
+        await fetch(getFetchUrl('attendance', true), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -255,7 +314,7 @@ window.setStatus = async function (memberId, statusType, btnElement) {
         });
 
         // Update local array so it survives re-renders
-        const idx = attendanceData.findIndex(a => String(a.memberId) === String(memberId) && (a.course === activeCourse || (!a.course && !activeCourse)));
+        const idx = attendanceData.findIndex(a => String(a.memberId) === String(memberId) && a.date === currentDate && (a.course === activeCourse || (!a.course && !activeCourse)));
 
         if (idx > -1) {
             if (finalStatus === 'unchecked') attendanceData.splice(idx, 1);
@@ -368,7 +427,7 @@ window.saveDailyAttendance = async function () {
 
             savedCount += (st !== 'unchecked' ? 1 : 0);
 
-            return fetch(`${API_BASE}/attendance`, {
+            return fetch(getFetchUrl('attendance', true), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

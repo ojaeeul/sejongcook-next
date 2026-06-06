@@ -1,5 +1,22 @@
 // Force API Calls to port 8000 API for Bidirectional Sync
-const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:8000/api' : '/api/sejong';
+
+function getFetchUrl(endpoint, isPost = false) {
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    let url = '';
+    if (isLocal) {
+        if (endpoint === 'settings') {
+            url = 'http://localhost:8000/api/admin/data/settings';
+        } else {
+            url = `http://localhost:8000/api/${endpoint}`;
+        }
+        return isPost ? url : url + (url.includes('?') ? '&' : '?') + `t=${Date.now()}`;
+    } else {
+        const base = `../api.php?board=sejong_${endpoint}`;
+        return isPost ? base : base + `&t=${Date.now()}`;
+    }
+}
+
+const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:8000/api' : '../api.php?board=sejong_';
 
 
 
@@ -156,7 +173,76 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+
+    // --- PWA Installation Logic ---
+    initPWA();
 });
+
+// PWA Init Function
+function initPWA() {
+    let deferredPrompt;
+    const pwaInstallContainer = document.getElementById('pwaInstallContainer');
+    const pwaInstallBtn = document.getElementById('pwaInstallBtn');
+    const pwaDismissBtn = document.getElementById('pwaDismissBtn');
+    const iosInstallModal = document.getElementById('iosInstallModal');
+
+    // Register Service Worker
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js').catch((err) => {
+            console.log('SW registration failed: ', err);
+        });
+    }
+
+    // Check if already installed
+    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+        return; // Already installed
+    }
+
+    // Detect iOS
+    const userAgent = window.navigator.userAgent.toLowerCase();
+    const isIOS = /iphone|ipad|ipod/.test(userAgent);
+
+    // Listen for install prompt (Chrome, Edge, Android)
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+    });
+
+    // Always show install button (if not already installed/standalone)
+    if (pwaInstallContainer) {
+        pwaInstallContainer.classList.remove('hidden');
+    }
+
+
+
+    // Install Button Click
+    if (pwaInstallBtn) {
+        pwaInstallBtn.addEventListener('click', async () => {
+            if (isIOS) {
+                if (iosInstallModal) {
+                    iosInstallModal.classList.remove('hidden');
+                    iosInstallModal.style.display = 'flex';
+                }
+            } else if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    deferredPrompt = null;
+                    if (pwaInstallContainer) pwaInstallContainer.classList.add('hidden');
+                }
+            } else {
+                alert("웹 브라우저 주소창 우측의 '앱 설치' 아이콘(모니터+화살표 모양)을 클릭하거나, 브라우저 메뉴에서 '설치'를 선택해 주세요.");
+            }
+        });
+    }
+
+    // Dismiss Button Click
+    if (pwaDismissBtn) {
+        pwaDismissBtn.addEventListener('click', () => {
+            if (pwaInstallContainer) pwaInstallContainer.classList.add('hidden');
+        });
+    }
+}
 
 // Global Sidebar Toggle Function
 window.toggleSidebar = function () {
@@ -219,7 +305,7 @@ async function handleModalRegister(e) {
 // Separated submit logic for reusability
 async function submitRegistration(data, isModal, formEl) {
     try {
-        const res = await fetch(`${API_BASE}/members`, {
+        const res = await fetch(getFetchUrl('members', true), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
@@ -283,7 +369,7 @@ async function fetchData() {
         // Fetch Members
         let mRes;
         try {
-            mRes = await fetch(`${API_BASE}/members`, { cache: 'no-store' });
+            mRes = await fetch(getFetchUrl('members', true), { cache: 'no-store' });
             if (!mRes.ok) throw new Error(`Status ${mRes.status}`);
 
         } catch (mErr) {
@@ -294,7 +380,7 @@ async function fetchData() {
         // Fetch Attendance
         let aRes;
         try {
-            aRes = await fetch(`${API_BASE}/attendance?date=${currentDate}`, { cache: 'no-store' });
+            aRes = await fetch(getFetchUrl('attendance') + `&date=${currentDate}`, { cache: 'no-store' });
             if (!aRes.ok) throw new Error(`Status ${aRes.status}`);
 
         } catch (aErr) {
@@ -598,7 +684,7 @@ async function handleEditSubmit(e) {
     // ------------------------------------------
 
     try {
-        const res = await fetch(`${API_BASE}/members`, {
+        const res = await fetch(getFetchUrl('members', true), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(finalData)
@@ -766,7 +852,7 @@ async function handleRegister(e) {
 
 async function performRegistration(data, formEl) {
     try {
-        const res = await fetch(`${API_BASE}/members`, {
+        const res = await fetch(getFetchUrl('members', true), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
@@ -1320,7 +1406,7 @@ window.handleStatusChange = async function (e, memberId) {
              <p style="font-size:0.85rem; color:#ef4444; margin-top:10px;">⚠️ 삭제된 데이터는 절대로 복구할 수 없습니다.</p>`,
             async () => {
                 try {
-                    await fetch(API_BASE + '/members?id=' + member.id, { method: 'DELETE' });
+                    await fetch(getFetchUrl('members') + '&id=' + member.id, { method: 'DELETE' });
                     alert("영구 삭제되었습니다.");
                     await fetchData();
                     renderMembers();
@@ -1352,7 +1438,7 @@ window.handleStatusChange = async function (e, memberId) {
 async function updateMemberStatus(member, status) {
     member.status = status;
     try {
-        await fetch(API_BASE + '/members', {
+        await fetch(getFetchUrl('members', true), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(member)

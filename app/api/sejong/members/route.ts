@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/sejongDataHandler';
 
-export const dynamic = 'force-dynamic';
 
 export async function GET() {
     const { data: list, error } = await supabase.from('members').select('*');

@@ -9,11 +9,11 @@
     <meta name="keywords" content="세종요리, 김포요리, 세종요리학원, 김포요리학원, 요리학원, 출석관리, 수강생관리, 요리자격증">
     <meta property="og:title" content="세종요리제과학원 월간 출석부">
     <meta property="og:description" content="수강생들의 출석 현황을 한눈에 확인하세요.">
-    <link rel="stylesheet" href="style.css?v=20260313_1">
+    <link rel="stylesheet" href="style.css?v=20260527_000500">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="script.js?v=20260228_9" defer></script>
+    <script src="script.js?v=20260527_084000" defer></script>
     <style>
         .sheet-container {
             background: white;
@@ -868,6 +868,8 @@
             cursor: pointer;
         }
     </style>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#ffffff">
 </head>
 
 <body>
@@ -1012,7 +1014,7 @@
                     <a href="attendance_daily.html" id="navDailyAttendance" class="nav-item">일일 출석부</a>
                     <a href="sms.html" id="navSms" class="nav-item">문자 발송</a>
                 </div>
-                <a href="monitor.html?v=20260301_03" target="_blank" class="nav-item highlight">키오스크 모니터</a>
+                <a href="monitor.html?v=20260527_000500" target="_blank" class="nav-item highlight">키오스크 모니터</a>
             </nav>
         </aside>
 
@@ -1250,7 +1252,7 @@
 
     <script>
         // Force API Calls to port 8000 API for Bidirectional Sync
-        const SHEET_API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:8000/api' : '/api/sejong';
+        const SHEET_API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:8000/api' : '../api.php?board=sejong_';
 
         // Custom Modals Logic
         let customConfirmResolve = null;
@@ -1627,8 +1629,7 @@
             for (const r of memberRecords) {
                 if (r.yearNum < startYear || (r.yearNum === startYear && r.monthNum < startMonth)) continue;
 
-                if (courseFilter) {
-                    if (!r.course) continue;
+                if (courseFilter && r.course) {
                     const rClean = r.course.replace(/\([^)]*\)/g, '').trim();
                     const fClean = courseFilter.replace(/\([^)]*\)/g, '').trim();
                     if (rClean !== fClean) continue;
@@ -1636,44 +1637,60 @@
 
                 if (r.yearNum < year || (r.yearNum === year && r.monthNum < month)) {
                     // Count past months
-                    const isMarker = ['[', ']'].includes(r.status);
-                    const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(r.status);
-                    const isAbsent = r.status === 'absent' || (typeof r.status === 'string' && r.status.startsWith('X'));
-                    const isRegular = r.status === 'present' || isNumericPresent || isAbsent;
+                    const isMarker = ['[', ']'].includes(r.status) || (typeof r.status === 'string' && (r.status.includes('첫') || r.status.includes('종료')));
+                    const strStatus = String(r.status);
+                    const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(strStatus);
+                    const isAbsent = r.status === 'absent' || strStatus.startsWith('X') || strStatus.includes('결석');
+                    const isEarly = r.status === 'early' || strStatus.includes('조퇴');
+                    const isTardy = r.status === 'tardy' || r.status === 'late' || strStatus.includes('지각') || strStatus.includes('△');
+                    const isFirstLast = strStatus.includes('첫') || strStatus.includes('종료') || strStatus === '[' || strStatus === ']';
+                    const isExtension = r.status === 'extension' || strStatus.startsWith('연') || strStatus.includes('연장') || strStatus.startsWith('E');
+                    const isPresent = r.status === 'present' || strStatus.startsWith('O') || strStatus.startsWith('o') || strStatus.startsWith('O^') || strStatus.startsWith('o^') || isNumericPresent;
+                    const isRegular = isPresent || isAbsent || isEarly || isTardy || isFirstLast;
 
-                    if (isMarker || isRegular) {
-                        rollingTotal += incAmount;
-                        rollingTotal = Math.round(rollingTotal * 10) / 10;
+                    if (isMarker || isRegular || isExtension) {
+                        if (isMarker || isRegular) {
+                            rollingTotal += incAmount;
+                            rollingTotal = Math.round(rollingTotal * 10) / 10;
+                        }
                         lastRecordDate = r.dateObj;
                         hasAnyAttendance = true;
                     }
                 } else if (r.yearNum === year && r.monthNum === month) {
                     // Count current month
-                    const isMarker = ['[', ']'].includes(r.status);
-                    const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(r.status);
-                    const isAbsent = r.status === 'absent' || (typeof r.status === 'string' && r.status.startsWith('X'));
-                    const isRegular = r.status === 'present' || isNumericPresent || isAbsent;
+                    const isMarker = ['[', ']'].includes(r.status) || (typeof r.status === 'string' && (r.status.includes('첫') || r.status.includes('종료')));
+                    const strStatus = String(r.status);
+                    const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(strStatus);
+                    const isAbsent = r.status === 'absent' || strStatus.startsWith('X') || strStatus.includes('결석');
+                    const isEarly = r.status === 'early' || strStatus.includes('조퇴');
+                    const isTardy = r.status === 'tardy' || r.status === 'late' || strStatus.includes('지각') || strStatus.includes('△');
+                    const isFirstLast = strStatus.includes('첫') || strStatus.includes('종료') || strStatus === '[' || strStatus === ']';
+                    const isExtension = r.status === 'extension' || strStatus.startsWith('연') || strStatus.includes('연장') || strStatus.startsWith('E');
+                    const isRegular = r.status === 'present' || isNumericPresent || isAbsent || isEarly || isTardy || isFirstLast;
 
                     const prevNet = rollingTotal;
-                    if (isMarker || isRegular) {
-                        rollingTotal += incAmount;
-                        rollingTotal = Math.round(rollingTotal * 10) / 10;
-                        const currNet = rollingTotal;
+                    if (isMarker || isRegular || isExtension) {
+                        if (isMarker || isRegular) {
+                            rollingTotal += incAmount;
+                            rollingTotal = Math.round(rollingTotal * 10) / 10;
+                            const currNet = rollingTotal;
 
+                            let prevCycle = getCycle(prevNet);
+                            let currCycle = getCycle(currNet);
+                            const dateStr = r.date ? (r.date.includes('T') ? r.date.split('T')[0] : r.date) : (r.dateObj ? r.dateObj.toISOString().split('T')[0] : '');
+                            const isForced = adj && adj.forceRedBoxDates && adj.forceRedBoxDates.includes(dateStr);
+                            if (currCycle > prevCycle || isForced) {
+                                scheduledDays.push(r.dateObj.getDate());
+                                hitTargetInMonth = true;
+                            }
+                        }
                         lastRecordDate = r.dateObj;
                         hasAnyAttendance = true;
-
-                        let prevCycle = getCycle(prevNet);
-                        let currCycle = getCycle(currNet);
-                        const dateStr = r.date.includes('T') ? r.date.split('T')[0] : r.date;
-                        const isForced = adj && adj.forceRedBoxDates && adj.forceRedBoxDates.includes(dateStr);
-                        if (currCycle > prevCycle || r.status === '9' || r.status === 9 || isForced) {
-                            scheduledDays.push(r.dateObj.getDate());
-                            hitTargetInMonth = true;
-                        }
                     }
                 }
             }
+
+            let foundSimulatedDay = null;
 
             // --- Simulation Logic ---
             // Simulate from the 1st of the PREVIOUS month to ensure last month's scheduled payments don't disappear
@@ -1693,7 +1710,6 @@
                 const limitDate = new Date(3000, 11, 31);
                 let startCarry = rollingTotal; // Net rolling total without extensions
                 let simRolling = rollingTotal; // This will accumulate all attendance
-                let foundSimulatedDay = null;
 
                 while (simDate <= limitDate) {
                     const dayOfWeek = simDate.getDay();
@@ -1743,7 +1759,7 @@
                 }
             }
 
-            return { scheduledDays: scheduledDays, isSimulated: isSimulated, hasAnyAttendance: hasAnyAttendance };
+            return { scheduledDays: scheduledDays, isSimulated: isSimulated, hasAnyAttendance: hasAnyAttendance, foundSimulatedDay: foundSimulatedDay };
         }
 
         async function initSheet() {
@@ -2037,7 +2053,12 @@
                         // 당월 예정일 계산
                         const stats = getSheetSimulatedScheduledDate(m.id, currentYear, currentMonth, rowCourseNameScope);
                         const syncKeyNow = `${m.id}_${currentYear}_${currentMonth}_${rowCourseNameScope || 'all'}`;
-                        window.ledgerSyncData[syncKeyNow] = stats.scheduledDays;
+                        window.ledgerSyncData[syncKeyNow] = [...stats.scheduledDays];
+                        if (stats.foundSimulatedDay) {
+                            window.ledgerSyncData[syncKeyNow + '_simulated'] = [stats.foundSimulatedDay];
+                        } else {
+                            delete window.ledgerSyncData[syncKeyNow + '_simulated'];
+                        }
 
                         // 익월 예정일 미리 계산
                         const nextDate = new Date(currentYear, currentMonth, 1);
@@ -2045,7 +2066,12 @@
                         const nMonth = nextDate.getMonth() + 1;
                         const nextStats = getSheetSimulatedScheduledDate(m.id, nYear, nMonth, rowCourseNameScope);
                         const syncKeyNext = `${m.id}_${nYear}_${nMonth}_${rowCourseNameScope || 'all'}`;
-                        window.ledgerSyncData[syncKeyNext] = nextStats.scheduledDays;
+                        window.ledgerSyncData[syncKeyNext] = [...nextStats.scheduledDays];
+                        if (nextStats.foundSimulatedDay) {
+                            window.ledgerSyncData[syncKeyNext + '_simulated'] = [nextStats.foundSimulatedDay];
+                        } else {
+                            delete window.ledgerSyncData[syncKeyNext + '_simulated'];
+                        }
                     }
                 });
                 localStorage.setItem('sejong_ledger_sync', JSON.stringify(window.ledgerSyncData));
@@ -2117,7 +2143,7 @@
 
                         // 기록 자체가 존재하면 일단 인정 (요일 필터는 입력/표시 차단용으로만 사용)
                         rowLogsRaw.forEach(l => {
-                            const dateStr = l.date.includes('T') ? l.date.split('T')[0] : l.date;
+                            const dateStr = l.date ? (l.date.includes('T') ? l.date.split('T')[0] : l.date) : (l.dateObj ? l.dateObj.toISOString().split('T')[0] : '');
                             // Add course to the unique key so dual-course logs on the same day don't overwrite each other
                             uniqueRowLogsMap.set(`${dateStr}_${l.course || ''}`, { ...l, date: dateStr });
                         });
@@ -2206,10 +2232,15 @@
 
                             mLogs.forEach(l => {
                                 const isMakeupMarker = ['[', ']'].includes(l.status);
-                                const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(l.status);
-                                const isAbsent = l.status === 'absent' || (typeof l.status === 'string' && l.status.startsWith('X'));
-                                const isExtension = l.status === 'extension' || (typeof l.status === 'string' && (l.status.startsWith('E') || l.status.includes('연장') || l.status.startsWith('연')));
-                                const isRegularAttendance = l.status === 'present' || isNumericPresent || isAbsent;
+                                const strStatus = String(l.status);
+                                const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(strStatus);
+                                const isAbsent = l.status === 'absent' || strStatus.startsWith('X') || strStatus.includes('결석');
+                                const isEarly = l.status === 'early' || strStatus.includes('조퇴');
+                                const isTardy = l.status === 'tardy' || l.status === 'late' || strStatus.includes('지각') || strStatus.includes('△');
+                                const isFirstLast = strStatus.includes('첫') || strStatus.includes('종료') || strStatus === '[' || strStatus === ']';
+                                const isExtension = l.status === 'extension' || strStatus.startsWith('연') || strStatus.includes('연장') || strStatus.startsWith('E');
+                                const isPresent = l.status === 'present' || strStatus.startsWith('O') || strStatus.startsWith('o') || isNumericPresent;
+                                const isRegularAttendance = isPresent || isAbsent || isEarly || isTardy || isFirstLast;
 
                                 if (isMakeupMarker) manualMakeup += attendanceIncrement;
 
@@ -2281,29 +2312,31 @@
                                 }
                             };
                             let currentCycle = getCycle(currentMC.carryFromPrev);
+                                    if (isNaN(currentCycle)) currentCycle = 0;
                             const adjustment = GLOBAL_DATA_ADJUSTMENTS[String(m.id)]?.[currentMC.key];
 
                             currentMonthLogs.forEach(l => {
                                 const isMakeupMarker = ['[', ']'].includes(l.status);
-                                const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(l.status);
-                                const isAbsent = l.status === 'absent' || (typeof l.status === 'string' && l.status.startsWith('X'));
-                                const isExtension = l.status === 'extension' || (typeof l.status === 'string' && (l.status.startsWith('E') || l.status.includes('연장') || l.status.startsWith('연')));
-                                const isRegularAttendance = l.status === 'present' || isNumericPresent || isAbsent;
+                                const strStatus = String(l.status);
+                                const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(strStatus);
+                                const isAbsent = l.status === 'absent' || strStatus.startsWith('X') || strStatus.includes('결석');
+                                const isEarly = l.status === 'early' || strStatus.includes('조퇴');
+                                const isTardy = l.status === 'tardy' || l.status === 'late' || strStatus.includes('지각') || strStatus.includes('△');
+                                const isFirstLast = strStatus.includes('첫') || strStatus.includes('종료') || strStatus === '[' || strStatus === ']';
+                                const isExtension = l.status === 'extension' || strStatus.startsWith('연') || strStatus.includes('연장') || strStatus.startsWith('E');
+                                const isRegularAttendance = l.status === 'present' || isNumericPresent || isAbsent || isEarly || isTardy || isFirstLast;
 
                                 if (isRegularAttendance || isMakeupMarker) {
                                     runningTotal += attendanceIncrement;
                                     runningTotal = Math.round(runningTotal * 10) / 10;
 
                                     let newCycle = getCycle(runningTotal);
+                                    if (isNaN(newCycle)) newCycle = 0;
 
                                     let shouldShowRedBox = false;
                                     if (newCycle > currentCycle) {
                                         shouldShowRedBox = true;
                                         currentCycle = newCycle;
-                                    }
-                                    // 수동 상태값 '9' 입력 시 즉시 레드박스
-                                    if (l.status === '9' || l.status === 9) {
-                                        shouldShowRedBox = true;
                                     }
 
                                     if (shouldShowRedBox) {
@@ -2326,9 +2359,7 @@
                             const cyclesThisMonth = endCycle - startCycle;
 
                             let hasManualRedBox = false;
-                            currentMonthLogs.forEach(l => {
-                                if (l.status === '9' || l.status === 9) hasManualRedBox = true;
-                            });
+                            
                             if (adjustment && adjustment.forceRedBoxDates) {
                                 currentMonthLogs.forEach(l => {
                                     if (adjustment.forceRedBoxDates.includes(l.date)) hasManualRedBox = true;
@@ -2481,6 +2512,7 @@
 
                                 // [신규] 납부대장(ledger)의 예정날짜 동기화 및 표시
                                 if (redBoxDates.has(dateStr) || syncScheduledDays.includes(i)) {
+                                    console.log('RED_BOX_DRAWN:', m.name, dateStr, 'RuleMet:', redBoxDates.has(dateStr), 'Sync:', syncScheduledDays.includes(i));
                                     td.style.border = '3px solid red';
                                     td.style.boxShadow = '0 0 5px rgba(255, 0, 0, 0.5)';
 
@@ -3133,6 +3165,10 @@
 
         // [신규 - 즉각 동기화] 다른 탭에서 예정일이 변경되면 즉시 반영
         window.addEventListener('storage', (e) => {
+            if (e.key === 'sejong_members_sync') {
+                // 신규 수강생이 등록되거나 수정되었을 때 명단 즉시 새로고침
+                fetchMembers().catch(console.error);
+            }
             if (e.key === 'sejong_ledger_sync') {
                 window.ledgerSyncData = JSON.parse(e.newValue || '{}');
                 renderSheet();

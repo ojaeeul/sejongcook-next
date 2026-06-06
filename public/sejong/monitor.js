@@ -1,5 +1,22 @@
 // Main Configuration
-const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:8000/api' : '/api/sejong';
+
+function getFetchUrl(endpoint, isPost = false) {
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    let url = '';
+    if (isLocal) {
+        if (endpoint === 'settings') {
+            url = 'http://localhost:8000/api/admin/data/settings';
+        } else {
+            url = `http://localhost:8000/api/${endpoint}`;
+        }
+        return isPost ? url : url + (url.includes('?') ? '&' : '?') + `t=${Date.now()}`;
+    } else {
+        const base = `../api.php?board=sejong_${endpoint}`;
+        return isPost ? base : base + `&t=${Date.now()}`;
+    }
+}
+
+const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:8000/api' : '../api.php?board=sejong_';
 let currentInput = "";
 let stream = null;
 let currentMode = 'home';
@@ -154,7 +171,7 @@ async function recognizeAndAttend() {
         showStatus("서버 데이터를 불러오는 중...", "#059669");
         await new Promise(r => setTimeout(r, 20));
 
-        const res = await fetch(`${API_BASE}/members?t=` + Date.now());
+        const res = await fetch(getFetchUrl('members') + '&t=' + Date.now());
         const rawMembers = await res.json();
         const members = Array.isArray(rawMembers) ? rawMembers.filter(m => !['delete', 'trash', 'hold', 'completed'].includes(m.status)) : [];
 
@@ -224,7 +241,7 @@ async function capturePhoto() {
         const photoDataUrl = canvas.toDataURL('image/jpeg', 0.7);
 
         showStatus("회원 정보를 조회 중입니다...", "#3b82f6");
-        const res = await fetch(`${API_BASE}/members?t=` + Date.now());
+        const res = await fetch(getFetchUrl('members') + '&t=' + Date.now());
         const rawMembers = await res.json();
         const members = Array.isArray(rawMembers) ? rawMembers.filter(m => !['delete', 'trash', 'hold', 'completed'].includes(m.status)) : [];
         const member = members.find(m => m.phone && m.phone.replace(/-/g, '').endsWith(currentInput));
@@ -249,7 +266,7 @@ async function capturePhoto() {
         member.photo = photoDataUrl;
         member.faceDescriptor = Array.from(detection.descriptor); // Store for euclidean comparison
 
-        await fetch(`${API_BASE}/members`, {
+        await fetch(getFetchUrl('members', true), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(member)
@@ -294,13 +311,72 @@ function determineAttendanceStatus(member) {
     return 'present';
 }
 
+let timetableData = {
+    '한식기능사': [1, 3],
+    '양식기능사': [2, 4],
+    '일식기능사': [2, 4],
+    '중식기능사': [2, 4],
+    '제과기능사': [1, 3],
+    '제빵기능사': [2, 4],
+    '제과제빵기능사': [1, 2, 3, 4],
+    '복어기능사': [5],
+    '산업기사': [5],
+    '가정요리': [2, 4],
+    '브런치': [5]
+};
+
+async function checkTimetableAllowed(member) {
+    if (!member || !member.course) return true;
+    
+    try {
+        const res = await fetch(getFetchUrl('timetable') + '&t=' + Date.now());
+        if (res.ok) {
+            const apiData = await res.json();
+            if (apiData && Object.keys(apiData).length > 0) {
+                timetableData = { ...timetableData, ...apiData };
+            }
+        }
+    } catch (e) {
+        console.error("Timetable fetch failed", e);
+    }
+    
+    const today = new Date();
+    const dayOfWeek = today.getDay(); // 0(Sun) ~ 6(Sat)
+    
+    const courses = member.course.split(',').map(c => c.trim().replace(/\([^)]*\)/g, '').trim());
+    
+    let hasClassToday = false;
+    let foundTimetableEntry = false;
+    
+    for (const cName of courses) {
+        if (timetableData[cName]) {
+            foundTimetableEntry = true;
+            if (timetableData[cName].includes(dayOfWeek)) {
+                hasClassToday = true;
+                break;
+            }
+        } else if (timetableData[cName.replace(/\s/g, '')]) {
+             foundTimetableEntry = true;
+             if (timetableData[cName.replace(/\s/g, '')].includes(dayOfWeek)) {
+                hasClassToday = true;
+                break;
+             }
+        }
+    }
+    
+    if (foundTimetableEntry && !hasClassToday) {
+        return false;
+    }
+    return true;
+}
+
 async function processAttendance(inputNumOrObj, overridePhoto = null) {
     try {
         let member = null;
         if (typeof inputNumOrObj === 'object' && inputNumOrObj !== null) {
             member = inputNumOrObj;
         } else {
-            const res = await fetch(`${API_BASE}/members?t=` + Date.now());
+            const res = await fetch(getFetchUrl('members') + '&t=' + Date.now());
             const rawMembers = await res.json();
             const members = Array.isArray(rawMembers) ? rawMembers.filter(m => !['delete', 'trash', 'hold', 'completed'].includes(m.status)) : [];
             member = members.find(m => m.phone && m.phone.replace(/-/g, '').endsWith(inputNumOrObj));
@@ -310,14 +386,22 @@ async function processAttendance(inputNumOrObj, overridePhoto = null) {
             showStatus("등록되지 않은 번호입니다.", "red");
             return;
         }
+        
+        // --- NEW: Check if today is a valid class day ---
+        const isAllowed = await checkTimetableAllowed(member);
+        if (!isAllowed) {
+            showStatus("오늘은 수업이 없는 날입니다.", "red");
+            return; // Reject attendance
+        }
+        // ------------------------------------------------
 
         const today = new Date().toISOString().split('T')[0];
         const status = determineAttendanceStatus(member);
 
-        const postRes = await fetch(`${API_BASE}/attendance`, {
+        const postRes = await fetch(getFetchUrl('attendance', true), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ memberId: member.id, date: today, status: status })
+            body: JSON.stringify({ memberId: member.id, date: today, status: status, course: member.course })
         });
 
         if (postRes.ok) {

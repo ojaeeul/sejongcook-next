@@ -98,6 +98,8 @@ import { getSettings } from "@/lib/settings";
 
 import { AuthProvider } from "@/context/AuthContext";
 
+import InstallPWA from "@/components/InstallPWA";
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -108,6 +110,9 @@ export default async function RootLayout({
   return (
     <html lang="ko" className={`${gugi.variable} ${jua.variable} ${nanumPen.variable}`} suppressHydrationWarning>
       <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#ffffff" />
+        
         {/* Pretendard Font - Kept as CDN for specific version control or moved to globals if preferred, suppressing warning for now */}
 
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />

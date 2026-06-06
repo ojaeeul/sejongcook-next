@@ -54,6 +54,7 @@ export default function AdminPopupsPage() {
     const [uploading, setUploading] = useState(false); // New uploading state
     const [editingId, setEditingId] = useState<number | null>(null);
     const [editForm, setEditForm] = useState<Popup | null>(null);
+    const [resetText, setResetText] = useState('🔄 내 브라우저 24시간 안보기 해제');
 
     useEffect(() => {
         fetchPopups();
@@ -78,6 +79,31 @@ export default function AdminPopupsPage() {
         const updatedPopups = popups.map(p =>
             p.id === id ? { ...p, isActive: !currentStatus } : p
         );
+        setPopups(updatedPopups);
+        await savePopups(updatedPopups);
+    };
+
+    const addNewImagePopup = async () => {
+        const newId = popups.length > 0 ? Math.max(...popups.map(p => p.id)) + 1 : 1;
+        const newPopup: Popup = {
+            id: newId,
+            title: `새 이미지 팝업 ${newId}`,
+            type: 'image',
+            imageUrl: '',
+            link: '/',
+            isActive: false,
+            position: { top: 100, left: 100 },
+            size: { width: 400, height: 600 }
+        };
+        const updatedPopups = [newPopup, ...popups];
+        setPopups(updatedPopups);
+        await savePopups(updatedPopups);
+        startEdit(newPopup);
+    };
+
+    const deletePopup = async (id: number) => {
+        if (!confirm('정말 삭제하시겠습니까?')) return;
+        const updatedPopups = popups.filter(p => p.id !== id);
         setPopups(updatedPopups);
         await savePopups(updatedPopups);
     };
@@ -107,7 +133,7 @@ export default function AdminPopupsPage() {
         formData.append('file', file);
 
         try {
-            const url = '/api/admin/data/upload?_t=' + Date.now();
+            const url = '/api/admin/upload?_t=' + Date.now();
             const res = await fetch(url, {
                 method: 'POST',
                 body: formData,
@@ -183,7 +209,31 @@ export default function AdminPopupsPage() {
 
     return (
         <div className="p-8 bg-gray-50 min-h-screen font-sans">
-            <h1 className="text-3xl font-extrabold mb-8 text-gray-900 border-b pb-4">팝업 관리자</h1>
+            <div className="flex justify-between items-center mb-8 border-b pb-4">
+                <div className="flex items-center gap-4">
+                    <h1 className="text-3xl font-extrabold text-gray-900">팝업 관리자</h1>
+                    <button 
+                        onClick={() => {
+                            for (let i = 0; i < localStorage.length; i++) {
+                                const key = localStorage.key(i);
+                                if (key && key.startsWith('popup_hidden_')) {
+                                    localStorage.removeItem(key);
+                                }
+                            }
+                            setResetText('✅ 해제되었습니다!');
+                            setTimeout(() => {
+                                setResetText('🔄 내 브라우저 24시간 안보기 해제');
+                            }, 3000);
+                        }}
+                        className="text-xs bg-gray-200 text-gray-700 px-3 py-1.5 rounded hover:bg-gray-300 font-bold transition-colors"
+                    >
+                        {resetText}
+                    </button>
+                </div>
+                <button onClick={addNewImagePopup} className="bg-indigo-600 text-white px-5 py-2.5 rounded-lg shadow font-bold hover:bg-indigo-700 transition-colors flex items-center gap-2">
+                    <span>➕</span> 새 이미지 팝업 추가
+                </button>
+            </div>
 
             <div className="space-y-8">
                 {popups.map(popup => (
@@ -205,9 +255,14 @@ export default function AdminPopupsPage() {
                                     {popup.isActive ? '현재 노출중 ON' : '비노출 OFF'}
                                 </button>
                                 {editingId !== popup.id && (
-                                    <button onClick={() => startEdit(popup)} className="bg-blue-600 text-white border border-blue-600 px-4 py-1.5 rounded text-xs hover:bg-blue-700 font-bold shadow-sm transition-colors">
-                                        수정하기
-                                    </button>
+                                    <>
+                                        <button onClick={() => startEdit(popup)} className="bg-blue-600 text-white border border-blue-600 px-4 py-1.5 rounded text-xs hover:bg-blue-700 font-bold shadow-sm transition-colors">
+                                            수정하기
+                                        </button>
+                                        <button onClick={() => deletePopup(popup.id)} className="bg-red-500 text-white px-4 py-1.5 rounded text-xs hover:bg-red-600 font-bold shadow-sm transition-colors">
+                                            삭제
+                                        </button>
+                                    </>
                                 )}
                             </div>
                         </div>

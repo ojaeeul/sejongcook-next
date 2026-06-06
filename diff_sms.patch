@@ -1,0 +1,721 @@
+diff --git a/Sejong/SejongAttendance/public/sms_v3.js b/Sejong/SejongAttendance/public/sms_v3.js
+index e16d8d9..2129e55 100644
+--- a/Sejong/SejongAttendance/public/sms_v3.js
++++ b/Sejong/SejongAttendance/public/sms_v3.js
+@@ -308,178 +308,24 @@ function processAttendanceData() {
+     }
+ }
+ 
++
+ function getMemberScheduledDate(memberId, courseFilter) {
++    const milestones = getMemberAllMilestones(memberId, courseFilter);
+     const today = new Date();
+-
+-    // Filter holidays/Sundays like ledger.js
+-    let memberRecords = (attendanceByMember[memberId] || []).filter(r => {
+-        const dateStr = r.date.split('T')[0];
+-        const isHolidayInSys = holidaysData.some(h => h.date === dateStr);
+-        const isNationalHoliday = !!KOREAN_HOLIDAYS_MAP[dateStr];
+-        const dayOfWeek = r.dateObj.getDay();
+-        return !(isHolidayInSys || isNationalHoliday || dayOfWeek === 0);
+-    }).sort((a, b) => a.dateObj - b.dateObj);
+-
+-    let rollingTotal = 0;
+-    let extCount = 0;
+-    let lastRecordDate = null;
+-    let allMilestones = [];
+-    let hasAnyAttendance = false;
+-
+-    const getCycle = (val) => {
+-        let vRaw = Math.round(val * 10);
+-        const isDual = (courseFilter && courseFilter.includes('제과제빵'));
+-        if (isDual) {
+-            if (vRaw < 170) return 0;
+-            return Math.floor((vRaw - 170) / 160) + 1;
+-        } else {
+-            if (vRaw < 90) return 0;
+-            return Math.floor((vRaw - 90) / 80) + 1;
+-        }
+-    };
+-
+-    // [1] Check Sync Data
+-    // 1단계 동기화: window.ledgerSyncData 최우선 탐색
+-    if (window.ledgerSyncData) {
+-        for (let mOffset = -12; mOffset <= 24; mOffset++) {
+-            const d = new Date(today.getFullYear(), today.getMonth() + mOffset, 1);
+-            const y = d.getFullYear();
+-            const m = d.getMonth() + 1;
+-            const cleanF = (courseFilter || 'all').replace(/\([^)]*\)/g, '').trim();
+-            const syncKey = `${memberId}_${y}_${m}_${cleanF}`;
+-            if (window.ledgerSyncData[syncKey]) {
+-                allMilestones.push({ year: y, month: m, day: window.ledgerSyncData[syncKey] });
+-            }
+-        }
+-    }
+-
+-    try {
+-        const syncData = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
+-        for (let mOffset = -12; mOffset <= 24; mOffset++) {
+-            const d = new Date(today.getFullYear(), today.getMonth() + mOffset, 1);
+-            const y = d.getFullYear();
+-            const m = d.getMonth() + 1;
+-            const cleanF = (courseFilter || 'all').replace(/\([^)]*\)/g, '').trim();
+-            const syncKey = `${memberId}_${y}_${m}_${cleanF}`;
+-            // 윈도우 동기화 데이터에 없다면 로컬스토리지 백업 확인
+-            if (syncData[syncKey] && !allMilestones.some(ms => ms.year === y && ms.month === m)) {
+-                allMilestones.push({ year: y, month: m, day: syncData[syncKey] });
+-            }
+-        }
+-    } catch (e) { }
+-
+-    for (const r of memberRecords) {
+-        if (courseFilter) {
+-            const rClean = (r.course || '').replace(/\([^)]*\)/g, '').trim();
+-            const fClean = courseFilter.replace(/\([^)]*\)/g, '').trim();
+-            if (rClean !== fClean) continue;
+-        }
+-
+-        const courseToCheck = courseFilter || r.course || '';
+-        const inc = courseToCheck.includes('제과제빵') ? 1.0 : 1.0;
+-        const isMarker = ['[', ']'].includes(r.status);
+-        const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(String(r.status));
+-        const isAbsent = r.status === 'absent' || (typeof r.status === 'string' && r.status.startsWith('X'));
+-        const isExtension = r.status === 'extension' || (typeof r.status === 'string' && (r.status.startsWith('연') || r.status.includes('연장') || r.status.startsWith('E')));
+-        const isRegular = r.status === 'present' || isNumericPresent || isAbsent;
+-
+-        if (isMarker || isRegular) {
+-            const prevNet = rollingTotal;
+-            rollingTotal += inc;
+-            rollingTotal = Math.round(rollingTotal * 10) / 10;
+-            const currNet = rollingTotal;
+-
+-            const prevCycle = getCycle(prevNet);
+-            const currCycle = getCycle(currNet);
+-            if (currCycle > prevCycle || String(r.status) === '9') {
+-                // [Sync Check] Priority to sheet.html's determined date
+-                try {
+-                    const syncData = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
+-                    const cleanF = (courseFilter || 'all').replace(/\([^)]*\)/g, '').trim();
+-                    const syncKey = `${memberId}_${r.yearNum}_${r.monthNum}_${cleanF}`;
+-                    if (syncData[syncKey]) {
+-                        allMilestones.push({ year: r.yearNum, month: r.monthNum, day: syncData[syncKey] });
+-                    } else {
+-                        allMilestones.push({ year: r.yearNum, month: r.monthNum, day: r.dateObj.getDate() });
+-                    }
+-                } catch (e) {
+-                    allMilestones.push({ year: r.yearNum, month: r.monthNum, day: r.dateObj.getDate() });
+-                }
+-            }
+-            lastRecordDate = r.dateObj;
+-            hasAnyAttendance = true;
+-        }
+-    }
+-
+-    // [Sync Check Part 2] Check for calculated but not yet reached months
+-    try {
+-        const syncData = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
+-        for (let mOffset = 0; mOffset <= 2; mOffset++) {
+-            const d = new Date(today.getFullYear(), today.getMonth() + mOffset, 1);
+-            const y = d.getFullYear();
+-            const m = d.getMonth() + 1;
+-            const cleanF = (courseFilter || 'all').replace(/\([^)]*\)/g, '').trim();
+-            const syncKey = `${memberId}_${y}_${m}_${cleanF}`;
+-            if (syncData[syncKey]) {
+-                const dayNum = syncData[syncKey];
+-                if (!allMilestones.some(ms => ms.year === y && ms.month === m)) {
+-                    allMilestones.push({ year: y, month: m, day: dayNum });
+-                }
+-            }
+-        }
+-    } catch (e) { }
+-
+-    // Simulation like ledger.js
+-    if (hasAnyAttendance) {
+-        const firstDayOfSim = new Date(today.getFullYear(), today.getMonth() - 6, 1);
+-        let simDate = new Date(firstDayOfSim);
+-        if (lastRecordDate && lastRecordDate > firstDayOfSim) {
+-            simDate = new Date(lastRecordDate.getTime() + 86400000);
+-        }
+-
+-        const limitDate = new Date(3000, 11, 31);
+-        let currentNetSim = rollingTotal;
+-
+-        while (simDate <= limitDate) {
+-            const dateStr = simDate.toISOString().split('T')[0];
+-            const dayOfWeek = simDate.getDay();
+-            const isNationalHoliday = !!KOREAN_HOLIDAYS_MAP[dateStr];
+-            const isHolidayInSys = holidaysData.some(h => h.date === dateStr);
+-            const isHoliday = isHolidayInSys || isNationalHoliday;
+-
+-            // 과정별 유효 요일 확인
+-            let isValidDay = true;
+-            if (courseFilter && COURSE_SCHEDULES[courseFilter]) {
+-                isValidDay = COURSE_SCHEDULES[courseFilter].includes(dayOfWeek);
+-            }
+-
+-            if (isValidDay && !isHoliday && dayOfWeek !== 0) {
+-                const prevCycleSim = getCycle(currentNetSim);
+-                currentNetSim += inc;
+-                currentNetSim = Math.round(currentNetSim * 10) / 10;
+-
+-                if (getCycle(currentNetSim) > prevCycleSim) {
+-                    allMilestones.push({ year: simDate.getFullYear(), month: simDate.getMonth() + 1, day: simDate.getDate() });
+-                    // 시뮬레이션은 당분간 6개월치만
+-                    if (simDate > new Date(today.getFullYear(), today.getMonth() + 7, 0)) break;
+-                }
+-            }
+-            simDate.setDate(simDate.getDate() + 1);
+-        }
+-    }
+-
+-    if (allMilestones.length > 0) {
+-        allMilestones.sort((a, b) => new Date(a.year, a.month - 1, a.day) - new Date(b.year, b.month - 1, b.day));
+-        // For @@@, return the closest future (or current today) date
+-        const best = allMilestones.find(m => {
++    today.setHours(0,0,0,0);
++    
++    if (milestones.length > 0) {
++        // Return the closest future (or today) date, or the last one
++        const best = milestones.find(m => {
+             const d = new Date(m.year, m.month - 1, m.day);
+             return d >= today;
+         });
+-        return best || allMilestones[allMilestones.length - 1];
++        return best || milestones[milestones.length - 1];
+     }
+     return null;
+ }
+ 
++
+ function processCourses() {
+     groupedCourses = { '미지정': [] };
+     allMembers.forEach(m => {
+@@ -593,279 +439,24 @@ function renderTargetList() {
+         membersDiv.style.background = '#f8fafc';
+         membersDiv.style.padding = '5px 0';
+ 
+-        membersInCourse.forEach(m => {
+-            const mDiv = document.createElement('div');
+-            mDiv.className = 'member-row';
+-            const phone = targetType === 'student' ? m.phone : m.phone_guardian;
+-            const hasPhone = !!(phone && phone.trim());
+-
+-            mDiv.dataset.id = m.id;
+-            mDiv.dataset.phone = phone || '';
+-            mDiv.dataset.course = cName;
+-
+-            mDiv.style.padding = '8px 20px 8px 40px';
+-            mDiv.style.fontSize = '0.9rem';
+-            mDiv.style.cursor = hasPhone ? 'pointer' : 'not-allowed';
+-            mDiv.style.display = 'flex';
+-            mDiv.style.justifyContent = 'space-between';
+-            mDiv.style.borderBottom = '1px solid #f1f5f9';
+-            if (!hasPhone) mDiv.style.opacity = '0.6';
+-
+-            const isSelected = selectedTargets.some(t => String(t.id) === String(m.id) && t.selectedCourse === cName);
+-            if (isSelected) mDiv.style.color = '#3b82f6';
+-
+-            const isInactive = m.status === 'trash' || m.status === 'delete';
+-            const statusLabel = isInactive ? '<span style="color:#ef4444; font-size:0.75rem; margin-left:4px;">(휴원)</span>' : '';
+-            const typeLabel = targetType === 'student' ? '<span style="color:#94a3b8; font-size:0.7rem; margin-right:4px;">수강생:</span>' : '<span style="color:#94a3b8; font-size:0.7rem; margin-right:4px;">학부모:</span>';
+-
+-            mDiv.innerHTML = `
+-                <span style="display:flex; align-items:center;">
+-                    <i class="material-icons" style="font-size:1rem; vertical-align:middle; margin-right:8px; color:${isSelected ? '#3b82f6' : '#cbd5e1'};">
+-                        ${isSelected ? 'check_circle' : (hasPhone ? 'radio_button_unchecked' : 'error_outline')}
+-                    </i>
+-                    <span style="font-weight:600;">${m.name}</span>
+-                    ${statusLabel}
+-                </span>
+-                <span style="font-size:0.8rem; color:${hasPhone ? '#64748b' : '#ef4444'};">
+-                    ${typeLabel}${hasPhone ? phone : '번호 없음'}
+-                </span>
+-            `;
+-
+-            mDiv.onclick = (e) => {
+-                e.stopPropagation();
+-                if (!hasPhone) {
+-                    showModalAlert(`${m.name} 수강생의 ${targetType === 'student' ? '휴대폰' : '학부모'} 번호가 없습니다.`, true);
+-                    return;
+-                }
+-                toggleTarget(m, phone, cName);
+-            };
+-            membersDiv.appendChild(mDiv);
+-        });
+-
+-        header.onclick = () => {
+-            const isHidden = membersDiv.style.display === 'none';
+-            membersDiv.style.display = isHidden ? 'block' : 'none';
+-            header.querySelector('i:last-child').textContent = isHidden ? 'keyboard_arrow_up' : 'keyboard_arrow_down';
+-            if (isHidden) expandedCourses.add(cName);
+-            else expandedCourses.delete(cName);
+-            saveExpandedCourses();
+-        };
+-
+-        groupDiv.appendChild(header);
+-        groupDiv.appendChild(membersDiv);
+-        listDiv.appendChild(groupDiv);
+-    });
+-    // Ensure selected target labels (badges) are updated with current filter's dates
+-    updateSelectedTags();
+-}
+-
+-function updateCheckmarks() {
+-    document.querySelectorAll('.member-row').forEach(mDiv => {
+-        const id = mDiv.dataset.id;
+-        const course = mDiv.dataset.course;
+-        const isSelected = selectedTargets.some(t => String(t.id) === id && t.selectedCourse === course);
+-
+-        mDiv.style.color = isSelected ? '#3b82f6' : '';
+-        const iTag = mDiv.querySelector('i');
+-        if (iTag) {
+-            iTag.style.color = isSelected ? '#3b82f6' : '#cbd5e1';
+-            iTag.textContent = isSelected ? 'check_circle' : 'radio_button_unchecked';
+-        }
+-    });
+-}
+-
+-function toggleTarget(member, phone, courseName) {
+-    if (!phone) {
+-        showModalAlert('전화번호가 없습니다.', true);
+-        return;
+-    }
+-
+-    const index = selectedTargets.findIndex(t => String(t.id) === String(member.id) && t.selectedCourse === courseName);
+-    if (index > -1) {
+-        selectedTargets.splice(index, 1);
+-    } else {
+-        selectedTargets.push({ ...member, phone: phone, selectedCourse: courseName });
+-    }
+-
+-    updateCheckmarks();
+-    updateSelectedTags();
+-    saveSelectedTargets();
+-}
+-
+-/**
+- * Synchronizes all selected targets' phone numbers when the global targetType changes.
+- * It looks up the original member data from allMembers to ensure accuracy.
+- */
+-function syncSelectedPhones() {
+-    const targetType = document.querySelector('input[name="targetType"]:checked')?.value || 'student';
+-
+-    selectedTargets = selectedTargets.map(t => {
+-        // Find the full member data to get both original phone numbers
+-        const original = allMembers.find(m => String(m.id) === String(t.id));
+-        if (original) {
+-            const newPhone = targetType === 'student' ? original.phone : original.phone_guardian;
+-            if (newPhone && newPhone.trim()) {
+-                return { ...t, phone: newPhone };
+-            }
+-        }
+-        return t;
+-    });
+-
+-    updateSelectedTags();
+-    saveSelectedTargets();
+-}
+-
+-function updateSelectedTags() {
+-    const tagsDiv = document.getElementById('targetTags');
+-    const countSpan = document.getElementById('targetCount');
+-
+-    tagsDiv.innerHTML = '';
+-    countSpan.textContent = `${selectedTargets.length}명 / 발송예정 건수: ${selectedTargets.length}`;
+-
+-    selectedTargets.forEach((t, index) => {
+-        const tag = document.createElement('div');
+-        tag.className = 'target-tag';
+-        tag.style.background = '#eff6ff';
+-        tag.style.color = '#3b82f6';
+-        tag.style.borderColor = '#93c5fd';
+-        tag.style.display = 'inline-flex';
+-        tag.style.alignItems = 'center';
+-
+-        // Strip study time from course name
+-        const cleanCourse = (t.selectedCourse || '').replace(/\(\d{1,2}:\d{2}\)/, '').trim();
+-
+-        // Get payment date
+-        let datePart = '';
+-        const usePaymentFilter = document.getElementById('usePaymentFilter') ? document.getElementById('usePaymentFilter').checked : false;
+-        const rangeStartVal = document.getElementById('paymentRangeStart') ? document.getElementById('paymentRangeStart').value : null;
+-        const rangeEndVal = document.getElementById('paymentRangeEnd') ? document.getElementById('paymentRangeEnd').value : null;
+-        const rangeStart = rangeStartVal ? new Date(rangeStartVal + 'T00:00:00') : null;
+-        const rangeEnd = rangeEndVal ? new Date(rangeEndVal + 'T00:00:00') : null;
+-
+-        let sched = null;
+-        if (rangeStart && rangeEnd) {
+-            const milestones = getAllMilestonesForRange(t.id, t.selectedCourse === '미지정' ? null : t.selectedCourse, rangeStart, rangeEnd);
+-            if (milestones.length > 0) {
+-                sched = milestones[0];
+-            }
+-        }
+-        if (!sched) {
+-            sched = getMemberScheduledDate(t.id, t.selectedCourse === '미지정' ? null : t.selectedCourse);
+-        }
+-
+-        if (sched) {
+-            const mm = String(sched.month).padStart(2, '0');
+-            const dd = String(sched.day).padStart(2, '0');
+-            datePart = `<span style="font-size:0.75rem; color:#2563eb; margin-left:6px; font-weight:700;">${mm}/${dd}</span>`;
+-        }
+-
+-        tag.innerHTML = `
+-            <span style="font-weight:700;">${t.name}</span>
+-            <span style="font-size:0.65rem; color:#475569; margin-left:5px;">${cleanCourse}</span>
+-            ${datePart}
+-            <i class="material-icons" style="margin-left:4px; cursor:pointer; color:#94a3b8;" onclick="removeTarget(${index})">cancel</i>
+-        `;
+-        tagsDiv.appendChild(tag);
+-    });
+-}
+-
+-function removeTarget(index) {
+-    selectedTargets.splice(index, 1);
+-    updateCheckmarks();
+-    updateSelectedTags();
+-    saveSelectedTargets();
+-}
+-
+-/**
+- * Resets all list filters (Search, Inactive, Payment) to show the full student list.
+- * Triggered by clicking the 'Class List' (반목록) header.
+- */
+-function resetFilters() {
+-    const pf = document.getElementById('usePaymentFilter');
+-    const ii = document.getElementById('includeInactive');
+-    const search = document.getElementById('memberSearchInputSide');
+-
+-    if (pf) pf.checked = false;
+-    if (ii) ii.checked = true;
+-    if (search) search.value = '';
+-
+-    renderTargetList();
+-    saveAllDrafts();
+-}
+-
+-function selectAllCourses() {
+-    const includeInactive = document.getElementById('includeInactive').checked;
+-    const targetType = document.querySelector('input[name="targetType"]:checked').value;
+-
+-    Object.keys(groupedCourses).forEach(cName => {
+-        let membersInCourse = groupedCourses[cName];
+-        if (!includeInactive) {
+-            membersInCourse = membersInCourse.filter(m => m.status !== 'trash' && m.status !== 'delete');
+-        }
+-        membersInCourse.forEach(m => {
+-            const phone = targetType === 'student' ? m.phone : m.phone_guardian;
+-            if (phone) {
+-                const alreadySelected = selectedTargets.some(t => String(t.id) === String(m.id) && t.phone === phone && t.selectedCourse === cName);
+-                if (!alreadySelected) {
+-                    selectedTargets.push({ ...m, phone: phone, selectedCourse: cName });
+-                }
+-            }
+-        });
+-    });
+-
+-    updateCheckmarks();
+-    updateSelectedTags();
+-    saveSelectedTargets();
+-}
+-
+-function selectFilteredCourses() {
+-    const includeInactive = document.getElementById('includeInactive').checked;
+-    const targetType = document.querySelector('input[name="targetType"]:checked').value;
+-    const rangeStartVal = document.getElementById('paymentRangeStart').value;
+-    const rangeEndVal = document.getElementById('paymentRangeEnd').value;
+-    const searchVal = (document.getElementById('memberSearchInputSide') ? document.getElementById('memberSearchInputSide').value : '').toLowerCase();
+-
+-    const rangeStart = rangeStartVal ? new Date(rangeStartVal + 'T00:00:00') : null;
+-    const rangeEnd = rangeEndVal ? new Date(rangeEndVal + 'T00:00:00') : null;
+-
+-    let totalSelectedNow = 0;
+-    selectedTargets = []; // Clear previous selections to strictly match the current filter
+-
+-
+-    Object.keys(groupedCourses).sort().forEach(cName => {
+-        let membersInCourse = groupedCourses[cName];
+-
+-        // 1. Inactive Filter
+-        if (!includeInactive) {
+-            membersInCourse = membersInCourse.filter(m => m.status !== 'trash' && m.status !== 'delete');
+-        }
+-
+-        // 2. Range Filter (Button always applies the range if one is selected)
+-        if (rangeStart && rangeEnd) {
+-            membersInCourse = membersInCourse.filter(m => {
+-                const schedArr = getAllMilestonesForRange(m.id, cName === '미지정' ? null : cName, rangeStart, rangeEnd);
+-                return schedArr.length > 0;
+-            });
+-        }
+-
+-        // 3. Search Filter
+-        if (searchVal) {
+-            membersInCourse = membersInCourse.filter(m =>
+-                m.name.toLowerCase().includes(searchVal) ||
+-                (m.phone && m.phone.includes(searchVal)) ||
+-                (m.phone_guardian && m.phone_guardian.includes(searchVal)) ||
+-                cName.toLowerCase().includes(searchVal)
+-            );
+-        }
+-
+-        // Apply selection
+         membersInCourse.forEach(m => {
+             const phone = targetType === 'student' ? m.phone : m.phone_guardian;
+             if (phone && phone.trim()) {
+-                const alreadySelected = selectedTargets.some(t => String(t.id) === String(m.id) && t.selectedCourse === cName);
+-                if (!alreadySelected) {
+-                    selectedTargets.push({ ...m, phone: phone, selectedCourse: cName });
+-                    totalSelectedNow++;
++                if (rangeStart && rangeEnd) {
++                    const schedArr = getAllMilestonesForRange(m.id, cName === '미지정' ? null : cName, rangeStart, rangeEnd);
++                    schedArr.forEach(sched => {
++                        const alreadySelected = selectedTargets.some(t => String(t.id) === String(m.id) && t.selectedCourse === cName && t.scheduledDate && t.scheduledDate.year === sched.year && t.scheduledDate.month === sched.month && t.scheduledDate.day === sched.day);
++                        if (!alreadySelected) {
++                            selectedTargets.push({ ...m, phone: phone, selectedCourse: cName, scheduledDate: sched });
++                            totalSelectedNow++;
++                        }
++                    });
++                } else {
++                    const alreadySelected = selectedTargets.some(t => String(t.id) === String(m.id) && t.selectedCourse === cName && !t.scheduledDate);
++                    if (!alreadySelected) {
++                        selectedTargets.push({ ...m, phone: phone, selectedCourse: cName });
++                        totalSelectedNow++;
++                    }
+                 }
+             }
+         });
+@@ -1232,13 +823,7 @@ function sendSms() {
+         let msg = text.replace(/%%%/g, t.name);
+ 
+         let tuitionDateStr = '지정';
+-        let sched = null;
+-        if (rangeStart && rangeEnd) {
+-            const milestones = getAllMilestonesForRange(t.id, t.selectedCourse === '미지정' ? null : t.selectedCourse, rangeStart, rangeEnd);
+-            if (milestones.length > 0) {
+-                sched = milestones[0];
+-            }
+-        }
++        let sched = t.scheduledDate || null;
+         if (!sched) {
+             sched = getMemberScheduledDate(t.id, t.selectedCourse === '미지정' ? null : t.selectedCourse);
+         }
+@@ -1575,12 +1160,12 @@ function getAllMilestonesForMonth(memberId, courseFilter, year, month) {
+     return milestones.filter(m => m.year === year && m.month === month);
+ }
+ 
++
+ function getMemberAllMilestones(memberId, courseFilter) {
+-    // Helper to get raw array without "best" logic
+-    let milestones = [];
++    let allRawMilestones = [];
+     const today = new Date();
++    today.setHours(0,0,0,0);
+ 
+-    // Filter records
+     let records = (attendanceByMember[memberId] || []).filter(r => {
+         const dateStr = r.date.split('T')[0];
+         const isHolidayInSys = holidaysData.some(h => h.date === dateStr);
+@@ -1590,13 +1175,11 @@ function getMemberAllMilestones(memberId, courseFilter) {
+     }).sort((a, b) => a.dateObj - b.dateObj);
+ 
+     let rollingTotal = 0;
+-    let extCount = 0;
+     let lastRecordDate = null;
+     let hasAnyAttendance = false;
+ 
+-    const getCycle = (val) => {
++    const getCycle = (val, isDual) => {
+         let vRaw = Math.round(val * 10);
+-        const isDual = (courseFilter && courseFilter.includes('제과제빵'));
+         if (isDual) {
+             if (vRaw < 170) return 0;
+             return Math.floor((vRaw - 170) / 160) + 1;
+@@ -1606,20 +1189,45 @@ function getMemberAllMilestones(memberId, courseFilter) {
+         }
+     };
+ 
++    const isDualBakeryLocal = (courseFilter || '').replace(/\s/g, '').includes('제과제빵');
++    const targetCount = isDualBakeryLocal ? 17 : 9;
++
+     // [1] Check Sync Data
+     try {
+         const syncData = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
+-        for (let mOffset = -6; mOffset <= 6; mOffset++) {
++        for (let mOffset = -12; mOffset <= 24; mOffset++) {
+             const d = new Date(today.getFullYear(), today.getMonth() + mOffset, 1);
+             const y = d.getFullYear();
+             const m = d.getMonth() + 1;
+             const cleanFilter = (courseFilter || 'all').replace(/\([^)]*\)/g, '').trim();
+             const syncKey = `${memberId}_${y}_${m}_${cleanFilter}`;
+             if (syncData[syncKey]) {
+-                milestones.push({ year: y, month: m, day: syncData[syncKey] });
++                const rawSync = syncData[syncKey];
++                const days = Array.isArray(rawSync) ? rawSync : (typeof rawSync === 'number' ? [rawSync] : []);
++                days.forEach(d => {
++                    if (d > 0) allRawMilestones.push({ year: y, month: m, day: d });
++                });
+             }
+         }
+-    } catch (e) { }
++    } catch (e) {}
++    if (window.ledgerSyncData) {
++        for (let mOffset = -12; mOffset <= 24; mOffset++) {
++            const d = new Date(today.getFullYear(), today.getMonth() + mOffset, 1);
++            const y = d.getFullYear();
++            const m = d.getMonth() + 1;
++            const cleanFilter = (courseFilter || 'all').replace(/\([^)]*\)/g, '').trim();
++            const syncKey = `${memberId}_${y}_${m}_${cleanFilter}`;
++            if (window.ledgerSyncData[syncKey] && !allRawMilestones.some(ms => ms.year === y && ms.month === m)) {
++                const rawSync = window.ledgerSyncData[syncKey];
++                const days = Array.isArray(rawSync) ? rawSync : (typeof rawSync === 'number' ? [rawSync] : []);
++                days.forEach(d => {
++                    if (d > 0) allRawMilestones.push({ year: y, month: m, day: d });
++                });
++            }
++        }
++    }
++
++    let rollingTotalUpToToday = 0;
+ 
+     for (const r of records) {
+         if (courseFilter) {
+@@ -1628,22 +1236,35 @@ function getMemberAllMilestones(memberId, courseFilter) {
+             if (rClean !== fClean) continue;
+         }
+ 
+-        const courseToCheck = courseFilter || r.course || '';
+-        const inc = courseToCheck.replace(/\s/g, '').includes('제과제빵') ? 1.0 : 1.0;
+-        const isMarker = ['[', ']'].includes(r.status);
+-        const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(String(r.status));
+-        const isAbsent = r.status === 'absent' || (typeof r.status === 'string' && r.status.startsWith('X'));
+-        const isRegular = r.status === 'present' || isNumericPresent || isAbsent;
++        const strStatus = String(r.status);
++        const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(strStatus);
++        const isAbsent = r.status === 'absent' || strStatus.startsWith('X') || strStatus.includes('결석');
++        const isEarly = r.status === 'early' || strStatus.includes('조퇴');
++        const isTardy = r.status === 'tardy' || r.status === 'late' || strStatus.includes('지각') || strStatus.includes('△');
++        const isFirstLast = strStatus.includes('첫') || strStatus.includes('종료') || strStatus === '[' || strStatus === ']';
++        const isMarker = ['[', ']'].includes(r.status) || (typeof r.status === 'string' && (r.status.includes('첫') || r.status.includes('종료')));
++        const isExtension = r.status === 'extension' || strStatus.startsWith('연') || strStatus.includes('연장') || strStatus.startsWith('E');
++        const isRegular = r.status === 'present' || isNumericPresent || isAbsent || isEarly || isTardy || isFirstLast;
++
++        if (isMarker || isRegular || isExtension) {
++            lastRecordDate = r.dateObj;
++        }
+ 
+         if (isMarker || isRegular) {
+-            const prevCycle = getCycle(rollingTotal);
+-            rollingTotal += inc;
++            const prevNet = rollingTotal;
++            rollingTotal += 1.0;
+             rollingTotal = Math.round(rollingTotal * 10) / 10;
+-            const currCycle = getCycle(rollingTotal);
+-            if (currCycle > prevCycle) {
+-                milestones.push({ year: r.yearNum, month: r.monthNum, day: r.dateObj.getDate() });
++            const currNet = rollingTotal;
++
++            const prevCycle = getCycle(prevNet, isDualBakeryLocal);
++            const currCycle = getCycle(currNet, isDualBakeryLocal);
++            
++            if (currCycle > prevCycle || strStatus === '9') {
++                allRawMilestones.push({ year: r.dateObj.getFullYear(), month: r.dateObj.getMonth() + 1, day: r.dateObj.getDate() });
++            }
++            if (r.dateObj <= today) {
++                rollingTotalUpToToday += 1;
+             }
+-            lastRecordDate = r.dateObj;
+             hasAnyAttendance = true;
+         }
+     }
+@@ -1654,44 +1275,75 @@ function getMemberAllMilestones(memberId, courseFilter) {
+         if (lastRecordDate && lastRecordDate > firstDayOfSim) {
+             simDate = new Date(lastRecordDate.getTime() + 86400000);
+         }
+-
++        if (simDate < today) {
++            simDate = new Date(today.getTime());
++        }
+         const limitDate = new Date(3000, 11, 31);
+         let currentNetSim = rollingTotal;
+ 
+         while (simDate <= limitDate) {
+-            const courseToCheck = courseFilter || 'all';
+-            const inc = courseToCheck.includes('제과제빵') ? 1.0 : 1.0;
+-
+             const dateStr = simDate.toISOString().split('T')[0];
+             const dayOfWeek = simDate.getDay();
+             const isNationalHoliday = !!KOREAN_HOLIDAYS_MAP[dateStr];
+             const isHolidayInSys = holidaysData.some(h => h.date === dateStr);
+             const isHoliday = isHolidayInSys || isNationalHoliday;
+ 
+-            // 과정별 유효 요일 확인
+             let isValidDay = true;
+-            if (courseFilter && COURSE_SCHEDULES[courseFilter]) {
+-                isValidDay = COURSE_SCHEDULES[courseFilter].includes(dayOfWeek);
++            if (courseFilter) {
++                const cNameOnly = courseFilter.replace(/\([^)]*\)/g, '').trim();
++                if (COURSE_SCHEDULES[cNameOnly]) {
++                    isValidDay = COURSE_SCHEDULES[cNameOnly].includes(dayOfWeek);
++                }
+             }
+ 
+             if (isValidDay && !isHoliday && dayOfWeek !== 0) {
+-                const prevCycleSim = getCycle(currentNetSim);
+-                currentNetSim += inc;
++                const prevCycleSim = getCycle(currentNetSim, isDualBakeryLocal);
++                currentNetSim += 1.0;
+                 currentNetSim = Math.round(currentNetSim * 10) / 10;
+-
+-                if (getCycle(currentNetSim) > prevCycleSim) {
+-                    milestones.push({ year: simDate.getFullYear(), month: simDate.getMonth() + 1, day: simDate.getDate() });
+-                    // 시뮬레이션은 당분간 6개월치만
++                
++                if (getCycle(currentNetSim, isDualBakeryLocal) > prevCycleSim) {
++                    allRawMilestones.push({ year: simDate.getFullYear(), month: simDate.getMonth() + 1, day: simDate.getDate() });
+                     if (simDate > new Date(today.getFullYear(), today.getMonth() + 7, 0)) break;
+                 }
+             }
+             simDate.setDate(simDate.getDate() + 1);
+         }
+     }
+-    milestones.sort((a, b) => new Date(a.year, a.month - 1, a.day) - new Date(b.year, b.month - 1, b.day));
+-    return milestones;
++
++    allRawMilestones.sort((a, b) => new Date(a.year, a.month - 1, a.day) - new Date(b.year, b.month - 1, b.day));
++
++    // Apply the exact tuition rules
++    let count = rollingTotalUpToToday;
++    let remainingForLoop = count;
++    let imminentCourses = [];
++    let futureCourses = [];
++    let paidMilestonesCount = 0;
++    
++    const normalizeCourse = (c) => (!c || c === 'null') ? null : String(c).trim();
++    const courseNameOnly = (courseFilter || '').replace(/\([^)]*\)/g, '').trim();
++
++    allRawMilestones.forEach(ms => {
++        const msPayment = (typeof paymentsData !== 'undefined' ? paymentsData : []).find(p => p.memberId == memberId && p.year == ms.year && p.month == ms.month && normalizeCourse(p.course) === normalizeCourse(courseNameOnly) && p.status !== 'delete');
++        
++        let requiredAmount = (paidMilestonesCount + imminentCourses.length === 0) ? targetCount : (isDualBakeryLocal ? 16 : 8);
++        
++        if (msPayment && msPayment.status === 'paid') {
++            paidMilestonesCount++;
++            remainingForLoop -= requiredAmount;
++        } else {
++            if (remainingForLoop >= requiredAmount) {
++                imminentCourses.push(ms);
++                remainingForLoop -= requiredAmount;
++            } else {
++                futureCourses.push(ms);
++            }
++        }
++    });
++
++    return [...imminentCourses, ...futureCourses];
+ }
+ 
++
+ function syncCalendarSelection() {
+     renderRangeCalendar();
+     saveAllDrafts(); // Auto save on date change

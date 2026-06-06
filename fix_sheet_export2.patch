@@ -1,0 +1,30 @@
+--- Sejong/SejongAttendance/public/sheet.html
++++ Sejong/SejongAttendance/public/sheet.html
+@@ -2048,15 +2048,25 @@
+                         // 당월 예정일 계산
+                         const stats = getSheetSimulatedScheduledDate(m.id, currentYear, currentMonth, rowCourseNameScope);
+                         const syncKeyNow = `${m.id}_${currentYear}_${currentMonth}_${rowCourseNameScope || 'all'}`;
+-                        window.ledgerSyncData[syncKeyNow] = stats.scheduledDays;
++                        
++                        const finalSyncDays = [...stats.scheduledDays];
++                        if (stats.scheduledDays.length === 0 && stats.foundSimulatedDay) {
++                            finalSyncDays.push(stats.foundSimulatedDay);
++                        }
++                        window.ledgerSyncData[syncKeyNow] = finalSyncDays;
+ 
+                         // 익월 예정일 미리 계산
+                         const nextDate = new Date(currentYear, currentMonth, 1);
+                         const nYear = nextDate.getFullYear();
+                         const nMonth = nextDate.getMonth() + 1;
+                         const nextStats = getSheetSimulatedScheduledDate(m.id, nYear, nMonth, rowCourseNameScope);
+                         const syncKeyNext = `${m.id}_${nYear}_${nMonth}_${rowCourseNameScope || 'all'}`;
+-                        window.ledgerSyncData[syncKeyNext] = nextStats.scheduledDays;
++                        
++                        const finalSyncDaysNext = [...nextStats.scheduledDays];
++                        if (nextStats.scheduledDays.length === 0 && nextStats.foundSimulatedDay) {
++                            finalSyncDaysNext.push(nextStats.foundSimulatedDay);
++                        }
++                        window.ledgerSyncData[syncKeyNext] = finalSyncDaysNext;
+                     }
+                 });
+                 localStorage.setItem('sejong_ledger_sync', JSON.stringify(window.ledgerSyncData));

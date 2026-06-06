@@ -1,5 +1,22 @@
 // Main Configuration
-const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:8000/api' : '/api/sejong';
+
+function getFetchUrl(endpoint, isPost = false) {
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    let url = '';
+    if (isLocal) {
+        if (endpoint === 'settings') {
+            url = 'http://localhost:8000/api/admin/data/settings';
+        } else {
+            url = `http://localhost:8000/api/${endpoint}`;
+        }
+        return isPost ? url : url + (url.includes('?') ? '&' : '?') + `t=${Date.now()}`;
+    } else {
+        const base = `../api.php?board=sejong_${endpoint}`;
+        return isPost ? base : base + `&t=${Date.now()}`;
+    }
+}
+
+const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:8000/api' : '../api.php?board=sejong_';
 let currentInput = "";
 let stream = null;
 let currentMode = 'home';
@@ -154,7 +171,7 @@ async function recognizeAndAttend() {
         showStatus("서버 데이터를 불러오는 중...", "#059669");
         await new Promise(r => setTimeout(r, 20));
 
-        const res = await fetch(`${API_BASE}/members?t=` + Date.now());
+        const res = await fetch(getFetchUrl('members') + '&t=' + Date.now());
         const rawMembers = await res.json();
         const members = Array.isArray(rawMembers) ? rawMembers.filter(m => !['delete', 'trash', 'hold', 'completed'].includes(m.status)) : [];
 
@@ -224,7 +241,7 @@ async function capturePhoto() {
         const photoDataUrl = canvas.toDataURL('image/jpeg', 0.7);
 
         showStatus("회원 정보를 조회 중입니다...", "#3b82f6");
-        const res = await fetch(`${API_BASE}/members?t=` + Date.now());
+        const res = await fetch(getFetchUrl('members') + '&t=' + Date.now());
         const rawMembers = await res.json();
         const members = Array.isArray(rawMembers) ? rawMembers.filter(m => !['delete', 'trash', 'hold', 'completed'].includes(m.status)) : [];
         const member = members.find(m => m.phone && m.phone.replace(/-/g, '').endsWith(currentInput));
@@ -249,7 +266,7 @@ async function capturePhoto() {
         member.photo = photoDataUrl;
         member.faceDescriptor = Array.from(detection.descriptor); // Store for euclidean comparison
 
-        await fetch(`${API_BASE}/members`, {
+        await fetch(getFetchUrl('members', true), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(member)
@@ -300,7 +317,7 @@ async function processAttendance(inputNumOrObj, overridePhoto = null) {
         if (typeof inputNumOrObj === 'object' && inputNumOrObj !== null) {
             member = inputNumOrObj;
         } else {
-            const res = await fetch(`${API_BASE}/members?t=` + Date.now());
+            const res = await fetch(getFetchUrl('members') + '&t=' + Date.now());
             const rawMembers = await res.json();
             const members = Array.isArray(rawMembers) ? rawMembers.filter(m => !['delete', 'trash', 'hold', 'completed'].includes(m.status)) : [];
             member = members.find(m => m.phone && m.phone.replace(/-/g, '').endsWith(inputNumOrObj));
@@ -314,7 +331,7 @@ async function processAttendance(inputNumOrObj, overridePhoto = null) {
         const today = new Date().toISOString().split('T')[0];
         const status = determineAttendanceStatus(member);
 
-        const postRes = await fetch(`${API_BASE}/attendance`, {
+        const postRes = await fetch(getFetchUrl('attendance', true), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ memberId: member.id, date: today, status: status })
