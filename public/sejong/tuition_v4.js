@@ -447,7 +447,7 @@ function getMemberEighthDayInMonth(memberId, year, month, courseFilter = null) {
         let vRaw = Math.round(val * 10);
         if (isDual) {
             if (vRaw < 170) return 0;
-                    return Math.floor((vRaw - 170) / 170) + 1;
+                    return Math.floor((vRaw - 170) / 160) + 1;
                 } else {
                     if (vRaw < 90) return 0;
                     return Math.floor((vRaw - 90) / 80) + 1;

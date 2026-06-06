@@ -491,21 +491,25 @@ function renderTable() {
                 const normalizeCourse = (c) => (!c || c === 'null') ? null : String(c).trim();
 
                 const isDualBakeryLocal = (courseNameOnly && courseNameOnly.replace(/\s/g, '').includes('제과제빵')) || (!courseNameOnly && m.course && m.course.replace(/\s/g, '').includes('제과제빵'));
-                const targetCount = isDualBakeryLocal ? 17 : 9;
+                const firstTargetCount = isDualBakeryLocal ? 17 : 9;
+                const subTargetCount = isDualBakeryLocal ? 16 : 8;
+                let isFirstCycleForThisCourse = true;
                 
                 let remainingForLoop = currentProgressObj.count;
 
                 stats.allMilestones.forEach(ms => {
+                    let currentTargetCount = isFirstCycleForThisCourse ? firstTargetCount : subTargetCount;
                     const msPayment = paymentsData.find(p => p.memberId == m.id && p.year == ms.year && p.month == ms.month && normalizeCourse(p.course) === normalizeCourse(courseNameOnly) && p.status !== 'delete');
                     
                     if (msPayment && msPayment.status === 'paid') {
                         paidMilestonesCount++;
-                        remainingForLoop -= targetCount;
+                        remainingForLoop -= currentTargetCount;
+                            isFirstCycleForThisCourse = false;
                     } else {
                         // 미납(unpaid) 또는 예약(future) 밀스톤
                         // 핵심: 실제 도장(출석 횟수)이 타겟에 도달했을 때만 미납 청구(핑크 날짜 박스 및 미납 표시)를 발생시킵니다!
                         const msDateObj = new Date(ms.year, ms.month - 1, ms.day);
-                        if (remainingForLoop >= targetCount || msDateObj <= today) {
+                        if (remainingForLoop >= currentTargetCount || msDateObj <= today) {
                             if (ms.year === window.currentState.year && ms.month === window.currentState.month) {
                                 isDueThisMonth = true;
                                 imminentCourses.push({
@@ -517,7 +521,8 @@ function renderTable() {
                                 totalDueAmount += courseFee;
                                 hasUnpaidInThisCourse = true;
                             }
-                            remainingForLoop -= targetCount;
+                            remainingForLoop -= currentTargetCount;
+                            isFirstCycleForThisCourse = false;
                         } else {
                             // 아직 횟수가 미달된 미래의 결제건은 미납으로 띄우지 않고 예약일로만 저장 (리스트에 추가 안 함)
                             if (!scheduledDate) {
