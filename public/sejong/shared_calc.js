@@ -74,6 +74,22 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
         }
     }
 
+    
+    const getCycle = (val) => {
+        let vRaw = Math.round(val * 10);
+        if (isDualCourse) {
+            if (vRaw < 170) return 0;
+            return Math.floor((vRaw - 170) / 160) + 1;
+        } else {
+            if (vRaw < 90) return 0;
+            return Math.floor((vRaw - 90) / 80) + 1;
+        }
+    };
+
+    let globalRunningTotal = 0;
+    let globalCurrentCycle = 0;
+    let allMilestones = [];
+
     let carryOverP = 0;
 
     monthsToCalc.forEach(mc => {
@@ -108,6 +124,21 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
             if (isRegularAttendance) {
                 attendances += attendanceIncrement;
             }
+
+            if (isRegularAttendance || isMakeupMarker) {
+                const prevNet = globalRunningTotal;
+                globalRunningTotal += attendanceIncrement;
+                globalRunningTotal = Math.round(globalRunningTotal * 10) / 10;
+                const prevCycle = getCycle(prevNet);
+                const currCycle = getCycle(globalRunningTotal);
+                
+                const dateStr = l.date.split('T')[0];
+                const isForced = adjustment && adjustment.forceRedBoxDates && adjustment.forceRedBoxDates.includes(dateStr);
+                
+                if (currCycle > prevCycle || isForced) {
+                    allMilestones.push({ year: mc.year, month: mc.month, day: parseInt(dateStr.split('-')[2], 10), isReal: true });
+                }
+            }
         });
 
         if (adjustment && adjustment.presentOverride !== undefined) {
@@ -131,20 +162,11 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
 
         let runningTotal = currentMC.carryFromPrev;
 
-        const getCycle = (val) => {
-            let vRaw = Math.round(val * 10);
-            if (isDualCourse) {
-                if (vRaw < 170) return 0;
-                return Math.floor((vRaw - 170) / 170) + 1;
-            } else {
-                if (vRaw < 90) return 0;
-                return Math.floor((vRaw - 90) / 90) + 1;
-            }
-        };
-
-        let currentCycle = getCycle(currentMC.carryFromPrev);
-        if (isNaN(currentCycle)) currentCycle = 0;
         
+        
+        
+        let currentCycleForMonth = getCycle(currentMC.carryFromPrev);
+        if (isNaN(currentCycleForMonth)) currentCycleForMonth = 0;
         const adjustment = GLOBAL_DATA_ADJUSTMENTS[String(member.id)]?.[currentMC.key];
 
         currentMonthLogs.forEach(l => {
@@ -163,13 +185,14 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
                 runningTotal += attendanceIncrement;
                 runningTotal = Math.round(runningTotal * 10) / 10;
 
+                
                 let newCycle = getCycle(runningTotal);
                 if (isNaN(newCycle)) newCycle = 0;
 
                 let shouldShowRedBox = false;
-                if (newCycle > currentCycle) {
+                if (newCycle > currentCycleForMonth) {
                     shouldShowRedBox = true;
-                    currentCycle = newCycle;
+                    currentCycleForMonth = newCycle;
                 }
 
                 if (shouldShowRedBox) {
@@ -188,6 +211,8 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
     return {
         redDays: actualRedDays,
         hasAnyAttendance: hasAnyAttendance,
-        isSimulated: true
+        isSimulated: true,
+        allMilestones: allMilestones,
+        currentCount: { count: carryOverP, target: isDualCourse ? 17 : 9 }
     };
 };

@@ -450,12 +450,7 @@ function renderTable() {
             myCourses = myCourses.filter(c => !c.includes('제과') && !c.includes('제빵'));
             myCourses.push('제과제빵기능사');
         }
-        const hasJeggwa = myCourses.some(c => c.includes('제과') && !c.includes('제과제빵'));
-        const hasJeppang = myCourses.some(c => c.includes('제빵') && !c.includes('제과제빵'));
-        if (hasJeggwa && hasJeppang) {
-            myCourses = myCourses.filter(c => !c.includes('제과') && !c.includes('제빵'));
-            myCourses.push('제과제빵기능사');
-        }
+        
         if (myCourses.some(c => c.includes('제과') && !c.includes('제과제빵')) && myCourses.some(c => c.includes('제빵') && !c.includes('제과제빵'))) {
             myCourses = myCourses.filter(c => !c.includes('제과') && !c.includes('제빵'));
             myCourses.push('제과제빵기능사');
@@ -478,11 +473,27 @@ function renderTable() {
             let scheduledDate = null;
             let imminentCourses = []; // 현재 이 과정 하나에 대한 임박/연체 정보만 배열로 담음 (호환성 유지)
             let totalDueAmount = 0;
-            let currentProgressObj = stats ? stats.currentCount : { count: 0, target: 9 };
+            let currentProgressObj = stats && stats.currentCount ? stats.currentCount : { count: 0, target: 9 };
             let courseProgressList = []; // View에서 사용하기 위해 포맷 맞춤
 
             if (courseNameOnly) {
-                courseProgressList.push({ name: courseNameOnly, count: currentProgressObj.count, target: currentProgressObj.target });
+                
+                let displayCount = currentProgressObj.count;
+                let isDualLocal = (courseNameOnly && courseNameOnly.replace(/\s/g, '').includes('제과제빵')) || (!courseNameOnly && m.course && m.course.replace(/\s/g, '').includes('제과제빵'));
+                let displayTarget = isDualLocal ? 17 : 9;
+                
+                let vRaw = Math.round(displayCount * 10);
+                let cycleCount = 0;
+                if (isDualLocal) {
+                    if (vRaw >= 170) cycleCount = Math.floor((vRaw - 170) / 160) + 1;
+                    displayCount = displayCount - (cycleCount * 16);
+                } else {
+                    if (vRaw >= 90) cycleCount = Math.floor((vRaw - 90) / 80) + 1;
+                    displayCount = displayCount - (cycleCount * 8);
+                }
+                
+                courseProgressList.push({ name: courseNameOnly, count: displayCount, target: displayTarget });
+    
             }
 
             if (stats && stats.allMilestones) {
@@ -491,19 +502,18 @@ function renderTable() {
                 const normalizeCourse = (c) => (!c || c === 'null') ? null : String(c).trim();
 
                 const isDualBakeryLocal = (courseNameOnly && courseNameOnly.replace(/\s/g, '').includes('제과제빵')) || (!courseNameOnly && m.course && m.course.replace(/\s/g, '').includes('제과제빵'));
-                const targetCount = isDualBakeryLocal ? 17 : 9;
-                
-                
-                
+                const firstTargetCount = isDualBakeryLocal ? 17 : 9;
+                const subTargetCount = isDualBakeryLocal ? 16 : 8;
+                let isFirstCycleForThisCourse = true;
                 let remainingForLoop = currentProgressObj.count;
-
                 stats.allMilestones.forEach(ms => {
-                    let currentTargetCount = targetCount;
+                    let currentTargetCount = isFirstCycleForThisCourse ? firstTargetCount : subTargetCount;
                     const msPayment = paymentsData.find(p => p.memberId == m.id && p.year == ms.year && p.month == ms.month && normalizeCourse(p.course) === normalizeCourse(courseNameOnly) && p.status !== 'delete');
                     
                     if (msPayment && msPayment.status === 'paid') {
                         paidMilestonesCount++;
                         remainingForLoop -= currentTargetCount;
+                            isFirstCycleForThisCourse = false;
                             
                     } else {
                         // 미납(unpaid) 또는 예약(future) 밀스톤
@@ -522,6 +532,7 @@ function renderTable() {
                                 hasUnpaidInThisCourse = true;
                             }
                             remainingForLoop -= currentTargetCount;
+                            isFirstCycleForThisCourse = false;
                             
                         } else {
                             // 아직 횟수가 미달된 미래의 결제건은 미납으로 띄우지 않고 예약일로만 저장 (리스트에 추가 안 함)
@@ -969,12 +980,7 @@ function exportToCSV() {
             myCourses = myCourses.filter(c => !c.includes('제과') && !c.includes('제빵'));
             myCourses.push('제과제빵기능사');
         }
-        const hasJeggwa = myCourses.some(c => c.includes('제과') && !c.includes('제과제빵'));
-        const hasJeppang = myCourses.some(c => c.includes('제빵') && !c.includes('제과제빵'));
-        if (hasJeggwa && hasJeppang) {
-            myCourses = myCourses.filter(c => !c.includes('제과') && !c.includes('제빵'));
-            myCourses.push('제과제빵기능사');
-        }
+        
         if (myCourses.some(c => c.includes('제과') && !c.includes('제과제빵')) && myCourses.some(c => c.includes('제빵') && !c.includes('제과제빵'))) {
             myCourses = myCourses.filter(c => !c.includes('제과') && !c.includes('제빵'));
             myCourses.push('제과제빵기능사');
