@@ -214,12 +214,14 @@ export default function AdminPopupsPage() {
                     <h1 className="text-3xl font-extrabold text-gray-900">팝업 관리자</h1>
                     <button 
                         onClick={() => {
+                            const keysToRemove = [];
                             for (let i = 0; i < localStorage.length; i++) {
                                 const key = localStorage.key(i);
                                 if (key && key.startsWith('popup_hidden_')) {
-                                    localStorage.removeItem(key);
+                                    keysToRemove.push(key);
                                 }
                             }
+                            keysToRemove.forEach(k => localStorage.removeItem(k));
                             setResetText('✅ 해제되었습니다!');
                             setTimeout(() => {
                                 setResetText('🔄 내 브라우저 24시간 안보기 해제');

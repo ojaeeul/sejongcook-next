@@ -39,8 +39,11 @@ export default function MainPopup() {
 
                     // Filter by Date (Time Check)
                     const now = new Date();
-                    // Set allowed time range for today comparison
-                    const currentDate = now.toISOString().split('T')[0]; // YYYY-MM-DD
+                    // Set allowed time range for today comparison (in local time, NOT UTC!)
+                    const year = now.getFullYear();
+                    const month = String(now.getMonth() + 1).padStart(2, '0');
+                    const day = String(now.getDate()).padStart(2, '0');
+                    const currentDate = `${year}-${month}-${day}`; // YYYY-MM-DD in local time
 
                     const scheduledPopups = activePopups.filter((p: Popup) => {
                         // If no dates set, assume always visible
