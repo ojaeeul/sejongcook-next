@@ -111,7 +111,11 @@ export default function MainPopup() {
                     }
                 }
             `}} />
-            {popups.map(popup => (
+            
+            {/* Backdrop for drawing attention to the popup first */}
+            <div className="fixed inset-0 z-[9998] bg-black/50 transition-opacity" aria-hidden="true" />
+
+            {popups.map((popup, index) => (
                 <div
                     key={popup.id}
                     style={{
@@ -119,8 +123,8 @@ export default function MainPopup() {
                         '--popup-left': `${popup.position.left}px`,
                         '--popup-width': `${popup.size.width}px`,
                         '--popup-height': popup.type === 'template' ? `${popup.size.height}px` : 'auto',
-                        zIndex: 9999, // High z-index to sit on top
-                        boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+                        zIndex: 9999 + index, // High z-index to sit on top of backdrop
+                        boxShadow: '0 4px 25px rgba(0,0,0,0.5)',
                         backgroundColor: 'white',
                         border: '1px solid #ddd',
                         borderRadius: '8px',
@@ -160,24 +164,30 @@ export default function MainPopup() {
                                         )}
                                     </Link>
                                 ) : (
-                                    popup.imageUrl ? (
-                                        <Image
-                                            src={popup.imageUrl}
-                                            alt={popup.title}
-                                            width={popup.size?.width || 500}
-                                            height={popup.size?.height || 500}
-                                            sizes="100vw"
-                                            style={{
-                                                width: '100%',
-                                                height: 'auto',
-                                                display: 'block'
-                                            }}
-                                        />
-                                    ) : (
-                                        <div style={{ width: '100%', height: '200px', backgroundColor: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <span className="text-gray-400 font-bold">이미지가 없습니다</span>
-                                        </div>
-                                    )
+                                    <div 
+                                        className="cursor-pointer" 
+                                        onClick={() => closePopup(popup.id, false)}
+                                        title="클릭하면 닫힙니다"
+                                    >
+                                        {popup.imageUrl ? (
+                                            <Image
+                                                src={popup.imageUrl}
+                                                alt={popup.title}
+                                                width={popup.size?.width || 500}
+                                                height={popup.size?.height || 500}
+                                                sizes="100vw"
+                                                style={{
+                                                    width: '100%',
+                                                    height: 'auto',
+                                                    display: 'block'
+                                                }}
+                                            />
+                                        ) : (
+                                            <div style={{ width: '100%', height: '200px', backgroundColor: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                <span className="text-gray-400 font-bold">이미지가 없습니다</span>
+                                            </div>
+                                        )}
+                                    </div>
                                 )}
                             </div>
                             <div className="bg-gray-800 text-white text-xs p-2 flex justify-between items-center">
