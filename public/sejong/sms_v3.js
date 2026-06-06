@@ -1625,239 +1625,45 @@ function getAllMilestonesForMonth(memberId, courseFilter, year, month) {
 function getMemberAllMilestones(memberId, courseFilter, limitDate = null) {
     let milestones = [];
     const today = new Date();
+    const currentYear = today.getFullYear();
+    const currentMonth = today.getMonth() + 1;
     
-    const memberObj = allMembers.find(m => m.id == memberId) || {};
-    const isDualBakeryLocal = (courseFilter && courseFilter.replace(/\s/g, '').includes('제과제빵')) || (!courseFilter && memberObj.course && memberObj.course.replace(/\s/g, '').includes('제과제빵'));
+    const memberObj = allMembers.find(m => String(m.id) === String(memberId));
+    if (!memberObj) return [];
     
-    const targetCount = isDualBakeryLocal ? 17 : 9;
-    const incrementCount = isDualBakeryLocal ? 16 : 8;
-
-    // Filter records
-    let records = (attendanceByMember[memberId] || []).filter(r => {
-        const dateStr = r.date.split('T')[0];
-        const isHolidayInSys = holidaysData.some(h => h.date === dateStr);
-        const isNationalHoliday = !!KOREAN_HOLIDAYS_MAP[dateStr];
-        const dayOfWeek = r.dateObj.getDay();
-        return !(isHolidayInSys || isNationalHoliday || dayOfWeek === 0);
-    }).sort((a, b) => a.dateObj - b.dateObj);
-
-    const uniqueMap = new Map();
-    for (const r of records) {
-        const dateStr = r.date.split('T')[0];
-        const cName = r.course ? r.course.replace(/\([^)]*\)/g, '').trim() : '';
-        uniqueMap.set(cName + '|' + dateStr, r);
-    }
-    records = Array.from(uniqueMap.values()).sort((a, b) => a.dateObj - b.dateObj);
-
-    let rollingTotal = 0;
-    let rollingTotalUpToLimit = 0;
-    let lastRecordDate = null;
-    let hasAnyAttendance = false;
-
-    const getCycle = (val) => {
-        let vRaw = Math.round(val * 10);
-        if (isDualBakeryLocal) {
-            if (vRaw < 170) return 0;
-            return Math.floor((vRaw - 170) / 160) + 1;
-        } else {
-            if (vRaw < 90) return 0;
-            return Math.floor((vRaw - 90) / 80) + 1;
-        }
-    };
-
-    for (const r of records) {
-        const rClean = (r.course) ? r.course.replace(/\([^)]*\)/g, '').trim() : '';
-        const fClean = (courseFilter && courseFilter !== '미지정') ? courseFilter.replace(/\([^)]*\)/g, '').trim() : '';
+    // Scan recent past and near future months (e.g. -2 to +2 months from now)
+    for (let monthOffset = -2; monthOffset <= 2; monthOffset++) {
+        let y = currentYear;
+        let m = currentMonth + monthOffset;
+        if (m > 12) { m -= 12; y++; }
+        if (m < 1) { m += 12; y--; }
         
-        if (fClean !== '' && rClean !== '' && rClean !== fClean) continue;
-        if (fClean === '' && rClean !== '') continue;
-        if (fClean !== '' && rClean === '') continue;
-
-        const inc = isDualBakeryLocal ? 1.0 : 1.0;
-        const strStatus = String(r.status);
-        const isMarker = ['[', ']'].includes(strStatus) || (typeof r.status === 'string' && (strStatus.includes('첫') || strStatus.includes('종료')));
-        const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(strStatus);
-        const isAbsent = r.status === 'absent' || strStatus.startsWith('X') || strStatus.includes('결석');
-        const isEarly = r.status === 'early' || strStatus.includes('조퇴');
-        const isTardy = r.status === 'tardy' || r.status === 'late' || strStatus.includes('지각') || strStatus.includes('△');
-        const isFirstLast = strStatus.includes('첫') || strStatus.includes('종료') || strStatus === '[' || strStatus === ']';
-        const isExtension = r.status === 'extension' || strStatus.startsWith('연') || strStatus.includes('연장') || strStatus.startsWith('E');
-        const isRegular = r.status === 'present' || isNumericPresent || isAbsent || isEarly || isTardy || isFirstLast;
-
-        if (isMarker || isRegular || isExtension) {
-            lastRecordDate = r.dateObj;
-            hasAnyAttendance = true;
+        const syncKey = `${memberId}_${y}_${m}_${courseFilter || 'all'}`;
+        const syncData = window.ledgerSyncData || JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
+        
+        if (syncData[syncKey]) {
+            const rawSync = syncData[syncKey];
+            const days = Array.isArray(rawSync) ? rawSync : (typeof rawSync === 'number' ? [rawSync] : []);
+            days.forEach(d => milestones.push({ year: y, month: m, day: d }));
+            continue;
         }
 
-        if (isMarker || isRegular) {
-            const prevCycle = getCycle(rollingTotal);
-            rollingTotal += inc;
-            rollingTotal = Math.round(rollingTotal * 10) / 10;
-            const currCycle = getCycle(rollingTotal);
-            
-            const rDate = r.date ? new Date(r.date) : r.dateObj;
-            if (limitDate) {
-                if (rDate <= limitDate) rollingTotalUpToLimit = rollingTotal;
-            } else {
-                rollingTotalUpToLimit = rollingTotal;
-            }
-
-            if (currCycle > prevCycle) {
-                milestones.push({ year: r.yearNum, month: r.monthNum, day: r.dateObj.getDate() });
-            }
-        }
-    }
-
-    if (hasAnyAttendance) {
-        const firstDayOfSim = new Date(today.getFullYear(), today.getMonth() - 6, 1);
-        let simDate = new Date(firstDayOfSim);
-        if (lastRecordDate && lastRecordDate > firstDayOfSim) {
-            simDate = new Date(lastRecordDate.getTime() + 86400000);
-        }
-
-        const hardLimitDate = new Date(3000, 11, 31);
-        let currentNetSim = rollingTotal;
-
-        while (simDate <= hardLimitDate) {
-            const inc = isDualBakeryLocal ? 1.0 : 1.0;
-
-            const dateStr = simDate.toISOString().split('T')[0];
-            const dayOfWeek = simDate.getDay();
-            const isNationalHoliday = !!KOREAN_HOLIDAYS_MAP[dateStr];
-            const isHolidayInSys = holidaysData.some(h => h.date === dateStr);
-            const isHoliday = isHolidayInSys || isNationalHoliday;
-
-            // 과정별 유효 요일 확인
-            let isValidDay = true;
-            if (courseFilter && COURSE_SCHEDULES[courseFilter]) {
-                isValidDay = COURSE_SCHEDULES[courseFilter].includes(dayOfWeek);
-            }
-
-            if (isValidDay && !isHoliday && dayOfWeek !== 0) {
-                const prevCycleSim = getCycle(currentNetSim);
-                currentNetSim += inc;
-                currentNetSim = Math.round(currentNetSim * 10) / 10;
-
-                if (getCycle(currentNetSim) > prevCycleSim) {
-                    milestones.push({ year: simDate.getFullYear(), month: simDate.getMonth() + 1, day: simDate.getDate() });
-                    // 시뮬레이션은 당분간 6개월치만
-                    if (simDate > new Date(today.getFullYear(), today.getMonth() + 7, 0)) break;
+        if (typeof window.calculateRedBoxesForMonth === 'function') {
+            const result = window.calculateRedBoxesForMonth(memberObj, y, m, attendanceData, courseFilter, GLOBAL_DATA_ADJUSTMENTS);
+            if (result && result.redDays && result.redDays.length > 0) {
+                for (let d of result.redDays) {
+                    milestones.push({ year: y, month: m, day: d });
                 }
             }
-            simDate.setDate(simDate.getDate() + 1);
         }
     }
-
-    // [1] Apply Sync Data (Real and Simulated) OVERWRITING the internal calculation (Matching tuition_v3.js exact behavior)
-    try {
-        if (!localStorage.getItem('sejong_ledger_v3_dedup_fix_2')) {
-            localStorage.removeItem('sejong_ledger_sync');
-            localStorage.setItem('sejong_ledger_v3_dedup_fix_2', 'true');
-        }
-        
-        const syncData = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
-        const cleanFilter = (courseFilter || 'all').replace(/\([^)]*\)/g, '').trim();
-
-        const applySync = (sYear, sMonth) => {
-            const sKey = `${memberId}_${sYear}_${sMonth}_${cleanFilter}`;
-            const sSimKey = sKey + '_simulated';
-            
-            let rDay = null;
-            let sDay = null;
-            
-            if (syncData[sKey]) {
-                const val = syncData[sKey];
-                if (Array.isArray(val) && val.length > 0) rDay = val;
-                else if (typeof val === 'number') rDay = [val];
-            }
-            if (syncData[sSimKey]) {
-                const val = syncData[sSimKey];
-                if (Array.isArray(val) && val.length > 0) sDay = val;
-                else if (typeof val === 'number') sDay = [val];
-            }
-            
-            if (rDay) {
-                const uniqueDays = [...new Set(rDay)];
-                milestones = milestones.filter(ms => !(ms.year === sYear && ms.month === sMonth));
-                uniqueDays.forEach(d => {
-                    if (d > 0) milestones.push({ year: sYear, month: sMonth, day: d });
-                });
-            } else if (sDay) {
-                const uniqueDays = [...new Set(sDay)];
-                milestones = milestones.filter(ms => !(ms.year === sYear && ms.month === sMonth));
-                uniqueDays.forEach(d => {
-                    if (d > 0) milestones.push({ year: sYear, month: sMonth, day: d });
-                });
-            }
-        };
-
-        // Group unique Year/Month combinations from syncData
-        const syncDatesToProcess = new Set();
-        Object.keys(syncData).forEach(key => {
-            const parts = key.split('_');
-            if (parts.length >= 4) {
-                const sMemberId = parts[0];
-                const sYear = parseInt(parts[1], 10);
-                const sMonth = parseInt(parts[2], 10);
-                let sCourse = parts.slice(3).join('_');
-                if (sCourse.endsWith('_simulated')) sCourse = sCourse.replace('_simulated', '');
-                
-                if (sMemberId == memberId && sCourse === cleanFilter) {
-                    syncDatesToProcess.add(`${sYear}-${sMonth}`);
-                }
-            }
-        });
-        
-        syncDatesToProcess.forEach(ym => {
-            const [y, m] = ym.split('-');
-            applySync(parseInt(y, 10), parseInt(m, 10));
-        });
-    } catch (e) { console.error(e); }
-
-    // Remove duplicates (tuition_v3.js parity)
-    const uniqueMsMap = new Map();
-    milestones.forEach(ms => {
-        const key = `${ms.year}-${ms.month}-${ms.day}`;
-        if (!uniqueMsMap.has(key)) {
-            uniqueMsMap.set(key, ms);
-        }
-    });
-    milestones = Array.from(uniqueMsMap.values());
-
-    // --- APPLY STRICT TUITION LEDGER LOGIC ---
-    const normalizeCourse = (c) => (!c || c === 'null') ? null : String(c).trim();
-    const cleanFilter = courseFilter ? courseFilter.replace(/\([^)]*\)/g, '').trim() : '';
     
-    let paidMilestonesCount = 0;
-    let dueMilestones = [];
-    let remainingForLoop = limitDate ? rollingTotalUpToLimit : rollingTotal;
-
-    // Sort first so we process them chronologically
+    // Sort milestones
     milestones.sort((a, b) => new Date(a.year, a.month - 1, a.day) - new Date(b.year, b.month - 1, b.day));
-
-    milestones.forEach(ms => {
-        const msPayment = paymentsData.find(p => p.memberId == memberId && p.year == ms.year && p.month == ms.month && normalizeCourse(p.course) === normalizeCourse(cleanFilter) && p.status !== 'delete');
-        
-        let requiredAmount = (paidMilestonesCount + dueMilestones.length === 0) ? targetCount : incrementCount;
-        
-        if (msPayment && msPayment.status === 'paid') {
-            paidMilestonesCount++;
-            remainingForLoop -= requiredAmount;
-        } else {
-            // Unconditionally add to dueMilestones so we can find scheduled (future) payments
-            dueMilestones.push(ms);
-            
-            // Check if actual attendance points reached the requirement for the NEXT milestone calculation
-            if (remainingForLoop >= requiredAmount) {
-                ms.isOverdue = true;
-                remainingForLoop -= requiredAmount;
-            } else {
-                ms.isOverdue = false;
-            }
-        }
-    });
-
-    return dueMilestones;
+    
+    // Filter out past milestones if limitDate is not provided
+    // Actually getMemberScheduledDate just gets the first available upcoming or most recent one
+    return milestones.filter(m => new Date(m.year, m.month - 1, m.day) >= today.setHours(0,0,0,0));
 }
 
 function syncCalendarSelection() {
