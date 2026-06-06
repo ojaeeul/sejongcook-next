@@ -158,10 +158,16 @@ if (!localStorage.getItem('cache_cleared_v2')) {
 
 function getLedgerMonthStats(memberId, targetYear, targetMonth, courseFilter = null) {
     const syncKey = `${memberId}_${targetYear}_${targetMonth}_${courseFilter || 'all'}`;
-    const syncData = window.ledgerSyncData || JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
+    let syncData = {};
+    try {
+        const parsed = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
+        syncData = window.ledgerSyncData || parsed || {};
+    } catch(e) {
+        syncData = {};
+    }
     
     // 1. Check real milestone
-    if (syncData[syncKey]) {
+    if (syncData && syncData[syncKey]) {
         const rawSync = syncData[syncKey];
         const days = Array.isArray(rawSync) ? rawSync : (typeof rawSync === 'number' ? [rawSync] : []);
         if (days.length > 0) {
@@ -170,11 +176,16 @@ function getLedgerMonthStats(memberId, targetYear, targetMonth, courseFilter = n
     }
 
     const m = membersData.find(m => String(m.id) === String(memberId));
-    if (!m) return { eighthDays: [], eighthMonth: targetMonth, isSimulated: false, hasAnyAttendance: false };
-
-    // Use shared engine
-    const result = window.calculateRedBoxesForMonth(m, targetYear, targetMonth, attendanceData, courseFilter, GLOBAL_DATA_ADJUSTMENTS);
-    return { eighthDays: result.redDays, eighthMonth: targetMonth, isSimulated: result.isSimulated, hasAnyAttendance: result.hasAnyAttendance };
+        if (typeof window.calculateRedBoxesForMonth === 'function') {
+            const memberObj = membersData.find(m => String(m.id) === String(memberId));
+            if (memberObj) {
+                const result = window.calculateRedBoxesForMonth(memberObj, targetYear, targetMonth, attendanceData || [], courseFilter, window.GLOBAL_DATA_ADJUSTMENTS || {});
+                if (result && result.redDays && result.redDays.length > 0) {
+                    return { eighthDays: result.redDays, eighthMonth: targetMonth, isSimulated: result.isSimulated, hasAnyAttendance: result.hasAnyAttendance };
+                }
+            }
+        }
+    return { eighthDays: [], eighthMonth: targetMonth, isSimulated: false, hasAnyAttendance: false };
 }
 
 function getAllLedgerMonthStats(memberId, year, month) {

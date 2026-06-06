@@ -1,18 +1,7 @@
 
 function getFetchUrl(endpoint, isPost = false) {
-    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    let url = '';
-    if (isLocal) {
-        if (endpoint === 'settings') {
-            url = 'http://localhost:8000/api/admin/data/settings';
-        } else {
-            url = `http://localhost:8000/api/${endpoint}`;
-        }
-        return isPost ? url : url + (url.includes('?') ? '&' : '?') + `t=${Date.now()}`;
-    } else {
-        const base = `../api.php?board=sejong_${endpoint}`;
-        return isPost ? base : base + `&t=${Date.now()}`;
-    }
+    const url = `/api/sejong/${endpoint}`;
+    return isPost ? url : url + (url.includes('?') ? '&' : '?') + `t=${Date.now()}`;
 }
 
 
@@ -788,11 +777,27 @@ function renderTable() {
             let scheduledDate = null;
             let imminentCourses = []; // 현재 이 과정 하나에 대한 임박/연체 정보만 배열로 담음 (호환성 유지)
             let totalDueAmount = 0;
-            let currentProgressObj = stats ? stats.currentCount : { count: 0, target: 9 };
+            let currentProgressObj = stats && stats.currentCount ? stats.currentCount : { count: 0, target: 9 };
             let courseProgressList = []; // View에서 사용하기 위해 포맷 맞춤
 
             if (courseNameOnly) {
-                courseProgressList.push({ name: courseNameOnly, count: currentProgressObj.count, target: currentProgressObj.target });
+                
+                let displayCount = currentProgressObj.count;
+                let isDualLocal = (courseNameOnly && courseNameOnly.replace(/\s/g, '').includes('제과제빵')) || (!courseNameOnly && m.course && m.course.replace(/\s/g, '').includes('제과제빵'));
+                let displayTarget = isDualLocal ? 17 : 9;
+                
+                let vRaw = Math.round(displayCount * 10);
+                let cycleCount = 0;
+                if (isDualLocal) {
+                    if (vRaw >= 170) cycleCount = Math.floor((vRaw - 170) / 160) + 1;
+                    displayCount = displayCount - (cycleCount * 16);
+                } else {
+                    if (vRaw >= 90) cycleCount = Math.floor((vRaw - 90) / 80) + 1;
+                    displayCount = displayCount - (cycleCount * 8);
+                }
+                
+                courseProgressList.push({ name: courseNameOnly, count: displayCount, target: displayTarget });
+    
             }
 
             if (stats && stats.allMilestones) {
@@ -842,7 +847,7 @@ function renderTable() {
                 // 차감 로직은 getProgressInfo에서 sheet.html과 동일하게 처리하므로 여기서는 생략합니다.
                 
                 if (courseProgressList.length > 0) {
-                    courseProgressList[0].count = currentProgressObj.count;
+                    // courseProgressList[0].count = currentProgressObj.count; // Removed to preserve displayCount progress logic
                 }
 
                 if (!hasUnpaidInThisCourse && stats.scheduledDate) {

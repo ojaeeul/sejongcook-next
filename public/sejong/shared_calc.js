@@ -206,12 +206,61 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
         });
     }
 
+    let isSimulated = false;
+
+    if (redBoxDates.size === 0 && currentMC && hasAnyAttendance) {
+        // [SIMULATION LOGIC] Calculate future scheduled payment date
+        let simDate = new Date(currentMC.year, currentMC.month - 1, 1);
+        let simRunningTotal = runningTotal;
+        let simCurrentCycleForMonth = currentCycleForMonth;
+        
+        // Resolve course schedule
+        let courseName = '한식기능사';
+        if (courseFilter) {
+            courseName = courseFilter.replace(/\([^)]*\)/g, '').trim();
+        } else if (member.course) {
+            courseName = String(member.course).split(',')[0].replace(/\([^)]*\)/g, '').trim();
+        }
+        
+        let schedules = [1, 3]; // Default Mon/Wed
+        if (window.COURSE_SCHEDULES && window.COURSE_SCHEDULES[courseName]) {
+            schedules = window.COURSE_SCHEDULES[courseName];
+        }
+
+        while (simDate.getMonth() === currentMC.month - 1) {
+            // Adjust to local time string safely
+            const yyyy = simDate.getFullYear();
+            const mm = String(simDate.getMonth() + 1).padStart(2, '0');
+            const dd = String(simDate.getDate()).padStart(2, '0');
+            const dStr = `${yyyy}-${mm}-${dd}`;
+            
+            const dayOfWeek = simDate.getDay();
+            const isHolidayInSys = window.holidaysData ? window.holidaysData.some(h => h && h.date === dStr) : false;
+            const isNationalHoliday = window.KOREAN_HOLIDAYS_MAP ? !!window.KOREAN_HOLIDAYS_MAP[dStr] : false;
+
+            if (schedules.includes(dayOfWeek) && !isHolidayInSys && !isNationalHoliday) {
+                simRunningTotal += attendanceIncrement;
+                simRunningTotal = Math.round(simRunningTotal * 10) / 10;
+                let newCycle = getCycle(simRunningTotal);
+                if (isNaN(newCycle)) newCycle = 0;
+                
+                if (newCycle > simCurrentCycleForMonth) {
+                    redBoxDates.add(dStr);
+                    simCurrentCycleForMonth = newCycle;
+                    isSimulated = true;
+                    break; // Just find the first scheduled payment in this simulated month
+                }
+            }
+            simDate.setDate(simDate.getDate() + 1);
+        }
+    }
+
     const actualRedDays = Array.from(redBoxDates).map(d => parseInt(d.split('-')[2], 10));
     
     return {
         redDays: actualRedDays,
         hasAnyAttendance: hasAnyAttendance,
-        isSimulated: true,
+        isSimulated: isSimulated,
         allMilestones: allMilestones,
         currentCount: { count: carryOverP, target: isDualCourse ? 17 : 9 }
     };

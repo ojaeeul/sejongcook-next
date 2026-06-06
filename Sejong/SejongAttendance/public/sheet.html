@@ -1261,7 +1261,7 @@
 
     <script>
         // Force API Calls to port 8000 API for Bidirectional Sync
-        const SHEET_API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:8000/api' : '../api.php?board=sejong_';
+        const SHEET_API_BASE = '/api/sejong';
 
         // Custom Modals Logic
         let customConfirmResolve = null;
@@ -1513,7 +1513,7 @@
                     await fetch(`${SHEET_API_BASE}/attendance/batch`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ memberId, dates, status: 'unchecked', course: null })
+                        body: JSON.stringify({ memberId, dates, status: 'unchecked', course: 'ALL' })
                     });
                     successCount++;
                 } catch (e) {
@@ -1668,10 +1668,10 @@
                 let vRaw = Math.round(val * 10);
                 if (isDualBakery) {
                     if (vRaw < 170) return 0;
-                    return Math.floor((vRaw - 170) / 160) + 1;
+                    return Math.floor((vRaw - 170) / 170) + 1;
                 } else {
                     if (vRaw < 90) return 0;
-                    return Math.floor((vRaw - 90) / 80) + 1;
+                    return Math.floor((vRaw - 90) / 90) + 1;
                 }
             };
 
@@ -2353,10 +2353,10 @@
                                 let vRaw = Math.round(val * 10);
                                 if (isDualCourse) {
                                     if (vRaw < 170) return 0;
-                    return Math.floor((vRaw - 170) / 160) + 1;
-                } else {
-                    if (vRaw < 90) return 0;
-                    return Math.floor((vRaw - 90) / 80) + 1;
+                                    return Math.floor((vRaw - 170) / 160) + 1;
+                                } else {
+                                    if (vRaw < 90) return 0;
+                                    return Math.floor((vRaw - 90) / 80) + 1;
                                 }
                             };
                             let currentCycle = getCycle(currentMC.carryFromPrev);
@@ -2405,32 +2405,42 @@
                             const actualRedDays = Array.from(redBoxDates).map(d => parseInt(d.split('-')[2], 10));
                             window.ledgerSyncData[syncKeyNow] = actualRedDays;
                             
-                            const startNet = currentMC.carryFromPrev;
-                            const endNet = runningTotal;
-
-                            const startCycle = getCycle(startNet);
-                            const endCycle = getCycle(endNet);
-                            const cyclesThisMonth = endCycle - startCycle;
-
-                            let hasManualRedBox = false;
+                            // 1. 당월 순수 출석일수 계산 (당월에 참석한 횟수)
+                            let currentMonthAttendances = 0;
+                            currentMonthLogs.forEach(l => {
+                                const strStatus = String(l.status);
+                                const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(strStatus);
+                                const isAbsent = l.status === 'absent' || strStatus.startsWith('X') || strStatus.includes('결석');
+                                const isEarly = l.status === 'early' || strStatus.includes('조퇴');
+                                const isTardy = l.status === 'tardy' || l.status === 'late' || strStatus.includes('지각') || strStatus.includes('△');
+                                const isFirstLast = strStatus.includes('첫') || strStatus.includes('종료') || strStatus === '[' || strStatus === ']';
+                                const isPresentExt = l.status === 'present' || strStatus.startsWith('O') || strStatus.startsWith('o') || strStatus.startsWith('O^') || strStatus.startsWith('o^'); 
+                                const isRegularAttendance = isPresentExt || isNumericPresent || isAbsent || isEarly || isTardy || isFirstLast;
+                                if (isRegularAttendance) {
+                                    currentMonthAttendances += attendanceIncrement;
+                                }
+                            });
                             
-                            if (adjustment && adjustment.forceRedBoxDates) {
-                                currentMonthLogs.forEach(l => {
-                                    if (adjustment.forceRedBoxDates.includes(l.date)) hasManualRedBox = true;
-                                });
+                            displayP = Math.round(currentMonthAttendances * 10) / 10;
+                            if (adjustment && adjustment.presentOverride !== undefined) {
+                                displayP = adjustment.presentOverride;
                             }
-                            if (cyclesThisMonth > 0 || hasManualRedBox) {
-                                let actualCycle = endCycle > 0 ? endCycle : (hasManualRedBox ? 1 : 0);
-                                displayMakeup = Math.round((actualCycle * (isDualCourse ? 16.0 : 8.0)) * 10) / 10;
-                                // 총 출석(P) = 총 누적(Gross) - 재고(J) (연장 무시 로직 적용)
-                                displayP = Math.round((runningTotal - displayMakeup) * 10) / 10;
+
+                            // 2. 재고출석 (진행률) 계산
+                            let vRaw = Math.round(runningTotal * 10);
+                            let cycleCount = 0;
+                            let currentProgress = runningTotal;
+                            
+                            if (isDualCourse) {
+                                if (vRaw >= 170) cycleCount = Math.floor((vRaw - 170) / 160) + 1;
+                                currentProgress = currentProgress - (cycleCount * 16);
                             } else {
-                                let startCycleValue = startCycle;
-                                let baseStock = startCycleValue > 0 ? (startCycleValue * (isDualCourse ? 16.0 : 8.0)) : 0;
-                                displayMakeup = 0;
-                                // 평상시 출석표시 (연장 무시 로직 적용)
-                                displayP = Math.round((runningTotal - baseStock) * 10) / 10;
+                                if (vRaw >= 90) cycleCount = Math.floor((vRaw - 90) / 80) + 1;
+                                currentProgress = currentProgress - (cycleCount * 8);
                             }
+                            
+                            // 재고출석은 누적 진행률
+                            displayMakeup = Math.round(currentProgress * 10) / 10;
                         }
                     }
 
@@ -2623,7 +2633,7 @@
                         if (m && displayVal !== '') {
                             let formattedVal = (displayVal % 1 === 0 ? displayVal : displayVal.toFixed(1));
 
-                            const maxJ = isDualCourse ? 16.0 : 8.0;
+                            const maxJ = isDualCourse ? 17.0 : 9.0;
                             if (idx === 0 && displayVal > maxJ) {
                                 const multiple = Math.round(displayVal / maxJ);
                                 td.innerHTML = `${maxJ}<sup>${multiple}</sup>`;
@@ -2770,30 +2780,31 @@
         }
 
         async function saveAttendance(memberId, dateStr, status, course) {
-            // Find existing log to reuse its exact course string (prevents duplicates)
-            const existingLog = findCourseLog(attendanceData, memberId, dateStr, course);
-            const finalCourse = existingLog ? existingLog.course : course;
-
-            // Remove existing record locally
-            if (existingLog) {
-                attendanceData = attendanceData.filter(l => l !== existingLog);
-            }
-
-            if (status && status !== 'unchecked') {
-                attendanceData.push({ memberId, date: dateStr, status: status, course: finalCourse });
+            let reqCourse = course;
+            if (status === 'unchecked' && course === 'ALL') {
+                attendanceData = attendanceData.filter(l => !(l.memberId === memberId && l.date === dateStr));
+            } else {
+                const existingLog = findCourseLog(attendanceData, memberId, dateStr, course);
+                const finalCourse = existingLog ? existingLog.course : course;
+                reqCourse = finalCourse;
+                
+                if (existingLog) {
+                    attendanceData = attendanceData.filter(l => l !== existingLog);
+                }
+                if (status && status !== 'unchecked') {
+                    attendanceData.push({ memberId, date: dateStr, status: status, course: finalCourse });
+                }
             }
             window.attendanceData = attendanceData;
 
             // Re-render immediately
             renderSheet();
 
-
             try {
                 await fetch(`${SHEET_API_BASE}/attendance`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ memberId, date: dateStr, status: status || 'unchecked', course: finalCourse }),
-                    
+                    body: JSON.stringify({ memberId, date: dateStr, status: status || 'unchecked', course: reqCourse }),
                 });
                 // Notify other tabs
                 localStorage.setItem('sejong_attendance_sync', Date.now().toString());
@@ -3035,8 +3046,7 @@
             if (activeStatusBrush !== null) {
                 // For Eraser, clear both global and local
                 if (activeStatusBrush === 'unchecked') {
-                    await saveAttendance(memberId, dateStr, 'unchecked', null); // Clear arrow
-                    await saveAttendance(memberId, dateStr, 'unchecked', course); // Clear course log
+                    await saveAttendance(memberId, dateStr, 'unchecked', 'ALL');
                     return;
                 }
 

@@ -847,7 +847,7 @@ function renderTable() {
                 // 차감 로직은 getProgressInfo에서 sheet.html과 동일하게 처리하므로 여기서는 생략합니다.
                 
                 if (courseProgressList.length > 0) {
-                    courseProgressList[0].count = currentProgressObj.count;
+                    // courseProgressList[0].count = currentProgressObj.count; // Removed to preserve displayCount progress logic
                 }
 
                 if (!hasUnpaidInThisCourse && stats.scheduledDate) {

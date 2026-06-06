@@ -371,10 +371,15 @@ function processAttendanceData() {
 
 function getMemberEighthDayInMonth(memberId, year, month, courseFilter = null) {
     const syncKey = `${memberId}_${year}_${month}_${courseFilter || 'all'}`;
-    const syncData = window.ledgerSyncData || JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
-    
+    let syncData = {};
+    try {
+        const parsed = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
+        syncData = window.ledgerSyncData || parsed || {};
+    } catch(e) {
+        syncData = {};
+    }
     // 1. Check real milestone
-    if (syncData[syncKey]) {
+    if (syncData && syncData[syncKey]) {
         const rawSync = syncData[syncKey];
         const days = Array.isArray(rawSync) ? rawSync : (typeof rawSync === 'number' ? [rawSync] : []);
         if (days.length > 0) {
@@ -546,7 +551,7 @@ function renderTable() {
                 // 차감 로직은 getProgressInfo에서 sheet.html과 동일하게 처리하므로 여기서는 생략합니다.
                 
                 if (courseProgressList.length > 0) {
-                    courseProgressList[0].count = currentProgressObj.count;
+                    // courseProgressList[0].count = currentProgressObj.count; // Removed to preserve displayCount progress logic
                 }
 
                 if (!hasUnpaidInThisCourse && stats.scheduledDate) {
