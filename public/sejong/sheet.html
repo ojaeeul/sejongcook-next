@@ -2,18 +2,20 @@
 <html lang="ko">
 
 <head>
-    <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>월간 출석부 - 세종요리제과학원 (김포/세종 요리 전문)</title>
     <meta name="description" content="세종요리제과학원 수강생 관리 및 월간 출석부 시스템. 김포 및 세종 지역 요리 교육의 중심.">
     <meta name="keywords" content="세종요리, 김포요리, 세종요리학원, 김포요리학원, 요리학원, 출석관리, 수강생관리, 요리자격증">
     <meta property="og:title" content="세종요리제과학원 월간 출석부">
     <meta property="og:description" content="수강생들의 출석 현황을 한눈에 확인하세요.">
-    <link rel="stylesheet" href="style.css?v=20260527_000500">
+    <link rel="stylesheet" href="style.css?v=20260530_211823">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="script.js?v=20260527_084000" defer></script>
+    <script src="script.js?v=20260530_211823" defer></script>
     <style>
         .sheet-container {
             background: white;
@@ -1014,7 +1016,7 @@
                     <a href="attendance_daily.html" id="navDailyAttendance" class="nav-item">일일 출석부</a>
                     <a href="sms.html" id="navSms" class="nav-item">문자 발송</a>
                 </div>
-                <a href="monitor.html?v=20260527_000500" target="_blank" class="nav-item highlight">키오스크 모니터</a>
+                <a href="monitor.html?v=20260530_211823" target="_blank" class="nav-item highlight">키오스크 모니터</a>
             </nav>
         </aside>
 
@@ -1201,19 +1203,26 @@
                             </div>
                         </div>
 
-                        <div class="course-tabs mb-10">
-                            <button class="tab-btn active" onclick="filterCourse('all')">전체</button>
-                            <button class="tab-btn" onclick="filterCourse('한식기능사')">한식기능사</button>
-                            <button class="tab-btn" onclick="filterCourse('양식기능사')">양식기능사</button>
-                            <button class="tab-btn" onclick="filterCourse('일식기능사')">일식기능사</button>
-                            <button class="tab-btn" onclick="filterCourse('중식기능사')">중식기능사</button>
-                            <button class="tab-btn" onclick="filterCourse('제과기능사')">제과기능사</button>
-                            <button class="tab-btn" onclick="filterCourse('제빵기능사')">제빵기능사</button>
-                            <button class="tab-btn" onclick="filterCourse('제과제빵기능사')">제과제빵기능사</button>
-                            <button class="tab-btn" onclick="filterCourse('복어기능사')">복어기능사</button>
-                            <button class="tab-btn" onclick="filterCourse('산업기사')">산업기사</button>
-                            <button class="tab-btn" onclick="filterCourse('가정요리')">가정요리</button>
-                            <button class="tab-btn" onclick="filterCourse('브런치')">브런치</button>
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                            <div class="course-tabs mb-0" style="margin-bottom: 0;">
+                                <button class="tab-btn active" onclick="filterCourse('all')">전체</button>
+                                <button class="tab-btn" onclick="filterCourse('한식기능사')">한식기능사</button>
+                                <button class="tab-btn" onclick="filterCourse('양식기능사')">양식기능사</button>
+                                <button class="tab-btn" onclick="filterCourse('일식기능사')">일식기능사</button>
+                                <button class="tab-btn" onclick="filterCourse('중식기능사')">중식기능사</button>
+                                <button class="tab-btn" onclick="filterCourse('제과기능사')">제과기능사</button>
+                                <button class="tab-btn" onclick="filterCourse('제빵기능사')">제빵기능사</button>
+                                <button class="tab-btn" onclick="filterCourse('제과제빵기능사')">제과제빵기능사</button>
+                                <button class="tab-btn" onclick="filterCourse('복어기능사')">복어기능사</button>
+                                <button class="tab-btn" onclick="filterCourse('산업기사')">산업기사</button>
+                                <button class="tab-btn" onclick="filterCourse('가정요리')">가정요리</button>
+                                <button class="tab-btn" onclick="filterCourse('브런치')">브런치</button>
+                            </div>
+                            
+                            <label style="display:flex; align-items:center; gap:5px; font-weight:bold; color:#ef4444; cursor:pointer; background: #fee2e2; padding: 6px 12px; border-radius: 6px; border: 1px solid #fca5a5;">
+                                <input type="checkbox" id="showOnlyPaymentStudents" onchange="renderSheet()">
+                                당월 결재일 수강생만 표시
+                            </label>
                         </div>
 
                         <!-- Time Tabs -->
@@ -1587,21 +1596,64 @@
                 const isHolidayInSys = holidaysData.some(h => h.date === dateStr);
                 const isNationalHoliday = !!KOREAN_HOLIDAYS_MAP[dateStr];
                 const dayOfWeek = r.dateObj.getDay();
+
+                const strStatus = String(r.status || '');
+                const isPresent = r.status === 'present' || strStatus.startsWith('O') || strStatus.startsWith('o') || ['10', '12', '2', '5', '7', '3', '9'].includes(strStatus);
+                const isExtension = r.status === 'extension' || strStatus.startsWith('연') || strStatus.includes('연장') || strStatus.startsWith('E');
+                const isAbsent = r.status === 'absent' || strStatus.startsWith('X') || strStatus.includes('결석');
+                const isEarlyTardy = r.status === 'early' || r.status === 'tardy' || strStatus.includes('조퇴') || strStatus.includes('지각') || strStatus.includes('△');
+                const hasValidAttendance = isPresent || isExtension || isAbsent || isEarlyTardy;
+
+                if (hasValidAttendance) return true; // 출석 기록이 있으면 공휴일/일요일이라도 인정
+
                 return !(isHolidayInSys || isNationalHoliday || dayOfWeek === 0);
             });
+
+            // [신규 수정] 동일 날짜, 동일 과정에 대해 가장 마지막 기록만 남겨서 중복 카운팅 방지
+            const uniqueRecordsMap = new Map();
+            memberRecords.forEach(r => {
+                const dStr = r.date.split('T')[0];
+                const cKey = r.course ? r.course.replace(/\([^)]*\)/g, '').trim() : 'all';
+                uniqueRecordsMap.set(`${dStr}_${cKey}`, r);
+            });
+            memberRecords = Array.from(uniqueRecordsMap.values());
+            memberRecords.sort((a, b) => a.dateObj - b.dateObj);
+
             let scheduledDays = [];
             let isSimulated = false;
             let rollingTotal = 0;
-            // [데이터 보정] GLOBAL_DATA_ADJUSTMENTS 반영
+            // [데이터 보정] 전체 년도 과거 기록을 스캔하여, 요청한 달(year, month) 이전의 가장 최근 보정값을 찾습니다.
             let startYear = 1900, startMonth = 1;
+            const allAdjs = GLOBAL_DATA_ADJUSTMENTS[String(memberId)] || {};
+            let latestOverrideKey = null;
+
+            for (const key of Object.keys(allAdjs)) {
+                if (allAdjs[key].carryOverride !== undefined) {
+                    const [yStr, mStr] = key.split('-');
+                    const yNum = parseInt(yStr, 10);
+                    const mNum = parseInt(mStr, 10);
+                    
+                    if (yNum < year || (yNum === year && mNum <= month)) {
+                        if (!latestOverrideKey) {
+                            latestOverrideKey = key;
+                            rollingTotal = parseFloat(allAdjs[key].carryOverride) || 0;
+                            startYear = yNum;
+                            startMonth = mNum;
+                        } else {
+                            const [lyStr, lmStr] = latestOverrideKey.split('-');
+                            if (yNum > parseInt(lyStr, 10) || (yNum === parseInt(lyStr, 10) && mNum > parseInt(lmStr, 10))) {
+                                latestOverrideKey = key;
+                                rollingTotal = parseFloat(allAdjs[key].carryOverride) || 0;
+                                startYear = yNum;
+                                startMonth = mNum;
+                            }
+                        }
+                    }
+                }
+            }
 
             const monthKey = `${year}-${String(month).padStart(2, '0')}`;
-            const adj = GLOBAL_DATA_ADJUSTMENTS[String(memberId)]?.[monthKey];
-            if (adj && adj.carryOverride !== undefined) {
-                rollingTotal = adj.carryOverride;
-                startYear = year;
-                startMonth = month;
-            }
+            const adj = allAdjs[monthKey];
 
 
 
@@ -1615,10 +1667,10 @@
             const getCycle = (val) => {
                 let vRaw = Math.round(val * 10);
                 if (isDualBakery) {
-                    if (vRaw < 170) return 0; // 17.0=1
-                    return Math.floor((vRaw - 170) / 160) + 1; // 16.0=next cycle
+                    if (vRaw < 170) return 0;
+                    return Math.floor((vRaw - 170) / 160) + 1;
                 } else {
-                    if (vRaw < 90) return 0; // 9.0=1, 17.0=2...
+                    if (vRaw < 90) return 0;
                     return Math.floor((vRaw - 90) / 80) + 1;
                 }
             };
@@ -1666,7 +1718,8 @@
                     const isTardy = r.status === 'tardy' || r.status === 'late' || strStatus.includes('지각') || strStatus.includes('△');
                     const isFirstLast = strStatus.includes('첫') || strStatus.includes('종료') || strStatus === '[' || strStatus === ']';
                     const isExtension = r.status === 'extension' || strStatus.startsWith('연') || strStatus.includes('연장') || strStatus.startsWith('E');
-                    const isRegular = r.status === 'present' || isNumericPresent || isAbsent || isEarly || isTardy || isFirstLast;
+                    const isPresent = r.status === 'present' || strStatus.startsWith('O') || strStatus.startsWith('o') || strStatus.startsWith('O^') || strStatus.startsWith('o^') || isNumericPresent;
+                    const isRegular = isPresent || isAbsent || isEarly || isTardy || isFirstLast;
 
                     const prevNet = rollingTotal;
                     if (isMarker || isRegular || isExtension) {
@@ -1680,8 +1733,10 @@
                             const dateStr = r.date ? (r.date.includes('T') ? r.date.split('T')[0] : r.date) : (r.dateObj ? r.dateObj.toISOString().split('T')[0] : '');
                             const isForced = adj && adj.forceRedBoxDates && adj.forceRedBoxDates.includes(dateStr);
                             if (currCycle > prevCycle || isForced) {
-                                scheduledDays.push(r.dateObj.getDate());
-                                hitTargetInMonth = true;
+                                if (r.yearNum === year && r.monthNum === month) {
+                                    scheduledDays.push(r.dateObj.getDate());
+                                    hitTargetInMonth = true;
+                                }
                             }
                         }
                         lastRecordDate = r.dateObj;
@@ -1706,8 +1761,8 @@
                     simDate = new Date(firstDayOfLastMonth.getTime());
                 }
 
-                // [사용자 요청] 제과제빵 등 모든 과정의 결제 주기가 긴 경우를 대비해 시뮬레이션 한계를 3000년까지 확장
-                const limitDate = new Date(3000, 11, 31);
+                // 시뮬레이션 한계를 현재 조회 중인 월의 마지막 날까지만 수행하도록 변경 (O(N) 성능 이슈 최적화)
+                const limitDate = new Date(year, month, 0);
                 let startCarry = rollingTotal; // Net rolling total without extensions
                 let simRolling = rollingTotal; // This will accumulate all attendance
 
@@ -1904,6 +1959,10 @@
                 document.getElementById('monthSelect').value = currentMonth;
 
                 // [신규 - 동기화 초기화]
+                if (!localStorage.getItem('sejong_ledger_v3_dedup_fix_2')) {
+                    localStorage.removeItem('sejong_ledger_sync');
+                    localStorage.setItem('sejong_ledger_v3_dedup_fix_2', 'true');
+                }
                 window.ledgerSyncData = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
 
 
@@ -2000,12 +2059,19 @@
                 // 1. Explode Data into Course Row Instances
                 let allCourseRows = [];
                 membersData.forEach(m => {
-                    const courses = (m.course || '').split(',').map(c => c.trim()).filter(c => c !== '');
-                    if (courses.length === 0) {
-                        allCourseRows.push({ member: m, courseFull: '', courseName: '' });
-                    } else {
-                        courses.forEach(courseFull => {
-                            let courseName = courseFull.replace(/\([^)]*\)/g, '').trim();
+                        let courses = (m.course || '').split(',').map(c => c.trim()).filter(c => c !== '');
+                        const hasJeggwa = courses.some(c => c.includes('제과') && !c.includes('제과제빵'));
+                        const hasJeppang = courses.some(c => c.includes('제빵') && !c.includes('제과제빵'));
+                        if (hasJeggwa && hasJeppang) {
+                            courses = courses.filter(c => !c.includes('제과') && !c.includes('제빵'));
+                            courses.push('제과제빵기능사');
+                        }
+                        
+                        if (courses.length === 0) {
+                            allCourseRows.push({ member: m, courseFull: '', courseName: '' });
+                        } else {
+                            courses.forEach(courseFull => {
+                                let courseName = courseFull.replace(/\([^)]*\)/g, '').trim();
                             allCourseRows.push({ member: m, courseFull: courseFull, courseName: courseName });
                         });
                     }
@@ -2051,27 +2117,7 @@
                     const rowCourseNameScope = row.courseName;
                     if (m && m.id) {
                         // 당월 예정일 계산
-                        const stats = getSheetSimulatedScheduledDate(m.id, currentYear, currentMonth, rowCourseNameScope);
-                        const syncKeyNow = `${m.id}_${currentYear}_${currentMonth}_${rowCourseNameScope || 'all'}`;
-                        window.ledgerSyncData[syncKeyNow] = [...stats.scheduledDays];
-                        if (stats.foundSimulatedDay) {
-                            window.ledgerSyncData[syncKeyNow + '_simulated'] = [stats.foundSimulatedDay];
-                        } else {
-                            delete window.ledgerSyncData[syncKeyNow + '_simulated'];
-                        }
-
-                        // 익월 예정일 미리 계산
-                        const nextDate = new Date(currentYear, currentMonth, 1);
-                        const nYear = nextDate.getFullYear();
-                        const nMonth = nextDate.getMonth() + 1;
-                        const nextStats = getSheetSimulatedScheduledDate(m.id, nYear, nMonth, rowCourseNameScope);
-                        const syncKeyNext = `${m.id}_${nYear}_${nMonth}_${rowCourseNameScope || 'all'}`;
-                        window.ledgerSyncData[syncKeyNext] = [...nextStats.scheduledDays];
-                        if (nextStats.foundSimulatedDay) {
-                            window.ledgerSyncData[syncKeyNext + '_simulated'] = [nextStats.foundSimulatedDay];
-                        } else {
-                            delete window.ledgerSyncData[syncKeyNext + '_simulated'];
-                        }
+                        // getSheetSimulatedScheduledDate removed to prevent poisoning ledgerSyncData
                     }
                 });
                 localStorage.setItem('sejong_ledger_sync', JSON.stringify(window.ledgerSyncData));
@@ -2178,9 +2224,9 @@
                         }
 
                         // Double check: Never start in the future relative to current page viewing month
-                        if (earliestYear > currentYear || (earliestYear === currentYear && earliestMonth > currentMonth)) {
-                            earliestYear = currentYear;
-                            earliestMonth = currentMonth;
+                        if (Number(earliestYear) > Number(currentYear) || (Number(earliestYear) === Number(currentYear) && Number(earliestMonth) > Number(currentMonth))) {
+                            earliestYear = Number(currentYear);
+                            earliestMonth = Number(currentMonth);
                         }
 
                         // Iterate month by month from earliest up to currentMonth
@@ -2200,10 +2246,12 @@
                             latestMonth = lastD.getMonth() + 1;
                         }
 
-                        while (true) {
+                        let safetyCounter = 0;
+                        while (safetyCounter < 300) {
+                            safetyCounter++;
                             const key = `${iterYear}-${String(iterMonth).padStart(2, '0')}`;
                             monthsToCalc.push({ year: iterYear, month: iterMonth, key });
-                            if (iterYear === currentYear && iterMonth === currentMonth) break;
+                            if (Number(iterYear) === Number(currentYear) && Number(iterMonth) === Number(currentMonth)) break;
                             iterMonth++;
                             if (iterMonth > 12) {
                                 iterMonth = 1;
@@ -2216,7 +2264,7 @@
                             // [수동 보정 적용] 해당 수강생의 특정 월에 보정값이 있으면 반영
                             const adjustment = GLOBAL_DATA_ADJUSTMENTS[String(m.id)]?.[mc.key];
                             if (adjustment && adjustment.carryOverride !== undefined) {
-                                carryOverP = adjustment.carryOverride;
+                                carryOverP = parseFloat(adjustment.carryOverride) || 0;
                             }
 
                             const mLogs = uniqueLogs.filter(l => {
@@ -2305,10 +2353,10 @@
                                 let vRaw = Math.round(val * 10);
                                 if (isDualCourse) {
                                     if (vRaw < 170) return 0;
-                                    return Math.floor((vRaw - 170) / 160) + 1;
-                                } else {
-                                    if (vRaw < 90) return 0;
-                                    return Math.floor((vRaw - 90) / 80) + 1;
+                    return Math.floor((vRaw - 170) / 160) + 1;
+                } else {
+                    if (vRaw < 90) return 0;
+                    return Math.floor((vRaw - 90) / 80) + 1;
                                 }
                             };
                             let currentCycle = getCycle(currentMC.carryFromPrev);
@@ -2324,7 +2372,7 @@
                                 const isTardy = l.status === 'tardy' || l.status === 'late' || strStatus.includes('지각') || strStatus.includes('△');
                                 const isFirstLast = strStatus.includes('첫') || strStatus.includes('종료') || strStatus === '[' || strStatus === ']';
                                 const isExtension = l.status === 'extension' || strStatus.startsWith('연') || strStatus.includes('연장') || strStatus.startsWith('E');
-                                const isRegularAttendance = l.status === 'present' || isNumericPresent || isAbsent || isEarly || isTardy || isFirstLast;
+                                const isPresentExt = l.status === 'present' || strStatus.startsWith('O') || strStatus.startsWith('o') || strStatus.startsWith('O^') || strStatus.startsWith('o^'); const isRegularAttendance = isPresentExt || isNumericPresent || isAbsent || isEarly || isTardy || isFirstLast;
 
                                 if (isRegularAttendance || isMakeupMarker) {
                                     runningTotal += attendanceIncrement;
@@ -2351,6 +2399,12 @@
 
                             // [결정적 J/P 수정] - 당월의 주기(네모박스) 변화만 감지
                             // [수정] 연장은 무시되므로 순수 출석(runningTotal) 기준으로만 cycle 판정
+                            
+                            // EXPORT REAL RED BOXES TO LEDGER SYNC DATA
+                            const syncKeyNow = `${m.id}_${currentMC.year}_${currentMC.month}_${rowCourseNameScope || 'all'}`;
+                            const actualRedDays = Array.from(redBoxDates).map(d => parseInt(d.split('-')[2], 10));
+                            window.ledgerSyncData[syncKeyNow] = actualRedDays;
+                            
                             const startNet = currentMC.carryFromPrev;
                             const endNet = runningTotal;
 
@@ -2414,7 +2468,13 @@
 
                             if (m) {
                                 // Real Member Data
-                                const myCourses = (m.course || '').split(',').map(c => c.trim()).filter(c => c !== '');
+                                let myCourses = (m.course || '').split(',').map(c => c.trim()).filter(c => c !== '');
+                                const hasJeggwa = myCourses.some(c => c.includes('제과') && !c.includes('제과제빵'));
+                                const hasJeppang = myCourses.some(c => c.includes('제빵') && !c.includes('제과제빵'));
+                                if (hasJeggwa && hasJeppang) {
+                                    myCourses = myCourses.filter(c => !c.includes('제과') && !c.includes('제빵'));
+                                    myCourses.push('제과제빵기능사');
+                                }
 
                                 // Determine if CURRENT row course is restricted today
                                 let courseAllowedDays = null; // null means no schedule info
@@ -2975,8 +3035,8 @@
             if (activeStatusBrush !== null) {
                 // For Eraser, clear both global and local
                 if (activeStatusBrush === 'unchecked') {
-                    saveAttendance(memberId, dateStr, 'unchecked', null); // Clear arrow
-                    saveAttendance(memberId, dateStr, 'unchecked', course); // Clear course log
+                    await saveAttendance(memberId, dateStr, 'unchecked', null); // Clear arrow
+                    await saveAttendance(memberId, dateStr, 'unchecked', course); // Clear course log
                     return;
                 }
 
