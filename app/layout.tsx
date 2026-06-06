@@ -36,16 +36,16 @@ export const metadata: Metadata = {
     canonical: 'https://www.sejongcook.co.kr',
   },
   title: {
-    default: "세종요리제과기술학원 | 김포요리학원 - 국비지원, 자격증, 취업",
+    default: "세종요리제과기술학원 | 김포요리학원 - 국비지원, 제과제빵, 원데이클래스",
     template: "%s | 세종요리제과기술학원"
   },
-  description: "김포 사우동 위치. 전문 요리/제과제빵 교육기관. 국비지원 및 자격증 취득. 김포요리학원, 김포요리, 요리학원 추천. 한식, 양식, 중식, 일식, 제과, 제빵 기능사 자격증.",
+  description: "김포 사우동 위치 전문 요리 및 제과제빵 교육기관. 국비지원, 취미요리, 가정요리, 원데이클래스부터 한식, 양식, 중식, 일식, 제과, 제빵 기능사 자격증 및 취업/창업까지. 사우, 북변, 장기, 구래, 고촌, 검단 등 김포 및 인천 전 지역 수강 가능.",
   keywords: [
-    "요리학원", "김포요리학원", "세종요리학원", "세종요리제과학원", "세종요리제과기술학원",
-    "김포 요리학원", "국비지원요리학원", "제과제빵학원", "자격증", "취업",
-    "한식조리기능사", "양식조리기능사", "중식조리기능사", "일식조리기능사", "제과기능사", "제빵기능사",
-    "김포요리", "한식기능사", "양식기능사", "중식기능사", "일식기능사", "제과기능사", "제빵기능사",
-    "김포 사우동 요리학원", "검단 요리학원", "강화 요리학원", "인천요리학원"
+    "김포요리학원", "세종요리학원", "세종요리기술학원", "김포제과학원", "김포제빵학원", 
+    "취미요리", "가정요리", "원데이클래스", "김포쿠킹클래스", 
+    "사우요리학원", "북변요리학원", "장기요리학원", "구래요리학원", "고촌요리학원", 
+    "검단요리학원", "계양요리학원", "운양요리학원", "김포본동요리학원", "마산요리학원", 
+    "김포제과제빵요리학원", "세종요리제과학원", "국비지원요리학원", "자격증", "취업"
   ],
   icons: {
     icon: '/favicon.ico',
@@ -57,8 +57,8 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: '세종요리제과기술학원 | 김포요리학원',
-    description: '김포 사우동 위치. 전문 요리/제과제빵 교육기관. 국비지원 및 자격증 취득. 최고의 강사진과 함께하세요.',
+    title: '세종요리제과기술학원 | 김포요리학원, 취미요리, 제과제빵',
+    description: '김포 사우동 위치 전문 요리/제과제빵 교육기관. 국비지원, 원데이클래스, 자격증 취득 및 취업 연계. 김포 전 지역(사우, 장기, 구래, 고촌 등) 및 검단 최고 수준의 시설.',
     url: 'https://www.sejongcook.co.kr',
     siteName: '세종요리제과기술학원',
     locale: 'ko_KR',
@@ -74,8 +74,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: '세종요리제과기술학원 | 김포요리학원',
-    description: '김포 사우동 위치. 국비지원 및 자격증 취득 전문 교육기관.',
+    title: '세종요리제과기술학원 | 김포요리학원 최우수 교육기관',
+    description: '국비지원, 제과제빵, 원데이클래스, 취미요리 전문 학원. 사우동, 장기동, 구래동, 검단 등 접근성 우수.',
     images: ['/chef_leemisun_final.png'],
   },
   robots: {
@@ -133,8 +133,12 @@ export default async function RootLayout({
               "@context": "https://schema.org",
               "@type": ["EducationalOrganization", "LocalBusiness"],
               "name": "세종요리제과기술학원",
-              "alternateName": ["김포요리학원", "세종요리학원", "세종요리제과학원"],
-              "description": "김포 사우동 위치한 전문 요리 및 제과제빵 교육기관. 국비지원 과정 운영.",
+              "alternateName": [
+                "김포요리학원", "세종요리학원", "세종요리제과학원", "세종요리기술학원", 
+                "김포제과학원", "김포제빵학원", "김포쿠킹클래스", "사우요리학원", 
+                "장기요리학원", "구래요리학원", "검단요리학원"
+              ],
+              "description": "김포 사우동 위치 전문 요리 및 제과제빵 교육기관. 국비지원, 취미요리, 원데이클래스, 한식/양식/일식/중식 자격증, 제과제빵 기능사.",
               "url": "https://www.sejongcook.co.kr",
               "logo": "https://www.sejongcook.co.kr/chef_final.png",
               "image": "https://www.sejongcook.co.kr/chef_leemisun_final.png",
@@ -155,7 +159,7 @@ export default async function RootLayout({
                 "@type": "ContactPoint",
                 "telephone": "031-986-1933",
                 "contactType": "customer service",
-                "areaServed": "KR",
+                "areaServed": ["김포시", "인천광역시 서구", "사우동", "장기동", "구래동", "북변동", "고촌읍", "운양동", "마산동", "검단동", "계양구"],
                 "availableLanguage": "Korean"
               },
               "sameAs": [
