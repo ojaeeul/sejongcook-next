@@ -365,13 +365,22 @@ function getMemberScheduledDate(memberId, courseFilter) {
 
 function processCourses() {
     groupedCourses = { '미지정': [] };
+    
+    const normalizeCourse = (c) => (!c || c === 'null') ? null : String(c).trim();
+
     allMembers.forEach(m => {
         const rawCourse = (m.course || '').trim();
         if (rawCourse === '') {
             groupedCourses['미지정'].push(m);
         } else {
-            // Split multiple courses and merge into subjects (strip times)
-            rawCourse.split(',').forEach(c => {
+            let courses = rawCourse.split(',').map(c => c.trim()).filter(c => c !== '');
+            const hasJeggwa = courses.some(c => c.includes('제과') && !c.includes('제과제빵'));
+            const hasJeppang = courses.some(c => c.includes('제빵') && !c.includes('제과제빵'));
+            if (hasJeggwa && hasJeppang) {
+                courses = courses.filter(c => !c.includes('제과') && !c.includes('제빵'));
+                courses.push('제과제빵기능사');
+            }
+            courses.forEach(c => {
                 const trimmedC = c.trim();
                 // Strip class times/times in parentheses like (19:00)
                 const subjectName = trimmedC.replace(/\([^)]*\)/g, '').trim() || '미지정';
@@ -382,6 +391,16 @@ function processCourses() {
                 }
             });
         }
+
+        // [추가] 현재 수강중인 과정(m.course)에는 없더라도, 결제 대장에 수동으로 등록된 내역(enrolled, unpaid)이 있다면 필터에 나타나도록 그룹에 추가
+        const manualPayments = paymentsData.filter(p => p.memberId == m.id && (p.status === 'enrolled' || p.status === 'unpaid'));
+        manualPayments.forEach(mp => {
+            const subjectName = normalizeCourse(mp.course) || '미지정';
+            if (!groupedCourses[subjectName]) groupedCourses[subjectName] = [];
+            if (!groupedCourses[subjectName].some(em => em.id === m.id)) {
+                groupedCourses[subjectName].push(m);
+            }
+        });
     });
 
     // Cleanup: Remove "미지정" group if it's empty
@@ -440,10 +459,19 @@ function renderTargetList() {
 
         // 3. Filter by Payment Schedule (8th day) if enabled
         if (usePaymentFilter && rangeStart && rangeEnd) {
-            membersInCourse = membersInCourse.filter(m => {
+            let expandedMembers = [];
+            membersInCourse.forEach(m => {
                 const schedArr = getAllMilestonesForRange(m.id, cName === '미지정' ? null : cName, rangeStart, rangeEnd);
-                return schedArr.length > 0;
+                if (schedArr.length > 0) {
+                    schedArr.forEach(sched => {
+                        expandedMembers.push({ ...m, specificMilestone: sched });
+                    });
+                }
             });
+            membersInCourse = expandedMembers;
+        } else {
+            // Give them a null specificMilestone so the rest of the code is consistent
+            membersInCourse = membersInCourse.map(m => ({ ...m, specificMilestone: null }));
         }
 
         // 4. Search Filter
@@ -451,7 +479,6 @@ function renderTargetList() {
             membersInCourse = membersInCourse.filter(m => {
                 const isInactive = m.status === 'trash' || m.status === 'delete' || m.status === 'completed';
                 const statusTag = isInactive ? '휴원' : '재원';
-                // Always search through both names and both potential phone numbers
                 return m.name.toLowerCase().includes(searchVal) ||
                     (m.phone && m.phone.includes(searchVal)) ||
                     (m.phone_guardian && m.phone_guardian.includes(searchVal)) ||
@@ -491,6 +518,7 @@ function renderTargetList() {
             mDiv.dataset.id = m.id;
             mDiv.dataset.phone = phone || '';
             mDiv.dataset.course = cName;
+            mDiv.dataset.day = m.specificMilestone ? m.specificMilestone.day : '';
 
             mDiv.style.padding = '8px 20px 8px 40px';
             mDiv.style.fontSize = '0.9rem';
@@ -500,12 +528,17 @@ function renderTargetList() {
             mDiv.style.borderBottom = '1px solid #f1f5f9';
             if (!hasPhone) mDiv.style.opacity = '0.6';
 
-            const isSelected = selectedTargets.some(t => String(t.id) === String(m.id) && t.selectedCourse === cName);
+            const isSelected = selectedTargets.some(t => 
+                String(t.id) === String(m.id) && 
+                t.selectedCourse === cName && 
+                (t.specificMilestone ? t.specificMilestone.day : '') === (m.specificMilestone ? m.specificMilestone.day : '')
+            );
             if (isSelected) mDiv.style.color = '#3b82f6';
 
             const isInactive = m.status === 'trash' || m.status === 'delete' || m.status === 'completed';
             const statusLabel = isInactive ? '<span style="color:#ef4444; font-size:0.75rem; margin-left:4px;">(휴원)</span>' : '';
             const typeLabel = targetType === 'student' ? '<span style="color:#94a3b8; font-size:0.7rem; margin-right:4px;">수강생:</span>' : '<span style="color:#94a3b8; font-size:0.7rem; margin-right:4px;">학부모:</span>';
+            const dateLabel = m.specificMilestone ? `<span style="color:#3b82f6; font-size:0.75rem; margin-left:6px; font-weight:700;">${m.specificMilestone.month}/${m.specificMilestone.day}</span>` : '';
 
             mDiv.innerHTML = `
                 <span style="display:flex; align-items:center;">
@@ -513,6 +546,7 @@ function renderTargetList() {
                         ${isSelected ? 'check_circle' : (hasPhone ? 'radio_button_unchecked' : 'error_outline')}
                     </i>
                     <span style="font-weight:600;">${m.name}</span>
+                    ${dateLabel}
                     ${statusLabel}
                 </span>
                 <span style="font-size:0.8rem; color:${hasPhone ? '#64748b' : '#ef4444'};">
@@ -552,7 +586,8 @@ function updateCheckmarks() {
     document.querySelectorAll('.member-row').forEach(mDiv => {
         const id = mDiv.dataset.id;
         const course = mDiv.dataset.course;
-        const isSelected = selectedTargets.some(t => String(t.id) === id && t.selectedCourse === course);
+        const dayStr = mDiv.dataset.day || '';
+        const isSelected = selectedTargets.some(t => String(t.id) === id && t.selectedCourse === course && (t.specificMilestone ? String(t.specificMilestone.day) : '') === dayStr);
 
         mDiv.style.color = isSelected ? '#3b82f6' : '';
         const iTag = mDiv.querySelector('i');
@@ -569,7 +604,8 @@ function toggleTarget(member, phone, courseName) {
         return;
     }
 
-    const index = selectedTargets.findIndex(t => String(t.id) === String(member.id) && t.selectedCourse === courseName);
+    const targetDay = member.specificMilestone ? String(member.specificMilestone.day) : '';
+    const index = selectedTargets.findIndex(t => String(t.id) === String(member.id) && t.selectedCourse === courseName && (t.specificMilestone ? String(t.specificMilestone.day) : '') === targetDay);
     if (index > -1) {
         selectedTargets.splice(index, 1);
     } else {
@@ -631,22 +667,28 @@ function updateSelectedTags() {
         const rangeStart = rangeStartVal ? new Date(rangeStartVal + 'T00:00:00') : null;
         const rangeEnd = rangeEndVal ? new Date(rangeEndVal + 'T00:00:00') : null;
 
-        let sched = null;
-        if (usePaymentFilter && rangeStart && rangeEnd) {
+        let scheds = [];
+        if (t.specificMilestone) {
+            scheds = [t.specificMilestone];
+        } else if (usePaymentFilter && rangeStart && rangeEnd) {
             const milestones = getAllMilestonesForRange(t.id, t.selectedCourse === '미지정' ? null : t.selectedCourse, rangeStart, rangeEnd);
             if (milestones.length > 0) {
-                sched = milestones[0];
+                scheds = [milestones[0]];
             }
         }
-        if (!sched) {
-            sched = getMemberScheduledDate(t.id, t.selectedCourse === '미지정' ? null : t.selectedCourse);
+        if (scheds.length === 0) {
+            const sched = getMemberScheduledDate(t.id, t.selectedCourse === '미지정' ? null : t.selectedCourse);
+            if (sched) scheds = [sched];
         }
 
-        if (sched) {
-            if (sched.day !== 0) {
-                const mm = String(sched.month).padStart(2, '0');
-                const dd = String(sched.day).padStart(2, '0');
-                datePart = `<span style="font-size:0.75rem; color:#2563eb; margin-left:6px; font-weight:700;">${mm}/${dd}</span>`;
+        if (scheds.length > 0) {
+            const dateStrings = scheds.filter(s => s.day !== 0).map(s => {
+                const mm = String(s.month).padStart(2, '0');
+                const dd = String(s.day).padStart(2, '0');
+                return `${mm}/${dd}`;
+            });
+            if (dateStrings.length > 0) {
+                datePart = `<span style="font-size:0.75rem; color:#2563eb; margin-left:6px; font-weight:700;">${dateStrings.join(', ')}</span>`;
             }
         }
 
@@ -730,10 +772,18 @@ function selectFilteredCourses() {
 
         // 2. Range Filter (Button always applies the range if one is selected)
         if (rangeStart && rangeEnd) {
-            membersInCourse = membersInCourse.filter(m => {
+            let expandedMembers = [];
+            membersInCourse.forEach(m => {
                 const schedArr = getAllMilestonesForRange(m.id, cName === '미지정' ? null : cName, rangeStart, rangeEnd);
-                return schedArr.length > 0;
+                if (schedArr.length > 0) {
+                    schedArr.forEach(sched => {
+                        expandedMembers.push({ ...m, specificMilestone: sched });
+                    });
+                }
             });
+            membersInCourse = expandedMembers;
+        } else {
+            membersInCourse = membersInCourse.map(m => ({ ...m, specificMilestone: null }));
         }
 
         // 3. Search Filter
@@ -750,7 +800,8 @@ function selectFilteredCourses() {
         membersInCourse.forEach(m => {
             const phone = targetType === 'student' ? m.phone : m.phone_guardian;
             if (phone && phone.trim()) {
-                const alreadySelected = selectedTargets.some(t => String(t.id) === String(m.id) && t.selectedCourse === cName);
+                const targetDay = m.specificMilestone ? String(m.specificMilestone.day) : '';
+                const alreadySelected = selectedTargets.some(t => String(t.id) === String(m.id) && t.selectedCourse === cName && (t.specificMilestone ? String(t.specificMilestone.day) : '') === targetDay);
                 if (!alreadySelected) {
                     selectedTargets.push({ ...m, phone: phone, selectedCourse: cName });
                     totalSelectedNow++;
@@ -1124,22 +1175,26 @@ function sendSms() {
         let msg = text.replace(/%%%/g, t.name);
 
         let tuitionDateStr = '지정 안됨';
-        let sched = null;
-        if (usePaymentFilter && rangeStart && rangeEnd) {
+        let scheds = [];
+        if (t.specificMilestone) {
+            scheds = [t.specificMilestone];
+        } else if (usePaymentFilter && rangeStart && rangeEnd) {
             const milestones = getAllMilestonesForRange(t.id, t.selectedCourse === '미지정' ? null : t.selectedCourse, rangeStart, rangeEnd);
             if (milestones.length > 0) {
-                sched = milestones[0];
+                scheds = [milestones[0]];
             }
         }
-        if (!sched) {
-            sched = getMemberScheduledDate(t.id, t.selectedCourse === '미지정' ? null : t.selectedCourse);
+        if (scheds.length === 0) {
+            const sched = getMemberScheduledDate(t.id, t.selectedCourse === '미지정' ? null : t.selectedCourse);
+            if (sched) scheds = [sched];
         }
 
-        if (sched) {
-            if (sched.day === 0) {
+        if (scheds.length > 0) {
+            const validScheds = scheds.filter(s => s.day !== 0);
+            if (validScheds.length === 0) {
                 tuitionDateStr = '지정 안됨';
             } else {
-                tuitionDateStr = `${sched.month}월 ${sched.day}일`;
+                tuitionDateStr = validScheds.map(s => `${s.month}월 ${s.day}일`).join(', ');
             }
         }
 
@@ -1377,8 +1432,14 @@ function renderRangeCalendar() {
     // Pre-calculate payment days for highlighting
     const paymentDays = new Set();
     allMembers.forEach(m => {
-        if (!m.course) return;
-        m.course.split(',').forEach(c => {
+        let myCourses = (m.course || '').split(',').map(c => c.trim()).filter(c => c !== '');
+        const hasJeggwa = myCourses.some(c => c.includes('제과') && !c.includes('제과제빵'));
+        const hasJeppang = myCourses.some(c => c.includes('제빵') && !c.includes('제과제빵'));
+        if (hasJeggwa && hasJeppang) {
+            myCourses = myCourses.filter(c => !c.includes('제과') && !c.includes('제빵'));
+            myCourses.push('제과제빵기능사');
+        }
+        myCourses.forEach(c => {
             const milestones = getAllMilestonesForMonth(m.id, c.trim(), calendarYear, calendarMonth + 1);
             milestones.forEach(ms => paymentDays.add(ms.day));
         });
@@ -1543,11 +1604,20 @@ function setQuickRange(days) {
 }
 
 function getAllMilestonesForRange(memberId, courseFilter, startRange, endRange) {
+    const normalizeCourse = (c) => (!c || c === 'null') ? null : String(c).trim();
+    const cleanFilter = (courseFilter || 'all').replace(/\([^)]*\)/g, '').trim();
     const allDue = getMemberAllMilestones(memberId, courseFilter);
-    return allDue.filter(ms => {
+    
+    let matched = allDue.filter(ms => {
         const msDate = new Date(ms.year, ms.month - 1, ms.day);
-        return msDate >= startRange && msDate <= endRange;
+        if (msDate >= startRange && msDate <= endRange) {
+            const msPayment = paymentsData.find(p => p.memberId == memberId && p.year == ms.year && p.month == ms.month && normalizeCourse(p.course) === normalizeCourse(cleanFilter) && p.status !== 'delete');
+            if (!msPayment || msPayment.status !== 'paid') return true;
+        }
+        return false;
     });
+
+    return matched;
 }
 
 function getAllMilestonesForMonth(memberId, courseFilter, year, month) {
@@ -1575,6 +1645,14 @@ function getMemberAllMilestones(memberId, courseFilter, limitDate = null) {
         return !(isHolidayInSys || isNationalHoliday || dayOfWeek === 0);
     }).sort((a, b) => a.dateObj - b.dateObj);
 
+    const uniqueMap = new Map();
+    for (const r of records) {
+        const dateStr = r.date.split('T')[0];
+        const cName = r.course ? r.course.replace(/\([^)]*\)/g, '').trim() : '';
+        uniqueMap.set(cName + '|' + dateStr, r);
+    }
+    records = Array.from(uniqueMap.values()).sort((a, b) => a.dateObj - b.dateObj);
+
     let rollingTotal = 0;
     let rollingTotalUpToLimit = 0;
     let lastRecordDate = null;
@@ -1592,11 +1670,12 @@ function getMemberAllMilestones(memberId, courseFilter, limitDate = null) {
     };
 
     for (const r of records) {
-        if (courseFilter && r.course) {
-            const rClean = r.course.replace(/\([^)]*\)/g, '').trim();
-            const fClean = courseFilter.replace(/\([^)]*\)/g, '').trim();
-            if (rClean !== fClean) continue;
-        }
+        const rClean = (r.course) ? r.course.replace(/\([^)]*\)/g, '').trim() : '';
+        const fClean = (courseFilter && courseFilter !== '미지정') ? courseFilter.replace(/\([^)]*\)/g, '').trim() : '';
+        
+        if (fClean !== '' && rClean !== '' && rClean !== fClean) continue;
+        if (fClean === '' && rClean !== '') continue;
+        if (fClean !== '' && rClean === '') continue;
 
         const inc = isDualBakeryLocal ? 1.0 : 1.0;
         const strStatus = String(r.status);
@@ -1675,15 +1754,14 @@ function getMemberAllMilestones(memberId, courseFilter, limitDate = null) {
 
     // [1] Apply Sync Data (Real and Simulated) OVERWRITING the internal calculation (Matching tuition_v3.js exact behavior)
     try {
+        if (!localStorage.getItem('sejong_ledger_v3_dedup_fix_2')) {
+            localStorage.removeItem('sejong_ledger_sync');
+            localStorage.setItem('sejong_ledger_v3_dedup_fix_2', 'true');
+        }
+        
         const syncData = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
         const cleanFilter = (courseFilter || 'all').replace(/\([^)]*\)/g, '').trim();
 
-        let targetYear = year;
-        let targetMonth = month;
-        let nextM = targetMonth === 12 ? 1 : targetMonth + 1;
-        let nextY = targetMonth === 12 ? targetYear + 1 : targetYear;
-
-        // Pass 1: Current and Next Month overwrite internal milestones
         const applySync = (sYear, sMonth) => {
             const sKey = `${memberId}_${sYear}_${sMonth}_${cleanFilter}`;
             const sSimKey = sKey + '_simulated';
@@ -1703,39 +1781,40 @@ function getMemberAllMilestones(memberId, courseFilter, limitDate = null) {
             }
             
             if (rDay) {
+                const uniqueDays = [...new Set(rDay)];
                 milestones = milestones.filter(ms => !(ms.year === sYear && ms.month === sMonth));
-                rDay.forEach(d => {
+                uniqueDays.forEach(d => {
                     if (d > 0) milestones.push({ year: sYear, month: sMonth, day: d });
                 });
             } else if (sDay) {
+                const uniqueDays = [...new Set(sDay)];
                 milestones = milestones.filter(ms => !(ms.year === sYear && ms.month === sMonth));
-                sDay.forEach(d => {
+                uniqueDays.forEach(d => {
                     if (d > 0) milestones.push({ year: sYear, month: sMonth, day: d });
                 });
             }
         };
-        applySync(targetYear, targetMonth);
-        applySync(nextY, nextM);
 
-        // Pass 2: Past Months append and overwrite internal milestones just like Pass 1
+        // Group unique Year/Month combinations from syncData
+        const syncDatesToProcess = new Set();
         Object.keys(syncData).forEach(key => {
             const parts = key.split('_');
             if (parts.length >= 4) {
                 const sMemberId = parts[0];
                 const sYear = parseInt(parts[1], 10);
                 const sMonth = parseInt(parts[2], 10);
-                // Extract clean course name (removing _simulated if present)
                 let sCourse = parts.slice(3).join('_');
-                if (sCourse.endsWith('_simulated')) {
-                    sCourse = sCourse.replace('_simulated', '');
-                }
+                if (sCourse.endsWith('_simulated')) sCourse = sCourse.replace('_simulated', '');
                 
                 if (sMemberId == memberId && sCourse === cleanFilter) {
-                    if (sYear < targetYear || (sYear === targetYear && sMonth < targetMonth)) {
-                        applySync(sYear, sMonth);
-                    }
+                    syncDatesToProcess.add(`${sYear}-${sMonth}`);
                 }
             }
+        });
+        
+        syncDatesToProcess.forEach(ym => {
+            const [y, m] = ym.split('-');
+            applySync(parseInt(y, 10), parseInt(m, 10));
         });
     } catch (e) { console.error(e); }
 
@@ -1818,21 +1897,64 @@ function getLedgerMonthStats(memberId, year, month, courseFilter = null) {
                 const isHolidayInSys = holidaysData.some(h => h.date === dateStr);
                 const isNationalHoliday = !!KOREAN_HOLIDAYS_MAP[dateStr];
                 const dayOfWeek = r.dateObj.getDay();
+
+                const strStatus = String(r.status || '');
+                const isPresent = r.status === 'present' || strStatus.startsWith('O') || strStatus.startsWith('o') || ['10', '12', '2', '5', '7', '3', '9'].includes(strStatus);
+                const isExtension = r.status === 'extension' || strStatus.startsWith('연') || strStatus.includes('연장') || strStatus.startsWith('E');
+                const isAbsent = r.status === 'absent' || strStatus.startsWith('X') || strStatus.includes('결석');
+                const isEarlyTardy = r.status === 'early' || r.status === 'tardy' || strStatus.includes('조퇴') || strStatus.includes('지각') || strStatus.includes('△');
+                const hasValidAttendance = isPresent || isExtension || isAbsent || isEarlyTardy;
+
+                if (hasValidAttendance) return true; // 출석 기록이 있으면 공휴일/일요일이라도 인정
+
                 return !(isHolidayInSys || isNationalHoliday || dayOfWeek === 0);
             });
+
+            // [신규 수정] 동일 날짜, 동일 과정에 대해 가장 마지막 기록만 남겨서 중복 카운팅 방지
+            const uniqueRecordsMap = new Map();
+            memberRecords.forEach(r => {
+                const dStr = r.date.split('T')[0];
+                const cKey = r.course ? r.course.replace(/\([^)]*\)/g, '').trim() : 'all';
+                uniqueRecordsMap.set(`${dStr}_${cKey}`, r);
+            });
+            memberRecords = Array.from(uniqueRecordsMap.values());
+            memberRecords.sort((a, b) => a.dateObj - b.dateObj);
+
             let scheduledDays = [];
             let isSimulated = false;
             let rollingTotal = 0;
-            // [데이터 보정] GLOBAL_DATA_ADJUSTMENTS 반영
+            // [데이터 보정] 전체 년도 과거 기록을 스캔하여, 요청한 달(year, month) 이전의 가장 최근 보정값을 찾습니다.
             let startYear = 1900, startMonth = 1;
+            const allAdjs = GLOBAL_DATA_ADJUSTMENTS[String(memberId)] || {};
+            let latestOverrideKey = null;
+
+            for (const key of Object.keys(allAdjs)) {
+                if (allAdjs[key].carryOverride !== undefined) {
+                    const [yStr, mStr] = key.split('-');
+                    const yNum = parseInt(yStr, 10);
+                    const mNum = parseInt(mStr, 10);
+                    
+                    if (yNum < year || (yNum === year && mNum <= month)) {
+                        if (!latestOverrideKey) {
+                            latestOverrideKey = key;
+                            rollingTotal = parseFloat(allAdjs[key].carryOverride) || 0;
+                            startYear = yNum;
+                            startMonth = mNum;
+                        } else {
+                            const [lyStr, lmStr] = latestOverrideKey.split('-');
+                            if (yNum > parseInt(lyStr, 10) || (yNum === parseInt(lyStr, 10) && mNum > parseInt(lmStr, 10))) {
+                                latestOverrideKey = key;
+                                rollingTotal = parseFloat(allAdjs[key].carryOverride) || 0;
+                                startYear = yNum;
+                                startMonth = mNum;
+                            }
+                        }
+                    }
+                }
+            }
 
             const monthKey = `${year}-${String(month).padStart(2, '0')}`;
-            const adj = GLOBAL_DATA_ADJUSTMENTS[String(memberId)]?.[monthKey];
-            if (adj && adj.carryOverride !== undefined) {
-                rollingTotal = adj.carryOverride;
-                startYear = year;
-                startMonth = month;
-            }
+            const adj = allAdjs[monthKey];
 
 
 
@@ -1846,10 +1968,10 @@ function getLedgerMonthStats(memberId, year, month, courseFilter = null) {
             const getCycle = (val) => {
                 let vRaw = Math.round(val * 10);
                 if (isDualBakery) {
-                    if (vRaw < 170) return 0; // 17.0=1
-                    return Math.floor((vRaw - 170) / 160) + 1; // 16.0=next cycle
+                    if (vRaw < 170) return 0;
+                    return Math.floor((vRaw - 170) / 160) + 1;
                 } else {
-                    if (vRaw < 90) return 0; // 9.0=1, 17.0=2...
+                    if (vRaw < 90) return 0;
                     return Math.floor((vRaw - 90) / 80) + 1;
                 }
             };
@@ -1911,8 +2033,10 @@ function getLedgerMonthStats(memberId, year, month, courseFilter = null) {
                             const dateStr = r.date ? (r.date.includes('T') ? r.date.split('T')[0] : r.date) : (r.dateObj ? r.dateObj.toISOString().split('T')[0] : '');
                             const isForced = adj && adj.forceRedBoxDates && adj.forceRedBoxDates.includes(dateStr);
                             if (currCycle > prevCycle || isForced) {
-                                scheduledDays.push(r.dateObj.getDate());
-                                hitTargetInMonth = true;
+                                if (r.yearNum === year && r.monthNum === month) {
+                                    scheduledDays.push(r.dateObj.getDate());
+                                    hitTargetInMonth = true;
+                                }
                             }
                         }
                         lastRecordDate = r.dateObj;
@@ -2012,7 +2136,13 @@ function getAllLedgerMonthStats(memberId, year, month) {
     const member = allMembers.find(m => String(m.id) === String(memberId));
     if (!member || !member.course) return [];
 
-    const courses = member.course.split(',').map(c => c.split('(')[0].trim());
+    let courses = member.course.split(',').map(c => c.split('(')[0].trim());
+    const hasJeggwa = courses.some(c => c.includes('제과') && !c.includes('제과제빵'));
+    const hasJeppang = courses.some(c => c.includes('제빵') && !c.includes('제과제빵'));
+    if (hasJeggwa && hasJeppang) {
+        courses = courses.filter(c => !c.includes('제과') && !c.includes('제빵'));
+        courses.push('제과제빵기능사');
+    }
     const results = [];
 
     courses.forEach(courseName => {

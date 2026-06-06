@@ -300,6 +300,65 @@ function determineAttendanceStatus(member) {
     return 'present';
 }
 
+let timetableData = {
+    '한식기능사': [1, 3],
+    '양식기능사': [2, 4],
+    '일식기능사': [2, 4],
+    '중식기능사': [2, 4],
+    '제과기능사': [1, 3],
+    '제빵기능사': [2, 4],
+    '제과제빵기능사': [1, 2, 3, 4],
+    '복어기능사': [5],
+    '산업기사': [5],
+    '가정요리': [2, 4],
+    '브런치': [5]
+};
+
+async function checkTimetableAllowed(member) {
+    if (!member || !member.course) return true;
+    
+    try {
+        const res = await fetch(getFetchUrl('timetable') + '&t=' + Date.now());
+        if (res.ok) {
+            const apiData = await res.json();
+            if (apiData && Object.keys(apiData).length > 0) {
+                timetableData = { ...timetableData, ...apiData };
+            }
+        }
+    } catch (e) {
+        console.error("Timetable fetch failed", e);
+    }
+    
+    const today = new Date();
+    const dayOfWeek = today.getDay(); // 0(Sun) ~ 6(Sat)
+    
+    const courses = member.course.split(',').map(c => c.trim().replace(/\([^)]*\)/g, '').trim());
+    
+    let hasClassToday = false;
+    let foundTimetableEntry = false;
+    
+    for (const cName of courses) {
+        if (timetableData[cName]) {
+            foundTimetableEntry = true;
+            if (timetableData[cName].includes(dayOfWeek)) {
+                hasClassToday = true;
+                break;
+            }
+        } else if (timetableData[cName.replace(/\s/g, '')]) {
+             foundTimetableEntry = true;
+             if (timetableData[cName.replace(/\s/g, '')].includes(dayOfWeek)) {
+                hasClassToday = true;
+                break;
+             }
+        }
+    }
+    
+    if (foundTimetableEntry && !hasClassToday) {
+        return false;
+    }
+    return true;
+}
+
 async function processAttendance(inputNumOrObj, overridePhoto = null) {
     try {
         let member = null;
@@ -316,6 +375,14 @@ async function processAttendance(inputNumOrObj, overridePhoto = null) {
             showStatus("등록되지 않은 번호입니다.", "red");
             return;
         }
+        
+        // --- NEW: Check if today is a valid class day ---
+        const isAllowed = await checkTimetableAllowed(member);
+        if (!isAllowed) {
+            showStatus("오늘은 수업이 없는 날입니다.", "red");
+            return; // Reject attendance
+        }
+        // ------------------------------------------------
 
         const today = new Date().toISOString().split('T')[0];
         const status = determineAttendanceStatus(member);
@@ -323,7 +390,7 @@ async function processAttendance(inputNumOrObj, overridePhoto = null) {
         const postRes = await fetch(getFetchUrl('attendance', true), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ memberId: member.id, date: today, status: status })
+            body: JSON.stringify({ memberId: member.id, date: today, status: status, course: member.course })
         });
 
         if (postRes.ok) {

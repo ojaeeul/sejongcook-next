@@ -367,37 +367,72 @@ function getMemberEighthDayInMonth(memberId, year, month, courseFilter = null) {
     // [엄격 제한] 공휴일만 필터링 (기존 기록된 요일은 모두 인정)
 
     let memberRecords = (attendanceByMember[memberId] || []).filter(r => {
-
         const dateStr = r.date.split('T')[0];
         const isHolidayInSys = holidaysData.some(h => h.date === dateStr);
         const isNationalHoliday = !!KOREAN_HOLIDAYS_MAP[dateStr];
         const dayOfWeek = r.dateObj.getDay();
+
+        const strStatus = String(r.status || '');
+        const isPresent = r.status === 'present' || strStatus.startsWith('O') || strStatus.startsWith('o') || ['10', '12', '2', '5', '7', '3', '9'].includes(strStatus);
+        const isExtension = r.status === 'extension' || strStatus.startsWith('연') || strStatus.includes('연장') || strStatus.startsWith('E');
+        const isAbsent = r.status === 'absent' || strStatus.startsWith('X') || strStatus.includes('결석');
+        const isEarlyTardy = r.status === 'early' || r.status === 'tardy' || strStatus.includes('조퇴') || strStatus.includes('지각') || strStatus.includes('△');
+        const hasValidAttendance = isPresent || isExtension || isAbsent || isEarlyTardy;
+
+        if (hasValidAttendance) return true; // 출석 기록이 있으면 공휴일/일요일이라도 인정
+
         return !(isHolidayInSys || isNationalHoliday || dayOfWeek === 0);
     });
+
+    // [신규 수정] 동일 날짜, 동일 과정에 대해 가장 마지막 기록만 남겨서 중복 카운팅 방지
+    const uniqueRecordsMap = new Map();
+    memberRecords.forEach(r => {
+        const dStr = r.date.split('T')[0];
+        const cKey = r.course ? r.course.replace(/\([^)]*\)/g, '').trim() : 'all';
+        uniqueRecordsMap.set(`${dStr}_${cKey}`, r);
+    });
+    memberRecords = Array.from(uniqueRecordsMap.values());
+    memberRecords.sort((a, b) => a.dateObj - b.dateObj);
+
     let eighthDay = null; // 당월 예정일
     let nextEighthDay = null; // 미래 예정일
     let allMilestones = [];  // 모든 결제 지점 (역사적)
 
-    // [동기화 최우선 적용] sheet.html 이 계산한 확정 데이터 우선 참조
-    if (window.ledgerSyncData) {
-        const syncKey = `${memberId}_${year}_${month}_${courseFilter || 'all'}`;
-        const syncVal = window.ledgerSyncData[syncKey];
-        if (syncVal) {
-            eighthDay = { year, month, day: syncVal };
-            allMilestones.push(eighthDay);
-        }
-    }
+    
 
     let rollingTotal = 0;
 
     let startYear = 1900, startMonth = 1;
-    const monthKey = `${year}-${String(month).padStart(2, '0')}`;
-    const adj = GLOBAL_DATA_ADJUSTMENTS[String(memberId)]?.[monthKey];
-    if (adj && adj.carryOverride !== undefined) {
-        rollingTotal = adj.carryOverride;
-        startYear = year;
-        startMonth = month;
+    const allAdjs = GLOBAL_DATA_ADJUSTMENTS[String(memberId)] || {};
+    let latestOverrideKey = null;
+
+    for (const key of Object.keys(allAdjs)) {
+        if (allAdjs[key].carryOverride !== undefined) {
+            const [yStr, mStr] = key.split('-');
+            const yNum = parseInt(yStr, 10);
+            const mNum = parseInt(mStr, 10);
+            
+            if (yNum < year || (yNum === year && mNum <= month)) {
+                if (!latestOverrideKey) {
+                    latestOverrideKey = key;
+                    rollingTotal = parseFloat(allAdjs[key].carryOverride) || 0;
+                    startYear = yNum;
+                    startMonth = mNum;
+                } else {
+                    const [lyStr, lmStr] = latestOverrideKey.split('-');
+                    if (yNum > parseInt(lyStr, 10) || (yNum === parseInt(lyStr, 10) && mNum > parseInt(lmStr, 10))) {
+                        latestOverrideKey = key;
+                        rollingTotal = parseFloat(allAdjs[key].carryOverride) || 0;
+                        startYear = yNum;
+                        startMonth = mNum;
+                    }
+                }
+            }
+        }
     }
+
+    const monthKey = `${year}-${String(month).padStart(2, '0')}`;
+    const adj = allAdjs[monthKey];
 
 
     let rollingTotalUpToToday = 0;
@@ -410,10 +445,10 @@ function getMemberEighthDayInMonth(memberId, year, month, courseFilter = null) {
         let vRaw = Math.round(val * 10);
         if (isDual) {
             if (vRaw < 170) return 0;
-            return Math.floor((vRaw - 170) / 160) + 1;
-        } else {
-            if (vRaw < 90) return 0;
-            return Math.floor((vRaw - 90) / 80) + 1;
+                    return Math.floor((vRaw - 170) / 160) + 1;
+                } else {
+                    if (vRaw < 90) return 0;
+                    return Math.floor((vRaw - 90) / 80) + 1;
         }
     };
 
@@ -447,7 +482,11 @@ function getMemberEighthDayInMonth(memberId, year, month, courseFilter = null) {
         const isTardy = r.status === 'tardy' || r.status === 'late' || strStatus.includes('지각') || strStatus.includes('△');
         const isFirstLast = strStatus.includes('첫') || strStatus.includes('종료') || strStatus === '[' || strStatus === ']';
         const isExtension = r.status === 'extension' || strStatus.startsWith('연') || strStatus.includes('연장') || strStatus.startsWith('E');
-        const isRegular = r.status === 'present' || isNumericPresent || isAbsent || isEarly || isTardy || isFirstLast;
+        const isPast = r.yearNum < year || (r.yearNum === year && r.monthNum < month);
+        const isPresentPast = r.status === 'present' || strStatus.startsWith('O') || strStatus.startsWith('o') || strStatus.startsWith('O^') || strStatus.startsWith('o^') || isNumericPresent;
+        const isRegularPast = isPresentPast || isAbsent || isEarly || isTardy || isFirstLast;
+        const isRegularCurrent = r.status === 'present' || isNumericPresent || isAbsent || isEarly || isTardy || isFirstLast;
+        const isRegular = isPast ? isRegularPast : isRegularCurrent;
 
         const prevNet = rollingTotal;
         if ((isMarker || isRegular || isExtension) && (r.yearNum < year || (r.yearNum === year && r.monthNum <= month))) {
@@ -465,7 +504,7 @@ function getMemberEighthDayInMonth(memberId, year, month, courseFilter = null) {
             const dateStr = r.date ? r.date.split('T')[0] : r.dateObj.toISOString().split('T')[0];
             const isForced = adj && adj.forceRedBoxDates && adj.forceRedBoxDates.includes(dateStr);
 
-            if (currCycle > prevCycle || String(r.status) === '9' || isForced) {
+            if (currCycle > prevCycle || isForced) {
                 const milestone = { year: r.yearNum, month: r.monthNum, day: r.dateObj.getDate(), isReal: true };
                 allMilestones.push(milestone);
                 milestoneNets.push(currNet);
@@ -550,6 +589,11 @@ function getMemberEighthDayInMonth(memberId, year, month, courseFilter = null) {
 
     // [신규 기믹]: User request to strictly mirror sheet.html dates
     try {
+        if (!localStorage.getItem('sejong_ledger_v3_dedup_fix_2')) {
+            localStorage.removeItem('sejong_ledger_sync');
+            localStorage.setItem('sejong_ledger_v3_dedup_fix_2', 'true');
+        }
+        
         const syncData = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
         const syncKey = `${memberId}_${year}_${month}_${courseFilter || 'all'}`;
 
@@ -605,7 +649,11 @@ function getMemberEighthDayInMonth(memberId, year, month, courseFilter = null) {
         const isTardy = r.status === 'tardy' || strStatus.includes('지각') || strStatus.includes('△');
         const isFirstLast = strStatus.includes('첫') || strStatus.includes('종료') || strStatus === '[' || strStatus === ']';
         const isExtension = r.status === 'extension' || strStatus.startsWith('연') || strStatus.includes('연장') || strStatus.startsWith('E');
-        const isRegular = r.status === 'present' || isNumericPresent || isAbsent || isEarly || isTardy || isFirstLast;
+        const isPast = r.yearNum < year || (r.yearNum === year && r.monthNum < month);
+        const isPresentPast = r.status === 'present' || strStatus.startsWith('O') || strStatus.startsWith('o') || strStatus.startsWith('O^') || strStatus.startsWith('o^') || isNumericPresent;
+        const isRegularPast = isPresentPast || isAbsent || isEarly || isTardy || isFirstLast;
+        const isRegularCurrent = r.status === 'present' || isNumericPresent || isAbsent || isEarly || isTardy || isFirstLast;
+        const isRegular = isPast ? isRegularPast : isRegularCurrent;
 
         if (isMarker || isRegular || isExtension) {
             globalLastRecordDate = r.dateObj;
@@ -683,7 +731,12 @@ function renderTable() {
             if (!m.course || !m.course.includes(window.currentState.course)) return;
         }
 
-        const myCourses = (m.course || '').split(',').map(c => c.trim()).filter(c => c !== '');
+        let myCourses = (m.course || '').split(',').map(c => c.trim()).filter(c => c !== '');
+        if (myCourses.some(c => c.includes('제과') && !c.includes('제과제빵')) && myCourses.some(c => c.includes('제빵') && !c.includes('제과제빵'))) {
+            myCourses = myCourses.filter(c => !c.includes('제과') && !c.includes('제빵'));
+            myCourses.push('제과제빵기능사');
+        }
+        
         if (myCourses.length === 0) {
             // 학생이 등록된 과정이 없는 경우 가상의 빈 과정을 하나 만들어서 처리할지 고려
             // 하지만 보통 수강관리에서는 과정이 있어야 의미가 있으므로 스킵하거나 기본 처리
@@ -729,19 +782,18 @@ function renderTable() {
                         // 핵심: 실제 도장(출석 횟수)이 타겟에 도달했을 때만 미납 청구(핑크 날짜 박스 및 미납 표시)를 발생시킵니다!
                         const msDateObj = new Date(ms.year, ms.month - 1, ms.day);
                         if (remainingForLoop >= targetCount || msDateObj <= today) {
-                            imminentCourses.push({
-                                name: courseNameOnly,
-                                date: ms,
-                                fee: courseFee,
-                                isOverdue: true
-                            });
-                            totalDueAmount += courseFee;
-                            hasUnpaidInThisCourse = true;
-                            remainingForLoop -= targetCount;
-                            
                             if (ms.year === window.currentState.year && ms.month === window.currentState.month) {
                                 isDueThisMonth = true;
+                                imminentCourses.push({
+                                    name: courseNameOnly,
+                                    date: ms,
+                                    fee: courseFee,
+                                    isOverdue: true
+                                });
+                                totalDueAmount += courseFee;
+                                hasUnpaidInThisCourse = true;
                             }
+                            remainingForLoop -= targetCount;
                         } else {
                             // 아직 횟수가 미달된 미래의 결제건은 미납으로 띄우지 않고 예약일로만 저장 (리스트에 추가 안 함)
                             if (!scheduledDate) {
@@ -769,14 +821,29 @@ function renderTable() {
             let rowStatus = 'enrolled';
             let hasOverdue = imminentCourses.some(c => c.isOverdue);
 
+            let isPaidToday = false;
+            if (isPaidRecord) {
+                const pDateStr = payment.updatedAt || payment.date;
+                if (pDateStr) {
+                    const pDate = new Date(pDateStr);
+                    if (pDate.getFullYear() === today.getFullYear() && pDate.getMonth() === today.getMonth() && pDate.getDate() === today.getDate()) {
+                        isPaidToday = true;
+                    }
+                }
+            }
+
             if (m.status === 'completed' || m.status === 'trash') {
                 rowStatus = m.status;
             } else if (payment && (payment.status === 'completed' || payment.status === 'trash')) {
                 rowStatus = payment.status;
-            } else if (payment && payment.status === 'paid') {
-                rowStatus = 'paid';
             } else if (hasOverdue) {
                 rowStatus = 'unpaid';
+            } else if (payment && payment.status === 'paid') {
+                if (isPaidToday) {
+                    rowStatus = 'paid';
+                } else {
+                    rowStatus = 'enrolled'; // 그날(오늘) 납부한 게 아니면 수강중으로 복귀
+                }
             } else if (payment && payment.status) {
                 rowStatus = payment.status;
             }
@@ -792,7 +859,9 @@ function renderTable() {
                 countPaid++;
                 countEnrolled++; // 납부완료자도 '수강중' 탭에서 동시에 보이도록 포함
             } else if (rowStatus === 'unpaid') {
-                countUnpaid++;
+                if (isDueThisMonth) {
+                    countUnpaid++;
+                }
                 countEnrolled++; // 미납자도 '수강중' 탭에서 동시에 보이도록 포함
             } else {
                 countEnrolled++;
@@ -803,9 +872,9 @@ function renderTable() {
                 // 수강중 탭은 '수강중', '미납', '납부완료' 등 수강 중인 모든 활성 상태를 다 보여줍니다.
                 // 필터링 없이 그대로 진행
             } else if (window.currentState.tab === 'unpaid') {
-                if (rowStatus !== 'unpaid') return;
+                if (rowStatus !== 'unpaid' || !isDueThisMonth) return;
             } else if (window.currentState.tab === 'paid') {
-                if (!isPaidRecord) return;
+                if (rowStatus !== 'paid') return; // 오늘 납부한 사람(rowStatus === 'paid')만 납부완료 탭에 표시
             }
 
             // 상태 필터 드롭다운 연동
@@ -1011,7 +1080,12 @@ function renderGroupedView(rows, tableCard) {
     ];
 
     statuses.forEach(status => {
-        const statusRows = rows.filter(r => r.rowStatus === status.id);
+        let statusRows;
+        if (status.id === 'unpaid') {
+            statusRows = rows.filter(r => r.rowStatus === 'unpaid' && r.isDueThisMonth);
+        } else {
+            statusRows = rows.filter(r => r.rowStatus === status.id);
+        }
 
         const column = document.createElement('div');
         column.className = `grouped-column ${status.class}`;
@@ -1159,7 +1233,11 @@ function exportToCSV() {
     rows.push(headers.join(","));
 
     membersData.forEach(m => {
-        const myCourses = (m.course || '').split(',').map(c => c.trim()).filter(c => c !== '');
+        let myCourses = (m.course || '').split(',').map(c => c.trim()).filter(c => c !== '');
+        if (myCourses.some(c => c.includes('제과') && !c.includes('제과제빵')) && myCourses.some(c => c.includes('제빵') && !c.includes('제과제빵'))) {
+            myCourses = myCourses.filter(c => !c.includes('제과') && !c.includes('제빵'));
+            myCourses.push('제과제빵기능사');
+        }
         if (myCourses.length === 0) myCourses.push('');
 
         myCourses.forEach(fullCourse => {

@@ -105,10 +105,17 @@ if ($board === 'sejong_attendance/batch' && $method === 'POST') {
     if (!is_array($data))
         $data = [];
 
+    $clearAllCourses = !array_key_exists('course', $input) || $input['course'] === null;
+
     $filtered = [];
     foreach ($data as $log) {
-        if (strval($log['memberId'] ?? '') === strval($memberId) && in_array($log['date'] ?? '', $dates) && ($log['course'] ?? null) === $course) {
-            continue;
+        $isMatchMemberAndDate = strval($log['memberId'] ?? '') === strval($memberId) && in_array($log['date'] ?? '', $dates);
+        if ($isMatchMemberAndDate) {
+            if ($clearAllCourses) {
+                continue; // Drop everything for this member/date
+            } else if (($log['course'] ?? null) === $course) {
+                continue; // Drop specific course
+            }
         }
         $filtered[] = $log;
     }
@@ -125,6 +132,121 @@ if ($board === 'sejong_attendance/batch' && $method === 'POST') {
     }
 
     file_put_contents($filePath, json_encode($filtered, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+    echo json_encode(['success' => true]);
+    exit;
+}
+
+// Specialized Logic for sejong_attendance (Single object POST)
+if ($board === 'sejong_attendance' && $method === 'POST') {
+    $input = json_decode(file_get_contents('php://input'), true);
+    // If it's a full array replacement, let the generic list logic handle it
+    if ($input && isset($input[0])) {
+        // do nothing here, let it fall through
+    } else if ($input && isset($input['memberId']) && isset($input['date'])) {
+        $data = file_exists($filePath) ? json_decode(file_get_contents($filePath), true) : [];
+        if (!is_array($data)) $data = [];
+
+        $memberId = $input['memberId'];
+        $date = $input['date'];
+        $course = $input['course'] ?? null;
+        $status = $input['status'] ?? 'unchecked';
+
+        $existing_idx = -1;
+        foreach ($data as $i => $log) {
+            if (strval($log['memberId'] ?? '') === strval($memberId) && ($log['date'] ?? '') === $date && ($log['course'] ?? null) === $course) {
+                $existing_idx = $i;
+                break;
+            }
+        }
+
+        if ($existing_idx !== -1) {
+            if ($status === 'unchecked') {
+                array_splice($data, $existing_idx, 1);
+            } else {
+                $data[$existing_idx]['status'] = $status;
+            }
+        } else {
+            if ($status !== 'unchecked') {
+                $data[] = $input;
+            }
+        }
+
+        file_put_contents($filePath, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        echo json_encode(['success' => true]);
+        exit;
+    }
+}
+
+
+// Specialized Logic for sejong_payments (Upsert based on memberId, year, month, course)
+if ($board === 'sejong_payments' && $method === 'POST') {
+    $input = json_decode(file_get_contents('php://input'), true);
+    if (!$input || !isset($input['memberId']) || !isset($input['year']) || !isset($input['month'])) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Invalid payment data']);
+        exit;
+    }
+    
+    $data = file_exists($filePath) ? json_decode(file_get_contents($filePath), true) : [];
+    if (!is_array($data)) $data = [];
+
+    $normalizeCourse = function($c) {
+        return (!$c || $c === 'null') ? null : trim((string)$c);
+    };
+    
+    $courseToMatch = $normalizeCourse($input['course'] ?? null);
+
+    $filtered = [];
+    foreach ($data as $p) {
+        if (strval($p['memberId'] ?? '') === strval($input['memberId']) &&
+            strval($p['year'] ?? '') === strval($input['year']) &&
+            strval($p['month'] ?? '') === strval($input['month']) &&
+            $normalizeCourse($p['course'] ?? null) === $courseToMatch) {
+            continue; // Remove existing
+        }
+        $filtered[] = $p;
+    }
+    
+    $input['course'] = $courseToMatch;
+    $filtered[] = $input; // Append new
+
+    file_put_contents($filePath, json_encode($filtered, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+    echo json_encode(['success' => true]);
+    exit;
+}
+
+// Specialized Logic for sejong_sms_history
+if ($board === 'sejong_sms_history' && $method === 'POST') {
+    $input = json_decode(file_get_contents('php://input'), true);
+    if (!$input || !isset($input['date'])) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Invalid sms data']);
+        exit;
+    }
+    
+    $data = file_exists($filePath) ? json_decode(file_get_contents($filePath), true) : [];
+    if (!is_array($data)) $data = [];
+    
+    $found = false;
+    foreach ($data as &$entry) {
+        if (($entry['date'] ?? '') === $input['date']) {
+            if (!isset($entry['messages'])) {
+                $entry['messages'] = [];
+            }
+            $entry['messages'] = array_merge($entry['messages'], $input['messages'] ?? []);
+            $found = true;
+            break;
+        }
+    }
+    
+    if (!$found) {
+        $data[] = [
+            'date' => $input['date'],
+            'messages' => $input['messages'] ?? []
+        ];
+    }
+    
+    file_put_contents($filePath, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
     echo json_encode(['success' => true]);
     exit;
 }
@@ -199,9 +321,23 @@ switch ($method) {
                 $data = $input;
             } else {
                 // Generate ID if missing
-                if (!isset($input['id']))
-                    $input['id'] = time();
-                $data[] = $input;
+                if (!isset($input['id'])) {
+                    $input['id'] = time() . rand(100, 999);
+                    $data[] = $input;
+                } else {
+                    // Check if it exists for upsert
+                    $found = false;
+                    foreach ($data as &$item) {
+                        if (strval($item['id']) === strval($input['id'])) {
+                            $item = array_merge($item, $input);
+                            $found = true;
+                            break;
+                        }
+                    }
+                    if (!$found) {
+                        $data[] = $input;
+                    }
+                }
             }
             file_put_contents($filePath, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
         } else {

@@ -61,7 +61,7 @@ function renderTargetList() {
 
         // Filter active/inactive
         if (!includeInactive) {
-            membersInCourse = membersInCourse.filter(m => m.status !== 'trash' && m.status !== 'delete');
+            membersInCourse = membersInCourse.filter(m => m.status !== 'trash' && m.status !== 'delete' && m.status !== 'completed' && m.status !== 'hold');
         }
 
         // Filter by phone existence based on type
@@ -199,7 +199,7 @@ function selectAllCourses() {
     Object.keys(groupedCourses).forEach(cName => {
         let membersInCourse = groupedCourses[cName];
         if (!includeInactive) {
-            membersInCourse = membersInCourse.filter(m => m.status !== 'trash' && m.status !== 'delete');
+            membersInCourse = membersInCourse.filter(m => m.status !== 'trash' && m.status !== 'delete' && m.status !== 'completed' && m.status !== 'hold');
         }
         membersInCourse.forEach(m => {
             const phone = targetType === 'student' ? m.phone : m.phone_guardian;
