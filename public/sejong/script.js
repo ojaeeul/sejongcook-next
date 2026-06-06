@@ -1,19 +1,8 @@
 // Force API Calls to port 8000 API for Bidirectional Sync
 
 function getFetchUrl(endpoint, isPost = false) {
-    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    let url = '';
-    if (isLocal) {
-        if (endpoint === 'settings') {
-            url = 'http://localhost:8000/api/admin/data/settings';
-        } else {
-            url = `http://localhost:8000/api/${endpoint}`;
-        }
-        return isPost ? url : url + (url.includes('?') ? '&' : '?') + `t=${Date.now()}`;
-    } else {
-        const base = `../api.php?board=sejong_${endpoint}`;
-        return isPost ? base : base + `&t=${Date.now()}`;
-    }
+    const url = `/api/sejong/${endpoint}`;
+    return isPost ? url : url + (url.includes('?') ? '&' : '?') + `t=${Date.now()}`;
 }
 
 const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:8000/api' : '../api.php?board=sejong_';
@@ -188,7 +177,7 @@ function initPWA() {
 
     // Register Service Worker
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js').catch((err) => {
+        navigator.serviceWorker.register('./sw.js').catch((err) => {
             console.log('SW registration failed: ', err);
         });
     }
@@ -396,9 +385,6 @@ async function fetchData() {
 
 
         // Removed Debug Banner
-        
-        // [신규] 새 수강생이 등록되거나 수정되었을 때 sheet.html 등 다른 탭에 알림
-        localStorage.setItem('sejong_members_sync', Date.now().toString());
 
     } catch (e) {
         console.error('Failed to fetch data', e);
@@ -1594,10 +1580,6 @@ function renderMembers() {
                 { val: 'hold', text: '보류' },
                 { val: 'trash', text: '휴지통' }
             ];
-            // 휴지통 필터 상태일 때 영구삭제 옵션 추가
-            if (currentFilter === 'trash') {
-                statuses.push({ val: 'delete', text: '삭제' });
-            }
 
             const optionsHtml = statuses.map(s =>
                 `<option value="${s.val}" ${status === s.val ? 'selected' : ''}>${s.text}</option>`
