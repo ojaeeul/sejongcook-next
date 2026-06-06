@@ -1549,6 +1549,9 @@ function renderRangeCalendar() {
                     selectFilteredCourses();
                 }
                 saveAllDrafts();
+                if (typeof showModalAlert === 'function') {
+                    showModalAlert('선택하신 기간이 결제일 필터로 자동 적용되었습니다.', true);
+                }
             }
         });
         window.hasGlobalMouseUp = true;
@@ -1593,6 +1596,9 @@ function endDrag(date) {
         selectFilteredCourses();
     }
     saveAllDrafts();
+    if (typeof showModalAlert === 'function') {
+        showModalAlert('선택하신 기간이 결제일 필터로 자동 적용되었습니다.', true);
+    }
 }
 
 function changeRangeMonth(offset) {
