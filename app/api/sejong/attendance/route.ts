@@ -32,7 +32,9 @@ export async function POST(req: NextRequest) {
                 .eq('memberId', data.memberId)
                 .eq('date', data.date);
 
-            if (data.course) {
+            if (data.course === 'ALL') {
+                // Delete all courses for this member and date
+            } else if (data.course) {
                 delQuery = delQuery.eq('course', data.course);
             } else {
                 delQuery = delQuery.is('course', null);
@@ -50,7 +52,9 @@ export async function POST(req: NextRequest) {
                 .eq('memberId', data.memberId)
                 .eq('date', data.date);
 
-            if (data.course) {
+            if (data.course === 'ALL') {
+                // Delete all courses for this member and date
+            } else if (data.course) {
                 delQuery = delQuery.eq('course', data.course);
             } else {
                 delQuery = delQuery.is('course', null);

@@ -16,7 +16,9 @@ export async function POST(req: NextRequest) {
             .eq('memberId', memberId)
             .in('date', dates);
 
-        if (course) {
+        if (course === 'ALL') {
+            // Delete all
+        } else if (course) {
             delQuery = delQuery.eq('course', course);
         } else {
             delQuery = delQuery.is('course', null);
