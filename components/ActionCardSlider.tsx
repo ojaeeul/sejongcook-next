@@ -59,6 +59,8 @@ function ActionCardSlider({
                         src={img}
                         alt={alt}
                         fill
+                        priority={index === 0}
+                        quality={75}
                         className="object-cover"
                         style={imgStyle}
                         onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {

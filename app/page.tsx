@@ -391,7 +391,6 @@ export default function Home() {
           backgroundImage: "url('/img/bg_updates_custom.png')",
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          backgroundAttachment: 'fixed',
           opacity: 1,
           zIndex: 0
         }} />
