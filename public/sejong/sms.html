@@ -429,15 +429,20 @@
         }
 
         .calendar-day {
-            aspect-ratio: 1;
+            aspect-ratio: auto;
+            min-height: 55px;
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
+            padding: 4px 2px;
             font-size: 0.8rem;
             cursor: pointer;
             border-radius: 4px;
             transition: all 0.2s;
             color: #475569;
+            overflow: hidden;
+            border: 1px solid transparent;
         }
 
         .calendar-day:hover {

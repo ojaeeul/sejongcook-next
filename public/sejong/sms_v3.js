@@ -1388,8 +1388,8 @@ window.confirmSmsSend = async function() {
 }
 
 /* --- Range Selection Calendar Logic (Interactive Drag Support) --- */
-let calendarYear = new Date().getFullYear();
-let calendarMonth = new Date().getMonth();
+let calendarYear = localStorage.getItem('sejongSmsCalYear') ? parseInt(localStorage.getItem('sejongSmsCalYear')) : new Date().getFullYear();
+let calendarMonth = localStorage.getItem('sejongSmsCalMonth') ? parseInt(localStorage.getItem('sejongSmsCalMonth')) : new Date().getMonth();
 let isDragging = false;
 let dragStartDay = null;
 
@@ -1573,6 +1573,8 @@ function changeRangeMonth(offset) {
     calendarMonth += offset;
     if (calendarMonth > 11) { calendarMonth = 0; calendarYear++; }
     if (calendarMonth < 0) { calendarMonth = 11; calendarYear--; }
+    localStorage.setItem('sejongSmsCalYear', calendarYear);
+    localStorage.setItem('sejongSmsCalMonth', calendarMonth);
     renderRangeCalendar();
 }
 
@@ -1589,6 +1591,8 @@ function setQuickRange(days) {
 
     calendarYear = start.getFullYear();
     calendarMonth = start.getMonth();
+    localStorage.setItem('sejongSmsCalYear', calendarYear);
+    localStorage.setItem('sejongSmsCalMonth', calendarMonth);
 
     renderRangeCalendar();
     renderTargetList();
