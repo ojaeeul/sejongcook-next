@@ -11,7 +11,17 @@ export async function GET() {
     try {
         const { data, error } = await supabase.from('popups').select('*').order('id', { ascending: true });
         if (error) throw error;
-        return NextResponse.json(data || []);
+        
+        // Extract startDate and endDate from content JSONB if they exist
+        const mappedData = (data || []).map(p => {
+            if (p.content && typeof p.content === 'object') {
+                p.startDate = p.content.startDate;
+                p.endDate = p.content.endDate;
+            }
+            return p;
+        });
+        
+        return NextResponse.json(mappedData);
     } catch (error) {
         console.error('Error reading popups data:', error);
         return NextResponse.json({ error: 'Failed to fetch data' }, { status: 500 });
@@ -20,17 +30,34 @@ export async function GET() {
 
 export async function POST(request: Request) {
     try {
-        // POST replaces the whole array (handleReplace) in adminApiHandler
         const data = await request.json();
         
+        // Move startDate and endDate into content JSONB to avoid schema errors
+        const mappedData = data.map((p: any) => {
+            const copy = { ...p };
+            if (copy.startDate || copy.endDate) {
+                if (!copy.content) copy.content = {};
+                if (copy.startDate) copy.content.startDate = copy.startDate;
+                if (copy.endDate) copy.content.endDate = copy.endDate;
+            } else if (copy.content) {
+                // If they were cleared, remove from content
+                delete copy.content.startDate;
+                delete copy.content.endDate;
+            }
+            // Delete from root so Supabase doesn't complain about missing columns
+            delete copy.startDate;
+            delete copy.endDate;
+            return copy;
+        });
+        
         // Upsert new data
-        const { error } = await supabase.from('popups').upsert(data);
+        const { error } = await supabase.from('popups').upsert(mappedData);
         if (error) throw error;
 
         // Delete what's missing
         const { data: existing } = await supabase.from('popups').select('id');
         if (existing) {
-            const incomingIds = data.map((p: any) => p.id).filter(Boolean);
+            const incomingIds = mappedData.map((p: any) => p.id).filter(Boolean);
             const toDelete = existing.filter((p: any) => !incomingIds.includes(p.id)).map(p => p.id);
             if (toDelete.length > 0) {
                 await supabase.from('popups').delete().in('id', toDelete);
@@ -46,7 +73,21 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
     try {
         const item = await request.json();
-        const { error } = await supabase.from('popups').upsert(item);
+        
+        // Move startDate and endDate into content JSONB
+        const mappedItem = { ...item };
+        if (mappedItem.startDate || mappedItem.endDate) {
+            if (!mappedItem.content) mappedItem.content = {};
+            if (mappedItem.startDate) mappedItem.content.startDate = mappedItem.startDate;
+            if (mappedItem.endDate) mappedItem.content.endDate = mappedItem.endDate;
+        } else if (mappedItem.content) {
+            delete mappedItem.content.startDate;
+            delete mappedItem.content.endDate;
+        }
+        delete mappedItem.startDate;
+        delete mappedItem.endDate;
+
+        const { error } = await supabase.from('popups').upsert(mappedItem);
         if (error) throw error;
         return NextResponse.json({ success: true });
     } catch (error) {
