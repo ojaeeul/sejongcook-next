@@ -1,21 +1,10 @@
 
 function getFetchUrl(endpoint, isPost = false) {
-    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    let url = '';
-    if (isLocal) {
-        if (endpoint === 'settings') {
-            url = 'http://localhost:8000/api/admin/data/settings';
-        } else {
-            url = `http://localhost:8000/api/${endpoint}`;
-        }
-        return isPost ? url : url + `?t=${Date.now()}`;
-    } else {
-        const base = `../api.php?board=sejong_${endpoint}`;
-        return isPost ? base : base + `&t=${Date.now()}`;
-    }
+    const url = `/api/sejong/${endpoint}`;
+    return isPost ? url : url + (url.includes('?') ? '&' : '?') + `t=${Date.now()}`;
 }
 
-const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:8000/api' : '../api.php?board=sejong_';
+const API_BASE = '/api/sejong';
 
 let COURSE_SCHEDULES = {
     '한식기능사': [1, 3],
@@ -169,10 +158,16 @@ if (!localStorage.getItem('cache_cleared_v2')) {
 
 function getLedgerMonthStats(memberId, targetYear, targetMonth, courseFilter = null) {
     const syncKey = `${memberId}_${targetYear}_${targetMonth}_${courseFilter || 'all'}`;
-    const syncData = window.ledgerSyncData || JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
+    let syncData = {};
+    try {
+        const parsed = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
+        syncData = window.ledgerSyncData || parsed || {};
+    } catch(e) {
+        syncData = {};
+    }
     
     // 1. Check real milestone
-    if (syncData[syncKey]) {
+    if (syncData && syncData[syncKey]) {
         const rawSync = syncData[syncKey];
         const days = Array.isArray(rawSync) ? rawSync : (typeof rawSync === 'number' ? [rawSync] : []);
         if (days.length > 0) {
@@ -180,195 +175,31 @@ function getLedgerMonthStats(memberId, targetYear, targetMonth, courseFilter = n
         }
     }
 
-    const backupSyncData = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
-    if (backupSyncData[syncKey]) {
-        const rawSync = backupSyncData[syncKey];
-        const days = Array.isArray(rawSync) ? rawSync : (typeof rawSync === 'number' ? [rawSync] : []);
-        if (days.length > 0) {
-            return { eighthDays: days, eighthMonth: targetMonth, isSimulated: false, hasAnyAttendance: true };
-        }
-    }
-
-    // --- EXACT SIMULATION ENGINE COPIED FROM SHEET.HTML RENDER LOOP ---
     const m = membersData.find(m => String(m.id) === String(memberId));
-    if (!m) return { eighthDays: [], eighthMonth: targetMonth, isSimulated: false, hasAnyAttendance: false };
-
-    const isDualCourse = (courseFilter && courseFilter.replace(/\s/g, '').includes('제과제빵')) || (!courseFilter && String(m.course).replace(/\s/g, '').includes('제과제빵'));
-    const attendanceIncrement = isDualCourse ? 1.0 : 1.0;
-
-    let rowLogsRaw = attendanceData.filter(l => String(l.memberId) === String(memberId));
-    if (courseFilter) {
-        rowLogsRaw = rowLogsRaw.filter(l => {
-            if (!l.course) return true; // global arrow
-            const cClean = l.course.replace(/\([^)]*\)/g, '').trim();
-            const fClean = courseFilter.replace(/\([^)]*\)/g, '').trim();
-            return cClean === fClean;
-        });
-    }
-
-    const uniqueRowLogsMap = new Map();
-    rowLogsRaw.forEach(l => {
-        const dateStr = l.date ? (l.date.includes('T') ? l.date.split('T')[0] : l.date) : (l.dateObj ? l.dateObj.toISOString().split('T')[0] : '');
-        uniqueRowLogsMap.set(`${dateStr}_${l.course || ''}`, { ...l, date: dateStr });
-    });
-    const uniqueLogs = Array.from(uniqueRowLogsMap.values()).sort((a, b) => a.date.localeCompare(b.date));
-
-    let earliestYear = targetYear;
-    let earliestMonth = targetMonth;
-    const displayStartDate = m.start_date || m.registeredDate;
-    if (displayStartDate) {
-        const rd = new Date(displayStartDate);
-        if (!isNaN(rd)) {
-            earliestYear = rd.getFullYear();
-            earliestMonth = rd.getMonth() + 1;
-        }
-    }
-
-    if (uniqueLogs.length > 0) {
-        const d = new Date(uniqueLogs[0].date);
-        const firstLogYear = d.getFullYear();
-        const firstLogMonth = d.getMonth() + 1;
-        if (firstLogYear < earliestYear || (firstLogYear === earliestYear && firstLogMonth < earliestMonth)) {
-            earliestYear = firstLogYear;
-            earliestMonth = firstLogMonth;
-        }
-    }
-
-    if (Number(earliestYear) > Number(targetYear) || (Number(earliestYear) === Number(targetYear) && Number(earliestMonth) > Number(targetMonth))) {
-        earliestYear = Number(targetYear);
-        earliestMonth = Number(targetMonth);
-    }
-
-    let iterYear = earliestYear;
-    let iterMonth = earliestMonth;
-    let monthsToCalc = [];
-    let safetyCounter = 0;
-    while (safetyCounter < 300) {
-        safetyCounter++;
-        const key = `${iterYear}-${String(iterMonth).padStart(2, '0')}`;
-        monthsToCalc.push({ year: iterYear, month: iterMonth, key });
-        if (Number(iterYear) === Number(targetYear) && Number(iterMonth) === Number(targetMonth)) break;
-        iterMonth++;
-        if (iterMonth > 12) {
-            iterMonth = 1;
-            iterYear++;
-        }
-    }
-
-    let carryOverP = 0;
-    let rollingExtCount = 0;
-    monthsToCalc.forEach(mc => {
-        const adjustment = (typeof GLOBAL_DATA_ADJUSTMENTS !== "undefined" ? GLOBAL_DATA_ADJUSTMENTS : {})[String(m.id)]?.[mc.key];
-        if (adjustment && adjustment.carryOverride !== undefined) {
-            carryOverP = parseFloat(adjustment.carryOverride) || 0;
-        }
-
-        const mLogs = uniqueLogs.filter(l => {
-            const ld = new Date(l.date);
-            return ld.getFullYear() === mc.year && (ld.getMonth() + 1) === mc.month;
-        });
-
-        let manualMakeup = 0;
-        let attendances = 0;
-        mc.carryFromPrevExtCount = rollingExtCount;
-
-        mLogs.forEach(l => {
-            const isMakeupMarker = ['[', ']'].includes(l.status);
-            const strStatus = String(l.status);
-            const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(strStatus);
-            const isAbsent = l.status === 'absent' || strStatus.startsWith('X') || strStatus.includes('결석');
-            const isEarly = l.status === 'early' || strStatus.includes('조퇴');
-            const isTardy = l.status === 'tardy' || l.status === 'late' || strStatus.includes('지각') || strStatus.includes('△');
-            const isFirstLast = strStatus.includes('첫') || strStatus.includes('종료') || strStatus === '[' || strStatus === ']';
-            const isExtension = l.status === 'extension' || strStatus.startsWith('연') || strStatus.includes('연장') || strStatus.startsWith('E');
-            const isPresent = l.status === 'present' || strStatus.startsWith('O') || strStatus.startsWith('o') || isNumericPresent;
-            const isRegularAttendance = isPresent || isAbsent || isEarly || isTardy || isFirstLast;
-
-            if (isMakeupMarker) manualMakeup += attendanceIncrement;
-            if (isRegularAttendance) attendances += attendanceIncrement;
-            else if (isExtension) rollingExtCount++;
-        });
-
-        if (adjustment && adjustment.presentOverride !== undefined) {
-            attendances = adjustment.presentOverride;
-        }
-
-        let totalCombined = Math.round((carryOverP + manualMakeup + attendances) * 10) / 10;
-        mc.carryFromPrev = carryOverP;
-        carryOverP = totalCombined;
-    });
-
-    const currentMC = monthsToCalc[monthsToCalc.length - 1];
-    let eighthDays = [];
-    let hasAnyAttendance = uniqueLogs.length > 0;
-
-    if (currentMC) {
-        const currentMonthLogs = uniqueLogs.filter(l => {
-            const ld = new Date(l.date);
-            return ld.getFullYear() === currentMC.year && (ld.getMonth() + 1) === currentMC.month;
-        });
-
-        let runningTotal = currentMC.carryFromPrev;
-        const getCycle = (val) => {
-            let vRaw = Math.round(val * 10);
-            if (isDualCourse) {
-                if (vRaw < 170) return 0;
-                return Math.floor((vRaw - 170) / 160) + 1;
-            } else {
-                if (vRaw < 90) return 0;
-                return Math.floor((vRaw - 90) / 80) + 1;
-            }
-        };
-
-        let currentCycle = getCycle(currentMC.carryFromPrev);
-        if (isNaN(currentCycle)) currentCycle = 0;
-        const adjustment = (typeof GLOBAL_DATA_ADJUSTMENTS !== "undefined" ? GLOBAL_DATA_ADJUSTMENTS : {})[String(m.id)]?.[currentMC.key];
-
-        currentMonthLogs.forEach(l => {
-            const isMakeupMarker = ['[', ']'].includes(l.status);
-            const strStatus = String(l.status);
-            const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(strStatus);
-            const isAbsent = l.status === 'absent' || strStatus.startsWith('X') || strStatus.includes('결석');
-            const isEarly = l.status === 'early' || strStatus.includes('조퇴');
-            const isTardy = l.status === 'tardy' || l.status === 'late' || strStatus.includes('지각') || strStatus.includes('△');
-            const isFirstLast = strStatus.includes('첫') || strStatus.includes('종료') || strStatus === '[' || strStatus === ']';
-            const isPresentExt = l.status === 'present' || strStatus.startsWith('O') || strStatus.startsWith('o') || strStatus.startsWith('O^') || strStatus.startsWith('o^'); 
-            const isRegularAttendance = isPresentExt || isNumericPresent || isAbsent || isEarly || isTardy || isFirstLast;
-
-            if (isRegularAttendance || isMakeupMarker) {
-                runningTotal += attendanceIncrement;
-                runningTotal = Math.round(runningTotal * 10) / 10;
-
-                let newCycle = getCycle(runningTotal);
-                if (isNaN(newCycle)) newCycle = 0;
-
-                let shouldShowRedBox = false;
-                if (newCycle > currentCycle) {
-                    shouldShowRedBox = true;
-                    currentCycle = newCycle;
-                }
-
-                if (shouldShowRedBox) {
-                    const dayToPush = new Date(l.date).getDate();
-                    if (!eighthDays.includes(dayToPush)) eighthDays.push(dayToPush);
-                }
-
-                if (adjustment && adjustment.forceRedBoxDates && adjustment.forceRedBoxDates.includes(l.date)) {
-                    const forcedDay = new Date(l.date).getDate();
-                    if (!eighthDays.includes(forcedDay)) eighthDays.push(forcedDay);
+        if (typeof window.calculateRedBoxesForMonth === 'function') {
+            const memberObj = membersData.find(m => String(m.id) === String(memberId));
+            if (memberObj) {
+                const result = window.calculateRedBoxesForMonth(memberObj, targetYear, targetMonth, attendanceData || [], courseFilter, window.GLOBAL_DATA_ADJUSTMENTS || {});
+                if (result && result.redDays && result.redDays.length > 0) {
+                    return { eighthDays: result.redDays, eighthMonth: targetMonth, isSimulated: result.isSimulated, hasAnyAttendance: result.hasAnyAttendance };
                 }
             }
-        });
-    }
-
-    return { eighthDays, eighthMonth: targetMonth, isSimulated: false, hasAnyAttendance };
+        }
+    return { eighthDays: [], eighthMonth: targetMonth, isSimulated: false, hasAnyAttendance: false };
 }
 
 function getAllLedgerMonthStats(memberId, year, month) {
     const member = membersData.find(m => String(m.id) === String(memberId));
     if (!member || !member.course) return [];
 
-    const courses = member.course.split(',').map(c => c.split('(')[0].trim());
+    let courses = member.course.split(',').map(c => c.split('(')[0].trim());
+    const hasJeggwa = courses.some(c => c.includes('제과') && !c.includes('제과제빵'));
+    const hasJeppang = courses.some(c => c.includes('제빵') && !c.includes('제과제빵'));
+    if (hasJeggwa && hasJeppang) {
+        courses = courses.filter(c => !c.includes('제과') && !c.includes('제빵'));
+        courses.push('제과제빵기능사');
+    }
+
     const results = [];
 
     courses.forEach(courseName => {
@@ -634,7 +465,16 @@ function renderTable(container, title, members, id) {
                 <div style="font-weight: 900; font-size: 0.9rem;">${m.name}</div>
                 <div style="font-size: 0.7rem; color: #64748b;">${m.phone || ''}</div>
                 <div style="font-size: 0.6rem; font-weight: 700; margin-top: 4px; display: flex; flex-direction: column; gap: 2px; align-items: flex-start;">
-                    ${(m.course || '').split(',').filter(Boolean).map(c => `<span style="background: #eff6ff; color: #1d4ed8; padding: 2px 5px; border-radius: 3px; border: 1px solid #bfdbfe; white-space: nowrap; line-height: 1; font-size: 0.55rem;">${c.trim()}</span>`).join('')}
+                    ${(() => {
+    let cs = (m.course || '').split(',').map(c => c.trim()).filter(Boolean);
+    const hjg = cs.some(c => c.includes('제과') && !c.includes('제과제빵'));
+    const hjp = cs.some(c => c.includes('제빵') && !c.includes('제과제빵'));
+    if (hjg && hjp) {
+        cs = cs.filter(c => !c.includes('제과') && !c.includes('제빵'));
+        cs.push('제과제빵');
+    }
+    return cs.map(c => `<span style="background: #eff6ff; color: #1d4ed8; padding: 2px 5px; border-radius: 3px; border: 1px solid #bfdbfe; white-space: nowrap; line-height: 1; font-size: 0.55rem;">${c}</span>`).join('');
+})()}
                 </div>
             </td>`;
 

@@ -1435,26 +1435,33 @@ function renderRangeCalendar() {
 
     // Pre-calculate payment days for highlighting WITH NAMES
     const paymentNamesByDay = {}; // e.g. { 12: ['홍길동 (제과)', '김철수 (제빵)'] }
-    allMembers.forEach(m => {
-        let myCourses = (m.course || '').split(',').map(c => c.trim()).filter(c => c !== '');
-        const hasJeggwa = myCourses.some(c => c.includes('제과') && !c.includes('제과제빵'));
-        const hasJeppang = myCourses.some(c => c.includes('제빵') && !c.includes('제과제빵'));
-        if (hasJeggwa && hasJeppang) {
-            myCourses = myCourses.filter(c => !c.includes('제과') && !c.includes('제빵'));
-            myCourses.push('제과제빵기능사');
-        }
-        myCourses.forEach(c => {
-            const milestones = getMemberAllMilestones(m.id, c.trim(), calendarYear, calendarMonth + 1).filter(ms => ms.year === calendarYear && ms.month === calendarMonth + 1);
-            milestones.forEach(ms => {
-                if (!paymentNamesByDay[ms.day]) paymentNamesByDay[ms.day] = [];
-                const cClean = c.trim().replace('기능사', '');
-                const label = `${m.name}(${cClean})`;
-                if (!paymentNamesByDay[ms.day].includes(label)) {
-                    paymentNamesByDay[ms.day].push(label);
+    try {
+        if (Array.isArray(allMembers)) {
+            allMembers.forEach(m => {
+                if (!m) return;
+                let myCourses = String(m.course || '').split(',').map(c => c.trim()).filter(c => c !== '');
+                const hasJeggwa = myCourses.some(c => c.includes('제과') && !c.includes('제과제빵'));
+                const hasJeppang = myCourses.some(c => c.includes('제빵') && !c.includes('제과제빵'));
+                if (hasJeggwa && hasJeppang) {
+                    myCourses = myCourses.filter(c => !c.includes('제과') && !c.includes('제빵'));
+                    myCourses.push('제과제빵기능사');
                 }
+                myCourses.forEach(c => {
+                    const milestones = getMemberAllMilestones(m.id, c.trim(), calendarYear, calendarMonth + 1).filter(ms => ms.year === calendarYear && ms.month === calendarMonth + 1);
+                    milestones.forEach(ms => {
+                        if (!paymentNamesByDay[ms.day]) paymentNamesByDay[ms.day] = [];
+                        const cClean = c.trim().replace('기능사', '');
+                        const label = `${m.name}(${cClean})`;
+                        if (!paymentNamesByDay[ms.day].includes(label)) {
+                            paymentNamesByDay[ms.day].push(label);
+                        }
+                    });
+                });
             });
-        });
-    });
+        }
+    } catch(err) {
+        console.error("Error calculating payment milestones:", err);
+    }
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -1624,7 +1631,7 @@ function setQuickRange(days) {
 
 function getAllMilestonesForRange(memberId, courseFilter, startRange, endRange) {
     const normalizeCourse = (c) => (!c || c === 'null') ? null : String(c).trim();
-    const cleanFilter = (courseFilter || 'all').replace(/\([^)]*\)/g, '').trim();
+    const cleanFilter = String(courseFilter || 'all').replace(/\([^)]*\)/g, '').trim();
     const allDue = getMemberAllMilestones(memberId, courseFilter, startRange.getFullYear(), startRange.getMonth() + 1);
     
     let matched = allDue.filter(ms => {

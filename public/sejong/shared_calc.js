@@ -9,15 +9,15 @@
 window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, allAttendanceLogs, courseFilter, GLOBAL_DATA_ADJUSTMENTS) {
     if (!member) return { redDays: [], hasAnyAttendance: false, isSimulated: true };
 
-    const isDualCourse = (courseFilter && courseFilter.replace(/\s/g, '').includes('제과제빵')) || (!courseFilter && String(member.course).replace(/\s/g, '').includes('제과제빵'));
+    const isDualCourse = (courseFilter && String(courseFilter).replace(/\s/g, '').includes('제과제빵')) || (!courseFilter && String(member.course).replace(/\s/g, '').includes('제과제빵'));
     const attendanceIncrement = isDualCourse ? 1.0 : 1.0;
 
     let rowLogsRaw = allAttendanceLogs.filter(l => String(l.memberId) === String(member.id));
     if (courseFilter) {
         rowLogsRaw = rowLogsRaw.filter(l => {
             if (!l.course) return true; // global log
-            const cClean = l.course.replace(/\([^)]*\)/g, '').trim();
-            const fClean = courseFilter.replace(/\([^)]*\)/g, '').trim();
+            const cClean = String(l.course).replace(/\([^)]*\)/g, '').trim();
+            const fClean = String(courseFilter).replace(/\([^)]*\)/g, '').trim();
             return cClean === fClean;
         });
     }
@@ -153,6 +153,10 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
 
     const currentMC = monthsToCalc[monthsToCalc.length - 1];
     let redBoxDates = new Set();
+    
+    let runningTotal = currentMC ? currentMC.carryFromPrev : 0;
+    let currentCycleForMonth = currentMC ? getCycle(currentMC.carryFromPrev) : 0;
+    if (isNaN(currentCycleForMonth)) currentCycleForMonth = 0;
 
     if (currentMC) {
         const currentMonthLogs = uniqueLogs.filter(l => {
@@ -160,13 +164,6 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
             return ld.getFullYear() === currentMC.year && (ld.getMonth() + 1) === currentMC.month;
         });
 
-        let runningTotal = currentMC.carryFromPrev;
-
-        
-        
-        
-        let currentCycleForMonth = getCycle(currentMC.carryFromPrev);
-        if (isNaN(currentCycleForMonth)) currentCycleForMonth = 0;
         const adjustment = GLOBAL_DATA_ADJUSTMENTS[String(member.id)]?.[currentMC.key];
 
         currentMonthLogs.forEach(l => {
@@ -217,7 +214,7 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
         // Resolve course schedule
         let courseName = '한식기능사';
         if (courseFilter) {
-            courseName = courseFilter.replace(/\([^)]*\)/g, '').trim();
+            courseName = String(courseFilter).replace(/\([^)]*\)/g, '').trim();
         } else if (member.course) {
             courseName = String(member.course).split(',')[0].replace(/\([^)]*\)/g, '').trim();
         }

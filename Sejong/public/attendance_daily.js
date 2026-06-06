@@ -1,21 +1,10 @@
 
 function getFetchUrl(endpoint, isPost = false) {
-    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    let url = '';
-    if (isLocal) {
-        if (endpoint === 'settings') {
-            url = 'http://localhost:8000/api/admin/data/settings';
-        } else {
-            url = `http://localhost:8000/api/${endpoint}`;
-        }
-        return isPost ? url : url + (url.includes('?') ? '&' : '?') + `t=${Date.now()}`;
-    } else {
-        const base = `../api.php?board=sejong_${endpoint}`;
-        return isPost ? base : base + `&t=${Date.now()}`;
-    }
+    const url = `/api/sejong/${endpoint}`;
+    return isPost ? url : url + (url.includes('?') ? '&' : '?') + `t=${Date.now()}`;
 }
 
-const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:8000/api' : '../api.php?board=sejong_';
+const API_BASE = '/api/sejong';
 
 let allMembers = [];
 let groupedCourses = {};
@@ -42,15 +31,35 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 let attendanceData = [];
+let timetableData = {
+    '한식기능사': [1, 3],
+    '양식기능사': [2, 4],
+    '일식기능사': [2, 4],
+    '중식기능사': [2, 4],
+    '제과기능사': [1, 3],
+    '제빵기능사': [2, 4],
+    '제과제빵기능사': [1, 2, 3, 4],
+    '복어기능사': [5],
+    '산업기사': [5],
+    '가정요리': [2, 4],
+    '브런치': [5]
+};
 
 async function fetchMembers() {
     try {
-        const [resMembers, resAttendance] = await Promise.all([
+        const [resMembers, resAttendance, resTimetable] = await Promise.all([
             fetch(getFetchUrl('members')),
-            fetch(getFetchUrl('attendance') + `&date=${currentDate}`)
+            fetch(getFetchUrl('attendance') + `&date=${currentDate}`),
+            fetch(getFetchUrl('timetable'))
         ]);
         allMembers = await resMembers.json();
         attendanceData = await resAttendance.json();
+        if (resTimetable.ok) {
+            const apiData = await resTimetable.json();
+            if (apiData && Object.keys(apiData).length > 0) {
+                timetableData = { ...timetableData, ...apiData };
+            }
+        }
         processCourses();
         renderCourseList();
     } catch (err) {
@@ -100,7 +109,7 @@ function renderCourseList() {
     courseNames.forEach(cName => {
         let membersInCourse = groupedCourses[cName];
         if (!includeInactive) {
-            membersInCourse = membersInCourse.filter(m => m.status !== 'trash' && m.status !== 'delete');
+            membersInCourse = membersInCourse.filter(m => m.status !== 'trash' && m.status !== 'delete' && m.status !== 'completed' && m.status !== 'hold');
         }
 
         if (membersInCourse.length === 0) return;
@@ -153,11 +162,32 @@ function renderAttendanceTbody() {
         return;
     }
 
+    // --- NEW: Check if the current date is a valid day for the active course ---
+    let isValidDayForCourse = true;
+    if (activeCourse && activeCourse !== '미지정') {
+        const cDateObj = new Date(currentDate);
+        const dayOfWeek = cDateObj.getDay();
+        const cleanCourseName = activeCourse.replace(/\([^)]*\)/g, '').trim();
+        
+        if (timetableData[cleanCourseName]) {
+            isValidDayForCourse = timetableData[cleanCourseName].includes(dayOfWeek);
+        } else if (timetableData[cleanCourseName.replace(/\s/g, '')]) {
+            isValidDayForCourse = timetableData[cleanCourseName.replace(/\s/g, '')].includes(dayOfWeek);
+        }
+    }
+
+    if (!isValidDayForCourse) {
+        tbody.innerHTML = `<tr><td colspan="2" style="text-align:center; padding:30px; color:#ef4444; font-weight:bold;">해당 요일은 '${activeCourse}' 과정의 수업 요일이 아닙니다.<br><span style="font-size:0.9rem; font-weight:normal; color:#94a3b8; display:block; margin-top:8px;">(전체 과정 수업 요일 설정 확인)</span></td></tr>`;
+        updateStats();
+        return;
+    }
+    // -------------------------------------------------------------------------
+
     const includeInactive = document.getElementById('includeInactive').checked;
     let membersToRender = groupedCourses[activeCourse];
 
     if (!includeInactive) {
-        membersToRender = membersToRender.filter(m => m.status !== 'trash' && m.status !== 'delete');
+        membersToRender = membersToRender.filter(m => m.status !== 'trash' && m.status !== 'delete' && m.status !== 'completed' && m.status !== 'hold');
     }
 
     document.getElementById('totalStudentsCount').textContent = `총원 ${membersToRender.length}명`;
@@ -308,7 +338,7 @@ window.markAllPresent = function () {
     let membersToRender = groupedCourses[activeCourse];
     const includeInactive = document.getElementById('includeInactive').checked;
     if (!includeInactive) {
-        membersToRender = membersToRender.filter(m => m.status !== 'trash' && m.status !== 'delete');
+        membersToRender = membersToRender.filter(m => m.status !== 'trash' && m.status !== 'delete' && m.status !== 'completed' && m.status !== 'hold');
     }
 
     membersToRender.forEach(m => {
@@ -328,7 +358,7 @@ function updateStats() {
         let membersToRender = groupedCourses[activeCourse];
         const includeInactive = document.getElementById('includeInactive').checked;
         if (!includeInactive) {
-            membersToRender = membersToRender.filter(m => m.status !== 'trash' && m.status !== 'delete');
+            membersToRender = membersToRender.filter(m => m.status !== 'trash' && m.status !== 'delete' && m.status !== 'completed' && m.status !== 'hold');
         }
 
         membersToRender.forEach(m => {
@@ -359,7 +389,7 @@ window.saveDailyAttendance = async function () {
     let membersToRender = groupedCourses[activeCourse];
     const includeInactive = document.getElementById('includeInactive').checked;
     if (!includeInactive) {
-        membersToRender = membersToRender.filter(m => m.status !== 'trash' && m.status !== 'delete');
+        membersToRender = membersToRender.filter(m => m.status !== 'trash' && m.status !== 'delete' && m.status !== 'completed' && m.status !== 'hold');
     }
 
     let savedCount = 0;

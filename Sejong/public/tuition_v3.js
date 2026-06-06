@@ -371,10 +371,15 @@ function processAttendanceData() {
 
 function getMemberEighthDayInMonth(memberId, year, month, courseFilter = null) {
     const syncKey = `${memberId}_${year}_${month}_${courseFilter || 'all'}`;
-    const syncData = window.ledgerSyncData || JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
-    
+    let syncData = {};
+    try {
+        const parsed = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
+        syncData = window.ledgerSyncData || parsed || {};
+    } catch(e) {
+        syncData = {};
+    }
     // 1. Check real milestone
-    if (syncData[syncKey]) {
+    if (syncData && syncData[syncKey]) {
         const rawSync = syncData[syncKey];
         const days = Array.isArray(rawSync) ? rawSync : (typeof rawSync === 'number' ? [rawSync] : []);
         if (days.length > 0) {

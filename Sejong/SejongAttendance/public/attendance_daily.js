@@ -1,21 +1,10 @@
 
 function getFetchUrl(endpoint, isPost = false) {
-    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    let url = '';
-    if (isLocal) {
-        if (endpoint === 'settings') {
-            url = 'http://localhost:8000/api/admin/data/settings';
-        } else {
-            url = `http://localhost:8000/api/${endpoint}`;
-        }
-        return isPost ? url : url + (url.includes('?') ? '&' : '?') + `t=${Date.now()}`;
-    } else {
-        const base = `../api.php?board=sejong_${endpoint}`;
-        return isPost ? base : base + `&t=${Date.now()}`;
-    }
+    const url = `/api/sejong/${endpoint}`;
+    return isPost ? url : url + (url.includes('?') ? '&' : '?') + `t=${Date.now()}`;
 }
 
-const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:8000/api' : '../api.php?board=sejong_';
+const API_BASE = '/api/sejong';
 
 let allMembers = [];
 let groupedCourses = {};
@@ -120,7 +109,7 @@ function renderCourseList() {
     courseNames.forEach(cName => {
         let membersInCourse = groupedCourses[cName];
         if (!includeInactive) {
-            membersInCourse = membersInCourse.filter(m => m.status !== 'trash' && m.status !== 'delete');
+            membersInCourse = membersInCourse.filter(m => m.status !== 'trash' && m.status !== 'delete' && m.status !== 'completed' && m.status !== 'hold');
         }
 
         if (membersInCourse.length === 0) return;
@@ -198,7 +187,7 @@ function renderAttendanceTbody() {
     let membersToRender = groupedCourses[activeCourse];
 
     if (!includeInactive) {
-        membersToRender = membersToRender.filter(m => m.status !== 'trash' && m.status !== 'delete');
+        membersToRender = membersToRender.filter(m => m.status !== 'trash' && m.status !== 'delete' && m.status !== 'completed' && m.status !== 'hold');
     }
 
     document.getElementById('totalStudentsCount').textContent = `총원 ${membersToRender.length}명`;
@@ -349,7 +338,7 @@ window.markAllPresent = function () {
     let membersToRender = groupedCourses[activeCourse];
     const includeInactive = document.getElementById('includeInactive').checked;
     if (!includeInactive) {
-        membersToRender = membersToRender.filter(m => m.status !== 'trash' && m.status !== 'delete');
+        membersToRender = membersToRender.filter(m => m.status !== 'trash' && m.status !== 'delete' && m.status !== 'completed' && m.status !== 'hold');
     }
 
     membersToRender.forEach(m => {
@@ -369,7 +358,7 @@ function updateStats() {
         let membersToRender = groupedCourses[activeCourse];
         const includeInactive = document.getElementById('includeInactive').checked;
         if (!includeInactive) {
-            membersToRender = membersToRender.filter(m => m.status !== 'trash' && m.status !== 'delete');
+            membersToRender = membersToRender.filter(m => m.status !== 'trash' && m.status !== 'delete' && m.status !== 'completed' && m.status !== 'hold');
         }
 
         membersToRender.forEach(m => {
@@ -400,7 +389,7 @@ window.saveDailyAttendance = async function () {
     let membersToRender = groupedCourses[activeCourse];
     const includeInactive = document.getElementById('includeInactive').checked;
     if (!includeInactive) {
-        membersToRender = membersToRender.filter(m => m.status !== 'trash' && m.status !== 'delete');
+        membersToRender = membersToRender.filter(m => m.status !== 'trash' && m.status !== 'delete' && m.status !== 'completed' && m.status !== 'hold');
     }
 
     let savedCount = 0;

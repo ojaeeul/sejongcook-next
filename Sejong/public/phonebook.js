@@ -1,21 +1,10 @@
 
 function getFetchUrl(endpoint, isPost = false) {
-    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    let url = '';
-    if (isLocal) {
-        if (endpoint === 'settings') {
-            url = 'http://localhost:8000/api/admin/data/settings';
-        } else {
-            url = `http://localhost:8000/api/${endpoint}`;
-        }
-        return isPost ? url : url + (url.includes('?') ? '&' : '?') + `t=${Date.now()}`;
-    } else {
-        const base = `../api.php?board=sejong_${endpoint}`;
-        return isPost ? base : base + `&t=${Date.now()}`;
-    }
+    const url = `/api/sejong/${endpoint}`;
+    return isPost ? url : url + (url.includes('?') ? '&' : '?') + `t=${Date.now()}`;
 }
 
-const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:8000/api' : '../api.php?board=sejong_';
+const API_BASE = '/api/sejong';
 
 let members = [];
 let uniqueCourses = [];
@@ -40,7 +29,7 @@ async function fetchMembers() {
         members = await res.json();
 
         // Filter out inactive statuses
-        members = members.filter(m => m.status !== 'trash' && m.status !== 'delete');
+        members = members.filter(m => m.status !== 'trash' && m.status !== 'delete' && m.status !== 'completed' && m.status !== 'hold');
 
         // Extract unique courses and years
         const courseSet = new Set();

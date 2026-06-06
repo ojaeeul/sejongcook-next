@@ -1,18 +1,7 @@
 
 function getFetchUrl(endpoint, isPost = false) {
-    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    let url = '';
-    if (isLocal) {
-        if (endpoint === 'settings') {
-            url = 'http://localhost:8000/api/admin/data/settings';
-        } else {
-            url = `http://localhost:8000/api/${endpoint}`;
-        }
-        return isPost ? url : url + `?t=${Date.now()}`;
-    } else {
-        const base = `../api.php?board=sejong_${endpoint}`;
-        return isPost ? base : base + `&t=${Date.now()}`;
-    }
+    const url = `/api/sejong/${endpoint}`;
+    return isPost ? url : url + (url.includes('?') ? '&' : '?') + `t=${Date.now()}`;
 }
 
 
@@ -32,7 +21,7 @@ async function loadData() {
 
         const rawMembers = await mRes.json();
         // Match tuition_v3.js exactly: only exclude delete and trash. Included hold/completed who have payment records.
-        membersData = Array.isArray(rawMembers) ? rawMembers.filter(m => !['delete', 'trash'].includes(m.status)) : [];
+        membersData = Array.isArray(rawMembers) ? rawMembers.filter(m => !['delete', 'trash', 'hold', 'completed'].includes(m.status)) : [];
 
         paymentsData = await pRes.json();
         if (!Array.isArray(paymentsData)) paymentsData = [];
@@ -175,7 +164,7 @@ function renderPaidList() {
     container.innerHTML = html;
 }
 
-async function updatePaymentStatus(memberId, year, month, course, newStatus) {
+async function updatePaymentStatus(memberId, year, month, course, newStatus, amount) {
     showConfirmModal(
         '상태 변경 확인',
         '이 납부 내역의 상태를 변경하시겠습니까?<br>(납부완료 명단에서 제외됩니다.)',
@@ -187,6 +176,7 @@ async function updatePaymentStatus(memberId, year, month, course, newStatus) {
                     month: parseInt(month),
                     course: (!course || course === 'null') ? null : course,
                     status: newStatus,
+                    amount: parseInt(amount) || 0,
                     updatedAt: new Date().toISOString()
                 };
 
