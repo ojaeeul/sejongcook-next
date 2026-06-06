@@ -181,7 +181,14 @@ function getAllLedgerMonthStats(memberId, year, month) {
     const member = membersData.find(m => String(m.id) === String(memberId));
     if (!member || !member.course) return [];
 
-    const courses = member.course.split(',').map(c => c.split('(')[0].trim());
+    let courses = member.course.split(',').map(c => c.split('(')[0].trim());
+    const hasJeggwa = courses.some(c => c.includes('제과') && !c.includes('제과제빵'));
+    const hasJeppang = courses.some(c => c.includes('제빵') && !c.includes('제과제빵'));
+    if (hasJeggwa && hasJeppang) {
+        courses = courses.filter(c => !c.includes('제과') && !c.includes('제빵'));
+        courses.push('제과제빵기능사');
+    }
+
     const results = [];
 
     courses.forEach(courseName => {
@@ -447,7 +454,16 @@ function renderTable(container, title, members, id) {
                 <div style="font-weight: 900; font-size: 0.9rem;">${m.name}</div>
                 <div style="font-size: 0.7rem; color: #64748b;">${m.phone || ''}</div>
                 <div style="font-size: 0.6rem; font-weight: 700; margin-top: 4px; display: flex; flex-direction: column; gap: 2px; align-items: flex-start;">
-                    ${(m.course || '').split(',').filter(Boolean).map(c => `<span style="background: #eff6ff; color: #1d4ed8; padding: 2px 5px; border-radius: 3px; border: 1px solid #bfdbfe; white-space: nowrap; line-height: 1; font-size: 0.55rem;">${c.trim()}</span>`).join('')}
+                    ${(() => {
+    let cs = (m.course || '').split(',').map(c => c.trim()).filter(Boolean);
+    const hjg = cs.some(c => c.includes('제과') && !c.includes('제과제빵'));
+    const hjp = cs.some(c => c.includes('제빵') && !c.includes('제과제빵'));
+    if (hjg && hjp) {
+        cs = cs.filter(c => !c.includes('제과') && !c.includes('제빵'));
+        cs.push('제과제빵');
+    }
+    return cs.map(c => `<span style="background: #eff6ff; color: #1d4ed8; padding: 2px 5px; border-radius: 3px; border: 1px solid #bfdbfe; white-space: nowrap; line-height: 1; font-size: 0.55rem;">${c}</span>`).join('');
+})()}
                 </div>
             </td>`;
 

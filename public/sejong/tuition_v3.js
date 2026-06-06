@@ -78,7 +78,13 @@ let courseFees = {
 
 function calculateTotalFee(courseStr) {
     if (!courseStr) return courseFees['all'] || DEFAULT_PRICE;
-    const courses = courseStr.split(',').map(s => s.split('(')[0].trim());
+    let courses = courseStr.split(',').map(s => s.split('(')[0].trim());
+    const hjg = courses.some(c => c.includes('제과') && !c.includes('제과제빵'));
+    const hjp = courses.some(c => c.includes('제빵') && !c.includes('제과제빵'));
+    if (hjg && hjp) {
+        courses = courses.filter(c => !c.includes('제과') && !c.includes('제빵'));
+        courses.push('제과제빵기능사');
+    }
     let total = 0;
     courses.forEach(c => {
         total += (courseFees[c] || courseFees['all'] || DEFAULT_PRICE);
@@ -438,6 +444,18 @@ function renderTable() {
         }
 
         let myCourses = (m.course || '').split(',').map(c => c.trim()).filter(c => c !== '');
+        const hasJeggwa = myCourses.some(c => c.includes('제과') && !c.includes('제과제빵'));
+        const hasJeppang = myCourses.some(c => c.includes('제빵') && !c.includes('제과제빵'));
+        if (hasJeggwa && hasJeppang) {
+            myCourses = myCourses.filter(c => !c.includes('제과') && !c.includes('제빵'));
+            myCourses.push('제과제빵기능사');
+        }
+        const hasJeggwa = myCourses.some(c => c.includes('제과') && !c.includes('제과제빵'));
+        const hasJeppang = myCourses.some(c => c.includes('제빵') && !c.includes('제과제빵'));
+        if (hasJeggwa && hasJeppang) {
+            myCourses = myCourses.filter(c => !c.includes('제과') && !c.includes('제빵'));
+            myCourses.push('제과제빵기능사');
+        }
         if (myCourses.some(c => c.includes('제과') && !c.includes('제과제빵')) && myCourses.some(c => c.includes('제빵') && !c.includes('제과제빵'))) {
             myCourses = myCourses.filter(c => !c.includes('제과') && !c.includes('제빵'));
             myCourses.push('제과제빵기능사');
@@ -940,6 +958,18 @@ function exportToCSV() {
 
     membersData.forEach(m => {
         let myCourses = (m.course || '').split(',').map(c => c.trim()).filter(c => c !== '');
+        const hasJeggwa = myCourses.some(c => c.includes('제과') && !c.includes('제과제빵'));
+        const hasJeppang = myCourses.some(c => c.includes('제빵') && !c.includes('제과제빵'));
+        if (hasJeggwa && hasJeppang) {
+            myCourses = myCourses.filter(c => !c.includes('제과') && !c.includes('제빵'));
+            myCourses.push('제과제빵기능사');
+        }
+        const hasJeggwa = myCourses.some(c => c.includes('제과') && !c.includes('제과제빵'));
+        const hasJeppang = myCourses.some(c => c.includes('제빵') && !c.includes('제과제빵'));
+        if (hasJeggwa && hasJeppang) {
+            myCourses = myCourses.filter(c => !c.includes('제과') && !c.includes('제빵'));
+            myCourses.push('제과제빵기능사');
+        }
         if (myCourses.some(c => c.includes('제과') && !c.includes('제과제빵')) && myCourses.some(c => c.includes('제빵') && !c.includes('제과제빵'))) {
             myCourses = myCourses.filter(c => !c.includes('제과') && !c.includes('제빵'));
             myCourses.push('제과제빵기능사');
