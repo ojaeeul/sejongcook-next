@@ -125,14 +125,33 @@ export default function AdminTeachersPage() {
         setEditForm({ image: '' });
     };
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const [uploading, setUploading] = useState(false);
+
+    const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setEditForm(prev => ({ ...prev, image: reader.result as string }));
-            };
-            reader.readAsDataURL(file);
+        if (!file) return;
+
+        setUploading(true);
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const url = '/api/admin/upload?_t=' + Date.now();
+            const res = await fetch(url, {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (!res.ok) throw new Error('Upload failed');
+
+            const data = await res.json();
+            setEditForm(prev => ({ ...prev, image: data.url }));
+        } catch (error) {
+            console.error('Upload error', error);
+            alert('이미지 업로드에 실패했습니다. 파일 크기가 너무 클 수 있습니다.');
+        } finally {
+            setUploading(false);
+            e.target.value = '';
         }
     };
 
@@ -167,9 +186,9 @@ export default function AdminTeachersPage() {
 
                     <div className="grid md:grid-cols-3 gap-8">
                         {/* Image Uploader */}
-                        <div className="space-y-4">
-                            <label className="block text-sm font-bold text-gray-700">프로필 사진</label>
-                            <div className="aspect-[3/4] bg-gray-100 rounded-lg overflow-hidden border border-gray-200 relative group">
+                        <div className="space-y-4 flex flex-col items-center md:items-start">
+                            <label className="block text-sm font-bold text-gray-700 w-full text-center md:text-left">프로필 사진</label>
+                            <div className="w-[240px] aspect-[3/4] bg-gray-100 rounded-lg overflow-hidden border border-gray-200 relative group flex-shrink-0">
                                 {editForm.image ? (
                                     <div className="relative w-full h-full">
                                         <Image

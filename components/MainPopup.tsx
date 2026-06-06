@@ -85,23 +85,45 @@ export default function MainPopup() {
 
     return (
         <>
+            <style dangerouslySetInnerHTML={{__html: `
+                .popup-container-responsive {
+                    position: fixed !important;
+                    top: 50% !important;
+                    left: 50% !important;
+                    transform: translate(-50%, -50%) !important;
+                    width: 90vw !important;
+                    max-width: var(--popup-width) !important;
+                    height: var(--popup-height) !important;
+                    max-height: 80vh !important;
+                }
+                @media (min-width: 1024px) {
+                    .popup-container-responsive {
+                        position: absolute !important;
+                        top: var(--popup-top) !important;
+                        left: var(--popup-left) !important;
+                        transform: none !important;
+                        width: var(--popup-width) !important;
+                        height: var(--popup-height) !important;
+                        max-height: none !important;
+                    }
+                }
+            `}} />
             {popups.map(popup => (
                 <div
                     key={popup.id}
                     style={{
-                        position: 'absolute',
-                        top: `${popup.position.top}px`,
-                        left: `${popup.position.left}px`,
-                        width: `${popup.size.width}px`,
-                        height: popup.type === 'template' ? `${popup.size.height}px` : 'auto',
+                        '--popup-top': `${popup.position.top}px`,
+                        '--popup-left': `${popup.position.left}px`,
+                        '--popup-width': `${popup.size.width}px`,
+                        '--popup-height': popup.type === 'template' ? `${popup.size.height}px` : 'auto',
                         zIndex: 9999, // High z-index to sit on top
                         boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
                         backgroundColor: 'white',
                         border: '1px solid #ddd',
                         borderRadius: '8px',
                         overflow: 'hidden'
-                    }}
-                    className="hidden lg:block popup-container"
+                    } as React.CSSProperties}
+                    className="popup-container-responsive popup-container"
                 >
                     {popup.type === 'template' && popup.content ? (
                         <CourseRecruitPopup
@@ -113,20 +135,47 @@ export default function MainPopup() {
                         // Fallback/Default Image Popup
                         <>
                             <div className="relative">
-                                <Link href={popup.link}>
-                                    <Image
-                                        src={popup.imageUrl || ''}
-                                        alt={popup.title}
-                                        width={0}
-                                        height={0}
-                                        sizes="100vw"
-                                        style={{
-                                            width: '100%',
-                                            height: 'auto',
-                                            display: 'block'
-                                        }}
-                                    />
-                                </Link>
+                                {popup.link ? (
+                                    <Link href={popup.link}>
+                                        {popup.imageUrl ? (
+                                            <Image
+                                                src={popup.imageUrl}
+                                                alt={popup.title}
+                                                width={popup.size?.width || 500}
+                                                height={popup.size?.height || 500}
+                                                sizes="100vw"
+                                                style={{
+                                                    width: '100%',
+                                                    height: 'auto',
+                                                    display: 'block'
+                                                }}
+                                            />
+                                        ) : (
+                                            <div style={{ width: '100%', height: '200px', backgroundColor: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                <span className="text-gray-400 font-bold">이미지가 없습니다</span>
+                                            </div>
+                                        )}
+                                    </Link>
+                                ) : (
+                                    popup.imageUrl ? (
+                                        <Image
+                                            src={popup.imageUrl}
+                                            alt={popup.title}
+                                            width={popup.size?.width || 500}
+                                            height={popup.size?.height || 500}
+                                            sizes="100vw"
+                                            style={{
+                                                width: '100%',
+                                                height: 'auto',
+                                                display: 'block'
+                                            }}
+                                        />
+                                    ) : (
+                                        <div style={{ width: '100%', height: '200px', backgroundColor: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <span className="text-gray-400 font-bold">이미지가 없습니다</span>
+                                        </div>
+                                    )
+                                )}
                             </div>
                             <div className="bg-gray-800 text-white text-xs p-2 flex justify-between items-center">
                                 <label className="flex items-center gap-2 cursor-pointer hover:text-gray-200">
