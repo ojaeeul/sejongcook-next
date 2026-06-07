@@ -75,7 +75,7 @@ window.updateMemberCourse = async function(memberId, index, value) {
         await fetch(getFetchUrl('members', true), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: memberId, course: newCourse })
+            body: JSON.stringify(m)
         });
         renderLedger(); 
     } catch(e) { console.error(e); }
@@ -85,13 +85,15 @@ window.moveToTrash = async function(memberId) {
     if(!confirm('정말 휴지통으로 이동하시겠습니까? (이동 시 수강생 대장을 제외한 모든 화면에서 숨김 처리됩니다)')) return;
     try {
         const m = membersData.find(m => String(m.id) === String(memberId));
-        if (m) m.status = 'trash';
-        await fetch(getFetchUrl('members', true), {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: memberId, status: 'trash' })
-        });
-        renderLedger();
+        if (m) {
+            m.status = 'trash';
+            await fetch(getFetchUrl('members', true), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(m)
+            });
+            renderLedger();
+        }
     } catch(e) { console.error(e); }
 };
 
@@ -488,7 +490,7 @@ function renderTable(container, title, members, id) {
                 <thead>
                     <tr style="background: #f8fafc; border-bottom: 1.5px solid #0f172a;">
                         <th rowspan="2" style="width: 40px; border-right: 1.5px solid #0f172a; font-size: 0.75rem;">NO</th>
-                        <th rowspan="2" style="width: 180px; border-right: 1.5px solid #0f172a; font-size: 0.75rem; text-align: left; padding: 10px;">회원정보 / 과정</th>
+                        <th rowspan="2" style="width: 120px; border-right: 1.5px solid #0f172a; font-size: 0.75rem; text-align: left; padding: 10px;">회원정보 / 과정</th>
                         ${Array.from({ length: 12 }, (_, i) => `<th colspan="2" style="border-right: 1.5px solid #0f172a; border-bottom: 1px solid #cbd5e1; font-size: 0.8rem; padding: 5px;">${i + 1}월</th>`).join('')}
                         <th rowspan="2" style="width: 100px; font-size: 0.75rem;">비고</th>
                     </tr>
