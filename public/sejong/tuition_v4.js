@@ -1655,7 +1655,6 @@ function countUnpaidMilestonesForMonth(year, month) {
             let remainingForLoop = stats.currentCount ? stats.currentCount.count : 0;
 
             stats.allMilestones.forEach(ms => {
-                if (ms.year !== year || ms.month !== month) return;
                 const msPayment = paymentsData.find(p =>
                     p.memberId == m.id &&
                     p.year == ms.year &&
@@ -1663,12 +1662,21 @@ function countUnpaidMilestonesForMonth(year, month) {
                     normalizeCourse(p.course) === normalizeCourse(courseNameOnly) &&
                     p.status !== 'delete'
                 );
+                
+                // 해당 월에 명시적으로 '수강중' 등 납부가 아닌 상태로 처리해둔 경우 뱃지 카운트에서 제외할지 여부
+                // 원장님 요구사항: 미납 뱃지는 '결제일 기준 순수 미납건'이므로, paid가 아니면 무조건 카운트
                 if (msPayment && msPayment.status === 'paid') {
                     remainingForLoop -= targetCount;
                 } else {
                     const msDateObj = new Date(ms.year, ms.month - 1, ms.day);
                     if (remainingForLoop >= targetCount || msDateObj <= today) {
-                        count++;
+                        // 타겟 월과 일치할 때만 뱃지 숫자 증가
+                        if (ms.year === year && ms.month === month) {
+                            // 단, 사용자가 명시적으로 '수강중' 등으로 수동 오버라이드한 상태라면 뱃지 카운트에서 제외하여 목록과 완벽히 동기화
+                            if (!msPayment || !msPayment.status || msPayment.status === 'unpaid') {
+                                count++;
+                            }
+                        }
                         remainingForLoop -= targetCount;
                     }
                 }
