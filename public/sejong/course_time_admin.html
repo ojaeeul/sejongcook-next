@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>수업 요일 설정</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="tuition_v4.js" defer></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        .settings-admin-container {
+            width: 100%;
+            max-width: 900px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            padding: 40px;
+            margin-top: 40px;
+            margin-bottom: 40px;
+        }
+        h1 {
+            margin-top: 0;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .course-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px dashed #eee;
+        }
+        .course-row:last-child {
+            border-bottom: none;
+        }
+        .course-name {
+            font-weight: 700;
+            font-size: 1.1rem;
+            width: 250px;
+            color: #334155;
+        }
+        .days-toggles {
+            display: flex;
+            gap: 10px;
+        }
+        .day-toggle {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            user-select: none;
+            transition: all 0.2s;
+            color: #64748b;
+            background: white;
+        }
+        .day-toggle.selected {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+        }
+        .day-toggle:hover {
+            border-color: #94a3b8;
+        }
+        .btn-save {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 30px;
+            float: right;
+        }
+        .btn-save:hover {
+            background: #2563eb;
+        }
+        .settings-notice {
+            margin-bottom: 20px; 
+            padding: 15px; 
+            background: #eff6ff; 
+            border: 1px solid #bfdbfe; 
+            border-radius: 10px; 
+            color: #1e40af;
+        }
+    </style>
+</head>
+<body class="dashboard-body">
+    <!-- Top Navbar (Mobile) -->
+    <div class="top-navbar">
+        <button class="menu-toggle" onclick="toggleSidebar()">
+            <span class="material-icons">menu</span>
+        </button>
+        <div class="top-nav-logo">과목/시간 설정</div>
+        <div style="width: 24px;"></div>
+    </div>
+    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="brand-logo">
+                <span class="logo-text">세종요리</span>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">수강 관리</div>
+                <div class="nav-sub-menu show">
+                    <a href="register.html" id="navRegister" class="nav-item">수강생 등록</a>
+                    <a href="index.html" id="navIndex" class="nav-item">수강생 대장</a>
+                    <a href="phonebook.html" id="navPhoneBook" class="nav-item">전화번호부</a>
+                    <a href="sheet.html" id="navSheet" class="nav-item">월간 출석부</a>
+                </div>
+                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">수강료</div>
+                <div class="nav-sub-menu show">
+                    <a href="tuition.html?v=1780849479" class="nav-item active">수강료 관리</a>
+                    <a href="ledger.html" class="nav-item">수강료 납부대장</a>
+                    <a href="paid_list.html" class="nav-item">납부완료 명단</a>
+                </div>
+                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">소통</div>
+                <div class="nav-sub-menu show">
+                    <a href="notice.html" class="nav-item">학원 공지</a>
+                    <a href="feed.html" class="nav-item">피드 관리</a>
+                    <a href="wagashi.html" class="nav-item">학원 홍보</a>
+                </div>
+                <div class="nav-category toggle-category" onclick="toggleNavSub(this)">시험지</div>
+                <div class="nav-sub-menu">
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">한식기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('한식_2021')" class="nav-item">2021년 한식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('한식_2022')" class="nav-item">2022년 한식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('한식_2023')" class="nav-item">2023년 한식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('한식_2024')" class="nav-item">2024년 한식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('한식_2025')" class="nav-item">2025년 한식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('한식_2026')" class="nav-item">2026년 한식</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">양식기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('양식_2021')" class="nav-item">2021년 양식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('양식_2022')" class="nav-item">2022년 양식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('양식_2023')" class="nav-item">2023년 양식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('양식_2024')" class="nav-item">2024년 양식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('양식_2025')" class="nav-item">2025년 양식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('양식_2026')" class="nav-item">2026년 양식</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">일식기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('일식_2021')" class="nav-item">2021년 일식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('일식_2022')" class="nav-item">2022년 일식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('일식_2023')" class="nav-item">2023년 일식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('일식_2024')" class="nav-item">2024년 일식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('일식_2025')" class="nav-item">2025년 일식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('일식_2026')" class="nav-item">2026년 일식</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">중식기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('중식_2021')" class="nav-item">2021년 중식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('중식_2022')" class="nav-item">2022년 중식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('중식_2023')" class="nav-item">2023년 중식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('중식_2024')" class="nav-item">2024년 중식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('중식_2025')" class="nav-item">2025년 중식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('중식_2026')" class="nav-item">2026년 중식</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">제과기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('제과_2021')" class="nav-item">2021년 제과</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과_2022')" class="nav-item">2022년 제과</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과_2023')" class="nav-item">2023년 제과</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과_2024')" class="nav-item">2024년 제과</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과_2025')" class="nav-item">2025년 제과</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과_2026')" class="nav-item">2026년 제과</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">제빵기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2021')" class="nav-item">2021년 제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2022')" class="nav-item">2022년 제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2023')" class="nav-item">2023년 제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2024')" class="nav-item">2024년 제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2025')" class="nav-item">2025년 제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2026')" class="nav-item">2026년 제빵</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">제과제빵기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('제과제빵_2021')" class="nav-item">2021년 제과제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과제빵_2022')" class="nav-item">2022년 제과제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과제빵_2023')" class="nav-item">2023년 제과제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과제빵_2024')" class="nav-item">2024년 제과제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과제빵_2025')" class="nav-item">2025년 제과제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과제빵_2026')" class="nav-item">2026년 제과제빵</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">복어기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('복어_2021')" class="nav-item">2021년 복어</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('복어_2022')" class="nav-item">2022년 복어</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('복어_2023')" class="nav-item">2023년 복어</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('복어_2024')" class="nav-item">2024년 복어</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('복어_2025')" class="nav-item">2025년 복어</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('복어_2026')" class="nav-item">2026년 복어</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">산업기사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" class="nav-item">준비중입니다</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">가정요리</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" class="nav-item">준비중입니다</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">브런치</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" class="nav-item">준비중입니다</a>
+                    </div>
+                </div>
+                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">기타</div>
+                <div class="nav-sub-menu show">
+                    <a href="class_days_admin.html" id="navClassDaysAdmin" class="nav-item active">
+                        <span class="material-icons" style="font-size: 1.2rem; margin-right: 8px;">settings</span>
+                        수업 요일 설정
+                    </a>
+                    <a href="index.html?filter=archive" id="navArchive" class="nav-item">수료생 보관함</a>
+                    <a href="index.html?filter=trash" id="navTrash" class="nav-item">휴지통</a>
+                    <a href="stats.html" class="nav-item">통계 및 납부</a>
+                </div>
+                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">학원문자</div>
+                <div class="nav-sub-menu show">
+                    <a href="attendance_daily.html" id="navDailyAttendance" class="nav-item">일일 출석부</a>
+                    <a href="sms.html?v=1780849502" id="navSms" class="nav-item">문자 발송</a>
+                </div>
+                <a href="monitor.html?v=1780796013_211823" target="_blank" class="nav-item highlight">키오스크 모니터</a>
+                <a href="kiosk_admin.html" id="navKioskAdmin" class="nav-item">키오스크 설정</a>
+            </nav>
+        </aside>
+        <main class="main-content">
+            <header class="main-header">
+                <div class="page-title-container">
+                    <h1 class="page-title-text" style="color: #1e3a8a;">과목 및 시간 설정</h1>
+                    <span style="font-size: 0.9rem; color: #64748b; margin-left: 15px; background: #f1f5f9; padding: 4px 10px; border-radius: 6px;">수강생 등록 시 선택할 수 있는 과목과 시간을 관리합니다.</span>
+                </div>
+            </header>
+
+            <div class="content-body" style="padding-top: 20px; display: flex; flex-direction: column; gap: 20px;">
+                <!-- Course List Settings -->
+                <div style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e2e8f0;">
+                    <h2 style="font-size: 1.1rem; color: #1e293b; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                        <span class="material-icons" style="color: #3b82f6;">book</span> 수강 과목 관리
+                    </h2>
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <input type="text" id="newCourseName" placeholder="추가할 과목명 (예: 바리스타 과정)" style="flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 1rem;">
+                        <button onclick="addCourse()" style="background: #3b82f6; color: white; border: none; padding: 0 20px; border-radius: 6px; cursor: pointer; font-weight: bold; white-space: nowrap;">과목 추가</button>
+                    </div>
+                    <div id="courseListContainer" style="display: flex; flex-wrap: wrap; gap: 10px;">
+                        <!-- Courses will be rendered here -->
+                    </div>
+                </div>
+
+                <!-- Time List Settings -->
+                <div style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e2e8f0;">
+                    <h2 style="font-size: 1.1rem; color: #1e293b; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                        <span class="material-icons" style="color: #10b981;">schedule</span> 수업 시간 관리
+                    </h2>
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px; align-items: center;">
+                        <select id="newTimeHour" style="padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 1rem; width: 100px;">
+                            <option value="01">01시</option><option value="02">02시</option><option value="03">03시</option><option value="04">04시</option><option value="05">05시</option><option value="06">06시</option><option value="07">07시</option><option value="08">08시</option><option value="09">09시</option><option value="10">10시</option><option value="11">11시</option><option value="12">12시</option><option value="13">13시</option><option value="14">14시</option><option value="15">15시</option><option value="16">16시</option><option value="17">17시</option><option value="18">18시</option><option value="19">19시</option><option value="20">20시</option><option value="21">21시</option><option value="22">22시</option><option value="23">23시</option><option value="24">24시</option>
+                        </select>
+                        <span style="font-weight: bold;">:</span>
+                        <select id="newTimeMinute" style="padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 1rem; width: 100px;">
+                            <option value="00">00분</option><option value="05">05분</option><option value="10">10분</option><option value="15">15분</option><option value="20">20분</option><option value="25">25분</option><option value="30">30분</option><option value="35">35분</option><option value="40">40분</option><option value="45">45분</option><option value="50">50분</option><option value="55">55분</option>
+                        </select>
+                        <button onclick="addTime()" style="background: #10b981; color: white; border: none; padding: 0 20px; border-radius: 6px; cursor: pointer; font-weight: bold; white-space: nowrap;">시간 추가</button>
+                    </div>
+                    <div id="timeListContainer" style="display: flex; flex-wrap: wrap; gap: 10px;">
+                        <!-- Times will be rendered here -->
+                    </div>
+                </div>
+
+                <!-- Save Action -->
+                <div style="text-align: right;">
+                    <button onclick="saveSettings()" style="background: #1e3a8a; color: white; border: none; padding: 12px 30px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1.1rem; display: inline-flex; align-items: center; gap: 8px;">
+                        <span class="material-icons">save</span> 설정 저장하기
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const DEFAULT_COURSES = ["한식기능사", "양식기능사", "일식기능사", "중식기능사", "제과기능사", "제빵기능사", "제과제빵기능사", "복어기능사", "산업기사", "가정요리", "브런치"];
+        const DEFAULT_TIMES = ["10:00", "12:00", "17:00", "19:00"];
+        
+        let courses = [];
+        let times = [];
+
+        async function loadSettings() {
+            try {
+                const res = await fetch("/api/sejong/settings");
+                const data = await res.json();
+                
+                let settings = Array.isArray(data) && data.length > 0 ? data[0] : (data.key === "settings" ? data.value : data);
+                
+                courses = settings.courses && settings.courses.length > 0 ? settings.courses : [...DEFAULT_COURSES];
+                times = settings.times && settings.times.length > 0 ? settings.times : [...DEFAULT_TIMES];
+                
+                renderCourses();
+                renderTimes();
+            } catch (e) {
+                console.error("Failed to load settings", e);
+                courses = [...DEFAULT_COURSES];
+                times = [...DEFAULT_TIMES];
+                renderCourses();
+                renderTimes();
+            }
+        }
+
+        function renderCourses() {
+            const container = document.getElementById("courseListContainer");
+            container.innerHTML = "";
+            courses.forEach((course, idx) => {
+                const tag = document.createElement("div");
+                tag.style.cssText = "background: #f1f5f9; border: 1px solid #cbd5e1; padding: 6px 12px; border-radius: 20px; display: flex; align-items: center; gap: 8px; font-weight: 500; font-size: 0.95rem; color: #334155;";
+                tag.innerHTML = `
+                    ${course}
+                    <span class="material-icons" style="font-size: 1.1rem; cursor: pointer; color: #ef4444;" onclick="removeCourse(${idx})">cancel</span>
+                `;
+                container.appendChild(tag);
+            });
+        }
+
+        function addCourse() {
+            const input = document.getElementById("newCourseName");
+            const val = input.value.trim();
+            if (!val) return alert("과목명을 입력하세요.");
+            if (courses.includes(val)) return alert("이미 등록된 과목입니다.");
+            courses.push(val);
+            input.value = "";
+            renderCourses();
+        }
+
+        function removeCourse(idx) {
+            courses.splice(idx, 1);
+            renderCourses();
+        }
+
+        function renderTimes() {
+            times.sort((a, b) => {
+                const [ah, am] = a.split(":").map(Number);
+                const [bh, bm] = b.split(":").map(Number);
+                if (ah !== bh) return ah - bh;
+                return am - bm;
+            });
+
+            const container = document.getElementById("timeListContainer");
+            container.innerHTML = "";
+            times.forEach((time, idx) => {
+                const tag = document.createElement("div");
+                tag.style.cssText = "background: #ecfdf5; border: 1px solid #a7f3d0; padding: 6px 12px; border-radius: 20px; display: flex; align-items: center; gap: 8px; font-weight: 500; font-size: 0.95rem; color: #065f46;";
+                tag.innerHTML = `
+                    <span class="material-icons" style="font-size: 1.1rem;">schedule</span>
+                    ${time}
+                    <span class="material-icons" style="font-size: 1.1rem; cursor: pointer; color: #ef4444;" onclick="removeTime(${idx})">cancel</span>
+                `;
+                container.appendChild(tag);
+            });
+        }
+
+        function addTime() {
+            const h = document.getElementById("newTimeHour").value;
+            const m = document.getElementById("newTimeMinute").value;
+            const val = `${h}:${m}`;
+            if (times.includes(val)) return alert("이미 등록된 시간입니다.");
+            times.push(val);
+            renderTimes();
+        }
+
+        function removeTime(idx) {
+            times.splice(idx, 1);
+            renderTimes();
+        }
+
+        async function saveSettings() {
+            try {
+                const res = await fetch("/api/sejong/settings");
+                const data = await res.json();
+                
+                let settingsArr = Array.isArray(data) && data.length > 0 ? data : [data.key === "settings" ? data.value : data];
+                let settingsObj = settingsArr[0] || { id: Date.now().toString() };
+                
+                settingsObj.courses = courses;
+                settingsObj.times = times;
+                settingsObj.courseFees = settingsObj.courseFees || {};
+                
+                courses.forEach(course => {
+                    if (settingsObj.courseFees[course] === undefined) {
+                        settingsObj.courseFees[course] = 200000;
+                    }
+                });
+
+                const saveRes = await fetch("/api/sejong/settings", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify([settingsObj])
+                });
+                
+                if (saveRes.ok) {
+                    alert("설정이 성공적으로 저장되었습니다!");
+                } else {
+                    alert("설정 저장에 실패했습니다.");
+                }
+            } catch (e) {
+                console.error("Save error", e);
+                alert("서버 오류가 발생했습니다.");
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", loadSettings);
+
+        window.toggleSidebar = function () {
+            const sidebar = document.querySelector(".sidebar");
+            const overlay = document.querySelector(".sidebar-overlay");
+            if (sidebar) sidebar.classList.toggle("active");
+            if (overlay) overlay.classList.toggle("active");
+        };
+        
+        document.querySelectorAll(".nav-item").forEach(item => {
+            if (item.getAttribute("href") === "course_time_admin.html") {
+                item.classList.add("highlight");
+                let parentMenu = item.closest(".nav-sub-menu");
+                if (parentMenu) {
+                    parentMenu.classList.add("show");
+                    if (parentMenu.previousElementSibling) {
+                        parentMenu.previousElementSibling.classList.add("active");
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

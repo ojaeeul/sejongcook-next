@@ -16,6 +16,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="shared_calc.js?v=1"></script>
     <script src="script.js?v=1780796013_215152" defer></script>
     <style>
         .sheet-container {
@@ -895,7 +896,7 @@
                 </div>
                 <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">수강료</div>
                 <div class="nav-sub-menu show">
-                    <a href="tuition.html" class="nav-item">수강료 관리</a>
+                    <a href="tuition.html?v=1780849479" class="nav-item">수강료 관리</a>
                     <a href="ledger.html" class="nav-item">수강료 납부대장</a>
                     <a href="paid_list.html" class="nav-item">납부완료 명단</a>
                 </div>
@@ -1004,9 +1005,13 @@
                 </div>
                 <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">기타</div>
                 <div class="nav-sub-menu show">
-                    <a href="javascript:void(0)" onclick="openSettingsModal()" class="nav-item">
+                    <a href="class_days_admin.html" id="navClassDaysAdmin" class="nav-item">
                         <span class="material-icons" style="font-size: 1.2rem; margin-right: 8px;">settings</span>
                         수업 요일 설정
+                    </a>
+                    <a href="course_time_admin.html" id="navCourseTimeAdmin" class="nav-item">
+                        <span class="material-icons" style="font-size: 1.2rem; margin-right: 8px;">list_alt</span>
+                        과목/시간 설정
                     </a>
                     <a href="index.html?filter=archive" id="navArchive" class="nav-item">수료생 보관함</a>
                     <a href="index.html?filter=trash" id="navTrash" class="nav-item">휴지통</a>
@@ -1015,9 +1020,10 @@
                 <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">학원문자</div>
                 <div class="nav-sub-menu show">
                     <a href="attendance_daily.html" id="navDailyAttendance" class="nav-item">일일 출석부</a>
-                    <a href="sms.html" id="navSms" class="nav-item">문자 발송</a>
+                    <a href="sms.html?v=1780849502" id="navSms" class="nav-item">문자 발송</a>
                 </div>
                 <a href="monitor.html?v=1780796013_211823" target="_blank" class="nav-item highlight">키오스크 모니터</a>
+                <a href="kiosk_admin.html" id="navKioskAdmin" class="nav-item">키오스크 설정</a>
             </nav>
         </aside>
 
@@ -1028,10 +1034,10 @@
                     <span>MENU</span>
                     <span class="material-icons">menu</span>
                 </button>
-                <div class="page-title">
-                    <h1 id="pageTitle">월간 출석부<span id="currentHeadcount"
-                            style="margin-left: 10px; font-size: 0.6em; font-weight: normal; color: #666; vertical-align: middle;"></span>
-                    </h1>
+                <div class="page-title" style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+                    <h1 id="pageTitle" style="margin:0;">월간 출석부</h1>
+                    <span id="currentHeadcount" style="font-size: 1rem; font-weight: 700; color: #475569; display: flex; align-items: center; margin-top: 2px;"></span>
+                    <div id="monthlyRedBoxPanel" style="display: flex; align-items: center;"></div>
                 </div>
             </header>
 
@@ -1748,72 +1754,9 @@
 
             let foundSimulatedDay = null;
 
-            // --- Simulation Logic ---
-            // Simulate from the 1st of the PREVIOUS month to ensure last month's scheduled payments don't disappear
-            const firstDayOfLastMonth = new Date(year, month - 2, 1);
+            // --- Simulation Logic (제거됨 - 원장님 요청: 실제 출석 기반 결제만 허용) ---
+            // 더 이상 가상으로 미래 날짜를 탐색하여 결제일(예정일)을 만들어내지 않습니다.
 
-            let eighthMonth = month;
-
-            if (!hitTargetInMonth && hasAnyAttendance) {
-                let simDate = new Date(firstDayOfLastMonth.getTime());
-                if (lastRecordDate && lastRecordDate > firstDayOfLastMonth) {
-                    simDate = new Date(lastRecordDate.getTime() + (24 * 60 * 60 * 1000));
-                } else if (!lastRecordDate) {
-                    simDate = new Date(firstDayOfLastMonth.getTime());
-                }
-
-                // 시뮬레이션 한계를 현재 조회 중인 월의 마지막 날까지만 수행하도록 변경 (O(N) 성능 이슈 최적화)
-                const limitDate = new Date(year, month, 0);
-                let startCarry = rollingTotal; // Net rolling total without extensions
-                let simRolling = rollingTotal; // This will accumulate all attendance
-
-                while (simDate <= limitDate) {
-                    const dayOfWeek = simDate.getDay();
-                    const dateStr = simDate.toISOString().split('T')[0];
-                    const isHolidayInSys = holidaysData.some(h => h.date === dateStr);
-                    const isNationalHoliday = !!KOREAN_HOLIDAYS_MAP[dateStr];
-                    const isHoliday = isHolidayInSys || isNationalHoliday;
-
-                    // 과정별 유효 요일 확인 (시뮬레이션 용도)
-                    let isValidDay = false;
-                    if (courseFilter) {
-                        const cleanFilter = courseFilter.replace(/\([^)]*\)/g, '').trim();
-                        const schedule = timetableData[cleanFilter];
-                        if (schedule) {
-                            if (schedule.includes(dayOfWeek)) isValidDay = true;
-                        } else {
-                            if (dayOfWeek !== 0) isValidDay = true;
-                        }
-                    } else {
-                        if (dayOfWeek !== 0) isValidDay = true;
-                    }
-
-                    if (isValidDay && !isHoliday) {
-                        const prevNetSim = getCycle(startCarry); // Cycle based on net attendance
-                        simRolling += incAmount; // Accumulate all attendance
-                        startCarry += incAmount; // Accumulate net attendance (extensions are already removed from initial startCarry)
-
-                        const currNetSim = getCycle(startCarry); // New cycle based on net attendance
-
-                        if (currNetSim > prevNetSim) {
-                            if (simDate.getFullYear() === year && (simDate.getMonth() + 1) === month) {
-                                foundSimulatedDay = simDate.getDate();
-                                eighthMonth = simDate.getMonth() + 1;
-                                break;
-                            } else if (simDate.getFullYear() > year || (simDate.getFullYear() === year && (simDate.getMonth() + 1) > month)) {
-                                break;
-                            }
-                        }
-                    }
-                    simDate.setDate(simDate.getDate() + 1);
-                }
-
-                if (foundSimulatedDay) {
-                    // [사용자 요청] 예정날자가 지정(실제 도달) 안되어 있으면 숨김으로 처리
-                    // scheduledDays.push(foundSimulatedDay);
-                    // isSimulated = true;
-                }
-            }
 
             return { scheduledDays: scheduledDays, isSimulated: isSimulated, hasAnyAttendance: hasAnyAttendance, foundSimulatedDay: foundSimulatedDay };
         }
@@ -2111,20 +2054,29 @@
                 const tbody = document.getElementById('sheetBody');
                 tbody.innerHTML = '';
 
-                // [신규 - 전체 동기화] 현재 학원에 등록된 모든 과정/모든 학생에 대해 (필터 무관) 예정일 계산 및 동기화 저장
-                // (기존에는 필터링된 학생만 처리되어 타 페이지 이동 시 데이터 누락이 발생하던 문제 해결)
-                allCourseRows.forEach(row => {
-                    const m = row.member;
-                    const rowCourseNameScope = row.courseName;
-                    if (m && m.id) {
-                        // 당월 예정일 계산
-                        // getSheetSimulatedScheduledDate removed to prevent poisoning ledgerSyncData
-                    }
-                });
+                // [신규 - 전체 동기화] 현재 학원에 등록된 모든 과정/모든 학생에 대해 (필터 무관) 실제 레드박스 예정일 계산 및 동기화 저장
+                // (기존에는 상위 20명만 렌더링되어 다른 학생 데이터가 누락되는 문제 해결)
+                if (typeof window.calculateRedBoxesForMonth === 'function') {
+                    allCourseRows.forEach(row => {
+                        const m = row.member;
+                        const rowCourseNameScope = row.courseName;
+                        if (m && m.id) {
+                            const result = window.calculateRedBoxesForMonth(m, currentYear, currentMonth, attendanceData || [], rowCourseNameScope, window.GLOBAL_DATA_ADJUSTMENTS || {});
+                            const syncKeyNow = `${m.id}_${currentYear}_${currentMonth}_${rowCourseNameScope || 'all'}`;
+                            
+                            if (result && result.redDays && result.redDays.length > 0 && !result.isSimulated && result.hasAnyAttendance) {
+                                window.ledgerSyncData[syncKeyNow] = result.redDays;
+                            } else {
+                                delete window.ledgerSyncData[syncKeyNow];
+                            }
+                        }
+                    });
+                }
                 localStorage.setItem('sejong_ledger_sync', JSON.stringify(window.ledgerSyncData));
 
                 const renderedArrows = new Set(); // memberId_date
-
+                const membersWithRedBox = new Set();
+                let redBoxOccurrences = 0;
                 const maxRows = Math.max(20, filteredRows.length);
                 for (let r = 0; r < maxRows; r++) {
                     const tr = document.createElement('tr');
@@ -2404,7 +2356,11 @@
                             // EXPORT REAL RED BOXES TO LEDGER SYNC DATA
                             const syncKeyNow = `${m.id}_${currentMC.year}_${currentMC.month}_${rowCourseNameScope || 'all'}`;
                             const actualRedDays = Array.from(redBoxDates).map(d => parseInt(d.split('-')[2], 10));
-                            window.ledgerSyncData[syncKeyNow] = actualRedDays;
+                            if (actualRedDays.length > 0) {
+                                window.ledgerSyncData[syncKeyNow] = actualRedDays;
+                            } else if (window.ledgerSyncData[syncKeyNow]) {
+                                delete window.ledgerSyncData[syncKeyNow];
+                            }
                             
                             // 1. 당월 순수 출석일수 계산 (당월에 참석한 횟수)
                             let currentMonthAttendances = 0;
@@ -2515,6 +2471,13 @@
                                 }
                                 // If courseAllowedDays is null, we assume it's an unrestricted course or missing data (default to open if not Sunday/Holiday)
 
+                                // [HOTFIX] If there is an actual attendance log or if it's a red box date, DO NOT restrict the cell.
+                                // We need to check log status before applying restriction so the user can see existing records.
+                                const isLogPresent = m && uniqueLogs.find(l => l.date === dateStr && l.status !== 'unchecked');
+                                if (isRestricted && (isLogPresent || redBoxDates.has(dateStr))) {
+                                    isRestricted = false;
+                                }
+
                                 if (isRestricted) {
                                     td.classList.add('cell-disabled');
                                     // Differentiate colors: Holiday/Sunday (Reddish) vs Non-class day (Gray)
@@ -2589,6 +2552,8 @@
 
                                 // [신규] 납부대장(ledger)의 예정날짜 동기화 및 표시
                                 if (redBoxDates.has(dateStr) || syncScheduledDays.includes(i)) {
+                                    membersWithRedBox.add(m.id);
+                                    redBoxOccurrences++;
                                     console.log('RED_BOX_DRAWN:', m.name, dateStr, 'RuleMet:', redBoxDates.has(dateStr), 'Sync:', syncScheduledDays.includes(i));
                                     td.style.border = '3px solid red';
                                     td.style.boxShadow = '0 0 5px rgba(255, 0, 0, 0.5)';
@@ -2690,11 +2655,75 @@
                     tbody.appendChild(tr);
                 }
 
+                // 모든 행 렌더링이 끝난 후 결재일 수강생 수 업데이트
+                const hcSpan2 = document.getElementById('currentHeadcount');
+                if (hcSpan2) {
+                    hcSpan2.innerHTML = `(총 ${uniqueHeadcount}명) <span style="margin-left: 15px; color: #dc2626; font-weight: 900; background: #fee2e2; padding: 4px 12px; border-radius: 20px; border: 2px solid #ef4444; font-size: 0.95rem; display: inline-flex; align-items: center; box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2);"><span class="material-icons" style="font-size: 1.1rem; margin-right: 4px;">event_available</span> 결재일 건수: ${redBoxOccurrences}건</span>`;
+                }
+
+                // [신규] 상단 수강생결재일(1~12월) 뱃지 렌더링
+                renderMonthlyRedBoxPanel(filteredRows, currentYear);
+
                 // [삭제] 위에서 루프 돌기전에 한 번에 저장함.
             } catch (e) {
 
                 console.error(e);
             }
+        }
+
+        function renderMonthlyRedBoxPanel(filteredRows, targetYear) {
+            const monthCounts = {1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 11:0, 12:0};
+            
+            filteredRows.forEach(r => {
+                const m = r.member;
+                if (!m) return;
+                const cName = r.courseName || '';
+                
+                for (let month = 1; month <= 12; month++) {
+                    const syncKey = `${m.id}_${targetYear}_${month}_${cName}`;
+                    let days = window.ledgerSyncData ? window.ledgerSyncData[syncKey] : null;
+                    
+                    if (!days) {
+                        if (typeof window.calculateRedBoxesForMonth === 'function') {
+                            const result = window.calculateRedBoxesForMonth(m, targetYear, month, window.attendanceData || [], cName, window.GLOBAL_DATA_ADJUSTMENTS || {});
+                            if (result && result.redDays && result.redDays.length > 0 && !result.isSimulated && result.hasAnyAttendance) {
+                                days = result.redDays;
+                            }
+                        }
+                    }
+                    
+                    if (days && (Array.isArray(days) ? days.length > 0 : days > 0)) {
+                        monthCounts[month] += (Array.isArray(days) ? days.length : 1);
+                    }
+                }
+            });
+
+            const panel = document.getElementById('monthlyRedBoxPanel');
+            if (!panel) return;
+
+            let badgesHtml = `
+                <div style="display:flex; gap:6px; flex-wrap:wrap; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:6px 14px; align-items:center;">
+                    <span style="font-size:0.75rem; font-weight:700; color:#64748b; white-space:nowrap; margin-right:8px;">
+                        <span class="material-icons" style="font-size:0.9rem; vertical-align:middle; margin-right:2px;">calendar_month</span>
+                        수강생결재일
+                    </span>
+            `;
+
+            for (let month = 1; month <= 12; month++) {
+                const count = monthCounts[month];
+                const displayCount = count > 0 ? `<span style="background:#2563eb; color:white; border-radius:12px; padding:2px 7px; font-size:0.7rem; font-weight:bold; margin-left:4px;">${count}</span>` : '';
+                const borderStyle = count > 0 ? 'border:1px solid #93c5fd; background:#eff6ff;' : 'border:1px solid #cbd5e1; background:#fff;';
+                const textStyle = count > 0 ? 'color:#1e3a8a;' : 'color:#475569;';
+                
+                badgesHtml += `
+                    <div style="display:flex; align-items:center; padding:3px 10px; border-radius:20px; font-size:0.8rem; font-weight:700; margin-right:2px; ${borderStyle} ${textStyle}">
+                        <span>${month}월</span>
+                        ${displayCount}
+                    </div>
+                `;
+            }
+            badgesHtml += `</div>`;
+            panel.innerHTML = badgesHtml;
         }
 
         async function toggleHoliday(dateStr) {

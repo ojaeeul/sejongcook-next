@@ -30,7 +30,7 @@
                 </div>
                 <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">수강료</div>
                 <div class="nav-sub-menu show">
-                    <a href="tuition.html" class="nav-item">수강료 관리</a>
+                    <a href="tuition.html?v=1780849479" class="nav-item">수강료 관리</a>
                     <a href="ledger.html" class="nav-item">수강료 납부대장</a>
                     <a href="paid_list.html" class="nav-item">납부완료 명단</a>
                 </div>
@@ -139,9 +139,13 @@
                 </div>
                 <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">기타</div>
                 <div class="nav-sub-menu show">
-                    <a href="javascript:void(0)" onclick="openSettingsModal()" class="nav-item">
+                    <a href="class_days_admin.html" id="navClassDaysAdmin" class="nav-item">
                         <span class="material-icons" style="font-size: 1.2rem; margin-right: 8px;">settings</span>
                         수업 요일 설정
+                    </a>
+                    <a href="course_time_admin.html" id="navCourseTimeAdmin" class="nav-item">
+                        <span class="material-icons" style="font-size: 1.2rem; margin-right: 8px;">list_alt</span>
+                        과목/시간 설정
                     </a>
                     <a href="index.html?filter=archive" id="navArchive" class="nav-item">수료생 보관함</a>
                     <a href="index.html?filter=trash" id="navTrash" class="nav-item">휴지통</a>
@@ -150,9 +154,10 @@
                 <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">학원문자</div>
                 <div class="nav-sub-menu show">
                     <a href="attendance_daily.html" id="navDailyAttendance" class="nav-item">일일 출석부</a>
-                    <a href="sms.html" id="navSms" class="nav-item">문자 발송</a>
+                    <a href="sms.html?v=1780849502" id="navSms" class="nav-item">문자 발송</a>
                 </div>
                 <a href="monitor.html?v=1780796013_211823" target="_blank" class="nav-item highlight">키오스크 모니터</a>
+                <a href="kiosk_admin.html" id="navKioskAdmin" class="nav-item">키오스크 설정</a>
             </nav>
         </aside>
 

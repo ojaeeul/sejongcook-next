@@ -451,6 +451,33 @@ function renderLedger() {
     // Case 3: Category
     else {
         const courses = COURSE_CATEGORIES[activeCategory];
+        let categoryMembers = [];
+        
+        courses.forEach(courseName => {
+            let filteredMembers = membersData.filter(m => {
+                if (courseName === '기타') {
+                    if (!m.course) return true;
+                    const cList = m.course.split(',').map(c => c.trim()).filter(c => c && !c.includes('[삭제]'));
+                    if (cList.length === 0) return true;
+                    return !COURSE_LIST.filter(cl => cl !== '기타').some(cl => cList.some(c => c.includes(cl)));
+                }
+                return m.course && m.course.includes(courseName);
+            }).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+            filteredMembers = filterByPeriod(filteredMembers);
+            if (filteredMembers.length > 0) {
+                // To avoid duplicate students in the badge panel if they take multiple courses in the same category
+                // we'll just push them and let renderMonthlyRedBoxPanel's inner loop handle it
+                // Actually, renderMonthlyRedBoxPanel iterates courses by itself if courseScope='all'.
+                // So if we just deduplicate members and call renderMonthlyRedBoxPanel with 'all', it will count all courses!
+                filteredMembers.forEach(m => {
+                    if (!categoryMembers.some(cm => cm.id === m.id)) {
+                        categoryMembers.push(m);
+                    }
+                });
+            }
+        });
+
         courses.forEach(courseName => {
             let filteredMembers = membersData.filter(m => {
                 if (courseName === '기타') {
@@ -500,6 +527,32 @@ function renderTable(container, title, members, id) {
     section.id = id;
     section.style.cssText = `margin-bottom: 40px;`;
 
+    const monthCounts = {1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 11:0, 12:0};
+    const blueCounts = {1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 11:0, 12:0};
+    
+    members.forEach(m => {
+        for (let month = 1; month <= 12; month++) {
+            const schedules = getAllLedgerMonthStats(m.id, currentYear, month);
+            schedules.forEach(s => {
+                if (!s.isSimulated && s.eighthDay && !isNaN(parseInt(s.eighthDay)) && Number(s.eighthDay) > 0) {
+                    const isPaid = (typeof paymentsData !== 'undefined' ? paymentsData : window.paymentsData || []).some(p =>
+                        String(p.memberId) === String(m.id) &&
+                        String(p.year) === String(currentYear) &&
+                        String(p.month) === String(month) &&
+                        p.status === 'paid' &&
+                        (p.course && s.course && (p.course.includes(s.course) || s.course.includes(p.course)))
+                    );
+
+                    if (isPaid) {
+                        blueCounts[month]++;
+                    } else {
+                        monthCounts[month]++;
+                    }
+                }
+            });
+        }
+    });
+
     let html = `
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #0f172a; margin-bottom: 12px; padding: 10px 0;">
             <h2 style="margin: 0; font-size: 1.4rem; font-weight: 900;">${title} (${members.length}명)</h2>
@@ -520,7 +573,24 @@ function renderTable(container, title, members, id) {
                     <tr style="background: #f8fafc; border-bottom: 1.5px solid #0f172a;">
                         <th rowspan="2" style="border-right: 1.5px solid #0f172a; font-size: 0.75rem;">NO</th>
                         <th rowspan="2" style="border-right: 1.5px solid #0f172a; font-size: 0.75rem; text-align: left; padding: 10px 5px;">회원정보/과정</th>
-                        ${Array.from({ length: 12 }, (_, i) => `<th colspan="2" style="border-right: 1.5px solid #0f172a; border-bottom: 1px solid #cbd5e1; font-size: 0.8rem; padding: 5px;">${i + 1}월</th>`).join('')}
+                        ${Array.from({ length: 12 }, (_, i) => {
+                            const month = i + 1;
+                            const rCount = monthCounts[month];
+                            const bCount = blueCounts[month];
+                            let contentHtml = '';
+                            if (rCount > 0 || bCount > 0) {
+                                contentHtml = `
+                                    <div style="display:flex; justify-content:center; align-items:center; gap:2px;">
+                                        ${rCount > 0 ? `<span style="background:#ef4444; color:white; border-radius:10px; padding:1px 4px; font-size:0.6rem; min-width:12px; text-align:center;">${rCount}</span>` : `<span style="visibility:hidden; padding:1px 4px; font-size:0.6rem; min-width:12px;">0</span>`}
+                                        <span style="font-size:0.75rem; font-weight:800;">${month}월</span>
+                                        ${bCount > 0 ? `<span style="background:#2563eb; color:white; border-radius:10px; padding:1px 4px; font-size:0.6rem; min-width:12px; text-align:center;">${bCount}</span>` : `<span style="visibility:hidden; padding:1px 4px; font-size:0.6rem; min-width:12px;">0</span>`}
+                                    </div>
+                                `;
+                            } else {
+                                contentHtml = `<span style="font-size:0.75rem; font-weight:800;">${month}월</span>`;
+                            }
+                            return `<th colspan="2" style="border-right: 1.5px solid #0f172a; border-bottom: 1px solid #cbd5e1; padding: 2px;">${contentHtml}</th>`;
+                        }).join('')}
                         <th rowspan="2" style="font-size: 0.75rem;">비고</th>
                     </tr>
                     <tr style="background: #f8fafc; border-bottom: 1.5px solid #0f172a;">

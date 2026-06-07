@@ -77,6 +77,39 @@ function initMonthSelect() {
     };
 }
 
+function changeMonth(delta) {
+    if (currentMonth === 'all') {
+        currentMonth = new Date().getMonth() + 1;
+    } else {
+        currentMonth += delta;
+        if (currentMonth > 12) {
+            currentMonth = 1;
+            currentYear++;
+            localStorage.setItem('sejong_paidlist_currentYear', currentYear);
+        } else if (currentMonth < 1) {
+            currentMonth = 12;
+            currentYear--;
+            localStorage.setItem('sejong_paidlist_currentYear', currentYear);
+        }
+    }
+    localStorage.setItem('sejong_paidlist_currentMonth', currentMonth);
+    
+    const ySel = document.getElementById('yearSelect');
+    if (ySel) ySel.value = currentYear;
+    const mSel = document.getElementById('monthSelect');
+    if (mSel) mSel.value = currentMonth;
+    
+    renderPaidList();
+}
+
+function jumpToMonth(m) {
+    const mSel = document.getElementById('monthSelect');
+    if (mSel) {
+        mSel.value = m;
+        mSel.dispatchEvent(new Event('change'));
+    }
+}
+
 function renderPaidList() {
     const container = document.getElementById('paidListContainer');
     if (!container) return;
@@ -85,6 +118,39 @@ function renderPaidList() {
         const member = membersData.find(m => String(m.id) === String(p.memberId));
         return member && String(p.year) === String(currentYear) && (currentMonth === 'all' || String(p.month) === String(currentMonth)) && p.status === 'paid';
     }).sort((a, b) => new Date(b.updatedAt || b.date) - new Date(a.updatedAt || a.date));
+
+    // 월별 납부 수집
+    const monthCounts = {};
+    for (let i = 1; i <= 12; i++) monthCounts[i] = 0;
+
+    paymentsData.forEach(p => {
+        if (String(p.year) === String(currentYear) && p.status === 'paid') {
+            const member = membersData.find(m => String(m.id) === String(p.memberId));
+            if (member) {
+                const m = parseInt(p.month);
+                if (m >= 1 && m <= 12) monthCounts[m]++;
+            }
+        }
+    });
+
+    // 패널 업데이트
+    for (let i = 1; i <= 12; i++) {
+        const btn = document.getElementById(`monthPaidBtn-${i}`);
+        const badge = document.getElementById(`monthPaidBadge-${i}`);
+        if(btn) {
+            btn.classList.remove('is-current');
+            if (currentMonth === i) btn.classList.add('is-current');
+            
+            if(monthCounts[i] > 0) {
+                badge.textContent = monthCounts[i];
+                badge.style.display = 'inline-block';
+                btn.style.borderColor = currentMonth === i ? '#059669' : '#cbd5e1';
+            } else {
+                badge.style.display = 'none';
+                btn.style.borderColor = currentMonth === i ? '#059669' : '#e2e8f0';
+            }
+        }
+    }
 
     // Load Sync Data for Expected Dates
     let syncData = {};

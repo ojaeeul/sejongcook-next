@@ -167,7 +167,7 @@ async function recognizeAndAttend() {
         showStatus("매칭되는 회원을 찾는 중...", "#059669");
 
         let bestMatch = null;
-        let smallestDistance = 0.65; // Confidence matching threshold - increased for better recognition
+        let smallestDistance = parseFloat(localStorage.getItem('kiosk_sensitivity')) || 0.65; // Dynamic confidence threshold
 
         // Save current frame for the popup overlay instead of stored photo
         const context = canvas.getContext('2d');
@@ -396,6 +396,12 @@ async function processAttendance(inputNumOrObj, overridePhoto = null) {
         if (postRes.ok) {
             showStatus(`${member.name}님, 등원 완료!`, "#3b82f6");
             showFaceOverlay(overridePhoto || member.photo, member.name);
+            
+            // TTS Voice Feedback
+            if (localStorage.getItem('kiosk_voice_enabled') === 'true') {
+                speakTTS(`${member.name}님, 등원 완료되었습니다.`);
+            }
+            
             setTimeout(() => switchMode('home'), 2500);
         }
     } catch (e) {
@@ -409,9 +415,25 @@ function updateDisplay() { if (inputDisplay) inputDisplay.textContent = currentI
 
 async function startCamera() {
     try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 } });
+        const cameraId = localStorage.getItem('kiosk_camera_id');
+        const constraints = { video: { width: 1280, height: 720 } };
+        
+        if (cameraId) {
+            constraints.video.deviceId = { exact: cameraId };
+        }
+        
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
         if (video) video.srcObject = stream;
-    } catch (e) { showStatus("카메라 에러", "red"); }
+    } catch (e) {
+        console.error("Camera Error:", e);
+        // Fallback if specific camera fails
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 } });
+            if (video) video.srcObject = stream;
+        } catch(e2) {
+            showStatus("카메라 에러", "red");
+        }
+    }
 }
 
 function stopCamera() {
@@ -446,3 +468,19 @@ function updateKioskTime() {
 setInterval(updateKioskTime, 1000);
 updateKioskTime();
 document.addEventListener('DOMContentLoaded', () => { switchMode('home'); });
+
+
+
+window.speakTTS = function(text) {
+    if (!window.speechSynthesis) return;
+    
+    // Stop any currently playing audio
+    window.speechSynthesis.cancel();
+    
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'ko-KR';
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
+    
+    window.speechSynthesis.speak(utterance);
+};

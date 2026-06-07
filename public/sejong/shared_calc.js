@@ -17,6 +17,13 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
     if (courseFilter) {
         rowLogsRaw = rowLogsRaw.filter(l => {
             if (!l.course) return true; // global log
+            
+            if (isDualCourse) {
+                const lCourse = String(l.course || '').replace(/\s/g, '');
+                if (lCourse.includes('제과') || lCourse.includes('제빵')) return true;
+                if (lCourse.includes('양식기능사')) return true;
+            }
+            
             const cClean = String(l.course).replace(/\([^)]*\)/g, '').trim();
             const fClean = String(courseFilter).replace(/\([^)]*\)/g, '').trim();
             return cClean === fClean;
@@ -26,7 +33,9 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
     const uniqueRowLogsMap = new Map();
     rowLogsRaw.forEach(l => {
         const dateStr = l.date ? (l.date.includes('T') ? l.date.split('T')[0] : l.date) : (l.dateObj ? l.dateObj.toISOString().split('T')[0] : '');
-        uniqueRowLogsMap.set(`${dateStr}_${l.course || ''}`, { ...l, date: dateStr });
+        if (!uniqueRowLogsMap.has(dateStr)) {
+            uniqueRowLogsMap.set(dateStr, { ...l, date: dateStr });
+        }
     });
     const uniqueLogs = Array.from(uniqueRowLogsMap.values()).sort((a, b) => a.date.localeCompare(b.date));
 
@@ -207,46 +216,60 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
     let isSimulated = false;
 
     if (redBoxDates.size === 0 && currentMC && hasAnyAttendance) {
-        // [SIMULATION LOGIC] Calculate future scheduled payment date
-        let simDate = new Date(currentMC.year, currentMC.month - 1, 1);
-        let simRunningTotal = runningTotal;
-        let simCurrentCycleForMonth = currentCycleForMonth;
+        const now = new Date();
+        const limit = new Date(now.getFullYear(), now.getMonth() + 2, 0);
         
-        // Resolve course schedule
-        let courseName = '한식기능사';
-        if (courseFilter) {
-            courseName = String(courseFilter).replace(/\([^)]*\)/g, '').trim();
-        } else if (member.course) {
-            courseName = String(member.course).split(',')[0].replace(/\([^)]*\)/g, '').trim();
+        let simDate = new Date(currentMC.year, currentMC.month - 1, 1);
+        
+        let lastRecordDateObj = null;
+        if (uniqueLogs.length > 0) {
+            lastRecordDateObj = new Date(uniqueLogs[uniqueLogs.length - 1].date);
         }
         
-        let schedules = [1, 3]; // Default Mon/Wed
-        if (window.COURSE_SCHEDULES && window.COURSE_SCHEDULES[courseName]) {
-            schedules = window.COURSE_SCHEDULES[courseName];
+        if (lastRecordDateObj && lastRecordDateObj > simDate) {
+            simDate = new Date(lastRecordDateObj.getTime() + 86400000);
         }
 
-        while (simDate.getMonth() === currentMC.month - 1) {
-            // Adjust to local time string safely
-            const yyyy = simDate.getFullYear();
+        let simTotal = runningTotal;
+        let limitCounter = 0;
+        
+        while (simDate <= limit && limitCounter < 100) {
+            limitCounter++;
+            // Fix timezone issue when getting YYYY-MM-DD
+            const yy = simDate.getFullYear();
             const mm = String(simDate.getMonth() + 1).padStart(2, '0');
             const dd = String(simDate.getDate()).padStart(2, '0');
-            const dStr = `${yyyy}-${mm}-${dd}`;
+            const dateStr = `${yy}-${mm}-${dd}`;
             
+            const isHolidayInSys = window.holidaysData && window.holidaysData.some(h => h.date === dateStr);
+            const isNationalHoliday = window.KOREAN_HOLIDAYS_MAP && !!window.KOREAN_HOLIDAYS_MAP[dateStr];
+            const isHoliday = isHolidayInSys || isNationalHoliday;
             const dayOfWeek = simDate.getDay();
-            const isHolidayInSys = window.holidaysData ? window.holidaysData.some(h => h && h.date === dStr) : false;
-            const isNationalHoliday = window.KOREAN_HOLIDAYS_MAP ? !!window.KOREAN_HOLIDAYS_MAP[dStr] : false;
 
-            if (schedules.includes(dayOfWeek) && !isHolidayInSys && !isNationalHoliday) {
-                simRunningTotal += attendanceIncrement;
-                simRunningTotal = Math.round(simRunningTotal * 10) / 10;
-                let newCycle = getCycle(simRunningTotal);
-                if (isNaN(newCycle)) newCycle = 0;
+            let isValidDay = false;
+            if (courseFilter) {
+                const cleanFilter = courseFilter.replace(/\([^)]*\)/g, '').trim();
+                const schedule = window.COURSE_SCHEDULES ? window.COURSE_SCHEDULES[cleanFilter] : null;
+                if (schedule) {
+                    if (schedule.includes(dayOfWeek)) isValidDay = true;
+                } else {
+                    if (dayOfWeek !== 0) isValidDay = true;
+                }
+            } else {
+                if (dayOfWeek !== 0) isValidDay = true;
+            }
+
+            if (isValidDay && !isHoliday) {
+                const prevSimCycle = getCycle(simTotal);
+                simTotal += attendanceIncrement;
+                const newSimCycle = getCycle(simTotal);
                 
-                if (newCycle > simCurrentCycleForMonth) {
-                    redBoxDates.add(dStr);
-                    simCurrentCycleForMonth = newCycle;
-                    isSimulated = true;
-                    break; // Just find the first scheduled payment in this simulated month
+                if (newSimCycle > prevSimCycle) {
+                    if (simDate.getFullYear() === targetYear && (simDate.getMonth() + 1) === targetMonth) {
+                        redBoxDates.add(dateStr);
+                        isSimulated = true;
+                    }
+                    break; 
                 }
             }
             simDate.setDate(simDate.getDate() + 1);

@@ -479,7 +479,14 @@ function getMemberEighthDayInMonth(memberId, year, month, courseFilter = null) {
 
     // [신규] 시뮬레이션에서도 동일한 증가분 적용을 위해 최상단에서 정의
     const memberObj = (window.membersData || []).find(m => String(m.id) === String(memberId));
-    const isDualBakery = (courseFilter && courseFilter.replace(/\s/g, '').includes('제과제빵')) || (!courseFilter && memberObj && memberObj.course && memberObj.course.replace(/\s/g, '').includes('제과제빵'));
+    let finalCourse = memberObj ? memberObj.course : '';
+    const adjKeys = Object.keys(allAdjs).sort();
+    for (let k of adjKeys) {
+        if (allAdjs[k] && allAdjs[k].courseOverride) {
+            finalCourse = allAdjs[k].courseOverride;
+        }
+    }
+    const isDualBakery = (courseFilter && courseFilter.replace(/\s/g, '').includes('제과제빵')) || (!courseFilter && finalCourse && finalCourse.replace(/\s/g, '').includes('제과제빵'));
     const incAmountVal = isDualBakery ? 1.0 : 1.0;
 
     let milestoneNets = [0];
@@ -507,11 +514,8 @@ function getMemberEighthDayInMonth(memberId, year, month, courseFilter = null) {
         const isTardy = r.status === 'tardy' || r.status === 'late' || strStatus.includes('지각') || strStatus.includes('△');
         const isFirstLast = strStatus.includes('첫') || strStatus.includes('종료') || strStatus === '[' || strStatus === ']';
         const isExtension = r.status === 'extension' || strStatus.startsWith('연') || strStatus.includes('연장') || strStatus.startsWith('E');
-        const isPast = r.yearNum < year || (r.yearNum === year && r.monthNum < month);
-        const isPresentPast = r.status === 'present' || strStatus.startsWith('O') || strStatus.startsWith('o') || strStatus.startsWith('O^') || strStatus.startsWith('o^') || isNumericPresent;
-        const isRegularPast = isPresentPast || isAbsent || isEarly || isTardy || isFirstLast;
-        const isRegularCurrent = r.status === 'present' || isNumericPresent || isAbsent || isEarly || isTardy || isFirstLast;
-        const isRegular = isPast ? isRegularPast : isRegularCurrent;
+        const isPresentExt = r.status === 'present' || strStatus.startsWith('O') || strStatus.startsWith('o') || strStatus.startsWith('O^') || strStatus.startsWith('o^');
+        const isRegular = isPresentExt || isNumericPresent || isAbsent || isEarly || isTardy || isFirstLast;
 
         const prevNet = rollingTotal;
         if ((isMarker || isRegular || isExtension) && (r.yearNum < year || (r.yearNum === year && r.monthNum <= month))) {
@@ -550,50 +554,7 @@ function getMemberEighthDayInMonth(memberId, year, month, courseFilter = null) {
         }
     }
 
-    // --- [신규] 미래 예정일 시뮬레이션 (ledger.js와 동일한 로직) ---
-    if (!eighthDay) {
-        let simDate;
-        if (globalLastRecordDateForSim) {
-            simDate = new Date(globalLastRecordDateForSim.getTime() + (24 * 60 * 60 * 1000));
-        } else {
-            simDate = new Date(year, month - 2, 1);
-        }
-        const limitDate = new Date(3000, 11, 31);
-        let currentNetSim = rollingTotal;
-        let foundSimulatedDay = null;
-
-        while (simDate <= limitDate) {
-            const dateStr = simDate.toISOString().split('T')[0];
-            const dayOfWeek = simDate.getDay();
-            const isHolidayInSys = holidaysData.some(h => h.date === dateStr);
-            const isNationalHoliday = !!KOREAN_HOLIDAYS_MAP[dateStr];
-
-            // 요일 체크
-            let isCourseDay = true;
-            if (courseFilter && COURSE_SCHEDULES[courseFilter]) {
-                isCourseDay = COURSE_SCHEDULES[courseFilter].includes(dayOfWeek);
-            }
-
-            if (isCourseDay && !isHolidayInSys && !isNationalHoliday && dayOfWeek !== 0) {
-                const prevCycleSim = getCycle(currentNetSim, isDualBakery);
-                currentNetSim += incAmountVal;
-                currentNetSim = Math.round(currentNetSim * 10) / 10;
-
-                if (getCycle(currentNetSim, isDualBakery) > prevCycleSim) {
-                    if (simDate.getFullYear() === year && (simDate.getMonth() + 1) === month) {
-                        foundSimulatedDay = simDate.getDate();
-                        eighthMonth = simDate.getMonth() + 1;
-                        eighthDay = { year, month, day: foundSimulatedDay };
-                        break;
-                    }
-                    if (simDate > new Date(year, month - 1, 31)) {
-                        break;
-                    }
-                }
-            }
-            simDate.setDate(simDate.getDate() + 1);
-        }
-    }
+    // --- [신규] 미래 예정일 시뮬레이션 제거 (원장님 요청: 실제 출석 도장이 있을 때만 인정) ---
 
     // sheet.html과 동일하게 주기(cycle)가 도달한 횟수만큼 차감하여 시각적 진행률을 표시합니다.
     const getProgressInfo = (currentNet) => {
@@ -614,48 +575,55 @@ function getMemberEighthDayInMonth(memberId, year, month, courseFilter = null) {
 
     // [신규 기믹]: User request to strictly mirror sheet.html dates
     try {
+        // [긴급 캐시 무효화] 과거에 시뮬레이션으로 오염된 로컬 스토리지를 강제 삭제합니다.
+        if (!localStorage.getItem('sejong_tuition_strict_stamp_fix_2')) {
+            localStorage.removeItem('sejong_ledger_sync');
+            localStorage.setItem('sejong_tuition_strict_stamp_fix_2', 'true');
+        }
+
         const syncData = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
-        const syncKey = `${memberId}_${year}_${month}_${courseFilter || 'all'}`;
+        const cleanFilter = courseFilter ? courseFilter.replace(/\([^)]*\)/g, '').trim() : 'all';
 
         // 1. Real milestone from sheet.html
-        if (syncData[syncKey]) {
-            const val = syncData[syncKey];
-            const days = Array.isArray(val) ? val : [val];
-            if (days.length > 0) {
-                eighthDay = { year, month, day: days[0] };
-                // Ensure it's in allMilestones
-                if (!allMilestones.some(ms => ms.year === year && ms.month === month && ms.day === days[0])) {
-                    allMilestones.push(eighthDay);
+        Object.keys(syncData).forEach(k => {
+            if (k.includes('_simulated')) return;
+            const parts = k.split('_');
+            if (parts.length >= 4 && parts[0] === String(memberId) && parseInt(parts[1]) === year && parseInt(parts[2]) === month) {
+                const courseFull = parts.slice(3).join('_');
+                const cleanSyncCourse = courseFull === 'all' ? 'all' : courseFull.replace(/\([^)]*\)/g, '').trim();
+                
+                if (cleanFilter === 'all' || cleanSyncCourse === cleanFilter || (cleanFilter === '미지정' && courseFull === 'all')) {
+                    const val = syncData[k];
+                    const days = Array.isArray(val) ? val : [val];
+                    if (days.length > 0) {
+                        eighthDay = { year, month, day: parseInt(days[0], 10) };
+                        if (!allMilestones.some(ms => ms.year === year && ms.month === month && ms.day === eighthDay.day)) {
+                            allMilestones.push(eighthDay);
+                        }
+                    }
                 }
             }
-        }
-        
-        // 2. Simulated milestone from sheet.html
-        if (syncData[syncKey + '_simulated']) {
-            const valSim = syncData[syncKey + '_simulated'];
-            const daysSim = Array.isArray(valSim) ? valSim : [valSim];
-            if (daysSim.length > 0) {
-                eighthDay = { year, month, day: daysSim[0] };
-            }
-        }
-        
+        });
+
         // 3. Next month real milestone
         const nextM = month === 12 ? 1 : month + 1;
         const nextY = month === 12 ? year + 1 : year;
-        const nextKey = `${memberId}_${nextY}_${nextM}_${courseFilter || 'all'}`;
         
-        if (syncData[nextKey]) {
-            const val = syncData[nextKey];
-            const days = Array.isArray(val) ? val : [val];
-            if (days.length > 0) nextEighthDay = { year: nextY, month: nextM, day: days[0] };
-        }
-        
-        // 4. Next month simulated milestone
-        if (syncData[nextKey + '_simulated']) {
-            const valSimNext = syncData[nextKey + '_simulated'];
-            const daysSimNext = Array.isArray(valSimNext) ? valSimNext : [valSimNext];
-            if (daysSimNext.length > 0) nextEighthDay = { year: nextY, month: nextM, day: daysSimNext[0] };
-        }
+        Object.keys(syncData).forEach(k => {
+            if (k.includes('_simulated')) return;
+            const parts = k.split('_');
+            if (parts.length >= 4 && parts[0] === String(memberId) && parseInt(parts[1]) === nextY && parseInt(parts[2]) === nextM) {
+                const courseFull = parts.slice(3).join('_');
+                const cleanSyncCourse = courseFull === 'all' ? 'all' : courseFull.replace(/\([^)]*\)/g, '').trim();
+                
+                if (cleanFilter === 'all' || cleanSyncCourse === cleanFilter || (cleanFilter === '미지정' && courseFull === 'all')) {
+                    const val = syncData[k];
+                    const days = Array.isArray(val) ? val : [val];
+                    if (days.length > 0) nextEighthDay = { year: nextY, month: nextM, day: parseInt(days[0], 10) };
+                }
+            }
+        });
+
 
         // 5. Inject all past milestones from syncData to ensure accurate 'unpaid' status
         Object.keys(syncData).forEach(key => {
@@ -666,8 +634,9 @@ function getMemberEighthDayInMonth(memberId, year, month, courseFilter = null) {
                 const sYear = parseInt(parts[1], 10);
                 const sMonth = parseInt(parts[2], 10);
                 const sCourse = parts.slice(3).join('_');
+                const cleanSCourse = sCourse === 'all' ? 'all' : sCourse.replace(/\([^)]*\)/g, '').trim();
                 
-                if (sMemberId == memberId && (sCourse === (courseFilter || 'all'))) {
+                if (sMemberId == memberId && (cleanFilter === 'all' || cleanSCourse === cleanFilter || (cleanFilter === '미지정' && sCourse === 'all'))) {
                     if (sYear < year || (sYear === year && sMonth <= month + 1)) {
                         const val = syncData[key];
                         const days = Array.isArray(val) ? val : [val];
@@ -700,11 +669,8 @@ function getMemberEighthDayInMonth(memberId, year, month, courseFilter = null) {
         const isTardy = r.status === 'tardy' || strStatus.includes('지각') || strStatus.includes('△');
         const isFirstLast = strStatus.includes('첫') || strStatus.includes('종료') || strStatus === '[' || strStatus === ']';
         const isExtension = r.status === 'extension' || strStatus.startsWith('연') || strStatus.includes('연장') || strStatus.startsWith('E');
-        const isPast = r.yearNum < year || (r.yearNum === year && r.monthNum < month);
-        const isPresentPast = r.status === 'present' || strStatus.startsWith('O') || strStatus.startsWith('o') || strStatus.startsWith('O^') || strStatus.startsWith('o^') || isNumericPresent;
-        const isRegularPast = isPresentPast || isAbsent || isEarly || isTardy || isFirstLast;
-        const isRegularCurrent = r.status === 'present' || isNumericPresent || isAbsent || isEarly || isTardy || isFirstLast;
-        const isRegular = isPast ? isRegularPast : isRegularCurrent;
+        const isPresentExt = r.status === 'present' || strStatus.startsWith('O') || strStatus.startsWith('o') || strStatus.startsWith('O^') || strStatus.startsWith('o^');
+        const isRegular = isPresentExt || isNumericPresent || isAbsent || isEarly || isTardy || isFirstLast;
 
         if (isMarker || isRegular || isExtension) {
             globalLastRecordDate = r.dateObj;
@@ -818,7 +784,14 @@ function renderTable() {
         if (allCoursesDeleted && m.course) return; // Show in trash tab only
 
         // Active views: only show courses WITHOUT [삭제]
-        const myCourses = (m.course || '').split(',').map(c => c.trim()).filter(c => c !== '' && !c.includes('[삭제]'));
+        let myCourses = (m.course || '').split(',').map(c => c.trim()).filter(c => c !== '' && !c.includes('[삭제]'));
+        
+        const hasJeggwa = myCourses.some(c => c.includes('제과') && !c.includes('제과제빵'));
+        const hasJeppang = myCourses.some(c => c.includes('제빵') && !c.includes('제과제빵'));
+        if (hasJeggwa && hasJeppang) {
+            myCourses = myCourses.filter(c => !c.includes('제과') && !c.includes('제빵'));
+            myCourses.push('제과제빵기능사');
+        }
         if (myCourses.length === 0) {
             myCourses.push('');
         }
@@ -862,7 +835,15 @@ function renderTable() {
                 let paidMilestonesCount = 0;
                 const normalizeCourse = (c) => (!c || c === 'null') ? null : String(c).trim();
 
-                const isDualBakeryLocal = (courseNameOnly && courseNameOnly.replace(/\s/g, '').includes('제과제빵')) || (!courseNameOnly && m.course && m.course.replace(/\s/g, '').includes('제과제빵'));
+                let localFinalCourse = m.course || '';
+                const mAdjs = GLOBAL_DATA_ADJUSTMENTS[String(m.id)] || {};
+                const mAdjKeys = Object.keys(mAdjs).sort();
+                for (let k of mAdjKeys) {
+                    if (mAdjs[k] && mAdjs[k].courseOverride) {
+                        localFinalCourse = mAdjs[k].courseOverride;
+                    }
+                }
+                const isDualBakeryLocal = (courseNameOnly && courseNameOnly.replace(/\s/g, '').includes('제과제빵')) || (!courseNameOnly && localFinalCourse && localFinalCourse.replace(/\s/g, '').includes('제과제빵'));
                 const targetCount = isDualBakeryLocal ? 17 : 9;
                 
                 let remainingForLoop = currentProgressObj.count;
@@ -1463,21 +1444,45 @@ function closeMessageModal() {
     }
 }
 
-function openTuitionSettings() {
+async function openTuitionSettings() {
     const modal = document.getElementById('tuitionSettingModal');
     if (modal) {
-        document.getElementById('fee_all').value = (courseFees['all'] || DEFAULT_PRICE).toLocaleString();
-        document.getElementById('fee_hansik').value = (courseFees['한식기능사'] || 200000).toLocaleString();
-        document.getElementById('fee_yangsik').value = (courseFees['양식기능사'] || 200000).toLocaleString();
-        document.getElementById('fee_ilsik').value = (courseFees['일식기능사'] || 200000).toLocaleString();
-        document.getElementById('fee_jungsik').value = (courseFees['중식기능사'] || 200000).toLocaleString();
-        document.getElementById('fee_jegwa').value = (courseFees['제과기능사'] || 200000).toLocaleString();
-        document.getElementById('fee_jebang').value = (courseFees['제빵기능사'] || 200000).toLocaleString();
-        document.getElementById('fee_jegwajebang').value = (courseFees['제과제빵기능사'] || 200000).toLocaleString();
-        document.getElementById('fee_bok-eo').value = (courseFees['복어기능사'] || 200000).toLocaleString();
-        document.getElementById('fee_san-eop').value = (courseFees['산업기사'] || 200000).toLocaleString();
-        document.getElementById('fee_gajeong').value = (courseFees['가정요리'] || 200000).toLocaleString();
-        document.getElementById('fee_brunch').value = (courseFees['브런치'] || 200000).toLocaleString();
+        const container = document.getElementById('tuitionSettingsContainer');
+        if (container) {
+            container.innerHTML = '<div style="padding:20px;text-align:center;">로딩 중...</div>';
+            
+            try {
+                const res = await fetch(getFetchUrl('settings'));
+                const data = await res.json();
+                let settingsObj = Array.isArray(data) && data.length > 0 ? data[0] : (data.key === "settings" ? data.value : data);
+                if (!settingsObj) settingsObj = {};
+                
+                const courses = settingsObj.courses || ['한식기능사', '양식기능사', '일식기능사', '중식기능사', '제과기능사', '제빵기능사', '제과제빵기능사', '복어기능사', '산업기사', '가정요리', '브런치'];
+                const courseFeesObj = settingsObj.courseFees || {};
+                
+                let html = `
+                    <div class="form-group">
+                        <label>기본 수강료</label>
+                        <input type="text" id="fee_all" value="${(courseFeesObj['all'] || DEFAULT_PRICE).toLocaleString()}" class="text-right" title="기본 수강료" placeholder="금액 입력">
+                    </div>
+                `;
+                
+                courses.forEach((c, idx) => {
+                    const fee = (courseFeesObj[c] || DEFAULT_PRICE).toLocaleString();
+                    html += `
+                        <div class="form-group">
+                            <label>${c}</label>
+                            <input type="text" id="fee_dyn_${idx}" data-course="${c}" value="${fee}" class="text-right" title="${c} 수강료" placeholder="금액 입력">
+                        </div>
+                    `;
+                });
+                
+                container.innerHTML = html;
+            } catch(e) {
+                console.error("Settings load error:", e);
+                container.innerHTML = '<div style="color:red;">설정을 불러오는데 실패했습니다.</div>';
+            }
+        }
         modal.classList.remove('hidden');
         modal.style.display = 'flex';
     }
@@ -1493,22 +1498,19 @@ function closeTuitionSettings() {
 
 async function saveTuitionSettings() {
     courseFees['all'] = parseInt(document.getElementById('fee_all').value.replace(/,/g, '')) || DEFAULT_PRICE;
-    courseFees['한식기능사'] = parseInt(document.getElementById('fee_hansik').value.replace(/,/g, '')) || DEFAULT_PRICE;
-    courseFees['양식기능사'] = parseInt(document.getElementById('fee_yangsik').value.replace(/,/g, '')) || DEFAULT_PRICE;
-    courseFees['일식기능사'] = parseInt(document.getElementById('fee_ilsik').value.replace(/,/g, '')) || DEFAULT_PRICE;
-    courseFees['중식기능사'] = parseInt(document.getElementById('fee_jungsik').value.replace(/,/g, '')) || DEFAULT_PRICE;
-    courseFees['제과기능사'] = parseInt(document.getElementById('fee_jegwa').value.replace(/,/g, '')) || DEFAULT_PRICE;
-    courseFees['제빵기능사'] = parseInt(document.getElementById('fee_jebang').value.replace(/,/g, '')) || DEFAULT_PRICE;
-    courseFees['제과제빵기능사'] = parseInt(document.getElementById('fee_jegwajebang').value.replace(/,/g, '')) || DEFAULT_PRICE;
-    courseFees['복어기능사'] = parseInt(document.getElementById('fee_bok-eo').value.replace(/,/g, '')) || DEFAULT_PRICE;
-    courseFees['산업기사'] = parseInt(document.getElementById('fee_san-eop').value.replace(/,/g, '')) || DEFAULT_PRICE;
-    courseFees['가정요리'] = parseInt(document.getElementById('fee_gajeong').value.replace(/,/g, '')) || DEFAULT_PRICE;
-    courseFees['브런치'] = parseInt(document.getElementById('fee_brunch').value.replace(/,/g, '')) || DEFAULT_PRICE;
+    
+    const dynamicInputs = document.querySelectorAll('#tuitionSettingsContainer input[id^="fee_dyn_"]');
+    dynamicInputs.forEach(input => {
+        const cName = input.getAttribute('data-course');
+        courseFees[cName] = parseInt(input.value.replace(/,/g, '')) || DEFAULT_PRICE;
+    });
 
     try {
         const currentSettingsRes = await fetch(getFetchUrl('settings'));
         let settingsArr = await currentSettingsRes.json();
-        let settingsObj = Array.isArray(settingsArr) && settingsArr.length > 0 ? settingsArr[0] : { id: Date.now().toString() };
+        let settingsObj = Array.isArray(settingsArr) && settingsArr.length > 0 ? settingsArr[0] : (settingsArr.key === "settings" ? settingsArr.value : settingsArr);
+        if (!settingsObj) settingsObj = { id: Date.now().toString() };
+        
         settingsObj.courseFees = courseFees;
 
         await fetch(getFetchUrl('settings', true), {

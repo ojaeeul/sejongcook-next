@@ -39,7 +39,7 @@
                 </div>
                 <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">수강료</div>
                 <div class="nav-sub-menu show">
-                    <a href="tuition.html" class="nav-item">수강료 관리</a>
+                    <a href="tuition.html?v=1780849479" class="nav-item">수강료 관리</a>
                     <a href="ledger.html" class="nav-item">수강료 납부대장</a>
                     <a href="paid_list.html" class="nav-item">납부완료 명단</a>
                 </div>
@@ -148,9 +148,13 @@
                 </div>
                 <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">기타</div>
                 <div class="nav-sub-menu show">
-                    <a href="javascript:void(0)" onclick="openSettingsModal()" class="nav-item">
+                    <a href="class_days_admin.html" id="navClassDaysAdmin" class="nav-item">
                         <span class="material-icons" style="font-size: 1.2rem; margin-right: 8px;">settings</span>
                         수업 요일 설정
+                    </a>
+                    <a href="course_time_admin.html" id="navCourseTimeAdmin" class="nav-item">
+                        <span class="material-icons" style="font-size: 1.2rem; margin-right: 8px;">list_alt</span>
+                        과목/시간 설정
                     </a>
                     <a href="index.html?filter=archive" id="navArchive" class="nav-item">수료생 보관함</a>
                     <a href="index.html?filter=trash" id="navTrash" class="nav-item">휴지통</a>
@@ -159,9 +163,10 @@
                 <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">학원문자</div>
                 <div class="nav-sub-menu show">
                     <a href="attendance_daily.html" id="navDailyAttendance" class="nav-item">일일 출석부</a>
-                    <a href="sms.html" id="navSms" class="nav-item">문자 발송</a>
+                    <a href="sms.html?v=1780849502" id="navSms" class="nav-item">문자 발송</a>
                 </div>
                 <a href="monitor.html?v=1780796013_211823" target="_blank" class="nav-item highlight">키오스크 모니터</a>
+                <a href="kiosk_admin.html" id="navKioskAdmin" class="nav-item">키오스크 설정</a>
             </nav>
         </aside>
 
@@ -284,110 +289,13 @@
 
                         <hr class="form-divider">
 
-                        <!-- 6. Course Selection (Compact Grid: 2 Lines) -->
+                        <!-- 6. Course Selection (Dynamic) -->
                         <div class="form-group">
                             <label class="section-label">수강 과목 및 시간</label>
-                            <div class="course-grid-compact">
-                                <div class="course-item">
-                                    <label><input type="checkbox" name="course_select" value="한식기능사"> 한식</label>
-                                    <select name="time_select" title="시간 선택">
-                                        <option value="10:00">오전 10:00</option>
-                                        <option value="12:00">오전 12:00</option>
-                                        <option value="17:00">오후 05:00</option>
-                                        <option value="19:00">오후 07:00</option>
-                                    </select>
-                                </div>
-                                <div class="course-item">
-                                    <label><input type="checkbox" name="course_select" value="양식기능사"> 양식</label>
-                                    <select name="time_select" title="시간 선택">
-                                        <option value="10:00">오전 10:00</option>
-                                        <option value="12:00">오전 12:00</option>
-                                        <option value="17:00">오후 05:00</option>
-                                        <option value="19:00">오후 07:00</option>
-                                    </select>
-                                </div>
-                                <div class="course-item">
-                                    <label><input type="checkbox" name="course_select" value="일식기능사"> 일식</label>
-                                    <select name="time_select" title="시간 선택">
-                                        <option value="10:00">오전 10:00</option>
-                                        <option value="12:00">오전 12:00</option>
-                                        <option value="17:00">오후 05:00</option>
-                                        <option value="19:00">오후 07:00</option>
-                                    </select>
-                                </div>
-                                <div class="course-item">
-                                    <label><input type="checkbox" name="course_select" value="중식기능사"> 중식</label>
-                                    <select name="time_select" title="시간 선택">
-                                        <option value="10:00">오전 10:00</option>
-                                        <option value="12:00">오전 12:00</option>
-                                        <option value="17:00">오후 05:00</option>
-                                        <option value="19:00">오후 07:00</option>
-                                    </select>
-                                </div>
-                                <div class="course-item">
-                                    <label><input type="checkbox" name="course_select" value="복어기능사"> 복어</label>
-                                    <select name="time_select" title="시간 선택">
-                                        <option value="10:00">오전 10:00</option>
-                                        <option value="12:00">오전 12:00</option>
-                                        <option value="17:00">오후 05:00</option>
-                                        <option value="19:00">오후 07:00</option>
-                                    </select>
-                                </div>
-                                <div class="course-item">
-                                    <label><input type="checkbox" name="course_select" value="산업기사"> 산업기사</label>
-                                    <select name="time_select" title="시간 선택">
-                                        <option value="10:00">오전 10:00</option>
-                                        <option value="12:00">오전 12:00</option>
-                                        <option value="17:00">오후 05:00</option>
-                                        <option value="19:00">오후 07:00</option>
-                                    </select>
-                                </div>
-                                <div class="course-item">
-                                    <label><input type="checkbox" name="course_select" value="제과제빵기능사"> 제과제빵기능사</label>
-                                    <select name="time_select" title="시간 선택">
-                                        <option value="10:00">오전 10:00</option>
-                                        <option value="12:00">오전 12:00</option>
-                                        <option value="17:00">오후 05:00</option>
-                                        <option value="19:00">오후 07:00</option>
-                                    </select>
-                                </div>
-                                <div class="course-item">
-                                    <label><input type="checkbox" name="course_select" value="제과기능사"> 제과</label>
-                                    <select name="time_select" title="시간 선택">
-                                        <option value="10:00">오전 10:00</option>
-                                        <option value="12:00">오전 12:00</option>
-                                        <option value="17:00">오후 05:00</option>
-                                        <option value="19:00">오후 07:00</option>
-                                    </select>
-                                </div>
-                                <div class="course-item">
-                                    <label><input type="checkbox" name="course_select" value="제빵기능사"> 제빵</label>
-                                    <select name="time_select" title="시간 선택">
-                                        <option value="10:00">오전 10:00</option>
-                                        <option value="12:00">오전 12:00</option>
-                                        <option value="17:00">오후 05:00</option>
-                                        <option value="19:00">오후 07:00</option>
-                                    </select>
-                                </div>
-                                <div class="course-item">
-                                    <label><input type="checkbox" name="course_select" value="가정요리"> 가정요리</label>
-                                    <select name="time_select" title="시간 선택">
-                                        <option value="10:00">오전 10:00</option>
-                                        <option value="12:00">오전 12:00</option>
-                                        <option value="17:00">오후 05:00</option>
-                                        <option value="19:00">오후 07:00</option>
-                                    </select>
-                                </div>
-                                <div class="course-item">
-                                    <label><input type="checkbox" name="course_select" value="브런치"> 브런치</label>
-                                    <select name="time_select" title="시간 선택">
-                                        <option value="10:00">오전 10:00</option>
-                                        <option value="12:00">오전 12:00</option>
-                                        <option value="17:00">오후 05:00</option>
-                                        <option value="19:00">오후 07:00</option>
-                                    </select>
-                                </div>
-                            </div>
+                            <div id="register_course_container"></div>
+                            <button type="button" onclick="addRegisterCourseInput()" style="margin-top: 10px; padding: 10px; border-radius: 8px; background: #3b82f6; color: white; border: none; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px; width: 100%; justify-content: center;">
+                                <span class="material-icons">add</span> 과정 추가
+                            </button>
                         </div>
 
                         <!-- 7. Notes & Submit -->
