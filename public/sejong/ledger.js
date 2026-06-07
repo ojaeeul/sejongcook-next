@@ -55,11 +55,12 @@ window.targetMemberId = null;
 window.updateMemberField = async function(memberId, field, value) {
     try {
         const m = membersData.find(m => String(m.id) === String(memberId));
-        if (m) m[field] = value;
-        await fetch(`/api/sejong/members/${memberId}`, {
-            method: 'PUT',
+        if (!m) return;
+        m[field] = value;
+        await fetch(getFetchUrl('members', true), {
+            method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ [field]: value })
+            body: JSON.stringify(m)
         });
     } catch(e) { console.error(e); }
 };
