@@ -954,6 +954,25 @@ function renderTable() {
                 rowStatus = payment.status;
             }
 
+            // [추가] 예약된 결제일이 이번 달인 경우 '수강중' 대신 '미납'으로 표시
+            // (출석 횟수 미달로 아직 발동 안 된 결제건도 이번 달이면 미납 상태로 표시)
+            if (rowStatus === 'enrolled' && scheduledDate &&
+                scheduledDate.year === window.currentState.year &&
+                scheduledDate.month === window.currentState.month) {
+                rowStatus = 'unpaid';
+                isDueThisMonth = true;
+                if (!imminentCourses.some(c => c.date && c.date.day === scheduledDate.day)) {
+                    imminentCourses.push({
+                        name: courseNameOnly,
+                        date: scheduledDate,
+                        fee: courseFee,
+                        isOverdue: false
+                    });
+                    courseProgressList.push({ name: courseNameOnly + '(미납) ' + scheduledDate.month + '/' + scheduledDate.day, count: targetCount, target: targetCount });
+                    totalDueAmount += courseFee;
+                }
+            }
+
             // 수료생/휴지통은 모든 탭에서 완전히 제외 (카운트 및 목록 표시 안 함)
             if (rowStatus === 'completed' || rowStatus === 'trash') return;
 
