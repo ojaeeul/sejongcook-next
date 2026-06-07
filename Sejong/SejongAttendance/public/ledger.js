@@ -755,6 +755,8 @@ function openEditModal(memberId) {
         editForm.address_detail.value = member.address_detail || '';
         editForm.phone.value = member.phone || '';
         editForm.phone_guardian.value = member.phone_guardian || '';
+        
+        // Parse Start Date (20YY-MM-DD)
         if (member.start_date) {
             const parts = member.start_date.split('-');
             if (parts.length === 3) {
@@ -763,27 +765,35 @@ function openEditModal(memberId) {
                 editForm.start_dd.value = parts[2];
             }
         } else {
-            editForm.start_yy.value = ''; editForm.start_mm.value = ''; editForm.start_dd.value = '';
+            editForm.start_yy.value = '';
+            editForm.start_mm.value = '';
+            editForm.start_dd.value = '';
         }
 
+        // Handle Multiple Courses
         const courseContainer = document.getElementById('edit_course_container');
         if (courseContainer) {
-            courseContainer.innerHTML = '';
+            courseContainer.innerHTML = ''; // Clear previous
             const courses = (member.course || '').split(',');
             let hasCourse = false;
             courses.forEach(c => {
-                if (c.trim()) { addCourseInput(c); hasCourse = true; }
+                if (c.trim()) {
+                    addCourseInput(c);
+                    hasCourse = true;
+                }
             });
             if (!hasCourse) addCourseInput('');
         }
 
+        // Handle Remarks Type
         const type = member.type === 'student' ? 'student' : 'general';
         const remarkSelect = document.getElementById('edit_remark_type');
         if (remarkSelect) {
             remarkSelect.value = type;
-            remarkSelect.dispatchEvent(new Event('change'));
+            remarkSelect.dispatchEvent(new Event('change')); // Trigger toggle
         }
 
+        // Split remarks or just load existing fields if they exist
         editForm.school.value = member.school || '';
         editForm.grade.value = member.grade || '';
         editForm.job.value = member.job || '';
@@ -803,59 +813,78 @@ function closeEditModal() {
     }
 }
 
-function addCourseInput(initialValue = '') {
+function addCourseInput(value = '') {
     const container = document.getElementById('edit_course_container');
     if (!container) return;
 
-    const div = document.createElement('div');
-    div.className = 'flex-group gap-5 mb-5 course-input-row';
-    
-    let courseName = initialValue;
+    let courseName = '';
     let courseTime = '';
-    const match = initialValue.match(/^(.*?)\((.*?)\)$/);
+
+    // Parse '과정명(시간)' format
+    const match = value.match(/(.*?)(?:\((.*?)\))?$/);
     if (match) {
-        courseName = match[1].trim();
-        courseTime = match[2].trim();
+        courseName = match[1] ? match[1].trim() : '';
+        courseTime = match[2] ? match[2].trim() : '';
     }
 
-    div.innerHTML = `
-        <select class="flex-2 p-8 border-light rounded course-edit-name" title="과정명 선택">
-            <option value="">직접입력</option>
-            <option value="한식" ${courseName === '한식' ? 'selected' : ''}>한식</option>
-            <option value="양식" ${courseName === '양식' ? 'selected' : ''}>양식</option>
-            <option value="일식" ${courseName === '일식' ? 'selected' : ''}>일식</option>
-            <option value="중식" ${courseName === '중식' ? 'selected' : ''}>중식</option>
-            <option value="제과" ${courseName === '제과' ? 'selected' : ''}>제과</option>
-            <option value="제빵" ${courseName === '제빵' ? 'selected' : ''}>제빵</option>
-            <option value="바리스타" ${courseName === '바리스타' ? 'selected' : ''}>바리스타</option>
-            <option value="원데이" ${courseName === '원데이' ? 'selected' : ''}>원데이</option>
-        </select>
-        <input type="text" value="${courseName}" class="flex-2 course-edit-name-custom ${courseName && ['한식', '양식', '일식', '중식', '제과', '제빵', '바리스타', '원데이'].includes(courseName) ? 'hidden' : ''}" placeholder="과정명 직접입력">
-        <select class="flex-1 p-8 border-light rounded course-edit-time" title="시간 선택">
-            <option value="">직접입력</option>
-            <option value="10:00" ${courseTime === '10:00' ? 'selected' : ''}>10:00</option>
-            <option value="14:00" ${courseTime === '14:00' ? 'selected' : ''}>14:00</option>
-            <option value="18:30" ${courseTime === '18:30' ? 'selected' : ''}>18:30</option>
-        </select>
-        <input type="text" value="${courseTime}" class="flex-1 course-edit-time-custom ${courseTime && ['10:00', '14:00', '18:30'].includes(courseTime) ? 'hidden' : ''}" placeholder="시간">
-        <button type="button" class="btn-danger p-8" onclick="removeCourseInput(this)" title="과정 삭제">
-            <span class="material-icons fs-16">remove</span>
-        </button>
-    `;
-    
-    const nameSelect = div.querySelector('.course-edit-name');
-    const nameCustom = div.querySelector('.course-edit-name-custom');
-    nameSelect.addEventListener('change', (e) => {
-        if (e.target.value === "") { nameCustom.classList.remove('hidden'); nameCustom.value = ''; }
-        else { nameCustom.classList.add('hidden'); nameCustom.value = e.target.value; }
+    const div = document.createElement('div');
+    div.className = 'course-input-row';
+    div.style.cssText = 'display: flex; gap: 5px; margin-bottom: 5px;';
+
+    const courseSelect = document.createElement('select');
+    courseSelect.className = 'course-edit-name full-width p-8 border-light rounded';
+    courseSelect.style.flex = '2';
+
+    const courses = ['', '한식기능사', '양식기능사', '일식기능사', '중식기능사', '제과기능사', '제빵기능사', '제과제빵기능사', '복어기능사', '산업기사', '가정요리', '브런치'];
+    courses.forEach(c => {
+        const option = document.createElement('option');
+        option.value = c;
+        option.textContent = c || '과정 선택';
+        if (c === courseName) option.selected = true;
+        courseSelect.appendChild(option);
     });
 
-    const timeSelect = div.querySelector('.course-edit-time');
-    const timeCustom = div.querySelector('.course-edit-time-custom');
-    timeSelect.addEventListener('change', (e) => {
-        if (e.target.value === "") { timeCustom.classList.remove('hidden'); timeCustom.value = ''; }
-        else { timeCustom.classList.add('hidden'); timeCustom.value = e.target.value; }
+    if (courseName && !courses.includes(courseName)) {
+        const option = document.createElement('option');
+        option.value = courseName;
+        option.textContent = courseName;
+        option.selected = true;
+        courseSelect.appendChild(option);
+    }
+
+    const timeSelect = document.createElement('select');
+    timeSelect.className = 'course-edit-time full-width p-8 border-light rounded';
+    timeSelect.style.flex = '1';
+
+    const times = ['', '10:00', '12:00', '17:00', '19:00'];
+    const timeLabels = { '10:00': '오전 10:00', '12:00': '오전 12:00', '17:00': '오후 05:00', '19:00': '오후 07:00' };
+    times.forEach(t => {
+        const option = document.createElement('option');
+        option.value = t;
+        option.textContent = t ? timeLabels[t] || t : '시간 선택';
+        if (t === courseTime) option.selected = true;
+        timeSelect.appendChild(option);
     });
+
+    if (courseTime && !times.includes(courseTime)) {
+        const option = document.createElement('option');
+        option.value = courseTime;
+        option.textContent = courseTime;
+        option.selected = true;
+        timeSelect.appendChild(option);
+    }
+
+    const delBtn = document.createElement('button');
+    delBtn.type = 'button';
+    delBtn.textContent = '-';
+    delBtn.style.cssText = 'padding: 0 15px; cursor: pointer; background: #ff4444; color: white; border: none; border-radius: 4px; font-weight: bold; font-size: 1.2rem;';
+    delBtn.onclick = () => {
+        div.remove();
+    };
+
+    div.appendChild(courseSelect);
+    div.appendChild(timeSelect);
+    div.appendChild(delBtn);
 
     container.appendChild(div);
 }
@@ -866,20 +895,78 @@ async function handleEditSubmit(e) {
     const fd = new FormData(e.target);
     const data = Object.fromEntries(fd.entries());
 
+    // Combine course items for 'course' field
     const courseRows = document.querySelectorAll('#edit_course_container .course-input-row');
-    const courseValues = Array.from(courseRows).map(row => {
-        const name = row.querySelector('.course-edit-name-custom')?.value.trim();
-        const time = row.querySelector('.course-edit-time-custom')?.value.trim();
-        if (name && time) return `${name}(${time})`;
-        if (name) return name;
-        return '';
-    }).filter(v => v !== '');
+    const courseValues = Array.from(courseRows)
+        .map(row => {
+            const name = row.querySelector('.course-edit-name')?.value.trim();
+            const time = row.querySelector('.course-edit-time')?.value.trim();
+            if (name && time) return `${name}(${time})`;
+            if (name) return name;
+            return '';
+        })
+        .filter(v => v !== '');
+
+    // --- Automatic Merging Exception Logic ---
+    const jevaIdx = courseValues.findIndex(v => v.startsWith('제과기능사('));
+    const jepangIdx = courseValues.findIndex(v => v.startsWith('제빵기능사('));
+
+    if (jevaIdx !== -1 && jepangIdx !== -1) {
+        const jevaStr = courseValues[jevaIdx];
+        const jepangStr = courseValues[jepangIdx];
+
+        const jevaTime = jevaStr.match(/\(([^)]+)\)/)?.[1] || '';
+        const jepangTime = jepangStr.match(/\(([^)]+)\)/)?.[1] || '';
+
+        const mergedTime = jevaTime === jepangTime ? jevaTime : `${jevaTime},${jepangTime}`;
+        const newEntry = `제과제빵기능사(${mergedTime})`;
+
+        if (jevaIdx > jepangIdx) {
+            courseValues.splice(jevaIdx, 1);
+            courseValues.splice(jepangIdx, 1, newEntry);
+        } else {
+            courseValues.splice(jepangIdx, 1);
+            courseValues.splice(jevaIdx, 1, newEntry);
+        }
+    }
+    // ------------------------------------------
 
     data.course = courseValues.join(', ');
-    data.type = document.getElementById('edit_remark_type').value;
 
-    if (data.start_yy && data.start_mm && data.start_dd) {
-        data.start_date = `20${data.start_yy}-${data.start_mm.padStart(2, '0')}-${data.start_dd.padStart(2, '0')}`;
+    // Extract timeSlot from course strings
+    const extractedTimes = [];
+    courseValues.forEach(c => {
+        const match = c.match(/\(([^)]+)\)/);
+        if (match && match[1]) {
+            extractedTimes.push(match[1]);
+        }
+    });
+    data.timeSlot = extractedTimes.join(',');
+
+    if (data.course_item) delete data.course_item;
+
+    // Combine Start Date
+    const yy = data.start_yy || '';
+    const mm = data.start_mm || '';
+    const dd = data.start_dd || '';
+    if (yy && mm && dd) {
+        data.start_date = `20${yy}-${mm}-${dd}`;
+    } else {
+        data.start_date = '';
+    }
+    delete data.start_yy;
+    delete data.start_mm;
+    delete data.start_dd;
+
+    // Handle Remarks Type and Cleanup
+    const selectedType = document.getElementById('edit_remark_type').value;
+    data.type = selectedType;
+
+    if (selectedType === 'student') {
+        data.job = '';
+    } else {
+        data.school = '';
+        data.grade = '';
     }
 
     // ------------------------------------------
@@ -901,9 +988,11 @@ async function handleEditSubmit(e) {
             body: JSON.stringify(finalData)
         });
         const result = await res.json();
-        if (result.success !== false) { // Assuming Next.js returns success or the object
+        if (result.success !== false) {
             closeEditModal();
-            fetchData(); 
+            const idx = membersData.findIndex(m => m.id === finalData.id);
+            if(idx !== -1) membersData[idx] = finalData;
+            renderLedger(); 
         } else {
             alert("수정 실패");
         }
