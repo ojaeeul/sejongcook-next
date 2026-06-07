@@ -92,6 +92,7 @@ window.moveToTrash = async function(memberId) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(m)
             });
+            membersData = membersData.filter(md => String(md.id) !== String(memberId));
             renderLedger();
         }
     } catch(e) { console.error(e); }
@@ -489,8 +490,8 @@ function renderTable(container, title, members, id) {
             <table style="width: 100%; border-collapse: collapse; min-width: 1000px; font-family: 'Noto Sans KR', sans-serif;">
                 <thead>
                     <tr style="background: #f8fafc; border-bottom: 1.5px solid #0f172a;">
-                        <th rowspan="2" style="width: 40px; border-right: 1.5px solid #0f172a; font-size: 0.75rem;">NO</th>
-                        <th rowspan="2" style="width: 120px; border-right: 1.5px solid #0f172a; font-size: 0.75rem; text-align: left; padding: 10px;">회원정보 / 과정</th>
+                        <th rowspan="2" style="width: 35px; border-right: 1.5px solid #0f172a; font-size: 0.75rem;">NO</th>
+                        <th rowspan="2" style="width: 105px; max-width: 105px; white-space: nowrap; border-right: 1.5px solid #0f172a; font-size: 0.75rem; text-align: left; padding: 10px 5px;">회원정보/과정</th>
                         ${Array.from({ length: 12 }, (_, i) => `<th colspan="2" style="border-right: 1.5px solid #0f172a; border-bottom: 1px solid #cbd5e1; font-size: 0.8rem; padding: 5px;">${i + 1}월</th>`).join('')}
                         <th rowspan="2" style="width: 100px; font-size: 0.75rem;">비고</th>
                     </tr>
@@ -506,13 +507,13 @@ function renderTable(container, title, members, id) {
         const rowId = `row-${id}-${m.id}`;
         html += `<tr id="${rowId}" style="border-bottom: 1px solid #0f172a; ${isTarget ? 'background: #fffbeb;' : ''}">
             <td style="text-align: center; font-weight: 700; border-right: 1.5px solid #0f172a;">${idx + 1}</td>
-            <td style="padding: 6px 8px; border-right: 1.5px solid #0f172a;">
-                <div style="display: flex; align-items: center; gap: 4px;">
+            <td style="padding: 6px 4px; border-right: 1.5px solid #0f172a; width: 105px; max-width: 105px; overflow: hidden;">
+                <div style="display: flex; align-items: center; gap: 2px;">
                     <span onclick="moveToTrash('${m.id}')" style="cursor: pointer; color: #ef4444; font-size: 0.8rem; display: flex; align-items: center;" title="휴지통으로 이동"><span class="material-icons" style="font-size: 0.8rem;">delete</span></span>
-                    <input type="text" value="${m.name || ''}" onchange="updateMemberField('${m.id}', 'name', this.value)" style="font-weight: 900; font-size: 0.9rem; border: 1px solid transparent; width: 65px; padding: 0 2px; background: transparent; color: #000;" onfocus="this.style.border='1px solid #cbd5e1'; this.style.background='#fff'" onblur="this.style.border='1px solid transparent'; this.style.background='transparent'">
+                    <input type="text" value="${m.name || ''}" onchange="updateMemberField('${m.id}', 'name', this.value)" style="font-weight: 900; font-size: 0.85rem; border: 1px solid transparent; width: 65px; padding: 0; background: transparent; color: #000;" onfocus="this.style.border='1px solid #cbd5e1'; this.style.background='#fff'" onblur="this.style.border='1px solid transparent'; this.style.background='transparent'">
                 </div>
                 <div style="margin-top: 2px;">
-                    <input type="text" value="${m.phone || ''}" onchange="updateMemberField('${m.id}', 'phone', this.value)" style="font-size: 0.7rem; color: #64748b; border: 1px solid transparent; width: 95px; padding: 0 2px; background: transparent;" onfocus="this.style.border='1px solid #cbd5e1'; this.style.background='#fff'" onblur="this.style.border='1px solid transparent'; this.style.background='transparent'" placeholder="전화번호">
+                    <input type="text" value="${m.phone || ''}" onchange="updateMemberField('${m.id}', 'phone', this.value)" style="font-size: 0.7rem; color: #64748b; border: 1px solid transparent; width: 95px; padding: 0; background: transparent;" onfocus="this.style.border='1px solid #cbd5e1'; this.style.background='#fff'" onblur="this.style.border='1px solid transparent'; this.style.background='transparent'" placeholder="전화번호">
                 </div>
                 <div style="margin-top: 4px; display: flex; flex-direction: column; gap: 2px;">
                     ${(() => {
@@ -531,15 +532,15 @@ function renderTable(container, title, members, id) {
 
                         return `
                             <div style="display: flex; align-items: center; gap: 2px;">
-                                <span onclick="updateMemberCourse('${m.id}', 0, '')" style="cursor: pointer; color: #ef4444; display: flex; align-items: center; visibility: ${c1 ? 'visible' : 'hidden'};" title="과정 삭제"><span class="material-icons" style="font-size: 0.75rem;">delete</span></span>
+                                <span onclick="moveToTrash('${m.id}')" style="cursor: pointer; color: #ef4444; display: flex; align-items: center; visibility: ${c1 ? 'visible' : 'hidden'};" title="휴지통으로 이동"><span class="material-icons" style="font-size: 0.75rem;">delete</span></span>
                                 ${renderInput(c1, 0)}
                             </div>
                             <div style="display: flex; align-items: center; gap: 2px;">
-                                <span onclick="updateMemberCourse('${m.id}', 1, '')" style="cursor: pointer; color: #ef4444; display: flex; align-items: center; visibility: ${c2 ? 'visible' : 'hidden'};" title="과정 삭제"><span class="material-icons" style="font-size: 0.75rem;">delete</span></span>
+                                <span onclick="moveToTrash('${m.id}')" style="cursor: pointer; color: #ef4444; display: flex; align-items: center; visibility: ${c2 ? 'visible' : 'hidden'};" title="휴지통으로 이동"><span class="material-icons" style="font-size: 0.75rem;">delete</span></span>
                                 ${renderInput(c2, 1)}
                             </div>
                             <div style="display: flex; align-items: center; gap: 2px;">
-                                <span onclick="updateMemberCourse('${m.id}', 2, '')" style="cursor: pointer; color: #ef4444; display: flex; align-items: center; visibility: ${c3 ? 'visible' : 'hidden'};" title="과정 삭제"><span class="material-icons" style="font-size: 0.75rem;">delete</span></span>
+                                <span onclick="moveToTrash('${m.id}')" style="cursor: pointer; color: #ef4444; display: flex; align-items: center; visibility: ${c3 ? 'visible' : 'hidden'};" title="휴지통으로 이동"><span class="material-icons" style="font-size: 0.75rem;">delete</span></span>
                                 ${renderInput(c3, 2)}
                             </div>
                         `;
