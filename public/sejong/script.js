@@ -1476,8 +1476,8 @@ function renderMembers() {
             displayMembers = members.filter(m => m.status === 'completed' || m.status === 'hold');
             if (document.getElementById('pageTitle')) document.getElementById('pageTitle').textContent = '수 료 생 및 보 류 명 단';
         } else if (currentFilter === 'trash') {
-            // Show ONLY trash or delete
-            displayMembers = members.filter(m => m.status === 'trash' || m.status === 'delete');
+            // Show ONLY trash or delete, or members with [삭제] courses
+            displayMembers = members.filter(m => m.status === 'trash' || m.status === 'delete' || (m.course && m.course.includes('[삭제]')));
             if (document.getElementById('pageTitle')) document.getElementById('pageTitle').textContent = '휴 지 통';
         } else {
             // Show Active (exclude completed/hold, but KEEP trash/delete as requested)
