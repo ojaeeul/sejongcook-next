@@ -732,7 +732,7 @@ if (document.getElementById('editConfirmYesBtn')) {
 
 
 function updateSummary() {
-    const activeMembers = members.filter(m => m.status !== 'completed' && m.status !== 'trash' && m.status !== 'delete' && m.status !== 'hold');
+    const activeMembers = members.filter(m => m.status !== 'completed' && m.status !== 'hold');
     const activeMemberIds = new Set(activeMembers.map(m => String(m.id)));
 
     if (totalMembersEl) {
@@ -1474,8 +1474,8 @@ function renderMembers() {
             displayMembers = members.filter(m => m.status === 'trash' || m.status === 'delete');
             if (document.getElementById('pageTitle')) document.getElementById('pageTitle').textContent = '휴 지 통';
         } else {
-            // Show Active (exclude completed/trash/delete/hold)
-            displayMembers = members.filter(m => m.status !== 'completed' && m.status !== 'trash' && m.status !== 'delete' && m.status !== 'hold');
+            // Show Active (exclude completed/hold, but KEEP trash/delete as requested)
+            displayMembers = members.filter(m => m.status !== 'completed' && m.status !== 'hold');
 
             // Dynamic Title based on course filter
             let title = '수 강 생 대 장';
@@ -1553,6 +1553,7 @@ function renderMembers() {
                 'completed': 'status-completed',
                 'retaking': 'status-retaking',
                 'delete': 'status-delete',
+                'trash': 'status-delete', // Add trash color
                 'hold': 'status-hold'
             }[status] || 'status-taking';
 
@@ -1653,7 +1654,7 @@ renderMembers = function () {
     }
 
     memberListEl.innerHTML = '';
-    let displayMembers = members.filter(m => m.status !== 'trash' && m.status !== 'delete' && m.status !== 'hold' && m.status !== 'completed');
+    let displayMembers = members.filter(m => m.status !== 'hold' && m.status !== 'completed');
 
     // Apply Search Term if exists
     if (window.memberSearchTerm) {
