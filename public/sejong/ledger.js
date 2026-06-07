@@ -252,6 +252,8 @@ function getLedgerMonthStats(memberId, targetYear, targetMonth, courseFilter = n
             }
         }
     return { eighthDays: [], eighthMonth: targetMonth, isSimulated: false, hasAnyAttendance: false };
+}
+
 function getAllLedgerMonthStats(memberId, year, month) {
     const member = membersData.find(m => String(m.id) === String(memberId));
     if (!member || !member.course) return [];
