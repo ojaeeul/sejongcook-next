@@ -634,7 +634,7 @@ function renderTable(container, title, members, id) {
                     <div style="font-size: 0.65rem; font-weight: 800; display: flex; flex-direction: column; gap: 2px; align-items: center; margin-bottom: 4px;">
                         <div style="color: ${dateColor};">${dayText}</div>
                         <div style="font-size: 0.6rem; color: ${feeColor};">${s.fee / 10000}만</div>
-                        <div style="font-size: 0.55rem; color: #64748b; font-weight: 600; line-height: 1;">${s.course || ''}</div>
+                        <div style="font-size: 0.55rem; color: #64748b; font-weight: 600; line-height: 1;">${(s.course || '').replace('기능사', '')}</div>
                     </div>
                 `}).join('');
 
@@ -642,7 +642,7 @@ function renderTable(container, title, members, id) {
                 <div style="font-size: 0.65rem; font-weight: 900; display: flex; flex-direction: column; gap: 2px; align-items: center; margin-bottom: 4px;">
                     <div>${new Date(p.updatedAt).getDate()}일</div>
                     <div style="font-size: 0.6rem; color: #059669;">${p.amount / 10000}만</div>
-                    ${p.course ? `<div style="font-size: 0.55rem; color: #64748b; font-weight: 600; line-height: 1;">${p.course}</div>` : ''}
+                    ${p.course ? `<div style="font-size: 0.55rem; color: #64748b; font-weight: 600; line-height: 1;">${p.course.replace('기능사', '')}</div>` : ''}
                 </div>
             `).join('');
 
