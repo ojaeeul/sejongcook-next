@@ -532,10 +532,9 @@ function renderTable(container, title, members, id) {
             <td style="padding: 6px 4px; border-right: 1.5px solid #0f172a; width: 105px; max-width: 105px; overflow: hidden;">
                 <div style="display: flex; align-items: center; gap: 2px;">
                     <span onclick="moveToTrash('${m.id}')" style="cursor: pointer; color: #ef4444; font-size: 0.8rem; display: flex; align-items: center;" title="휴지통으로 이동"><span class="material-icons" style="font-size: 0.8rem;">delete</span></span>
-                    <input type="text" value="${m.name || ''}" onchange="updateMemberField('${m.id}', 'name', this.value)" style="font-weight: 900; font-size: 0.85rem; border: 1px solid transparent; width: 65px; padding: 0; background: transparent; color: #000;" onfocus="this.style.border='1px solid #cbd5e1'; this.style.background='#fff'" onblur="this.style.border='1px solid transparent'; this.style.background='transparent'">
+                    <span style="font-weight: 900; font-size: 0.85rem; color: #000;">${m.name || ''}</span>
                 </div>
-                <div style="margin-top: 2px;">
-                    <input type="text" value="${m.phone || ''}" onchange="updateMemberField('${m.id}', 'phone', this.value)" style="font-size: 0.7rem; color: #64748b; border: 1px solid transparent; width: 95px; padding: 0; background: transparent;" onfocus="this.style.border='1px solid #cbd5e1'; this.style.background='#fff'" onblur="this.style.border='1px solid transparent'; this.style.background='transparent'" placeholder="전화번호">
+                    <span style="font-size: 0.7rem; color: #64748b;">${m.phone || ''}</span>
                 </div>
                 <div style="margin-top: 4px; display: flex; flex-direction: column; gap: 2px;">
                     ${(() => {
