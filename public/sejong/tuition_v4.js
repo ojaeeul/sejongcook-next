@@ -183,6 +183,7 @@ function initTabs() {
     const btnEnrolled = document.querySelector('.tab-enrolled');
     const btnUnpaid = document.querySelector('.tab-unpaid');
     const btnPaid = document.querySelector('.tab-paid');
+    const btnTrash = document.querySelector('.tab-trash');
 
     if (btnEnrolled) {
         btnEnrolled.addEventListener('click', () => {
@@ -203,6 +204,14 @@ function initTabs() {
     if (btnPaid) {
         btnPaid.addEventListener('click', () => {
             window.currentState.tab = 'paid';
+            updateTabStyles();
+            renderTable();
+        });
+    }
+
+    if (btnTrash) {
+        btnTrash.addEventListener('click', () => {
+            window.currentState.tab = 'trash';
             updateTabStyles();
             renderTable();
         });
@@ -247,21 +256,26 @@ function updateTabStyles() {
     const btnEnrolled = document.querySelector('.tab-enrolled');
     const btnUnpaid = document.querySelector('.tab-unpaid');
     const btnPaid = document.querySelector('.tab-paid');
-    if (!btnEnrolled || !btnUnpaid || !btnPaid) return;
+    const btnTrash = document.querySelector('.tab-trash');
+    const allTabs = [btnEnrolled, btnUnpaid, btnPaid, btnTrash].filter(Boolean);
+    if (allTabs.length === 0) return;
 
     // Reset styles (Dimensional Inactive State)
-    [btnEnrolled, btnUnpaid, btnPaid].forEach(b => {
+    allTabs.forEach(b => {
         b.style.opacity = '0.5';
         b.style.border = '1px solid #e2e8f0';
         b.style.transform = 'scale(0.96) translateY(0)';
         b.style.boxShadow = 'none';
         b.style.zIndex = '1';
+        b.style.color = '';
+        b.style.background = '';
     });
 
     let active;
     if (window.currentState.tab === 'enrolled') active = btnEnrolled;
     else if (window.currentState.tab === 'unpaid') active = btnUnpaid;
-    else active = btnPaid;
+    else if (window.currentState.tab === 'paid') active = btnPaid;
+    else if (window.currentState.tab === 'trash') active = btnTrash;
 
     if (active) {
         // Active 3D State
@@ -272,6 +286,7 @@ function updateTabStyles() {
         let baseColor = '#cbd5e1';
         if (window.currentState.tab === 'unpaid') baseColor = '#b45309';
         else if (window.currentState.tab === 'paid') baseColor = '#059669';
+        else if (window.currentState.tab === 'trash') baseColor = '#991b1b';
 
         active.style.boxShadow = `0 8px 0 ${baseColor}, 0 10px 20px rgba(0,0,0,0.1)`;
 
@@ -282,9 +297,13 @@ function updateTabStyles() {
             active.style.border = '1px solid #b45309';
             active.style.background = 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)';
             active.style.color = '#92400e';
-        } else {
+        } else if (window.currentState.tab === 'paid') {
             active.style.border = '1px solid #059669';
             active.style.background = 'linear-gradient(135deg, #34d399 0%, #10b981 100%)';
+            active.style.color = 'white';
+        } else if (window.currentState.tab === 'trash') {
+            active.style.border = '1px solid #991b1b';
+            active.style.background = 'linear-gradient(135deg, #f87171 0%, #ef4444 100%)';
             active.style.color = 'white';
         }
     }
@@ -303,7 +322,11 @@ async function loadData() {
             fetch(getFetchUrl('timetable'))
         ]);
         const rawMembers = await mRes.json();
-        membersData = Array.isArray(rawMembers) ? rawMembers.filter(m => !['delete', 'trash', 'hold', 'completed'].includes(m.status)) : [];
+        // Include active members + members with trashed courses ([삭제])
+        membersData = Array.isArray(rawMembers) ? rawMembers.filter(m => {
+            if (['delete', 'trash', 'hold', 'completed'].includes(m.status)) return false;
+            return true; // Keep all active members (some may have [삭제] courses)
+        }) : [];
         paymentsData = await pRes.json();
         attendanceData = await aRes.json();
         holidaysData = await hRes.json();
@@ -751,6 +774,37 @@ function renderTable() {
     let countEnrolled = 0;
     let countUnpaid = 0;
     let countPaid = 0;
+    let countTrash = 0;
+
+    // Trash tab: show only members with [삭제] courses
+    if (window.currentState.tab === 'trash') {
+        const trashMembers = membersData.filter(m => m.course && m.course.includes('[삭제]'));
+        countTrash = trashMembers.length;
+        const trashRows = trashMembers.map(m => {
+            const deletedCourses = (m.course || '').split(',').filter(c => c.includes('[삭제]')).map(c => c.replace('[삭제]', '').trim()).join(', ');
+            return {
+                member: m,
+                courseName: deletedCourses,
+                payment: null,
+                isPaid: false,
+                amount: 0,
+                totalPaidAmount: 0,
+                scheduledDate: null,
+                imminentCourses: [],
+                isDueThisMonth: false,
+                rowStatus: 'trash',
+                currentProgressCount: 0,
+                courseProgressList: [],
+                isTrashCourse: true
+            };
+        });
+        const btnTrash = document.querySelector('.tab-trash');
+        if (btnTrash) btnTrash.innerHTML = `<span class="material-icons">delete</span> 휴지통 (${countTrash})`;
+        if (window.currentState.viewMode !== 'grouped') {
+            renderTotalView(trashRows, tbody);
+        }
+        return;
+    }
 
     const rows = [];
     membersData.forEach(m => {
@@ -759,10 +813,13 @@ function renderTable() {
             if (!m.course || !m.course.includes(window.currentState.course)) return;
         }
 
-        const myCourses = (m.course || '').split(',').map(c => c.trim()).filter(c => c !== '');
+        // Active tabs: skip members where ALL courses are trashed (they go to trash tab only)
+        const allCoursesDeleted = m.course && m.course.split(',').every(c => !c.trim() || c.includes('[삭제]'));
+        if (allCoursesDeleted && m.course) return; // Show in trash tab only
+
+        // Active views: only show courses WITHOUT [삭제]
+        const myCourses = (m.course || '').split(',').map(c => c.trim()).filter(c => c !== '' && !c.includes('[삭제]'));
         if (myCourses.length === 0) {
-            // 학생이 등록된 과정이 없는 경우 가상의 빈 과정을 하나 만들어서 처리할지 고려
-            // 하지만 보통 수강관리에서는 과정이 있어야 의미가 있으므로 스킵하거나 기본 처리
             myCourses.push('');
         }
 
@@ -981,7 +1038,27 @@ function renderTotalView(rows, tbody) {
 
 const targetY = (row.scheduledDate && row.rowStatus === 'unpaid') ? row.scheduledDate.year : window.currentState.year;
         const targetM = (row.scheduledDate && row.rowStatus === 'unpaid') ? row.scheduledDate.month : window.currentState.month;
-        const statusHtml = `
+
+        let statusHtml;
+        if (row.isTrashCourse) {
+            // Special trash row: show restore dropdown
+            statusHtml = `
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <select class="status-dropdown trash" onchange="restoreTrashedCourse('${m.id}', this.value, '${m.name}')" style="width: 85px;">
+                        <option value="" selected disabled>휴지통</option>
+                        <option value="taking">수강중 (복구)</option>
+                        <option value="retaking">재수강 (복구)</option>
+                    </select>
+                    <div onclick="location.href='ledger.html?memberId=${m.id}&year=${window.currentState.year}'" 
+                         title="출석부 상세 확인" 
+                         style="color: #64748b; display: flex; align-items: center; cursor: pointer; padding: 2px; border-radius: 4px; transition: background 0.2s;"
+                         onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
+                        <span class="material-icons" style="font-size: 1.2rem;">search</span>
+                    </div>
+                </div>
+            `;
+        } else {
+            statusHtml = `
             <div style="display: flex; align-items: center; gap: 6px;">
                 <select class="status-dropdown ${row.rowStatus}" onchange="confirmStatusChange('${m.id}', this.value, '${m.name}', ${row.courseName ? `'${row.courseName}'` : 'null'}, ${row.amount}, '${targetY}', '${targetM}')" style="width: 85px;">
                     <option value="unpaid" ${row.rowStatus === 'unpaid' ? 'selected' : ''}>미납</option>
@@ -999,6 +1076,7 @@ const targetY = (row.scheduledDate && row.rowStatus === 'unpaid') ? row.schedule
                 </div>
             </div>
         `;
+        } // end else (not isTrashCourse)
 
         const isTarget = window.currentState.targetMemberId && String(m.id) === String(window.currentState.targetMemberId);
 
@@ -1224,6 +1302,40 @@ async function togglePayment(memberId, forcedStatus = null, courseName = null, a
     } catch (e) {
         console.error("Update failed", e);
         showResultModal('오류', '데이터 업데이트에 실패했습니다.');
+    }
+}
+
+// Restore a trashed course: remove [삭제] tags and update member
+async function restoreTrashedCourse(memberId, newStatus, memberName) {
+    if (!newStatus) return;
+    const actionText = newStatus === 'taking' ? '수강중' : '재수강';
+    if (!confirm(`${memberName} 수강생의 삭제된 과정을 복구하여 ${actionText}으로 전환하시겠습니까?`)) {
+        renderTable();
+        return;
+    }
+    try {
+        const member = membersData.find(m => String(m.id) === String(memberId));
+        if (!member) return;
+        // Remove all [삭제] tags
+        member.course = (member.course || '').replace(/\[삭제\]/g, '');
+        const res = await fetch(getFetchUrl('members', true), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(member)
+        });
+        if (res.ok) {
+            await loadData();
+            // Switch back to enrolled tab
+            window.currentState.tab = 'enrolled';
+            updateTabStyles();
+            renderTable();
+            showResultModal('복구 완료', `${memberName} 수강생의 과정이 복구되어 ${actionText}으로 전환되었습니다.`, true);
+        } else {
+            showResultModal('오류', '복구 중 오류가 발생했습니다.', false);
+        }
+    } catch(e) {
+        console.error(e);
+        showResultModal('오류', '복구 중 오류가 발생했습니다.', false);
     }
 }
 
