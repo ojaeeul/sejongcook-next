@@ -1551,8 +1551,19 @@ function renderMembers() {
         const tbody = table.querySelector('tbody');
 
         displayMembers.forEach(member => {
-            const status = member.status || 'taking';
-            // Reuse statusText logic if needed, but we use select primarily now
+            let status = member.status || 'taking';
+            let displayCourse = member.course || '';
+
+            if (currentFilter === 'trash') {
+                if (status !== 'trash' && status !== 'delete') {
+                    // This student is here because they have a trashed course
+                    displayCourse = displayCourse.split(',').filter(c => c.includes('[삭제]')).join(', ');
+                    status = 'trash'; // Fake the status for the UI dropdown
+                }
+            } else {
+                // Active/Archive views: Hide trashed courses
+                displayCourse = displayCourse.split(',').filter(c => !c.includes('[삭제]')).join(', ');
+            }
 
             const statusClass = {
                 'taking': 'status-taking',
@@ -1610,7 +1621,7 @@ function renderMembers() {
                 <td>${member.address || ''} ${member.address_detail || ''}</td>
                 <td>${member.phone || ''}</td>
                 <td>${member.phone_guardian || ''}</td>
-                <td>${member.course || ''}</td>
+                <td>${displayCourse}</td>
                 <td>${member.start_date || ''}</td>
                 <td>${remarks}</td>
                 <td>
