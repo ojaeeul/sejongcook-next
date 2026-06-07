@@ -338,6 +338,53 @@ async function fetchAllData() {
             // scheduleMemoElem.value = ''; // Skip modifying if we don't have schedulesData
         }
 
+        // [추가] 공통 결제일 달력(sejong_ledger_sync) 최신화
+        if (typeof window.calculateRedBoxesForMonth === 'function') {
+            try {
+                let ledgerSync = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
+                const year = new Date().getFullYear();
+                const months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+                let hasChanges = false;
+                
+                if (Array.isArray(allMembers)) {
+                    allMembers.forEach(m => {
+                        if (m.status === 'trash' || m.status === 'delete' || m.status === 'completed' || m.status === 'hold') return;
+                        
+                        let myCourses = String(m.course || '').split(',').map(c => c.trim()).filter(c => c !== '');
+                        const hasJeggwa = myCourses.some(c => c.includes('제과') && !c.includes('제과제빵'));
+                        const hasJeppang = myCourses.some(c => c.includes('제빵') && !c.includes('제과제빵'));
+                        if (hasJeggwa && hasJeppang) {
+                            myCourses = myCourses.filter(c => !c.includes('제과') && !c.includes('제빵'));
+                            myCourses.push('제과제빵기능사');
+                        }
+                        if (myCourses.length === 0) myCourses = ['미지정'];
+                        
+                        myCourses.forEach(c => {
+                            const cName = c.replace(/\([^)]*\)/g, '').trim();
+                            months.forEach(month => {
+                                const res = window.calculateRedBoxesForMonth(m, year, month, attendanceData, cName === '미지정' ? null : cName, GLOBAL_DATA_ADJUSTMENTS);
+                                const key = `${m.id}_${year}_${month}_${cName === '미지정' ? 'all' : cName}`;
+                                if (res && res.redDays && res.redDays.length > 0) {
+                                    if (JSON.stringify(ledgerSync[key]) !== JSON.stringify(res.redDays)) {
+                                        ledgerSync[key] = res.redDays;
+                                        hasChanges = true;
+                                    }
+                                } else if (ledgerSync[key]) {
+                                    delete ledgerSync[key];
+                                    hasChanges = true;
+                                }
+                            });
+                        });
+                    });
+                    if (hasChanges) {
+                        localStorage.setItem('sejong_ledger_sync', JSON.stringify(ledgerSync));
+                    }
+                }
+            } catch(e) {
+                console.error("Global ledger sync error:", e);
+            }
+        }
+
         processAttendanceData();
         processCourses();
         renderTargetList();
