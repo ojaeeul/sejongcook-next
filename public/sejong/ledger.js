@@ -83,12 +83,14 @@ window.updateMemberCourse = async function(memberId, index, value) {
 };
 
 window.deleteMemberCourse = async function(memberId, index, courseName) {
-    if(!confirm(`정말 '${courseName}' 과정을 삭제하시겠습니까?`)) return;
+    if(!confirm(`정말 '${courseName}' 과정을 휴지통으로 이동하시겠습니까?`)) return;
     try {
         const m = membersData.find(m => String(m.id) === String(memberId));
         if (!m) return;
         const courses = (m.course || '').split(',').map(c => c.trim()).filter(Boolean);
-        courses.splice(index, 1);
+        if (!courses[index].includes('[삭제]')) {
+            courses[index] = courses[index] + '[삭제]';
+        }
         m.course = courses.join(', ');
         await fetch(getFetchUrl('members', true), {
             method: 'POST',
@@ -250,13 +252,11 @@ function getLedgerMonthStats(memberId, targetYear, targetMonth, courseFilter = n
             }
         }
     return { eighthDays: [], eighthMonth: targetMonth, isSimulated: false, hasAnyAttendance: false };
-}
-
 function getAllLedgerMonthStats(memberId, year, month) {
     const member = membersData.find(m => String(m.id) === String(memberId));
     if (!member || !member.course) return [];
 
-    let courses = member.course.split(',').map(c => c.split('(')[0].trim());
+    let courses = member.course.split(',').map(c => c.trim()).filter(c => c && !c.includes('[삭제]')).map(c => c.split('(')[0]);
     const hasJeggwa = courses.some(c => c.includes('제과') && !c.includes('제과제빵'));
     const hasJeppang = courses.some(c => c.includes('제빵') && !c.includes('제과제빵'));
     if (hasJeggwa && hasJeppang) {
@@ -429,9 +429,9 @@ function renderLedger() {
         let filteredMembers = membersData.filter(m => {
             if (courseName === '기타') {
                 if (!m.course) return true; // Members with no course are '기타'
-                const cList = m.course.split(',').map(c => c.trim());
-                // Return true if they ARE NOT in any defined course EXCEPT '기타' itself in the list
-                return !cList.some(c => COURSE_LIST.filter(cl => cl !== '기타').some(cl => c.includes(cl)));
+                const cList = m.course.split(',').map(c => c.trim()).filter(c => c && !c.includes('[삭제]'));
+                if (cList.length === 0) return true;
+                return !COURSE_LIST.filter(cl => cl !== '기타').some(cl => cList.some(c => c.includes(cl)));
             }
             return m.course && m.course.includes(courseName);
         }).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
@@ -453,8 +453,9 @@ function renderLedger() {
             let filteredMembers = membersData.filter(m => {
                 if (courseName === '기타') {
                     if (!m.course) return true;
-                    const cList = m.course.split(',').map(c => c.trim());
-                    return !cList.some(c => COURSE_LIST.filter(cl => cl !== '기타').some(cl => c.includes(cl)));
+                    const cList = m.course.split(',').map(c => c.trim()).filter(c => c && !c.includes('[삭제]'));
+                    if (cList.length === 0) return true;
+                    return !COURSE_LIST.filter(cl => cl !== '기타').some(cl => cList.some(c => c.includes(cl)));
                 }
                 return m.course && m.course.includes(courseName);
             }).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
@@ -469,8 +470,9 @@ function renderLedger() {
     // Always check for "Other" members (if any) if in "Total" view
     const otherMembers = membersData.filter(m => {
         if (!m.course) return true;
-        const cList = m.course.split(',').map(c => c.trim());
-        return !cList.some(c => COURSE_LIST.filter(cl => cl !== '기타').some(cl => c.includes(cl)));
+        const cList = m.course.split(',').map(c => c.trim()).filter(c => c && !c.includes('[삭제]'));
+        if (cList.length === 0) return true;
+        return !COURSE_LIST.filter(cl => cl !== '기타').some(cl => cList.some(c => c.includes(cl)));
     }).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
 
     const filteredOthers = filterByPeriod(otherMembers);
@@ -535,33 +537,28 @@ function renderTable(container, title, members, id) {
                 </div>
                 <div style="margin-top: 4px; display: flex; flex-direction: column; gap: 2px;">
                     ${(() => {
-                        const courses = (m.course || '').split(',').map(c => c.trim()).filter(Boolean);
-                        const c1 = courses[0] || '';
-                        const c2 = courses[1] || '';
-                        const c3 = courses[2] || '';
-
-                        const renderInput = (val, idx) => {
-                            if (!val) {
-                                return `<input type="text" value="" readonly onclick="openEditConfirmModal('${m.id}')" placeholder="+ 과정 추가" style="cursor: pointer; font-size: 0.6rem; color: #1d4ed8; background: #eff6ff; border: 1px solid transparent; border-radius: 2px; width: 80px; padding: 1px 3px;">`;
-                            } else {
-                                return `<input type="text" value="${val}" onchange="updateMemberCourse('${m.id}', ${idx}, this.value)" placeholder="+ 과정 추가" style="font-size: 0.6rem; color: #1d4ed8; background: #eff6ff; border: 1px solid transparent; border-radius: 2px; width: 80px; padding: 1px 3px;" onfocus="this.style.border='1px solid #bfdbfe'" onblur="this.style.border='1px solid transparent'">`;
-                            }
-                        };
-
-                        return `
+                        const courses = (m.course || '').split(',').map(c => c.trim());
+                        const htmlParts = [];
+                        let activeCount = 0;
+                        courses.forEach((c, originalIdx) => {
+                            if (!c || c.includes('[삭제]')) return;
+                            activeCount++;
+                            htmlParts.push(`
+                                <div style="display: flex; align-items: center; gap: 2px;">
+                                    <span onclick="deleteMemberCourse('${m.id}', ${originalIdx}, '${c}')" style="cursor: pointer; color: #ef4444; display: flex; align-items: center;" title="과정 삭제"><span class="material-icons" style="font-size: 0.75rem;">delete</span></span>
+                                    <input type="text" value="${c}" onchange="updateMemberCourse('${m.id}', ${originalIdx}, this.value)" placeholder="+ 과정 추가" style="font-size: 0.6rem; color: #1d4ed8; background: #eff6ff; border: 1px solid transparent; border-radius: 2px; width: 80px; padding: 1px 3px;" onfocus="this.style.border='1px solid #bfdbfe'" onblur="this.style.border='1px solid transparent'">
+                                </div>
+                            `);
+                        });
+                        
+                        // Add empty input at the end for adding new courses via modal
+                        htmlParts.push(`
                             <div style="display: flex; align-items: center; gap: 2px;">
-                                <span onclick="deleteMemberCourse('${m.id}', 0, '${c1}')" style="cursor: pointer; color: #ef4444; display: flex; align-items: center; visibility: ${c1 ? 'visible' : 'hidden'};" title="과정 삭제"><span class="material-icons" style="font-size: 0.75rem;">delete</span></span>
-                                ${renderInput(c1, 0)}
+                                <span style="visibility: hidden; display: flex; align-items: center;"><span class="material-icons" style="font-size: 0.75rem;">delete</span></span>
+                                <input type="text" value="" readonly onclick="openEditConfirmModal('${m.id}')" placeholder="+ 과정 추가" style="cursor: pointer; font-size: 0.6rem; color: #1d4ed8; background: #eff6ff; border: 1px solid transparent; border-radius: 2px; width: 80px; padding: 1px 3px;">
                             </div>
-                            <div style="display: flex; align-items: center; gap: 2px;">
-                                <span onclick="deleteMemberCourse('${m.id}', 1, '${c2}')" style="cursor: pointer; color: #ef4444; display: flex; align-items: center; visibility: ${c2 ? 'visible' : 'hidden'};" title="과정 삭제"><span class="material-icons" style="font-size: 0.75rem;">delete</span></span>
-                                ${renderInput(c2, 1)}
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 2px;">
-                                <span onclick="deleteMemberCourse('${m.id}', 2, '${c3}')" style="cursor: pointer; color: #ef4444; display: flex; align-items: center; visibility: ${c3 ? 'visible' : 'hidden'};" title="과정 삭제"><span class="material-icons" style="font-size: 0.75rem;">delete</span></span>
-                                ${renderInput(c3, 2)}
-                            </div>
-                        `;
+                        `);
+                        return htmlParts.join('');
                     })()}
                 </div>
             </td>`;

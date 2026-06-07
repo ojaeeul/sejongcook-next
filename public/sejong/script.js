@@ -1301,6 +1301,12 @@ window.handleStatusChange = async function (e, memberId) {
         return;
     }
 
+    if (newStatus === 'taking' || newStatus === 'retaking') {
+        if (member.course && member.course.includes('[삭제]')) {
+            member.course = member.course.replace(/\[삭제\]/g, '');
+        }
+    }
+
     if (newStatus === 'hold') {
         openStatusModal(
             "보류 사유 입력",
