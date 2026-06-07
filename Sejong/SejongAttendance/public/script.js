@@ -7,6 +7,48 @@ function getFetchUrl(endpoint, isPost = false) {
 
 const API_BASE = '/api/sejong';
 
+let global_course_options = ['한식기능사', '양식기능사', '일식기능사', '중식기능사', '제과기능사', '제빵기능사', '제과제빵기능사', '복어기능사', '산업기사', '가정요리', '브런치'];
+let global_time_options = ['10:00', '12:00', '17:00', '19:00'];
+
+// 백엔드에서 설정값을 불러와 전역 옵션을 갱신하고 데이타리스트 재생성
+async function loadGlobalCourseTimeSettings() {
+    try {
+        const res = await fetch("/api/sejong/settings");
+        const data = await res.json();
+        let settings = Array.isArray(data) && data.length > 0 ? data[0] : (data.key === "settings" ? data.value : data);
+        if (settings) {
+            if (settings.courses && settings.courses.length > 0) global_course_options = settings.courses;
+            if (settings.times && settings.times.length > 0) global_time_options = settings.times;
+        }
+    } catch(e) {
+        console.error("Failed to load global settings", e);
+    }
+
+    // 재생성 로직
+    let courseDl = document.getElementById('course_datalist_options');
+    if (courseDl) courseDl.remove();
+    courseDl = document.createElement('datalist');
+    courseDl.id = 'course_datalist_options';
+    global_course_options.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c;
+        courseDl.appendChild(opt);
+    });
+    document.body.appendChild(courseDl);
+
+    let timeDl = document.getElementById('time_datalist_options');
+    if (timeDl) timeDl.remove();
+    timeDl = document.createElement('datalist');
+    timeDl.id = 'time_datalist_options';
+    global_time_options.forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t;
+        timeDl.appendChild(opt);
+    });
+    document.body.appendChild(timeDl);
+}
+document.addEventListener("DOMContentLoaded", loadGlobalCourseTimeSettings);
+
 
 
 // Control Test: Fetch a static file to check server reachability
@@ -95,6 +137,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const typeSelect = document.getElementById('type');
         if (typeSelect) {
             typeSelect.addEventListener('change', window.toggleMemberType);
+        }
+        
+        // Initialize one course input row
+        if (document.getElementById('register_course_container')) {
+            addRegisterCourseInput();
         }
     }
 
@@ -452,48 +499,23 @@ function addCourseInput(value = '') {
     div.className = 'course-input-row';
     div.style.cssText = 'display: flex; gap: 5px; margin-bottom: 5px;';
 
-    const courseSelect = document.createElement('select');
-    courseSelect.className = 'course-edit-name full-width p-8 border-light rounded';
-    courseSelect.style.flex = '2';
+    const courseInput = document.createElement('input');
+    courseInput.type = 'text';
+    courseInput.className = 'course-edit-name full-width p-8 border-light rounded';
+    courseInput.style.flex = '2';
+    courseInput.placeholder = '과정명 입력 또는 선택';
+    courseInput.setAttribute('list', 'course_datalist_options');
+    courseInput.value = courseName;
 
-    const courses = ['', '한식기능사', '양식기능사', '일식기능사', '중식기능사', '제과기능사', '제빵기능사', '제과제빵기능사', '복어기능사', '산업기사', '가정요리', '브런치'];
-    courses.forEach(c => {
-        const option = document.createElement('option');
-        option.value = c;
-        option.textContent = c || '과정 선택';
-        if (c === courseName) option.selected = true;
-        courseSelect.appendChild(option);
-    });
+    const timeInput = document.createElement('input');
+    timeInput.type = 'text';
+    timeInput.className = 'course-edit-time full-width p-8 border-light rounded';
+    timeInput.style.flex = '1';
+    timeInput.placeholder = '시간/요일 입력';
+    timeInput.setAttribute('list', 'time_datalist_options');
+    timeInput.value = courseTime;
 
-    if (courseName && !courses.includes(courseName)) {
-        const option = document.createElement('option');
-        option.value = courseName;
-        option.textContent = courseName;
-        option.selected = true;
-        courseSelect.appendChild(option);
-    }
 
-    const timeSelect = document.createElement('select');
-    timeSelect.className = 'course-edit-time full-width p-8 border-light rounded';
-    timeSelect.style.flex = '1';
-
-    const times = ['', '10:00', '12:00', '17:00', '19:00'];
-    const timeLabels = { '10:00': '오전 10:00', '12:00': '오전 12:00', '17:00': '오후 05:00', '19:00': '오후 07:00' };
-    times.forEach(t => {
-        const option = document.createElement('option');
-        option.value = t;
-        option.textContent = t ? timeLabels[t] || t : '시간 선택';
-        if (t === courseTime) option.selected = true;
-        timeSelect.appendChild(option);
-    });
-
-    if (courseTime && !times.includes(courseTime)) {
-        const option = document.createElement('option');
-        option.value = courseTime;
-        option.textContent = courseTime;
-        option.selected = true;
-        timeSelect.appendChild(option);
-    }
 
     const delBtn = document.createElement('button');
     delBtn.type = 'button';
@@ -503,8 +525,47 @@ function addCourseInput(value = '') {
         div.remove();
     };
 
-    div.appendChild(courseSelect);
-    div.appendChild(timeSelect);
+    div.appendChild(courseInput);
+    div.appendChild(timeInput);
+    div.appendChild(delBtn);
+
+    container.appendChild(div);
+}
+
+function addRegisterCourseInput() {
+    const container = document.getElementById('register_course_container');
+    if (!container) return;
+
+    const div = document.createElement('div');
+    div.className = 'course-input-row';
+    div.style.cssText = 'display: flex; gap: 5px; margin-bottom: 5px;';
+
+    const courseInput = document.createElement('input');
+    courseInput.type = 'text';
+    courseInput.className = 'course-edit-name full-width p-8 border-light rounded';
+    courseInput.style.flex = '2';
+    courseInput.placeholder = '과정명 입력 또는 선택';
+    courseInput.setAttribute('list', 'course_datalist_options');
+
+    const timeInput = document.createElement('input');
+    timeInput.type = 'text';
+    timeInput.className = 'course-edit-time full-width p-8 border-light rounded';
+    timeInput.style.flex = '1';
+    timeInput.placeholder = '시간/요일 입력';
+    timeInput.setAttribute('list', 'time_datalist_options');
+
+
+
+    const delBtn = document.createElement('button');
+    delBtn.type = 'button';
+    delBtn.textContent = '-';
+    delBtn.style.cssText = 'padding: 0 15px; cursor: pointer; background: #ff4444; color: white; border: none; border-radius: 4px; font-weight: bold; font-size: 1.2rem;';
+    delBtn.onclick = () => {
+        div.remove();
+    };
+
+    div.appendChild(courseInput);
+    div.appendChild(timeInput);
     div.appendChild(delBtn);
 
     container.appendChild(div);
@@ -732,7 +793,7 @@ if (document.getElementById('editConfirmYesBtn')) {
 
 
 function updateSummary() {
-    const activeMembers = members.filter(m => m.status !== 'completed' && m.status !== 'trash' && m.status !== 'delete' && m.status !== 'hold');
+    const activeMembers = members.filter(m => m.status !== 'completed' && m.status !== 'hold');
     const activeMemberIds = new Set(activeMembers.map(m => String(m.id)));
 
     if (totalMembersEl) {
@@ -753,28 +814,26 @@ async function handleRegister(e) {
     const data = Object.fromEntries(fd.entries());
 
     // Unified Course + Time Handling
-    // [FIX] Updated selector to match new HTML (.course-item)
-    const courseUnits = document.querySelectorAll('.course-item');
+    const courseUnits = document.querySelectorAll('#register_course_container .course-input-row');
     const selectedCourses = [];
     const selectedTimes = [];
     let hasSelectedCourse = false;
     let validTimeSelection = true;
 
     courseUnits.forEach(unit => {
-        const checkbox = unit.querySelector('input[name="course_select"]');
-        const timeSelect = unit.querySelector('select[name="time_select"]');
+        const nameInput = unit.querySelector('.course-edit-name');
+        const timeInput = unit.querySelector('.course-edit-time');
 
-        if (checkbox && checkbox.checked) {
+        const courseName = nameInput ? nameInput.value.trim() : '';
+        const timeVal = timeInput ? timeInput.value.trim() : '';
+
+        if (courseName) {
             hasSelectedCourse = true;
-            const timeVal = timeSelect.value;
-
             if (!timeVal) {
                 validTimeSelection = false;
             }
-
-            const courseName = checkbox.value;
             selectedCourses.push({ name: courseName, time: timeVal });
-            selectedTimes.push(timeVal);
+            if (timeVal) selectedTimes.push(timeVal);
         }
     });
 
@@ -1189,6 +1248,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (viewYear) {
         setTimeout(() => loadExamView(viewYear), 500);
     }
+    const editMemberId = params.get('editMember');
+    if (editMemberId) {
+        setTimeout(() => {
+            if (typeof openEditConfirmModal === 'function') {
+                openEditConfirmModal(editMemberId);
+            }
+        }, 500);
+    }
 
     // Reset all nav items first
     document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
@@ -1291,6 +1358,12 @@ window.handleStatusChange = async function (e, memberId) {
     if (!member) {
         alert("수강생 정보를 찾을 수 없습니다.");
         return;
+    }
+
+    if (newStatus === 'taking' || newStatus === 'retaking') {
+        if (member.course && member.course.includes('[삭제]')) {
+            member.course = member.course.replace(/\[삭제\]/g, '');
+        }
     }
 
     if (newStatus === 'hold') {
@@ -1462,12 +1535,12 @@ function renderMembers() {
             displayMembers = members.filter(m => m.status === 'completed' || m.status === 'hold');
             if (document.getElementById('pageTitle')) document.getElementById('pageTitle').textContent = '수 료 생 및 보 류 명 단';
         } else if (currentFilter === 'trash') {
-            // Show ONLY trash or delete
-            displayMembers = members.filter(m => m.status === 'trash' || m.status === 'delete');
+            // Show ONLY trash or delete, or members with [삭제] courses
+            displayMembers = members.filter(m => m.status === 'trash' || m.status === 'delete' || (m.course && m.course.includes('[삭제]')));
             if (document.getElementById('pageTitle')) document.getElementById('pageTitle').textContent = '휴 지 통';
         } else {
-            // Show Active (exclude completed/trash/delete/hold)
-            displayMembers = members.filter(m => m.status !== 'completed' && m.status !== 'trash' && m.status !== 'delete' && m.status !== 'hold');
+            // Show Active (exclude completed/hold, but KEEP trash/delete as requested)
+            displayMembers = members.filter(m => m.status !== 'completed' && m.status !== 'hold');
 
             // Dynamic Title based on course filter
             let title = '수 강 생 대 장';
@@ -1537,14 +1610,26 @@ function renderMembers() {
         const tbody = table.querySelector('tbody');
 
         displayMembers.forEach(member => {
-            const status = member.status || 'taking';
-            // Reuse statusText logic if needed, but we use select primarily now
+            let status = member.status || 'taking';
+            let displayCourse = member.course || '';
+
+            if (currentFilter === 'trash') {
+                if (status !== 'trash' && status !== 'delete') {
+                    // This student is here because they have a trashed course
+                    displayCourse = displayCourse.split(',').filter(c => c.includes('[삭제]')).join(', ');
+                    status = 'trash'; // Fake the status for the UI dropdown
+                }
+            } else {
+                // Active/Archive views: Hide trashed courses
+                displayCourse = displayCourse.split(',').filter(c => !c.includes('[삭제]')).join(', ');
+            }
 
             const statusClass = {
                 'taking': 'status-taking',
                 'completed': 'status-completed',
                 'retaking': 'status-retaking',
                 'delete': 'status-delete',
+                'trash': 'status-delete', // Add trash color
                 'hold': 'status-hold'
             }[status] || 'status-taking';
 
@@ -1595,7 +1680,7 @@ function renderMembers() {
                 <td>${member.address || ''} ${member.address_detail || ''}</td>
                 <td>${member.phone || ''}</td>
                 <td>${member.phone_guardian || ''}</td>
-                <td>${member.course || ''}</td>
+                <td>${displayCourse}</td>
                 <td>${member.start_date || ''}</td>
                 <td>${remarks}</td>
                 <td>
@@ -1645,7 +1730,7 @@ renderMembers = function () {
     }
 
     memberListEl.innerHTML = '';
-    let displayMembers = members.filter(m => m.status !== 'trash' && m.status !== 'delete' && m.status !== 'hold' && m.status !== 'completed');
+    let displayMembers = members.filter(m => m.status !== 'hold' && m.status !== 'completed');
 
     // Apply Search Term if exists
     if (window.memberSearchTerm) {

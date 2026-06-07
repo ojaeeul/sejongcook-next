@@ -2,22 +2,22 @@
 <html lang="ko">
 
 <head>
-    <meta http-equiv=1780795774"Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv=1780795774"Pragma" content="no-cache">
-    <meta http-equiv=1780795774"Expires" content="0">    <meta charset="UTF-8">
+    <meta http-equiv=1780796013"Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv=1780796013"Pragma" content="no-cache">
+    <meta http-equiv=1780796013"Expires" content="0">    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>문자 발송 - 세종요리</title>
-    <link rel="stylesheet" href="style.css?v=1780795774_211823">
+    <link rel="stylesheet" href="style.css?v=1780796013_211823">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="shared_calc.js?v=1780795774_215727"></script>
-    <script src="sms_v3.js?v=1780795774_084600" defer></script>
+    <script src="shared_calc.js?v=${Date.now()}?v=${Date.now()}"></script>
+    <script src="sms_v4.js?1780856113" defer></script>
     <style>
         .sms-container {
             display: flex;
             gap: 20px;
-            height: calc(100vh - 100px);
+            height: calc(100vh - 140px);
             padding: 20px 0;
             background: #f1f5f9;
         }
@@ -520,6 +520,24 @@
         .modal-btn-confirm:hover {
             background: #2563eb;
         }
+    
+        .month-btn {
+            padding: 8px 0;
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .month-btn:hover {
+            background: #e2e8f0;
+            color: #1e3a8a;
+            border-color: #94a3b8;
+        }
+
     </style>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#ffffff">
@@ -544,7 +562,7 @@
                 </div>
                 <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">수강료</div>
                 <div class="nav-sub-menu show">
-                    <a href="tuition.html" class="nav-item">수강료 관리</a>
+                    <a href="tuition.html?v=1780849479" class="nav-item">수강료 관리</a>
                     <a href="ledger.html" class="nav-item">수강료 납부대장</a>
                     <a href="paid_list.html" class="nav-item">납부완료 명단</a>
                 </div>
@@ -653,9 +671,13 @@
                 </div>
                 <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">기타</div>
                 <div class="nav-sub-menu show">
-                    <a href="javascript:void(0)" onclick="openSettingsModal()" class="nav-item">
+                    <a href="class_days_admin.html" id="navClassDaysAdmin" class="nav-item">
                         <span class="material-icons" style="font-size: 1.2rem; margin-right: 8px;">settings</span>
                         수업 요일 설정
+                    </a>
+                    <a href="course_time_admin.html" id="navCourseTimeAdmin" class="nav-item">
+                        <span class="material-icons" style="font-size: 1.2rem; margin-right: 8px;">list_alt</span>
+                        과목/시간 설정
                     </a>
                     <a href="index.html?filter=archive" id="navArchive" class="nav-item">수료생 보관함</a>
                     <a href="index.html?filter=trash" id="navTrash" class="nav-item">휴지통</a>
@@ -664,22 +686,28 @@
                 <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">학원문자</div>
                 <div class="nav-sub-menu show">
                     <a href="attendance_daily.html" id="navDailyAttendance" class="nav-item">일일 출석부</a>
-                    <a href="sms.html" id="navSms" class="nav-item active">문자 발송</a>
+                    <a href="sms.html?v=1780849502" id="navSms" class="nav-item active">문자 발송</a>
                 </div>
-                <a href="monitor.html?v=1780795774_211823" target="_blank" class="nav-item highlight">키오스크 모니터</a>
+                <a href="monitor.html?v=1780796013_211823" target="_blank" class="nav-item highlight">키오스크 모니터</a>
+                <a href="kiosk_admin.html" id="navKioskAdmin" class="nav-item">키오스크 설정</a>
             </nav>
         </aside>
 
         <main class="main-wrapper" style="padding: 0 20px;">
             <header class="top-header"
-                style="background: transparent; box-shadow: none; border-bottom: none; padding-bottom: 0;">
+                style="height: auto; min-height: 56px; padding-top: 15px; padding-bottom: 15px; background: transparent; box-shadow: none; border-bottom: none;">
                 <button class="hamburger-btn" onclick="toggleSidebar()">
                     <span class="material-icons">menu</span>
                 </button>
                 <div class="page-title-container">
-                    <h1 class="page-title-text" style="color: #1e3a8a;">문 자 발 송</h1>
+                    <h1 class="page-title-text" style="color: #1e3a8a; margin: 0;">문 자 발 송</h1>
                 </div>
             </header>
+
+            <div style="display: flex; align-items: center; gap: 15px; margin-top: 15px; margin-bottom: -5px;">
+                <span id="smsTotalRedBoxCount"></span>
+                <div id="smsMonthlyRedBoxPanel" style="display: flex; align-items: center;"></div>
+            </div>
 
             <div class="sms-container">
                 <!-- 1. Left Panel -->
@@ -709,27 +737,27 @@
                         <div style="font-size: 0.85rem; font-weight: 700; color: #1e3a8a; margin-bottom: 10px; display: flex; align-items: center; gap: 5px; cursor:pointer;"
                             onclick="toggleRangeCalendar()">
                             <i class="material-icons" style="font-size: 1.1rem;">event_available</i>
-                            결제 일정 필터 (@@@ 전용)
+                            결제 일정 필터 달력
                             <i class="material-icons" id="rangeToggleIcon"
                                 style="font-size:1rem; margin-left:auto;">expand_more</i>
                         </div>
 
                         <div id="rangeFilterBody" style="display: none;">
-                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                            <div style="display: flex; align-items: center; gap: 4px; margin-bottom: 10px;">
                                 <input type="date" id="paymentRangeStart" onchange="syncCalendarSelection()"
-                                    style="flex: 1; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.8rem;">
-                                <span style="color: #94a3b8;">~</span>
+                                    style="flex: 1; width: 45%; padding: 4px 2px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.75rem; letter-spacing: -0.5px;">
+                                <span style="color: #94a3b8; font-size: 0.8rem;">~</span>
                                 <input type="date" id="paymentRangeEnd" onchange="syncCalendarSelection()"
-                                    style="flex: 1; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.8rem;">
+                                    style="flex: 1; width: 45%; padding: 4px 2px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.75rem; letter-spacing: -0.5px;">
                             </div>
 
                             <div style="display: flex; gap: 4px; margin-bottom: 10px;">
-                                <button onclick="setQuickRange(7)"
-                                    style="flex:1; padding:4px; font-size:0.75rem; background:#fff; border:1px solid #cbd5e1; border-radius:4px; cursor:pointer;">7일</button>
-                                <button onclick="setQuickRange(14)"
-                                    style="flex:1; padding:4px; font-size:0.75rem; background:#fff; border:1px solid #cbd5e1; border-radius:4px; cursor:pointer;">14일</button>
-                                <button onclick="setQuickRange(30)"
-                                    style="flex:1; padding:4px; font-size:0.75rem; background:#fff; border:1px solid #cbd5e1; border-radius:4px; cursor:pointer;">1개월</button>
+                                <button onclick="setWeekRange(1)" style="flex:1; padding:4px; font-size:0.8rem; font-weight:700; background:#f8fafc; border:1px solid #cbd5e1; border-radius:4px; cursor:pointer; color:#1e3a8a;">1주</button>
+                                <button onclick="setWeekRange(2)" style="flex:1; padding:4px; font-size:0.8rem; font-weight:700; background:#f8fafc; border:1px solid #cbd5e1; border-radius:4px; cursor:pointer; color:#1e3a8a;">2주</button>
+                                <button onclick="setWeekRange(3)" style="flex:1; padding:4px; font-size:0.8rem; font-weight:700; background:#f8fafc; border:1px solid #cbd5e1; border-radius:4px; cursor:pointer; color:#1e3a8a;">3주</button>
+                                <button onclick="setWeekRange(4)" style="flex:1; padding:4px; font-size:0.8rem; font-weight:700; background:#f8fafc; border:1px solid #cbd5e1; border-radius:4px; cursor:pointer; color:#1e3a8a;">4주</button>
+                                <button onclick="setWeekRange(5)" style="flex:1; padding:4px; font-size:0.8rem; font-weight:700; background:#f8fafc; border:1px solid #cbd5e1; border-radius:4px; cursor:pointer; color:#1e3a8a;">5주</button>
+                                <button onclick="setWeekRange(6)" style="flex:1; padding:4px; font-size:0.8rem; font-weight:700; background:#f8fafc; border:1px solid #cbd5e1; border-radius:4px; cursor:pointer; color:#1e3a8a;">6주</button>
                             </div>
 
                             <div id="rangeCalendarRoot" class="range-calendar-container">
@@ -751,12 +779,7 @@
                                 <div style="margin-top:10px; font-size:0.7rem; color:#64748b; text-align:center;">
                                     날짜를 클릭하거나 <span style="color:#3b82f6; font-weight:700;">드래그</span>하여 범위를 선택하세요.
                                 </div>
-                                <div style="margin-top: 10px; text-align: center;">
-                                    <button onclick="showSmsLogsForSelectedDate()" style="padding: 6px 12px; font-size: 0.8rem; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 4px; cursor: pointer; color: #475569; width: 100%; display: flex; align-items: center; justify-content: center; gap: 5px;">
-                                        <i class="material-icons" style="font-size: 1rem;">history</i> 
-                                        선택된 시작 날짜 발송 내역 보기
-                                    </button>
-                                </div>
+
                             </div>
 
                             <div
@@ -979,6 +1002,104 @@
         }
 
         // Setup Date Header
+    </script>
+    <script src="sms_v4.js?1780856113" defer></script>
+    <script>
+        // 뱃지 계산 로직 추가
+        window.updateRedBoxes = function(targetYear, targetMonth) {
+            try {
+                const syncData = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
+                const monthCounts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0, 11: 0, 12: 0 };
+                
+                const now = new Date();
+                let cy = targetYear;
+                let cm = targetMonth;
+                if (!cy || !cm) {
+                    cy = localStorage.getItem('sejongSmsCalYear') !== null ? parseInt(localStorage.getItem('sejongSmsCalYear'), 10) : now.getFullYear();
+                    cm = localStorage.getItem('sejongSmsCalMonth') !== null ? parseInt(localStorage.getItem('sejongSmsCalMonth'), 10) + 1 : now.getMonth() + 1;
+                }
+
+                if (typeof allMembers !== 'undefined') {
+                    // 월간출석부와 정확히 동일한 기준으로 '정상 수강중인' 학생만 필터링하여 계산
+                    let allCourseRows = [];
+                    allMembers.forEach(m => {
+                        if (m.status === 'trash' || m.status === 'delete' || m.status === 'completed' || m.status === 'hold') return;
+                        
+                        let courses = (m.course || '').split(',').map(c => c.trim()).filter(c => c !== '');
+                        const hasJeggwa = courses.some(c => c.includes('제과') && !c.includes('제과제빵'));
+                        const hasJeppang = courses.some(c => c.includes('제빵') && !c.includes('제과제빵'));
+                        if (hasJeggwa && hasJeppang) {
+                            courses = courses.filter(c => !c.includes('제과') && !c.includes('제빵'));
+                            courses.push('제과제빵기능사');
+                        }
+                        
+                        if (courses.length > 0) {
+                            courses.forEach(courseFull => {
+                                let courseName = courseFull.replace(/\([^)]*\)/g, '').trim();
+                                allCourseRows.push({ member: m, courseName: courseName });
+                            });
+                        }
+                    });
+
+                    allCourseRows.forEach(r => {
+                        const m = r.member;
+                        const cName = r.courseName || '';
+                        
+                        for (let month = 1; month <= 12; month++) {
+                            const syncKey = `${m.id}_${cy}_${month}_${cName}`;
+                            let days = syncData[syncKey];
+                            
+                            if (days && (Array.isArray(days) ? days.length > 0 : days > 0)) {
+                                monthCounts[month] += (Array.isArray(days) ? days.length : 1);
+                            }
+                        }
+                    });
+                }
+                
+                const selectedMonthCount = monthCounts[cm] || 0;
+                
+                const spanCount = document.getElementById('smsTotalRedBoxCount');
+                if (spanCount) {
+                    spanCount.style.display = 'none'; // 예전 카운트는 숨김 처리
+                }
+
+                const panel = document.getElementById('smsMonthlyRedBoxPanel');
+                if (panel) {
+                    // 월간출석부와 시각적으로 100% 동일한 디자인 적용
+                    let badgesHtml = `
+                        <div style="display:flex; gap:6px; flex-wrap:wrap; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:6px 14px; align-items:center;">
+                            <span style="font-size:0.75rem; font-weight:700; color:#64748b; white-space:nowrap; margin-right:8px;">
+                                <span class="material-icons" style="font-size:0.9rem; vertical-align:middle; margin-right:2px;">calendar_month</span>
+                                수강생결재일
+                            </span>
+                    `;
+                    for (let month = 1; month <= 12; month++) {
+                        const count = monthCounts[month];
+                        const displayCount = count > 0 ? `<span style="background:#2563eb; color:white; border-radius:12px; padding:2px 7px; font-size:0.7rem; font-weight:bold; margin-left:4px;">${count}</span>` : '';
+                        
+                        const borderStyle = count > 0 ? 'border:1px solid #93c5fd; background:#eff6ff;' : 'border:1px solid #cbd5e1; background:#fff;';
+                        const textStyle = count > 0 ? 'color:#1e3a8a;' : 'color:#475569;';
+                        
+                        badgesHtml += `
+                            <div style="display:flex; align-items:center; padding:3px 10px; border-radius:20px; font-size:0.8rem; font-weight:700; margin-right:2px; cursor:pointer; ${borderStyle} ${textStyle}" onclick="if(window.jumpToRangeMonth) window.jumpToRangeMonth(${cy}, ${month})">
+                                <span>${month}월</span>
+                                ${displayCount}
+                            </div>
+                        `;
+                    }
+                    badgesHtml += `</div>`;
+                    panel.innerHTML = badgesHtml;
+                }
+            } catch (e) {
+                console.error('Red boxes update error:', e);
+            }
+        };
+
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                if (window.updateRedBoxes) window.updateRedBoxes();
+            }, 500);
+        });
     </script>
 </body>
 

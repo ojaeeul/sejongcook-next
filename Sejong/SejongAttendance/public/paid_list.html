@@ -2,17 +2,17 @@
 <html lang="ko">
 
 <head>
-    <meta http-equiv=1780795774"Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv=1780795774"Pragma" content="no-cache">
-    <meta http-equiv=1780795774"Expires" content="0">    <meta charset="UTF-8">
+    <meta http-equiv=1780796013"Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv=1780796013"Pragma" content="no-cache">
+    <meta http-equiv=1780796013"Expires" content="0">    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>납부완료 명단 - 세종요리</title>
-    <link rel="stylesheet" href="style.css?v=1780795774_211823">
+    <link rel="stylesheet" href="style.css?v=1780796013_211824">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="script.js?v=1780795774_215152" defer></script>
-    <script src="paid_list.js?v=1780795774_215152" defer></script>
+    <script src="script.js?v=1780796013_215152" defer></script>
+    <script src="paid_list.js?v=1780796013_215154" defer></script>
 </head>
 
 <body>
@@ -34,7 +34,7 @@
                 </div>
                 <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">수강료</div>
                 <div class="nav-sub-menu show">
-                    <a href="tuition.html" class="nav-item">수강료 관리</a>
+                    <a href="tuition.html?v=1780849479" class="nav-item">수강료 관리</a>
                     <a href="ledger.html" class="nav-item">수강료 납부대장</a>
                     <a href="paid_list.html" class="nav-item active">납부완료 명단</a>
                 </div>
@@ -143,9 +143,13 @@
                 </div>
                 <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">기타</div>
                 <div class="nav-sub-menu show">
-                    <a href="javascript:void(0)" onclick="openSettingsModal()" class="nav-item">
+                    <a href="class_days_admin.html" id="navClassDaysAdmin" class="nav-item">
                         <span class="material-icons" style="font-size: 1.2rem; margin-right: 8px;">settings</span>
                         수업 요일 설정
+                    </a>
+                    <a href="course_time_admin.html" id="navCourseTimeAdmin" class="nav-item">
+                        <span class="material-icons" style="font-size: 1.2rem; margin-right: 8px;">list_alt</span>
+                        과목/시간 설정
                     </a>
                     <a href="index.html?filter=archive" id="navArchive" class="nav-item">수료생 보관함</a>
                     <a href="index.html?filter=trash" id="navTrash" class="nav-item">휴지통</a>
@@ -154,9 +158,10 @@
                 <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">학원문자</div>
                 <div class="nav-sub-menu show">
                     <a href="attendance_daily.html" id="navDailyAttendance" class="nav-item">일일 출석부</a>
-                    <a href="sms.html" id="navSms" class="nav-item">문자 발송</a>
+                    <a href="sms.html?v=1780849502" id="navSms" class="nav-item">문자 발송</a>
                 </div>
-                <a href="monitor.html?v=1780795774_211823" target="_blank" class="nav-item highlight">키오스크 모니터</a>
+                <a href="monitor.html?v=1780796013_211823" target="_blank" class="nav-item highlight">키오스크 모니터</a>
+                <a href="kiosk_admin.html" id="navKioskAdmin" class="nav-item">키오스크 설정</a>
             </nav>
         </aside>
 
@@ -164,16 +169,39 @@
         <main class="main-content">
             <div id="memberListSection">
                 <div class="ledger-container" style="padding: 30px;">
+                    <!-- 연간 월별 납부완료 패널 -->
+                    <div id="monthlyPaidPanel" style="display:flex; gap:6px; flex-wrap:wrap; background:#f0fdf4; border:1px solid #d1fae5; border-radius:12px; padding:10px 14px; margin-bottom:25px; align-items:center;">
+                        <span style="font-size:0.75rem; font-weight:700; color:#065f46; white-space:nowrap; margin-right:4px;">
+                            <span class="material-icons" style="font-size:0.9rem; vertical-align:middle;">calendar_month</span>
+                            월별 납부
+                        </span>
+                        <div id="monthPaidBtn-1" onclick="jumpToMonth(1)" class="month-paid-btn" onmouseover="this.style.background='#d1fae5'" onmouseout="this.style.background='#fff'"><span>1월</span><span id="monthPaidBadge-1" class="month-paid-badge" style="display:none;">0</span></div>
+                        <div id="monthPaidBtn-2" onclick="jumpToMonth(2)" class="month-paid-btn" onmouseover="this.style.background='#d1fae5'" onmouseout="this.style.background='#fff'"><span>2월</span><span id="monthPaidBadge-2" class="month-paid-badge" style="display:none;">0</span></div>
+                        <div id="monthPaidBtn-3" onclick="jumpToMonth(3)" class="month-paid-btn" onmouseover="this.style.background='#d1fae5'" onmouseout="this.style.background='#fff'"><span>3월</span><span id="monthPaidBadge-3" class="month-paid-badge" style="display:none;">0</span></div>
+                        <div id="monthPaidBtn-4" onclick="jumpToMonth(4)" class="month-paid-btn" onmouseover="this.style.background='#d1fae5'" onmouseout="this.style.background='#fff'"><span>4월</span><span id="monthPaidBadge-4" class="month-paid-badge" style="display:none;">0</span></div>
+                        <div id="monthPaidBtn-5" onclick="jumpToMonth(5)" class="month-paid-btn" onmouseover="this.style.background='#d1fae5'" onmouseout="this.style.background='#fff'"><span>5월</span><span id="monthPaidBadge-5" class="month-paid-badge" style="display:none;">0</span></div>
+                        <div id="monthPaidBtn-6" onclick="jumpToMonth(6)" class="month-paid-btn" onmouseover="this.style.background='#d1fae5'" onmouseout="this.style.background='#fff'"><span>6월</span><span id="monthPaidBadge-6" class="month-paid-badge" style="display:none;">0</span></div>
+                        <div id="monthPaidBtn-7" onclick="jumpToMonth(7)" class="month-paid-btn" onmouseover="this.style.background='#d1fae5'" onmouseout="this.style.background='#fff'"><span>7월</span><span id="monthPaidBadge-7" class="month-paid-badge" style="display:none;">0</span></div>
+                        <div id="monthPaidBtn-8" onclick="jumpToMonth(8)" class="month-paid-btn" onmouseover="this.style.background='#d1fae5'" onmouseout="this.style.background='#fff'"><span>8월</span><span id="monthPaidBadge-8" class="month-paid-badge" style="display:none;">0</span></div>
+                        <div id="monthPaidBtn-9" onclick="jumpToMonth(9)" class="month-paid-btn" onmouseover="this.style.background='#d1fae5'" onmouseout="this.style.background='#fff'"><span>9월</span><span id="monthPaidBadge-9" class="month-paid-badge" style="display:none;">0</span></div>
+                        <div id="monthPaidBtn-10" onclick="jumpToMonth(10)" class="month-paid-btn" onmouseover="this.style.background='#d1fae5'" onmouseout="this.style.background='#fff'"><span>10월</span><span id="monthPaidBadge-10" class="month-paid-badge" style="display:none;">0</span></div>
+                        <div id="monthPaidBtn-11" onclick="jumpToMonth(11)" class="month-paid-btn" onmouseover="this.style.background='#d1fae5'" onmouseout="this.style.background='#fff'"><span>11월</span><span id="monthPaidBadge-11" class="month-paid-badge" style="display:none;">0</span></div>
+                        <div id="monthPaidBtn-12" onclick="jumpToMonth(12)" class="month-paid-btn" onmouseover="this.style.background='#d1fae5'" onmouseout="this.style.background='#fff'"><span>12월</span><span id="monthPaidBadge-12" class="month-paid-badge" style="display:none;">0</span></div>
+                    </div>
                     <div class="header-row-actions"
                         style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
                         <div class="left-actions" style="display: flex; gap: 15px; align-items: center;">
                             <h1 style="font-size: 1.8rem; font-weight: 900; color: #065f46; margin: 0;">납부완료 명단</h1>
-                            <select id="yearSelect" class="form-select" style="width: auto; font-weight: 700;">
-                                <!-- Populated via JS -->
-                            </select>
-                            <select id="monthSelect" class="form-select" style="width: auto; font-weight: 700;">
-                                <!-- Populated via JS -->
-                            </select>
+                            <div style="display: flex; gap: 5px; align-items: center;">
+                                <button onclick="changeMonth(-1)" style="padding: 5px 10px; border: 1px solid #cbd5e1; border-radius: 8px; background: white; cursor: pointer; font-weight: bold; color: #475569;">&lt;</button>
+                                <select id="yearSelect" class="form-select" style="width: auto; font-weight: 700;">
+                                    <!-- Populated via JS -->
+                                </select>
+                                <select id="monthSelect" class="form-select" style="width: auto; font-weight: 700;">
+                                    <!-- Populated via JS -->
+                                </select>
+                                <button onclick="changeMonth(1)" style="padding: 5px 10px; border: 1px solid #cbd5e1; border-radius: 8px; background: white; cursor: pointer; font-weight: bold; color: #475569;">&gt;</button>
+                            </div>
                         </div>
                         <div>
                             <button onclick="window.print()" class="mini-btn yellow" title="인쇄"><span

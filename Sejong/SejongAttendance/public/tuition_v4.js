@@ -183,6 +183,7 @@ function initTabs() {
     const btnEnrolled = document.querySelector('.tab-enrolled');
     const btnUnpaid = document.querySelector('.tab-unpaid');
     const btnPaid = document.querySelector('.tab-paid');
+    const btnTrash = document.querySelector('.tab-trash');
 
     if (btnEnrolled) {
         btnEnrolled.addEventListener('click', () => {
@@ -203,6 +204,14 @@ function initTabs() {
     if (btnPaid) {
         btnPaid.addEventListener('click', () => {
             window.currentState.tab = 'paid';
+            updateTabStyles();
+            renderTable();
+        });
+    }
+
+    if (btnTrash) {
+        btnTrash.addEventListener('click', () => {
+            window.currentState.tab = 'trash';
             updateTabStyles();
             renderTable();
         });
@@ -247,21 +256,26 @@ function updateTabStyles() {
     const btnEnrolled = document.querySelector('.tab-enrolled');
     const btnUnpaid = document.querySelector('.tab-unpaid');
     const btnPaid = document.querySelector('.tab-paid');
-    if (!btnEnrolled || !btnUnpaid || !btnPaid) return;
+    const btnTrash = document.querySelector('.tab-trash');
+    const allTabs = [btnEnrolled, btnUnpaid, btnPaid, btnTrash].filter(Boolean);
+    if (allTabs.length === 0) return;
 
     // Reset styles (Dimensional Inactive State)
-    [btnEnrolled, btnUnpaid, btnPaid].forEach(b => {
+    allTabs.forEach(b => {
         b.style.opacity = '0.5';
         b.style.border = '1px solid #e2e8f0';
         b.style.transform = 'scale(0.96) translateY(0)';
         b.style.boxShadow = 'none';
         b.style.zIndex = '1';
+        b.style.color = '';
+        b.style.background = '';
     });
 
     let active;
     if (window.currentState.tab === 'enrolled') active = btnEnrolled;
     else if (window.currentState.tab === 'unpaid') active = btnUnpaid;
-    else active = btnPaid;
+    else if (window.currentState.tab === 'paid') active = btnPaid;
+    else if (window.currentState.tab === 'trash') active = btnTrash;
 
     if (active) {
         // Active 3D State
@@ -272,6 +286,7 @@ function updateTabStyles() {
         let baseColor = '#cbd5e1';
         if (window.currentState.tab === 'unpaid') baseColor = '#b45309';
         else if (window.currentState.tab === 'paid') baseColor = '#059669';
+        else if (window.currentState.tab === 'trash') baseColor = '#991b1b';
 
         active.style.boxShadow = `0 8px 0 ${baseColor}, 0 10px 20px rgba(0,0,0,0.1)`;
 
@@ -282,9 +297,13 @@ function updateTabStyles() {
             active.style.border = '1px solid #b45309';
             active.style.background = 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)';
             active.style.color = '#92400e';
-        } else {
+        } else if (window.currentState.tab === 'paid') {
             active.style.border = '1px solid #059669';
             active.style.background = 'linear-gradient(135deg, #34d399 0%, #10b981 100%)';
+            active.style.color = 'white';
+        } else if (window.currentState.tab === 'trash') {
+            active.style.border = '1px solid #991b1b';
+            active.style.background = 'linear-gradient(135deg, #f87171 0%, #ef4444 100%)';
             active.style.color = 'white';
         }
     }
@@ -303,7 +322,11 @@ async function loadData() {
             fetch(getFetchUrl('timetable'))
         ]);
         const rawMembers = await mRes.json();
-        membersData = Array.isArray(rawMembers) ? rawMembers.filter(m => !['delete', 'trash', 'hold', 'completed'].includes(m.status)) : [];
+        // Include active members + members with trashed courses ([삭제])
+        membersData = Array.isArray(rawMembers) ? rawMembers.filter(m => {
+            if (['delete', 'trash', 'hold', 'completed'].includes(m.status)) return false;
+            return true; // Keep all active members (some may have [삭제] courses)
+        }) : [];
         paymentsData = await pRes.json();
         attendanceData = await aRes.json();
         holidaysData = await hRes.json();
@@ -456,7 +479,14 @@ function getMemberEighthDayInMonth(memberId, year, month, courseFilter = null) {
 
     // [신규] 시뮬레이션에서도 동일한 증가분 적용을 위해 최상단에서 정의
     const memberObj = (window.membersData || []).find(m => String(m.id) === String(memberId));
-    const isDualBakery = (courseFilter && courseFilter.replace(/\s/g, '').includes('제과제빵')) || (!courseFilter && memberObj && memberObj.course && memberObj.course.replace(/\s/g, '').includes('제과제빵'));
+    let finalCourse = memberObj ? memberObj.course : '';
+    const adjKeys = Object.keys(allAdjs).sort();
+    for (let k of adjKeys) {
+        if (allAdjs[k] && allAdjs[k].courseOverride) {
+            finalCourse = allAdjs[k].courseOverride;
+        }
+    }
+    const isDualBakery = (courseFilter && courseFilter.replace(/\s/g, '').includes('제과제빵')) || (!courseFilter && finalCourse && finalCourse.replace(/\s/g, '').includes('제과제빵'));
     const incAmountVal = isDualBakery ? 1.0 : 1.0;
 
     let milestoneNets = [0];
@@ -484,11 +514,8 @@ function getMemberEighthDayInMonth(memberId, year, month, courseFilter = null) {
         const isTardy = r.status === 'tardy' || r.status === 'late' || strStatus.includes('지각') || strStatus.includes('△');
         const isFirstLast = strStatus.includes('첫') || strStatus.includes('종료') || strStatus === '[' || strStatus === ']';
         const isExtension = r.status === 'extension' || strStatus.startsWith('연') || strStatus.includes('연장') || strStatus.startsWith('E');
-        const isPast = r.yearNum < year || (r.yearNum === year && r.monthNum < month);
-        const isPresentPast = r.status === 'present' || strStatus.startsWith('O') || strStatus.startsWith('o') || strStatus.startsWith('O^') || strStatus.startsWith('o^') || isNumericPresent;
-        const isRegularPast = isPresentPast || isAbsent || isEarly || isTardy || isFirstLast;
-        const isRegularCurrent = r.status === 'present' || isNumericPresent || isAbsent || isEarly || isTardy || isFirstLast;
-        const isRegular = isPast ? isRegularPast : isRegularCurrent;
+        const isPresentExt = r.status === 'present' || strStatus.startsWith('O') || strStatus.startsWith('o') || strStatus.startsWith('O^') || strStatus.startsWith('o^');
+        const isRegular = isPresentExt || isNumericPresent || isAbsent || isEarly || isTardy || isFirstLast;
 
         const prevNet = rollingTotal;
         if ((isMarker || isRegular || isExtension) && (r.yearNum < year || (r.yearNum === year && r.monthNum <= month))) {
@@ -527,50 +554,7 @@ function getMemberEighthDayInMonth(memberId, year, month, courseFilter = null) {
         }
     }
 
-    // --- [신규] 미래 예정일 시뮬레이션 (ledger.js와 동일한 로직) ---
-    if (!eighthDay) {
-        let simDate;
-        if (globalLastRecordDateForSim) {
-            simDate = new Date(globalLastRecordDateForSim.getTime() + (24 * 60 * 60 * 1000));
-        } else {
-            simDate = new Date(year, month - 2, 1);
-        }
-        const limitDate = new Date(3000, 11, 31);
-        let currentNetSim = rollingTotal;
-        let foundSimulatedDay = null;
-
-        while (simDate <= limitDate) {
-            const dateStr = simDate.toISOString().split('T')[0];
-            const dayOfWeek = simDate.getDay();
-            const isHolidayInSys = holidaysData.some(h => h.date === dateStr);
-            const isNationalHoliday = !!KOREAN_HOLIDAYS_MAP[dateStr];
-
-            // 요일 체크
-            let isCourseDay = true;
-            if (courseFilter && COURSE_SCHEDULES[courseFilter]) {
-                isCourseDay = COURSE_SCHEDULES[courseFilter].includes(dayOfWeek);
-            }
-
-            if (isCourseDay && !isHolidayInSys && !isNationalHoliday && dayOfWeek !== 0) {
-                const prevCycleSim = getCycle(currentNetSim, isDualBakery);
-                currentNetSim += incAmountVal;
-                currentNetSim = Math.round(currentNetSim * 10) / 10;
-
-                if (getCycle(currentNetSim, isDualBakery) > prevCycleSim) {
-                    if (simDate.getFullYear() === year && (simDate.getMonth() + 1) === month) {
-                        foundSimulatedDay = simDate.getDate();
-                        eighthMonth = simDate.getMonth() + 1;
-                        eighthDay = { year, month, day: foundSimulatedDay };
-                        break;
-                    }
-                    if (simDate > new Date(year, month - 1, 31)) {
-                        break;
-                    }
-                }
-            }
-            simDate.setDate(simDate.getDate() + 1);
-        }
-    }
+    // --- [신규] 미래 예정일 시뮬레이션 제거 (원장님 요청: 실제 출석 도장이 있을 때만 인정) ---
 
     // sheet.html과 동일하게 주기(cycle)가 도달한 횟수만큼 차감하여 시각적 진행률을 표시합니다.
     const getProgressInfo = (currentNet) => {
@@ -591,48 +575,55 @@ function getMemberEighthDayInMonth(memberId, year, month, courseFilter = null) {
 
     // [신규 기믹]: User request to strictly mirror sheet.html dates
     try {
+        // [긴급 캐시 무효화] 과거에 시뮬레이션으로 오염된 로컬 스토리지를 강제 삭제합니다.
+        if (!localStorage.getItem('sejong_tuition_strict_stamp_fix_2')) {
+            localStorage.removeItem('sejong_ledger_sync');
+            localStorage.setItem('sejong_tuition_strict_stamp_fix_2', 'true');
+        }
+
         const syncData = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
-        const syncKey = `${memberId}_${year}_${month}_${courseFilter || 'all'}`;
+        const cleanFilter = courseFilter ? courseFilter.replace(/\([^)]*\)/g, '').trim() : 'all';
 
         // 1. Real milestone from sheet.html
-        if (syncData[syncKey]) {
-            const val = syncData[syncKey];
-            const days = Array.isArray(val) ? val : [val];
-            if (days.length > 0) {
-                eighthDay = { year, month, day: days[0] };
-                // Ensure it's in allMilestones
-                if (!allMilestones.some(ms => ms.year === year && ms.month === month && ms.day === days[0])) {
-                    allMilestones.push(eighthDay);
+        Object.keys(syncData).forEach(k => {
+            if (k.includes('_simulated')) return;
+            const parts = k.split('_');
+            if (parts.length >= 4 && parts[0] === String(memberId) && parseInt(parts[1]) === year && parseInt(parts[2]) === month) {
+                const courseFull = parts.slice(3).join('_');
+                const cleanSyncCourse = courseFull === 'all' ? 'all' : courseFull.replace(/\([^)]*\)/g, '').trim();
+                
+                if (cleanFilter === 'all' || cleanSyncCourse === cleanFilter || (cleanFilter === '미지정' && courseFull === 'all')) {
+                    const val = syncData[k];
+                    const days = Array.isArray(val) ? val : [val];
+                    if (days.length > 0) {
+                        eighthDay = { year, month, day: parseInt(days[0], 10) };
+                        if (!allMilestones.some(ms => ms.year === year && ms.month === month && ms.day === eighthDay.day)) {
+                            allMilestones.push(eighthDay);
+                        }
+                    }
                 }
             }
-        }
-        
-        // 2. Simulated milestone from sheet.html
-        if (syncData[syncKey + '_simulated']) {
-            const valSim = syncData[syncKey + '_simulated'];
-            const daysSim = Array.isArray(valSim) ? valSim : [valSim];
-            if (daysSim.length > 0) {
-                eighthDay = { year, month, day: daysSim[0] };
-            }
-        }
-        
+        });
+
         // 3. Next month real milestone
         const nextM = month === 12 ? 1 : month + 1;
         const nextY = month === 12 ? year + 1 : year;
-        const nextKey = `${memberId}_${nextY}_${nextM}_${courseFilter || 'all'}`;
         
-        if (syncData[nextKey]) {
-            const val = syncData[nextKey];
-            const days = Array.isArray(val) ? val : [val];
-            if (days.length > 0) nextEighthDay = { year: nextY, month: nextM, day: days[0] };
-        }
-        
-        // 4. Next month simulated milestone
-        if (syncData[nextKey + '_simulated']) {
-            const valSimNext = syncData[nextKey + '_simulated'];
-            const daysSimNext = Array.isArray(valSimNext) ? valSimNext : [valSimNext];
-            if (daysSimNext.length > 0) nextEighthDay = { year: nextY, month: nextM, day: daysSimNext[0] };
-        }
+        Object.keys(syncData).forEach(k => {
+            if (k.includes('_simulated')) return;
+            const parts = k.split('_');
+            if (parts.length >= 4 && parts[0] === String(memberId) && parseInt(parts[1]) === nextY && parseInt(parts[2]) === nextM) {
+                const courseFull = parts.slice(3).join('_');
+                const cleanSyncCourse = courseFull === 'all' ? 'all' : courseFull.replace(/\([^)]*\)/g, '').trim();
+                
+                if (cleanFilter === 'all' || cleanSyncCourse === cleanFilter || (cleanFilter === '미지정' && courseFull === 'all')) {
+                    const val = syncData[k];
+                    const days = Array.isArray(val) ? val : [val];
+                    if (days.length > 0) nextEighthDay = { year: nextY, month: nextM, day: parseInt(days[0], 10) };
+                }
+            }
+        });
+
 
         // 5. Inject all past milestones from syncData to ensure accurate 'unpaid' status
         Object.keys(syncData).forEach(key => {
@@ -643,8 +634,9 @@ function getMemberEighthDayInMonth(memberId, year, month, courseFilter = null) {
                 const sYear = parseInt(parts[1], 10);
                 const sMonth = parseInt(parts[2], 10);
                 const sCourse = parts.slice(3).join('_');
+                const cleanSCourse = sCourse === 'all' ? 'all' : sCourse.replace(/\([^)]*\)/g, '').trim();
                 
-                if (sMemberId == memberId && (sCourse === (courseFilter || 'all'))) {
+                if (sMemberId == memberId && (cleanFilter === 'all' || cleanSCourse === cleanFilter || (cleanFilter === '미지정' && sCourse === 'all'))) {
                     if (sYear < year || (sYear === year && sMonth <= month + 1)) {
                         const val = syncData[key];
                         const days = Array.isArray(val) ? val : [val];
@@ -677,11 +669,8 @@ function getMemberEighthDayInMonth(memberId, year, month, courseFilter = null) {
         const isTardy = r.status === 'tardy' || strStatus.includes('지각') || strStatus.includes('△');
         const isFirstLast = strStatus.includes('첫') || strStatus.includes('종료') || strStatus === '[' || strStatus === ']';
         const isExtension = r.status === 'extension' || strStatus.startsWith('연') || strStatus.includes('연장') || strStatus.startsWith('E');
-        const isPast = r.yearNum < year || (r.yearNum === year && r.monthNum < month);
-        const isPresentPast = r.status === 'present' || strStatus.startsWith('O') || strStatus.startsWith('o') || strStatus.startsWith('O^') || strStatus.startsWith('o^') || isNumericPresent;
-        const isRegularPast = isPresentPast || isAbsent || isEarly || isTardy || isFirstLast;
-        const isRegularCurrent = r.status === 'present' || isNumericPresent || isAbsent || isEarly || isTardy || isFirstLast;
-        const isRegular = isPast ? isRegularPast : isRegularCurrent;
+        const isPresentExt = r.status === 'present' || strStatus.startsWith('O') || strStatus.startsWith('o') || strStatus.startsWith('O^') || strStatus.startsWith('o^');
+        const isRegular = isPresentExt || isNumericPresent || isAbsent || isEarly || isTardy || isFirstLast;
 
         if (isMarker || isRegular || isExtension) {
             globalLastRecordDate = r.dateObj;
@@ -751,6 +740,37 @@ function renderTable() {
     let countEnrolled = 0;
     let countUnpaid = 0;
     let countPaid = 0;
+    let countTrash = 0;
+
+    // Trash tab: show only members with [삭제] courses
+    if (window.currentState.tab === 'trash') {
+        const trashMembers = membersData.filter(m => m.course && m.course.includes('[삭제]'));
+        countTrash = trashMembers.length;
+        const trashRows = trashMembers.map(m => {
+            const deletedCourses = (m.course || '').split(',').filter(c => c.includes('[삭제]')).map(c => c.replace('[삭제]', '').trim()).join(', ');
+            return {
+                member: m,
+                courseName: deletedCourses,
+                payment: null,
+                isPaid: false,
+                amount: 0,
+                totalPaidAmount: 0,
+                scheduledDate: null,
+                imminentCourses: [],
+                isDueThisMonth: false,
+                rowStatus: 'trash',
+                currentProgressCount: 0,
+                courseProgressList: [],
+                isTrashCourse: true
+            };
+        });
+        const btnTrash = document.querySelector('.tab-trash');
+        if (btnTrash) btnTrash.innerHTML = `<span class="material-icons">delete</span> 휴지통 (${countTrash})`;
+        if (window.currentState.viewMode !== 'grouped') {
+            renderTotalView(trashRows, tbody);
+        }
+        return;
+    }
 
     const rows = [];
     membersData.forEach(m => {
@@ -759,10 +779,20 @@ function renderTable() {
             if (!m.course || !m.course.includes(window.currentState.course)) return;
         }
 
-        const myCourses = (m.course || '').split(',').map(c => c.trim()).filter(c => c !== '');
+        // Active tabs: skip members where ALL courses are trashed (they go to trash tab only)
+        const allCoursesDeleted = m.course && m.course.split(',').every(c => !c.trim() || c.includes('[삭제]'));
+        if (allCoursesDeleted && m.course) return; // Show in trash tab only
+
+        // Active views: only show courses WITHOUT [삭제]
+        let myCourses = (m.course || '').split(',').map(c => c.trim()).filter(c => c !== '' && !c.includes('[삭제]'));
+        
+        const hasJeggwa = myCourses.some(c => c.includes('제과') && !c.includes('제과제빵'));
+        const hasJeppang = myCourses.some(c => c.includes('제빵') && !c.includes('제과제빵'));
+        if (hasJeggwa && hasJeppang) {
+            myCourses = myCourses.filter(c => !c.includes('제과') && !c.includes('제빵'));
+            myCourses.push('제과제빵기능사');
+        }
         if (myCourses.length === 0) {
-            // 학생이 등록된 과정이 없는 경우 가상의 빈 과정을 하나 만들어서 처리할지 고려
-            // 하지만 보통 수강관리에서는 과정이 있어야 의미가 있으므로 스킵하거나 기본 처리
             myCourses.push('');
         }
 
@@ -805,7 +835,15 @@ function renderTable() {
                 let paidMilestonesCount = 0;
                 const normalizeCourse = (c) => (!c || c === 'null') ? null : String(c).trim();
 
-                const isDualBakeryLocal = (courseNameOnly && courseNameOnly.replace(/\s/g, '').includes('제과제빵')) || (!courseNameOnly && m.course && m.course.replace(/\s/g, '').includes('제과제빵'));
+                let localFinalCourse = m.course || '';
+                const mAdjs = GLOBAL_DATA_ADJUSTMENTS[String(m.id)] || {};
+                const mAdjKeys = Object.keys(mAdjs).sort();
+                for (let k of mAdjKeys) {
+                    if (mAdjs[k] && mAdjs[k].courseOverride) {
+                        localFinalCourse = mAdjs[k].courseOverride;
+                    }
+                }
+                const isDualBakeryLocal = (courseNameOnly && courseNameOnly.replace(/\s/g, '').includes('제과제빵')) || (!courseNameOnly && localFinalCourse && localFinalCourse.replace(/\s/g, '').includes('제과제빵'));
                 const targetCount = isDualBakeryLocal ? 17 : 9;
                 
                 let remainingForLoop = currentProgressObj.count;
@@ -877,16 +915,8 @@ function renderTable() {
                 rowStatus = m.status;
             } else if (payment && (payment.status === 'completed' || payment.status === 'trash')) {
                 rowStatus = payment.status;
-            } else if (hasOverdue) {
+            } else if (isDueThisMonth) {
                 rowStatus = 'unpaid';
-                // [신규] 1월 화면에서 2월 미납건을 '수강중'으로 명시적으로 바꿨다면 그 기록을 존중합니다.
-                const firstOverdue = imminentCourses.find(c => c.isOverdue);
-                if (firstOverdue && firstOverdue.date) {
-                    const immPayment = paymentsData.find(p => p.memberId == m.id && p.year == firstOverdue.date.year && p.month == firstOverdue.date.month && normalizeCourse(p.course) === normalizeCourse(courseNameOnly) && p.status !== 'delete');
-                    if (immPayment && immPayment.status) {
-                        rowStatus = immPayment.status;
-                    }
-                }
             } else if (payment && payment.status === 'paid') {
                 if (isPaidToday) {
                     rowStatus = 'paid';
@@ -971,6 +1001,9 @@ function renderTable() {
     if (window.currentState.viewMode === 'total') renderTotalView(rows, tbody);
     else if (window.currentState.viewMode === 'card') renderCardView(rows, tableCard);
     else if (window.currentState.viewMode === 'grouped') renderGroupedView(rows, tableCard);
+
+    // 월별 미납 패널 뱃지 업데이트 (비동기로 실행하여 렌더링 블로킹 방지)
+    setTimeout(() => updateMonthlyUnpaidPanel(), 0);
 }
 
 function renderTotalView(rows, tbody) {
@@ -981,7 +1014,27 @@ function renderTotalView(rows, tbody) {
 
 const targetY = (row.scheduledDate && row.rowStatus === 'unpaid') ? row.scheduledDate.year : window.currentState.year;
         const targetM = (row.scheduledDate && row.rowStatus === 'unpaid') ? row.scheduledDate.month : window.currentState.month;
-        const statusHtml = `
+
+        let statusHtml;
+        if (row.isTrashCourse) {
+            // Special trash row: show restore dropdown
+            statusHtml = `
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <select class="status-dropdown trash" onchange="restoreTrashedCourse('${m.id}', this.value, '${m.name}')" style="width: 85px;">
+                        <option value="" selected disabled>휴지통</option>
+                        <option value="taking">수강중 (복구)</option>
+                        <option value="retaking">재수강 (복구)</option>
+                    </select>
+                    <div onclick="location.href='ledger.html?memberId=${m.id}&year=${window.currentState.year}'" 
+                         title="출석부 상세 확인" 
+                         style="color: #64748b; display: flex; align-items: center; cursor: pointer; padding: 2px; border-radius: 4px; transition: background 0.2s;"
+                         onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
+                        <span class="material-icons" style="font-size: 1.2rem;">search</span>
+                    </div>
+                </div>
+            `;
+        } else {
+            statusHtml = `
             <div style="display: flex; align-items: center; gap: 6px;">
                 <select class="status-dropdown ${row.rowStatus}" onchange="confirmStatusChange('${m.id}', this.value, '${m.name}', ${row.courseName ? `'${row.courseName}'` : 'null'}, ${row.amount}, '${targetY}', '${targetM}')" style="width: 85px;">
                     <option value="unpaid" ${row.rowStatus === 'unpaid' ? 'selected' : ''}>미납</option>
@@ -999,6 +1052,7 @@ const targetY = (row.scheduledDate && row.rowStatus === 'unpaid') ? row.schedule
                 </div>
             </div>
         `;
+        } // end else (not isTrashCourse)
 
         const isTarget = window.currentState.targetMemberId && String(m.id) === String(window.currentState.targetMemberId);
 
@@ -1227,6 +1281,40 @@ async function togglePayment(memberId, forcedStatus = null, courseName = null, a
     }
 }
 
+// Restore a trashed course: remove [삭제] tags and update member
+async function restoreTrashedCourse(memberId, newStatus, memberName) {
+    if (!newStatus) return;
+    const actionText = newStatus === 'taking' ? '수강중' : '재수강';
+    if (!confirm(`${memberName} 수강생의 삭제된 과정을 복구하여 ${actionText}으로 전환하시겠습니까?`)) {
+        renderTable();
+        return;
+    }
+    try {
+        const member = membersData.find(m => String(m.id) === String(memberId));
+        if (!member) return;
+        // Remove all [삭제] tags
+        member.course = (member.course || '').replace(/\[삭제\]/g, '');
+        const res = await fetch(getFetchUrl('members', true), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(member)
+        });
+        if (res.ok) {
+            await loadData();
+            // Switch back to enrolled tab
+            window.currentState.tab = 'enrolled';
+            updateTabStyles();
+            renderTable();
+            showResultModal('복구 완료', `${memberName} 수강생의 과정이 복구되어 ${actionText}으로 전환되었습니다.`, true);
+        } else {
+            showResultModal('오류', '복구 중 오류가 발생했습니다.', false);
+        }
+    } catch(e) {
+        console.error(e);
+        showResultModal('오류', '복구 중 오류가 발생했습니다.', false);
+    }
+}
+
 function confirmStatusChange(memberId, newStatus, memberName, courseName = null, amount = null, targetYear = null, targetMonth = null) {
     if (newStatus === 'completed' || newStatus === 'trash') {
         const actionName = newStatus === 'completed' ? '수료생 보관함' : '휴지통';
@@ -1356,21 +1444,45 @@ function closeMessageModal() {
     }
 }
 
-function openTuitionSettings() {
+async function openTuitionSettings() {
     const modal = document.getElementById('tuitionSettingModal');
     if (modal) {
-        document.getElementById('fee_all').value = (courseFees['all'] || DEFAULT_PRICE).toLocaleString();
-        document.getElementById('fee_hansik').value = (courseFees['한식기능사'] || 200000).toLocaleString();
-        document.getElementById('fee_yangsik').value = (courseFees['양식기능사'] || 200000).toLocaleString();
-        document.getElementById('fee_ilsik').value = (courseFees['일식기능사'] || 200000).toLocaleString();
-        document.getElementById('fee_jungsik').value = (courseFees['중식기능사'] || 200000).toLocaleString();
-        document.getElementById('fee_jegwa').value = (courseFees['제과기능사'] || 200000).toLocaleString();
-        document.getElementById('fee_jebang').value = (courseFees['제빵기능사'] || 200000).toLocaleString();
-        document.getElementById('fee_jegwajebang').value = (courseFees['제과제빵기능사'] || 200000).toLocaleString();
-        document.getElementById('fee_bok-eo').value = (courseFees['복어기능사'] || 200000).toLocaleString();
-        document.getElementById('fee_san-eop').value = (courseFees['산업기사'] || 200000).toLocaleString();
-        document.getElementById('fee_gajeong').value = (courseFees['가정요리'] || 200000).toLocaleString();
-        document.getElementById('fee_brunch').value = (courseFees['브런치'] || 200000).toLocaleString();
+        const container = document.getElementById('tuitionSettingsContainer');
+        if (container) {
+            container.innerHTML = '<div style="padding:20px;text-align:center;">로딩 중...</div>';
+            
+            try {
+                const res = await fetch(getFetchUrl('settings'));
+                const data = await res.json();
+                let settingsObj = Array.isArray(data) && data.length > 0 ? data[0] : (data.key === "settings" ? data.value : data);
+                if (!settingsObj) settingsObj = {};
+                
+                const courses = settingsObj.courses || ['한식기능사', '양식기능사', '일식기능사', '중식기능사', '제과기능사', '제빵기능사', '제과제빵기능사', '복어기능사', '산업기사', '가정요리', '브런치'];
+                const courseFeesObj = settingsObj.courseFees || {};
+                
+                let html = `
+                    <div class="form-group">
+                        <label>기본 수강료</label>
+                        <input type="text" id="fee_all" value="${(courseFeesObj['all'] || DEFAULT_PRICE).toLocaleString()}" class="text-right" title="기본 수강료" placeholder="금액 입력">
+                    </div>
+                `;
+                
+                courses.forEach((c, idx) => {
+                    const fee = (courseFeesObj[c] || DEFAULT_PRICE).toLocaleString();
+                    html += `
+                        <div class="form-group">
+                            <label>${c}</label>
+                            <input type="text" id="fee_dyn_${idx}" data-course="${c}" value="${fee}" class="text-right" title="${c} 수강료" placeholder="금액 입력">
+                        </div>
+                    `;
+                });
+                
+                container.innerHTML = html;
+            } catch(e) {
+                console.error("Settings load error:", e);
+                container.innerHTML = '<div style="color:red;">설정을 불러오는데 실패했습니다.</div>';
+            }
+        }
         modal.classList.remove('hidden');
         modal.style.display = 'flex';
     }
@@ -1386,22 +1498,19 @@ function closeTuitionSettings() {
 
 async function saveTuitionSettings() {
     courseFees['all'] = parseInt(document.getElementById('fee_all').value.replace(/,/g, '')) || DEFAULT_PRICE;
-    courseFees['한식기능사'] = parseInt(document.getElementById('fee_hansik').value.replace(/,/g, '')) || DEFAULT_PRICE;
-    courseFees['양식기능사'] = parseInt(document.getElementById('fee_yangsik').value.replace(/,/g, '')) || DEFAULT_PRICE;
-    courseFees['일식기능사'] = parseInt(document.getElementById('fee_ilsik').value.replace(/,/g, '')) || DEFAULT_PRICE;
-    courseFees['중식기능사'] = parseInt(document.getElementById('fee_jungsik').value.replace(/,/g, '')) || DEFAULT_PRICE;
-    courseFees['제과기능사'] = parseInt(document.getElementById('fee_jegwa').value.replace(/,/g, '')) || DEFAULT_PRICE;
-    courseFees['제빵기능사'] = parseInt(document.getElementById('fee_jebang').value.replace(/,/g, '')) || DEFAULT_PRICE;
-    courseFees['제과제빵기능사'] = parseInt(document.getElementById('fee_jegwajebang').value.replace(/,/g, '')) || DEFAULT_PRICE;
-    courseFees['복어기능사'] = parseInt(document.getElementById('fee_bok-eo').value.replace(/,/g, '')) || DEFAULT_PRICE;
-    courseFees['산업기사'] = parseInt(document.getElementById('fee_san-eop').value.replace(/,/g, '')) || DEFAULT_PRICE;
-    courseFees['가정요리'] = parseInt(document.getElementById('fee_gajeong').value.replace(/,/g, '')) || DEFAULT_PRICE;
-    courseFees['브런치'] = parseInt(document.getElementById('fee_brunch').value.replace(/,/g, '')) || DEFAULT_PRICE;
+    
+    const dynamicInputs = document.querySelectorAll('#tuitionSettingsContainer input[id^="fee_dyn_"]');
+    dynamicInputs.forEach(input => {
+        const cName = input.getAttribute('data-course');
+        courseFees[cName] = parseInt(input.value.replace(/,/g, '')) || DEFAULT_PRICE;
+    });
 
     try {
         const currentSettingsRes = await fetch(getFetchUrl('settings'));
         let settingsArr = await currentSettingsRes.json();
-        let settingsObj = Array.isArray(settingsArr) && settingsArr.length > 0 ? settingsArr[0] : { id: Date.now().toString() };
+        let settingsObj = Array.isArray(settingsArr) && settingsArr.length > 0 ? settingsArr[0] : (settingsArr.key === "settings" ? settingsArr.value : settingsArr);
+        if (!settingsObj) settingsObj = { id: Date.now().toString() };
+        
         settingsObj.courseFees = courseFees;
 
         await fetch(getFetchUrl('settings', true), {
@@ -1521,3 +1630,85 @@ window.addEventListener('storage', (e) => {
         loadData();
     }
 });
+
+// ============================================================
+// 월별 미납 패널: 각 달의 미납 결제일 수 계산 및 뱃지 업데이트
+// ============================================================
+
+/** 특정 연도·월의 미납 결제일(미납 milestone) 총 개수를 반환 */
+function countUnpaidMilestonesForMonth(year, month) {
+    const normalizeCourse = (c) => (!c || c === 'null') ? null : String(c).trim();
+    let count = 0;
+    const today = new Date();
+
+    membersData.forEach(m => {
+        // 삭제된 과정은 제외
+        const courses = (m.course || '').split(',').map(c => c.trim()).filter(c => c && !c.includes('[삭제]'));
+        courses.forEach(fullCourse => {
+            const courseNameOnly = fullCourse.split('(')[0].trim();
+            const stats = getMemberEighthDayInMonth(m.id, year, month, courseNameOnly);
+            if (!stats || !stats.allMilestones) return;
+
+            const targetCount = (courseNameOnly && courseNameOnly.replace(/\s/g, '').includes('제과제빵')) ? 17 : 9;
+            let remainingForLoop = stats.currentCount ? stats.currentCount.count : 0;
+
+            stats.allMilestones.forEach(ms => {
+                const msPayment = paymentsData.find(p =>
+                    p.memberId == m.id &&
+                    p.year == ms.year &&
+                    p.month == ms.month &&
+                    normalizeCourse(p.course) === normalizeCourse(courseNameOnly) &&
+                    p.status !== 'delete'
+                );
+                
+                // 해당 월에 명시적으로 '수강중' 등 납부가 아닌 상태로 처리해둔 경우 뱃지 카운트에서 제외할지 여부
+                // 원장님 요구사항: 미납 뱃지는 '결제일 기준 순수 미납건'이므로, paid가 아니면 무조건 카운트
+                if (msPayment && msPayment.status === 'paid') {
+                    remainingForLoop -= targetCount;
+                } else {
+                    const msDateObj = new Date(ms.year, ms.month - 1, ms.day);
+                    if (remainingForLoop >= targetCount || msDateObj <= today) {
+                        // 타겟 월과 일치할 때만 뱃지 숫자 증가
+                        if (ms.year === year && ms.month === month) {
+                            count++;
+                        }
+                        remainingForLoop -= targetCount;
+                    }
+                }
+            });
+        });
+    });
+    return count;
+}
+
+/** 모든 달(1~12)의 미납 수를 계산하고 패널 뱃지를 업데이트 */
+function updateMonthlyUnpaidPanel() {
+    const year = window.currentState.year;
+    const currentMonth = window.currentState.month;
+
+    for (let m = 1; m <= 12; m++) {
+        const badge = document.getElementById(`monthUnpaidBadge-${m}`);
+        const btn = document.getElementById(`monthUnpaidBtn-${m}`);
+        if (!badge || !btn) continue;
+
+        // 현재 선택된 월 강조
+        btn.classList.toggle('is-current', m === currentMonth);
+
+        const cnt = countUnpaidMilestonesForMonth(year, m);
+        if (cnt > 0) {
+            badge.textContent = cnt;
+            badge.style.display = 'inline-block';
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+}
+
+/** 월 패널 클릭 시 해당 월로 이동 */
+function jumpToMonth(month) {
+    window.currentState.month = month;
+    const monthSelect = document.getElementById('monthSelect');
+    if (monthSelect) monthSelect.value = month;
+    localStorage.setItem('sejong_tuition_currentMonth', month);
+    renderTable();
+}

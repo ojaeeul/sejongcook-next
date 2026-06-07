@@ -55,11 +55,12 @@ window.targetMemberId = null;
 window.updateMemberField = async function(memberId, field, value) {
     try {
         const m = membersData.find(m => String(m.id) === String(memberId));
-        if (m) m[field] = value;
-        await fetch(`/api/sejong/members/${memberId}`, {
-            method: 'PUT',
+        if (!m) return;
+        m[field] = value;
+        await fetch(getFetchUrl('members', true), {
+            method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ [field]: value })
+            body: JSON.stringify(m)
         });
     } catch(e) { console.error(e); }
 };
@@ -72,6 +73,25 @@ window.updateMemberCourse = async function(memberId, index, value) {
         courses[index] = value;
         const newCourse = courses.filter(Boolean).join(', ');
         m.course = newCourse;
+        await fetch(getFetchUrl('members', true), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(m)
+        });
+        renderLedger(); 
+    } catch(e) { console.error(e); }
+};
+
+window.deleteMemberCourse = async function(memberId, index, courseName) {
+    if(!confirm(`정말 '${courseName}' 과정을 휴지통으로 이동하시겠습니까?`)) return;
+    try {
+        const m = membersData.find(m => String(m.id) === String(memberId));
+        if (!m) return;
+        const courses = (m.course || '').split(',').map(c => c.trim()).filter(Boolean);
+        if (!courses[index].includes('[삭제]')) {
+            courses[index] = courses[index] + '[삭제]';
+        }
+        m.course = courses.join(', ');
         await fetch(getFetchUrl('members', true), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -238,7 +258,7 @@ function getAllLedgerMonthStats(memberId, year, month) {
     const member = membersData.find(m => String(m.id) === String(memberId));
     if (!member || !member.course) return [];
 
-    let courses = member.course.split(',').map(c => c.split('(')[0].trim());
+    let courses = member.course.split(',').map(c => c.trim()).filter(c => c && !c.includes('[삭제]')).map(c => c.split('(')[0]);
     const hasJeggwa = courses.some(c => c.includes('제과') && !c.includes('제과제빵'));
     const hasJeppang = courses.some(c => c.includes('제빵') && !c.includes('제과제빵'));
     if (hasJeggwa && hasJeppang) {
@@ -411,9 +431,9 @@ function renderLedger() {
         let filteredMembers = membersData.filter(m => {
             if (courseName === '기타') {
                 if (!m.course) return true; // Members with no course are '기타'
-                const cList = m.course.split(',').map(c => c.trim());
-                // Return true if they ARE NOT in any defined course EXCEPT '기타' itself in the list
-                return !cList.some(c => COURSE_LIST.filter(cl => cl !== '기타').some(cl => c.includes(cl)));
+                const cList = m.course.split(',').map(c => c.trim()).filter(c => c && !c.includes('[삭제]'));
+                if (cList.length === 0) return true;
+                return !COURSE_LIST.filter(cl => cl !== '기타').some(cl => cList.some(c => c.includes(cl)));
             }
             return m.course && m.course.includes(courseName);
         }).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
@@ -431,12 +451,40 @@ function renderLedger() {
     // Case 3: Category
     else {
         const courses = COURSE_CATEGORIES[activeCategory];
+        let categoryMembers = [];
+        
         courses.forEach(courseName => {
             let filteredMembers = membersData.filter(m => {
                 if (courseName === '기타') {
                     if (!m.course) return true;
-                    const cList = m.course.split(',').map(c => c.trim());
-                    return !cList.some(c => COURSE_LIST.filter(cl => cl !== '기타').some(cl => c.includes(cl)));
+                    const cList = m.course.split(',').map(c => c.trim()).filter(c => c && !c.includes('[삭제]'));
+                    if (cList.length === 0) return true;
+                    return !COURSE_LIST.filter(cl => cl !== '기타').some(cl => cList.some(c => c.includes(cl)));
+                }
+                return m.course && m.course.includes(courseName);
+            }).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+            filteredMembers = filterByPeriod(filteredMembers);
+            if (filteredMembers.length > 0) {
+                // To avoid duplicate students in the badge panel if they take multiple courses in the same category
+                // we'll just push them and let renderMonthlyRedBoxPanel's inner loop handle it
+                // Actually, renderMonthlyRedBoxPanel iterates courses by itself if courseScope='all'.
+                // So if we just deduplicate members and call renderMonthlyRedBoxPanel with 'all', it will count all courses!
+                filteredMembers.forEach(m => {
+                    if (!categoryMembers.some(cm => cm.id === m.id)) {
+                        categoryMembers.push(m);
+                    }
+                });
+            }
+        });
+
+        courses.forEach(courseName => {
+            let filteredMembers = membersData.filter(m => {
+                if (courseName === '기타') {
+                    if (!m.course) return true;
+                    const cList = m.course.split(',').map(c => c.trim()).filter(c => c && !c.includes('[삭제]'));
+                    if (cList.length === 0) return true;
+                    return !COURSE_LIST.filter(cl => cl !== '기타').some(cl => cList.some(c => c.includes(cl)));
                 }
                 return m.course && m.course.includes(courseName);
             }).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
@@ -451,8 +499,9 @@ function renderLedger() {
     // Always check for "Other" members (if any) if in "Total" view
     const otherMembers = membersData.filter(m => {
         if (!m.course) return true;
-        const cList = m.course.split(',').map(c => c.trim());
-        return !cList.some(c => COURSE_LIST.filter(cl => cl !== '기타').some(cl => c.includes(cl)));
+        const cList = m.course.split(',').map(c => c.trim()).filter(c => c && !c.includes('[삭제]'));
+        if (cList.length === 0) return true;
+        return !COURSE_LIST.filter(cl => cl !== '기타').some(cl => cList.some(c => c.includes(cl)));
     }).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
 
     const filteredOthers = filterByPeriod(otherMembers);
@@ -478,6 +527,32 @@ function renderTable(container, title, members, id) {
     section.id = id;
     section.style.cssText = `margin-bottom: 40px;`;
 
+    const monthCounts = {1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 11:0, 12:0};
+    const blueCounts = {1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 11:0, 12:0};
+    
+    members.forEach(m => {
+        for (let month = 1; month <= 12; month++) {
+            const schedules = getAllLedgerMonthStats(m.id, currentYear, month);
+            schedules.forEach(s => {
+                if (!s.isSimulated && s.eighthDay && !isNaN(parseInt(s.eighthDay)) && Number(s.eighthDay) > 0) {
+                    const isPaid = (typeof paymentsData !== 'undefined' ? paymentsData : window.paymentsData || []).some(p =>
+                        String(p.memberId) === String(m.id) &&
+                        String(p.year) === String(currentYear) &&
+                        String(p.month) === String(month) &&
+                        p.status === 'paid' &&
+                        (p.course && s.course && (p.course.includes(s.course) || s.course.includes(p.course)))
+                    );
+
+                    if (isPaid) {
+                        blueCounts[month]++;
+                    } else {
+                        monthCounts[month]++;
+                    }
+                }
+            });
+        }
+    });
+
     let html = `
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #0f172a; margin-bottom: 12px; padding: 10px 0;">
             <h2 style="margin: 0; font-size: 1.4rem; font-weight: 900;">${title} (${members.length}명)</h2>
@@ -487,16 +562,39 @@ function renderTable(container, title, members, id) {
             </div>
         </div>
         <div style="overflow-x: auto; border: 1.5px solid #0f172a; border-radius: 4px; background: #fff;">
-            <table style="width: 100%; border-collapse: collapse; min-width: 1000px; font-family: 'Noto Sans KR', sans-serif;">
+            <table style="width: 100%; border-collapse: collapse; table-layout: fixed; font-family: 'Noto Sans KR', sans-serif;">
+                <colgroup>
+                    <col style="width: 35px;"><!-- NO -->
+                    <col style="width: 105px;"><!-- 회원정보/과정 -->
+                    ${Array.from({ length: 24 }, () => `<col style="width: calc((100% - 140px - 60px) / 24);">`).join('')}<!-- 12월 x 예/실 -->
+                    <col style="width: 60px;"><!-- 비고 -->
+                </colgroup>
                 <thead>
                     <tr style="background: #f8fafc; border-bottom: 1.5px solid #0f172a;">
-                        <th rowspan="2" style="width: 35px; border-right: 1.5px solid #0f172a; font-size: 0.75rem;">NO</th>
-                        <th rowspan="2" style="width: 105px; max-width: 105px; white-space: nowrap; border-right: 1.5px solid #0f172a; font-size: 0.75rem; text-align: left; padding: 10px 5px;">회원정보/과정</th>
-                        ${Array.from({ length: 12 }, (_, i) => `<th colspan="2" style="border-right: 1.5px solid #0f172a; border-bottom: 1px solid #cbd5e1; font-size: 0.8rem; padding: 5px;">${i + 1}월</th>`).join('')}
-                        <th rowspan="2" style="width: 100px; font-size: 0.75rem;">비고</th>
+                        <th rowspan="2" style="border-right: 1.5px solid #0f172a; font-size: 0.75rem;">NO</th>
+                        <th rowspan="2" style="border-right: 1.5px solid #0f172a; font-size: 0.75rem; text-align: left; padding: 10px 5px;">회원정보/과정</th>
+                        ${Array.from({ length: 12 }, (_, i) => {
+                            const month = i + 1;
+                            const rCount = monthCounts[month];
+                            const bCount = blueCounts[month];
+                            let contentHtml = '';
+                            if (rCount > 0 || bCount > 0) {
+                                contentHtml = `
+                                    <div style="display:flex; justify-content:center; align-items:center; gap:2px;">
+                                        ${rCount > 0 ? `<span style="background:#ef4444; color:white; border-radius:10px; padding:1px 4px; font-size:0.6rem; min-width:12px; text-align:center;">${rCount}</span>` : `<span style="visibility:hidden; padding:1px 4px; font-size:0.6rem; min-width:12px;">0</span>`}
+                                        <span style="font-size:0.75rem; font-weight:800;">${month}월</span>
+                                        ${bCount > 0 ? `<span style="background:#2563eb; color:white; border-radius:10px; padding:1px 4px; font-size:0.6rem; min-width:12px; text-align:center;">${bCount}</span>` : `<span style="visibility:hidden; padding:1px 4px; font-size:0.6rem; min-width:12px;">0</span>`}
+                                    </div>
+                                `;
+                            } else {
+                                contentHtml = `<span style="font-size:0.75rem; font-weight:800;">${month}월</span>`;
+                            }
+                            return `<th colspan="2" style="border-right: 1.5px solid #0f172a; border-bottom: 1px solid #cbd5e1; padding: 2px;">${contentHtml}</th>`;
+                        }).join('')}
+                        <th rowspan="2" style="font-size: 0.75rem;">비고</th>
                     </tr>
                     <tr style="background: #f8fafc; border-bottom: 1.5px solid #0f172a;">
-                        ${Array.from({ length: 12 }, () => `<th style="width: 45px; font-size: 0.65rem; border-right: 1px dotted #cbd5e1;">예</th><th style="width: 45px; font-size: 0.65rem; border-right: 1.5px solid #0f172a;">실</th>`).join('')}
+                        ${Array.from({ length: 12 }, () => `<th style="font-size: 0.65rem; border-right: 1px dotted #cbd5e1;">예</th><th style="font-size: 0.65rem; border-right: 1.5px solid #0f172a;">실</th>`).join('')}
                     </tr>
                 </thead>
                 <tbody>
@@ -510,40 +608,34 @@ function renderTable(container, title, members, id) {
             <td style="padding: 6px 4px; border-right: 1.5px solid #0f172a; width: 105px; max-width: 105px; overflow: hidden;">
                 <div style="display: flex; align-items: center; gap: 2px;">
                     <span onclick="moveToTrash('${m.id}')" style="cursor: pointer; color: #ef4444; font-size: 0.8rem; display: flex; align-items: center;" title="휴지통으로 이동"><span class="material-icons" style="font-size: 0.8rem;">delete</span></span>
-                    <input type="text" value="${m.name || ''}" onchange="updateMemberField('${m.id}', 'name', this.value)" style="font-weight: 900; font-size: 0.85rem; border: 1px solid transparent; width: 65px; padding: 0; background: transparent; color: #000;" onfocus="this.style.border='1px solid #cbd5e1'; this.style.background='#fff'" onblur="this.style.border='1px solid transparent'; this.style.background='transparent'">
+                    <span style="font-weight: 900; font-size: 0.85rem; color: #000;">${m.name || ''}</span>
                 </div>
-                <div style="margin-top: 2px;">
-                    <input type="text" value="${m.phone || ''}" onchange="updateMemberField('${m.id}', 'phone', this.value)" style="font-size: 0.7rem; color: #64748b; border: 1px solid transparent; width: 95px; padding: 0; background: transparent;" onfocus="this.style.border='1px solid #cbd5e1'; this.style.background='#fff'" onblur="this.style.border='1px solid transparent'; this.style.background='transparent'" placeholder="전화번호">
+                    <span style="font-size: 0.7rem; color: #64748b;">${m.phone || ''}</span>
                 </div>
                 <div style="margin-top: 4px; display: flex; flex-direction: column; gap: 2px;">
                     ${(() => {
-                        const courses = (m.course || '').split(',').map(c => c.trim()).filter(Boolean);
-                        const c1 = courses[0] || '';
-                        const c2 = courses[1] || '';
-                        const c3 = courses[2] || '';
-
-                        const renderInput = (val, idx) => {
-                            if (!val) {
-                                return `<input type="text" value="" readonly onclick="openEditConfirmModal('${m.id}')" placeholder="+ 과정 추가" style="cursor: pointer; font-size: 0.6rem; color: #1d4ed8; background: #eff6ff; border: 1px solid transparent; border-radius: 2px; width: 80px; padding: 1px 3px;">`;
-                            } else {
-                                return `<input type="text" value="${val}" onchange="updateMemberCourse('${m.id}', ${idx}, this.value)" placeholder="+ 과정 추가" style="font-size: 0.6rem; color: #1d4ed8; background: #eff6ff; border: 1px solid transparent; border-radius: 2px; width: 80px; padding: 1px 3px;" onfocus="this.style.border='1px solid #bfdbfe'" onblur="this.style.border='1px solid transparent'">`;
-                            }
-                        };
-
-                        return `
+                        const courses = (m.course || '').split(',').map(c => c.trim());
+                        const htmlParts = [];
+                        let activeCount = 0;
+                        courses.forEach((c, originalIdx) => {
+                            if (!c || c.includes('[삭제]')) return;
+                            activeCount++;
+                            htmlParts.push(`
+                                <div style="display: flex; align-items: center; gap: 2px;">
+                                    <span onclick="deleteMemberCourse('${m.id}', ${originalIdx}, '${c}')" style="cursor: pointer; color: #ef4444; display: flex; align-items: center;" title="과정 삭제"><span class="material-icons" style="font-size: 0.75rem;">delete</span></span>
+                                    <span onclick="openEditConfirmModal('${m.id}')" title="클릭하여 과정 수정" style="cursor: pointer; font-size: 0.6rem; color: #1d4ed8; background: #eff6ff; border: 1px solid transparent; border-radius: 2px; padding: 1px 3px; display: inline-block; max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" onmouseover="this.style.border='1px solid #bfdbfe'; this.style.background='#dbeafe'" onmouseout="this.style.border='1px solid transparent'; this.style.background='#eff6ff'">${c}</span>
+                                </div>
+                            `);
+                        });
+                        
+                        // Add empty input at the end for adding new courses via modal
+                        htmlParts.push(`
                             <div style="display: flex; align-items: center; gap: 2px;">
-                                <span onclick="moveToTrash('${m.id}')" style="cursor: pointer; color: #ef4444; display: flex; align-items: center; visibility: ${c1 ? 'visible' : 'hidden'};" title="휴지통으로 이동"><span class="material-icons" style="font-size: 0.75rem;">delete</span></span>
-                                ${renderInput(c1, 0)}
+                                <span style="visibility: hidden; display: flex; align-items: center;"><span class="material-icons" style="font-size: 0.75rem;">delete</span></span>
+                                <span onclick="openEditConfirmModal('${m.id}')" style="cursor: pointer; font-size: 0.6rem; color: #94a3b8; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 2px; padding: 1px 3px; display: inline-block;">+ 과정 추가</span>
                             </div>
-                            <div style="display: flex; align-items: center; gap: 2px;">
-                                <span onclick="moveToTrash('${m.id}')" style="cursor: pointer; color: #ef4444; display: flex; align-items: center; visibility: ${c2 ? 'visible' : 'hidden'};" title="휴지통으로 이동"><span class="material-icons" style="font-size: 0.75rem;">delete</span></span>
-                                ${renderInput(c2, 1)}
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 2px;">
-                                <span onclick="moveToTrash('${m.id}')" style="cursor: pointer; color: #ef4444; display: flex; align-items: center; visibility: ${c3 ? 'visible' : 'hidden'};" title="휴지통으로 이동"><span class="material-icons" style="font-size: 0.75rem;">delete</span></span>
-                                ${renderInput(c3, 2)}
-                            </div>
-                        `;
+                        `);
+                        return htmlParts.join('');
                     })()}
                 </div>
             </td>`;
@@ -634,7 +726,7 @@ function renderTable(container, title, members, id) {
                     <div style="font-size: 0.65rem; font-weight: 800; display: flex; flex-direction: column; gap: 2px; align-items: center; margin-bottom: 4px;">
                         <div style="color: ${dateColor};">${dayText}</div>
                         <div style="font-size: 0.6rem; color: ${feeColor};">${s.fee / 10000}만</div>
-                        <div style="font-size: 0.55rem; color: #64748b; font-weight: 600; line-height: 1;">${s.course || ''}</div>
+                        <div style="font-size: 0.55rem; color: #64748b; font-weight: 600; line-height: 1;">${(s.course || '').replace('기능사', '')}</div>
                     </div>
                 `}).join('');
 
@@ -642,7 +734,7 @@ function renderTable(container, title, members, id) {
                 <div style="font-size: 0.65rem; font-weight: 900; display: flex; flex-direction: column; gap: 2px; align-items: center; margin-bottom: 4px;">
                     <div>${new Date(p.updatedAt).getDate()}일</div>
                     <div style="font-size: 0.6rem; color: #059669;">${p.amount / 10000}만</div>
-                    ${p.course ? `<div style="font-size: 0.55rem; color: #64748b; font-weight: 600; line-height: 1;">${p.course}</div>` : ''}
+                    ${p.course ? `<div style="font-size: 0.55rem; color: #64748b; font-weight: 600; line-height: 1;">${p.course.replace('기능사', '')}</div>` : ''}
                 </div>
             `).join('');
 

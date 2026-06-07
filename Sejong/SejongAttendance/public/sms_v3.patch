@@ -1,0 +1,593 @@
+diff --git a/public/sejong/sms_v3.js b/public/sejong/sms_v3.js
+index f3250eb..695745c 100644
+--- a/public/sejong/sms_v3.js
++++ b/public/sejong/sms_v3.js
+@@ -70,9 +70,11 @@ const KOREAN_HOLIDAYS_MAP = {
+     "2027-03-01": "삼일절", "2027-05-05": "어린이날", "2027-05-13": "부처님오신날",
+     "2027-06-06": "현충일", "2027-08-15": "광복절",
+     "2027-09-14": "추석 연휴", "2027-09-15": "추석", "2027-09-16": "추석 연휴",
+-    "2027-10-03": "개천절", "2027-10-09": "한글날",
++    "2027-10-03": "개천절", "2027-10-04": "대체공휴일", "2027-10-09": "한글날",
+     "2027-12-25": "성탄절"
+ };
++window.KOREAN_HOLIDAYS_MAP = KOREAN_HOLIDAYS_MAP;
++
+ let storedTargets = localStorage.getItem('sejongSmsSelectedTargets');
+ let selectedTargets = storedTargets ? JSON.parse(storedTargets) : []; // Array of member objects
+ let currentMsgType = 'SMS';
+@@ -309,10 +311,14 @@ async function fetchAllData() {
+         }
+         if (results[1].status === 'fulfilled') paymentsData = results[1].value;
+         if (results[2].status === 'fulfilled') attendanceData = results[2].value;
+-        if (results[3].status === 'fulfilled') holidaysData = results[3].value;
++        if (results[3].status === 'fulfilled') {
++            holidaysData = results[3].value;
++            window.holidaysData = holidaysData;
++        }
+ 
+         if (results[4].status === 'fulfilled' && results[4].value) {
+             COURSE_SCHEDULES = { ...COURSE_SCHEDULES, ...results[4].value };
++            window.COURSE_SCHEDULES = COURSE_SCHEDULES;
+         }
+ 
+         // Settings handling
+@@ -324,18 +330,28 @@ async function fetchAllData() {
+             }
+         }
+ 
+-        // [추가] 오늘 스케줄 동기화
++        // [추가] 오늘 스케줄 동기화 (schedulesData is fetched elsewhere or unsupported here)
+         const todayStr = new Date().toISOString().split('T')[0];
+-        const todaySchedule = schedulesData && schedulesData[todayStr] ? schedulesData[todayStr] : '';
+         const scheduleMemoElem = document.getElementById('todayScheduleMemo');
+         if (scheduleMemoElem) {
+-            scheduleMemoElem.value = todaySchedule;
++            // scheduleMemoElem.value = ''; // Skip modifying if we don't have schedulesData
+         }
+ 
+         processAttendanceData();
+         processCourses();
+         renderTargetList();
+         updateSelectedTags();
++        
++        // Restore calendar open state
++        const body = document.getElementById('rangeFilterBody');
++        const icon = document.getElementById('rangeToggleIcon');
++        if (localStorage.getItem('sejongSmsCalendarOpen') === 'true') {
++            if (body) body.style.display = 'block';
++            if (icon) icon.textContent = 'expand_less';
++        }
++        
++        renderRangeCalendar(); // ensure calendar reflects data if opened
++
+     } catch (err) {
+         console.error('Failed to fetch data for SMS:', err);
+     }
+@@ -403,10 +419,12 @@ function processCourses() {
+         // [추가] 현재 수강중인 과정(m.course)에는 없더라도, 결제 대장에 수동으로 등록된 내역(enrolled, unpaid)이 있다면 필터에 나타나도록 그룹에 추가
+         const manualPayments = paymentsData.filter(p => p.memberId == m.id && (p.status === 'enrolled' || p.status === 'unpaid'));
+         manualPayments.forEach(mp => {
+-            const subjectName = normalizeCourse(mp.course) || '미지정';
+-            if (!groupedCourses[subjectName]) groupedCourses[subjectName] = [];
+-            if (!groupedCourses[subjectName].some(em => em.id === m.id)) {
+-                groupedCourses[subjectName].push(m);
++            const subjectName = normalizeCourse(mp.course);
++            if (subjectName) {
++                if (!groupedCourses[subjectName]) groupedCourses[subjectName] = [];
++                if (!groupedCourses[subjectName].some(em => em.id === m.id)) {
++                    groupedCourses[subjectName].push(m);
++                }
+             }
+         });
+     });
+@@ -440,11 +458,16 @@ function renderTargetList() {
+     if (rangeStartVal) {
+         const parts = rangeStartVal.split('-');
+         rangeStart = new Date(parts[0], parts[1] - 1, parts[2]);
++    } else if (usePaymentFilter) {
++        rangeStart = new Date(calendarYear, calendarMonth, 1);
+     }
++    
+     let rangeEnd = null;
+     if (rangeEndVal) {
+         const parts = rangeEndVal.split('-');
+         rangeEnd = new Date(parts[0], parts[1] - 1, parts[2]);
++    } else if (usePaymentFilter) {
++        rangeEnd = new Date(calendarYear, calendarMonth + 1, 0, 23, 59, 59);
+     }
+ 
+     const listDiv = document.getElementById('courseList');
+@@ -468,12 +491,63 @@ function renderTargetList() {
+         // 3. Filter by Payment Schedule (8th day) if enabled
+         if (usePaymentFilter && rangeStart && rangeEnd) {
+             let expandedMembers = [];
++            const ledgerSync = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
++            
+             membersInCourse.forEach(m => {
+-                const schedArr = getAllMilestonesForRange(m.id, cName === '미지정' ? null : cName, rangeStart, rangeEnd);
+-                if (schedArr.length > 0) {
+-                    schedArr.forEach(sched => {
+-                        expandedMembers.push({ ...m, specificMilestone: sched });
++                let foundDates = new Set();
++                
++                // Match exactly with what sheet.html rendered
++                Object.keys(ledgerSync).forEach(k => {
++                    const parts = k.split('_'); // [id, year, month, courseFull]
++                    if (parts.length >= 4 && parts[0] === String(m.id)) {
++                        const syncYear = parseInt(parts[1]);
++                        const syncMonth = parseInt(parts[2]);
++                        
++                        // Create a dummy date for the sync month to check if it falls within the range
++                        // Since we just have year and month, we check if the month overlaps the range
++                        const startMonthBound = rangeStart.getFullYear() * 12 + rangeStart.getMonth();
++                        const endMonthBound = rangeEnd.getFullYear() * 12 + rangeEnd.getMonth();
++                        const syncMonthBound = syncYear * 12 + (syncMonth - 1);
++
++                        if (syncMonthBound >= startMonthBound && syncMonthBound <= endMonthBound) {
++                            const courseFull = parts.slice(3).join('_');
++                            const cleanSyncCourse = courseFull === 'all' ? '미지정' : courseFull.replace(/\([^)]*\)/g, '').trim();
++                            
++                            if (cleanSyncCourse === cName || (cName === '미지정' && courseFull === 'all')) {
++                                const days = ledgerSync[k];
++                                if (Array.isArray(days)) {
++                                    days.forEach(d => {
++                                        // Check if the specific day is within the exact date range
++                                        const exactDate = new Date(syncYear, syncMonth - 1, d);
++                                        // Set to midnight to ensure inclusive edge checking
++                                        const exactTime = exactDate.getTime();
++                                        const startTime = new Date(rangeStart.getFullYear(), rangeStart.getMonth(), rangeStart.getDate()).getTime();
++                                        const endTime = new Date(rangeEnd.getFullYear(), rangeEnd.getMonth(), rangeEnd.getDate(), 23, 59, 59).getTime();
++                                        
++                                        if (exactTime >= startTime && exactTime <= endTime) {
++                                            foundDates.add(`${syncYear}-${syncMonth}-${d}`);
++                                        }
++                                    });
++                                }
++                            }
++                        }
++                    }
++                });
++                
++                // If sheet.html had red boxes for this member in this range, use them exactly!
++                if (foundDates.size > 0) {
++                    Array.from(foundDates).forEach(dateStr => {
++                        const [y, mStr, d] = dateStr.split('-');
++                        expandedMembers.push({ ...m, specificMilestone: { month: parseInt(mStr), day: parseInt(d) } });
+                     });
++                } else {
++                    // Fallback to calculation if sheet.html hasn't exported data for this month yet
++                    const schedArr = getAllMilestonesForRange(m.id, cName === '미지정' ? null : cName, rangeStart, rangeEnd);
++                    if (schedArr.length > 0) {
++                        schedArr.forEach(sched => {
++                            expandedMembers.push({ ...m, specificMilestone: sched });
++                        });
++                    }
+                 }
+             });
+             membersInCourse = expandedMembers;
+@@ -761,12 +835,18 @@ function selectAllCourses() {
+ function selectFilteredCourses() {
+     const includeInactive = document.getElementById('includeInactive').checked;
+     const targetType = document.querySelector('input[name="targetType"]:checked').value;
++    const usePaymentFilter = document.getElementById('usePaymentFilter').checked;
+     const rangeStartVal = document.getElementById('paymentRangeStart').value;
+     const rangeEndVal = document.getElementById('paymentRangeEnd').value;
+     const searchVal = (document.getElementById('memberSearchInputSide') ? document.getElementById('memberSearchInputSide').value : '').toLowerCase();
+ 
+-    const rangeStart = rangeStartVal ? new Date(rangeStartVal + 'T00:00:00') : null;
+-    const rangeEnd = rangeEndVal ? new Date(rangeEndVal + 'T00:00:00') : null;
++    let rangeStart = rangeStartVal ? new Date(rangeStartVal + 'T00:00:00') : null;
++    let rangeEnd = rangeEndVal ? new Date(rangeEndVal + 'T00:00:00') : null;
++
++    if (usePaymentFilter && !rangeStart && !rangeEnd) {
++        rangeStart = new Date(calendarYear, calendarMonth, 1);
++        rangeEnd = new Date(calendarYear, calendarMonth + 1, 0, 23, 59, 59);
++    }
+ 
+     let totalSelectedNow = 0;
+     selectedTargets = []; // Clear previous selections to strictly match the current filter
+@@ -1408,241 +1488,91 @@ window.confirmSmsSend = async function() {
+     closeSmsModal();
+ }
+ 
+-/* --- Range Selection Calendar Logic (Interactive Drag Support) --- */
+-let calendarYear = localStorage.getItem('sejongSmsCalYear') !== null && !isNaN(parseInt(localStorage.getItem('sejongSmsCalYear'))) ? parseInt(localStorage.getItem('sejongSmsCalYear')) : new Date().getFullYear();
+-let calendarMonth = localStorage.getItem('sejongSmsCalMonth') !== null && !isNaN(parseInt(localStorage.getItem('sejongSmsCalMonth'))) ? parseInt(localStorage.getItem('sejongSmsCalMonth')) : new Date().getMonth();
+-let isDragging = false;
+-let dragStartDay = null;
++/* --- Range Selection Calendar Logic (Replaced with Simple Month Selector) --- */
++let currentAutoAddYear = new Date().getFullYear();
+ 
+ function toggleRangeCalendar() {
+     const body = document.getElementById('rangeFilterBody');
+     const icon = document.getElementById('rangeToggleIcon');
+-    if (body.style.display === 'none') {
++    if (body.style.display === 'none' || body.style.display === '') {
+         body.style.display = 'block';
+-        icon.textContent = 'expand_less';
+-        renderRangeCalendar();
++        icon.innerText = 'expand_less';
++        document.getElementById('autoAddYearDisplay').innerText = `${currentAutoAddYear}년`;
+     } else {
+         body.style.display = 'none';
+-        icon.textContent = 'expand_more';
+-    }
+-}
+-
+-function renderRangeCalendar() {
+-    const grid = document.getElementById('calendarDays');
+-    const title = document.getElementById('calendarTitle');
+-    if (!grid) return;
+-    grid.innerHTML = '';
+-    title.textContent = `${calendarYear}.${String(calendarMonth + 1).padStart(2, '0')}`;
+-
+-    const firstDay = new Date(calendarYear, calendarMonth, 1).getDay();
+-    const lastDate = new Date(calendarYear, calendarMonth + 1, 0).getDate();
+-    const prevLastDate = new Date(calendarYear, calendarMonth, 0).getDate();
+-
+-    const startVal = document.getElementById('paymentRangeStart').value;
+-    const endVal = document.getElementById('paymentRangeEnd').value;
+-
+-    const startDate = startVal ? new Date(startVal) : null;
+-    const endDate = endVal ? new Date(endVal) : null;
+-    if (startDate) startDate.setHours(0, 0, 0, 0);
+-    if (endDate) endDate.setHours(0, 0, 0, 0);
+-
+-    // Pre-calculate payment days for highlighting WITH NAMES
+-    const paymentNamesByDay = {}; // e.g. { 12: ['홍길동 (제과)', '김철수 (제빵)'] }
+-    try {
+-        if (Array.isArray(allMembers)) {
+-            allMembers.forEach(m => {
+-                if (!m) return;
+-                let myCourses = String(m.course || '').split(',').map(c => c.trim()).filter(c => c !== '');
+-                const hasJeggwa = myCourses.some(c => c.includes('제과') && !c.includes('제과제빵'));
+-                const hasJeppang = myCourses.some(c => c.includes('제빵') && !c.includes('제과제빵'));
+-                if (hasJeggwa && hasJeppang) {
+-                    myCourses = myCourses.filter(c => !c.includes('제과') && !c.includes('제빵'));
+-                    myCourses.push('제과제빵기능사');
+-                }
+-                myCourses.forEach(c => {
+-                    const milestones = getMemberAllMilestones(m.id, c.trim(), calendarYear, calendarMonth + 1).filter(ms => ms.year === calendarYear && ms.month === calendarMonth + 1);
+-                    milestones.forEach(ms => {
+-                        if (!paymentNamesByDay[ms.day]) paymentNamesByDay[ms.day] = [];
+-                        const cClean = c.trim().replace('기능사', '');
+-                        const label = `${m.name}(${cClean})`;
+-                        if (!paymentNamesByDay[ms.day].includes(label)) {
+-                            paymentNamesByDay[ms.day].push(label);
+-                        }
+-                    });
+-                });
+-            });
+-        }
+-    } catch(err) {
+-        console.error("Error calculating payment milestones:", err);
+-    }
+-
+-    const today = new Date();
+-    today.setHours(0, 0, 0, 0);
+-
+-    // Padding prev month
+-    for (let i = firstDay; i > 0; i--) {
+-        const d = document.createElement('div');
+-        d.className = 'calendar-day other-month';
+-        d.textContent = prevLastDate - i + 1;
+-        grid.appendChild(d);
+-    }
+-
+-    // Current month days
+-    for (let i = 1; i <= lastDate; i++) {
+-        const d = document.createElement('div');
+-        const currentD = new Date(calendarYear, calendarMonth, i);
+-        currentD.setHours(0, 0, 0, 0);
+-
+-        d.className = 'calendar-day';
+-        d.textContent = i;
+-
+-        const dayOfWeek = currentD.getDay();
+-        const y_cal = currentD.getFullYear();
+-        const m_cal = String(currentD.getMonth() + 1).padStart(2, '0');
+-        const d_cal = String(currentD.getDate()).padStart(2, '0');
+-        const dateStr = `${y_cal}-${m_cal}-${d_cal}`;
+-        const isHolidayInSys = (holidaysData || []).some(h => h && h.date === dateStr);
+-        const isNationalHoliday = !!KOREAN_HOLIDAYS_MAP[dateStr];
+-
+-        // Color rules: Sun/Holiday Red, Sat Blue, Others Black
+-        if (dayOfWeek === 0 || isHolidayInSys || isNationalHoliday) {
+-            d.style.color = '#ef4444';
+-        } else if (dayOfWeek === 6) {
+-            d.style.color = '#3b82f6';
+-        } else {
+-            d.style.color = '#000000';
+-        }
+-
+-        if (currentD.getTime() === today.getTime()) d.classList.add('today');
+-
+-        if (startDate && endDate) {
+-            if (currentD.getTime() === startDate.getTime()) d.classList.add('range-start');
+-            if (currentD.getTime() === endDate.getTime()) d.classList.add('range-end');
+-            if (currentD > startDate && currentD < endDate) d.classList.add('in-range');
+-        } else if (startDate && currentD.getTime() === startDate.getTime()) {
+-            d.classList.add('range-start');
+-        }
+-
+-        // Highlight payment milestones with NAMES
+-        if (paymentNamesByDay[i] && paymentNamesByDay[i].length > 0) {
+-            d.style.fontWeight = '900';
+-            d.title = `결제 대상: ${paymentNamesByDay[i].length}건\n` + paymentNamesByDay[i].join('\n');
+-        }
+-
+-        // Mouse Events for Drag
+-        d.onmousedown = (e) => {
+-            e.preventDefault();
+-            startDrag(new Date(currentD));
+-        };
+-        d.onmouseenter = (e) => {
+-            if (isDragging) updateDrag(new Date(currentD));
+-        };
+-        d.onmouseup = (e) => {
+-            endDrag(new Date(currentD));
+-        };
+-
+-        grid.appendChild(d);
+-    }
+-
+-    // Global mouseup to stop drag
+-    if (!window.hasGlobalMouseUp) {
+-        window.addEventListener('mouseup', () => {
+-            if (isDragging) {
+-                isDragging = false;
+-                
+-                const pf = document.getElementById('usePaymentFilter');
+-                if (pf) pf.checked = true;
+-                
+-                renderTargetList();
+-                
+-                if (pf && pf.checked) {
+-                    selectFilteredCourses();
+-                }
+-                saveAllDrafts();
+-            }
+-        });
+-        window.hasGlobalMouseUp = true;
++        icon.innerText = 'expand_more';
+     }
+ }
+ 
+-function startDrag(date) {
+-    isDragging = true;
+-    dragStartDay = date;
+-    const dateStr = date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
+-    document.getElementById('paymentRangeStart').value = dateStr;
+-    document.getElementById('paymentRangeEnd').value = dateStr;
+-    renderRangeCalendar();
++function changeAutoAddYear(delta) {
++    currentAutoAddYear += delta;
++    document.getElementById('autoAddYearDisplay').innerText = `${currentAutoAddYear}년`;
++    document.getElementById('autoAddResultMsg').innerText = '';
+ }
+ 
+-function updateDrag(date) {
+-    if (!isDragging || !dragStartDay) return;
++function selectAutoAddMonth(m) {
++    const startRange = `${currentAutoAddYear}-${String(m).padStart(2, '0')}-01`;
++    const lastDay = new Date(currentAutoAddYear, m, 0).getDate();
++    const endRange = `${currentAutoAddYear}-${String(m).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+ 
+-    let start = new Date(Math.min(dragStartDay, date));
+-    let end = new Date(Math.max(dragStartDay, date));
+-
+-    const startStr = start.getFullYear() + '-' + String(start.getMonth() + 1).padStart(2, '0') + '-' + String(start.getDate()).padStart(2, '0');
+-    const endStr = end.getFullYear() + '-' + String(end.getMonth() + 1).padStart(2, '0') + '-' + String(end.getDate()).padStart(2, '0');
+-
+-    document.getElementById('paymentRangeStart').value = startStr;
+-    document.getElementById('paymentRangeEnd').value = endStr;
+-    renderRangeCalendar();
+-}
+-
+-function endDrag(date) {
+-    isDragging = false;
+-    renderRangeCalendar();
+-
+-    // Automatically check the filter if a range is selected to show filtered view
+-    const pf = document.getElementById('usePaymentFilter');
+-    if (pf) pf.checked = true;
++    document.getElementById('paymentRangeStart').value = startRange;
++    document.getElementById('paymentRangeEnd').value = endRange;
++    document.getElementById('usePaymentFilter').checked = true;
+ 
++    // Trigger target list update
+     renderTargetList();
+ 
+-    // Auto-select if range filtering is active
+-    if (pf && pf.checked) {
+-        selectFilteredCourses();
+-    }
+-    saveAllDrafts();
+-}
++    // Auto select the filtered courses
++    selectFilteredCourses();
+ 
+-function changeRangeMonth(offset) {
+-    calendarMonth += offset;
+-    if (calendarMonth > 11) { calendarMonth = 0; calendarYear++; }
+-    if (calendarMonth < 0) { calendarMonth = 11; calendarYear--; }
+-    localStorage.setItem('sejongSmsCalYear', calendarYear);
+-    localStorage.setItem('sejongSmsCalMonth', calendarMonth);
+-    renderRangeCalendar();
++    // Output the count
++    setTimeout(() => {
++        const cnt = selectedTargets.length;
++        document.getElementById('autoAddResultMsg').innerHTML = `<span style="color:#2563eb;">${m}월</span> 선택됨: 결재일 인원 <span style="color:#ef4444; font-size:1.1rem;">${cnt}명</span>이 추가되었습니다.`;
++        
++        // Popup
++        showDragResultPopup(m);
++    }, 50);
+ }
+ 
+-function setQuickRange(days) {
+-    const start = new Date();
+-    const end = new Date();
+-    end.setDate(start.getDate() + days);
+-
+-    const startStr = start.getFullYear() + '-' + String(start.getMonth() + 1).padStart(2, '0') + '-' + String(start.getDate()).padStart(2, '0');
+-    const endStr = end.getFullYear() + '-' + String(end.getMonth() + 1).padStart(2, '0') + '-' + String(end.getDate()).padStart(2, '0');
+-
+-    document.getElementById('paymentRangeStart').value = startStr;
+-    document.getElementById('paymentRangeEnd').value = endStr;
+-
+-    calendarYear = start.getFullYear();
+-    calendarMonth = start.getMonth();
+-    localStorage.setItem('sejongSmsCalYear', calendarYear);
+-    localStorage.setItem('sejongSmsCalMonth', calendarMonth);
+-
+-    renderRangeCalendar();
+-    renderTargetList();
++function showDragResultPopup(m) {
++    if (selectedTargets.length > 0) {
++        let html = `<div style="text-align:center; margin-bottom:15px; color:#475569;">
++            선택된 기간(<strong style="color:#0369a1;">${currentAutoAddYear}년 ${m}월</strong>)의 결제 예정자<br>
++            <strong style="color:#2563eb; font-size:1.2rem;">총 ${selectedTargets.length}명</strong>이 문자 전송 대상에 추가되었습니다.
++        </div>`;
++        html += `<div style="max-height:250px; overflow-y:auto; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:10px;">`;
++        selectedTargets.forEach((t, idx) => {
++            let datePart = '';
++            if (t.specificMilestone) {
++                datePart = `${t.specificMilestone.month}/${t.specificMilestone.day}`;
++            } else {
++                const sched = getMemberScheduledDate(t.id, t.selectedCourse === '미지정' ? null : t.selectedCourse);
++                if (sched) datePart = `${sched.month}/${sched.day}`;
++            }
++            const dateLabel = datePart ? `<span style="color:#ef4444; font-weight:700; font-size:0.85rem; margin-left:8px;">${datePart}</span>` : '';
+ 
+-    if (document.getElementById('usePaymentFilter').checked) {
+-        selectFilteredCourses();
++            html += `<div style="padding:8px 5px; border-bottom:${idx === selectedTargets.length - 1 ? 'none' : '1px solid #e2e8f0'}; display:flex; justify-content:space-between; align-items:center;">
++                <div>
++                    <strong style="color:#0f172a; font-size:1rem;">${t.name}</strong> 
++                    ${dateLabel}
++                </div>
++                <div style="font-size:0.8rem; color:#3b82f6; background:#eff6ff; padding:2px 6px; border-radius:4px;">
++                    ${t.selectedCourse || '미지정'}
++                </div>
++            </div>`;
++        });
++        html += `</div>`;
++        openModal('결제 예정자 명단', html, null, '확인', '#3b82f6');
++    } else {
++        openModal('결제 예정자 명단', `<div style="text-align:center; padding:20px; color:#64748b;">${currentAutoAddYear}년 ${m}월에 결제 예정인 수강생이 없습니다.</div>`, null, '확인', '#64748b');
+     }
+-    saveAllDrafts();
+ }
+ 
+ function getAllMilestonesForRange(memberId, courseFilter, startRange, endRange) {
+     const normalizeCourse = (c) => (!c || c === 'null') ? null : String(c).trim();
+     const cleanFilter = String(courseFilter || 'all').replace(/\([^)]*\)/g, '').trim();
+-    const allDue = getMemberAllMilestones(memberId, courseFilter, startRange.getFullYear(), startRange.getMonth() + 1, true);
++    const allDue = getMemberAllMilestones(memberId, courseFilter, startRange.getFullYear(), startRange.getMonth() + 1, true, endRange.getFullYear(), endRange.getMonth() + 1);
+     
+     let matched = allDue.filter(ms => {
+         const msDate = new Date(ms.year, ms.month - 1, ms.day);
+@@ -1662,24 +1592,66 @@ function getAllMilestonesForMonth(memberId, courseFilter, year, month) {
+     return getAllMilestonesForRange(memberId, courseFilter, startRange, endRange);
+ }
+ 
+-function getMemberAllMilestones(memberId, courseFilter, anchorYear = null, anchorMonth = null, includePast = false) {
++function getMemberAllMilestones(memberId, courseFilter, anchorYear = null, anchorMonth = null, includePast = false, endAnchorYear = null, endAnchorMonth = null) {
+     let milestones = [];
+     const today = new Date();
+     const currentYear = anchorYear !== null ? anchorYear : today.getFullYear();
+     const currentMonth = anchorMonth !== null ? anchorMonth : today.getMonth() + 1;
+     
++    let targetEndYear = endAnchorYear !== null ? endAnchorYear : currentYear;
++    let targetEndMonth = endAnchorMonth !== null ? endAnchorMonth : currentMonth;
++    
+     const memberObj = allMembers.find(m => String(m.id) === String(memberId));
+     if (!memberObj) return [];
+     
+-    // Scan recent past and near future months (e.g. -2 to +2 months from now)
+-    for (let monthOffset = -2; monthOffset <= 2; monthOffset++) {
+-        let y = currentYear;
+-        let m = currentMonth + monthOffset;
+-        if (m > 12) { m -= 12; y++; }
+-        if (m < 1) { m += 12; y--; }
++    const ledgerSync = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
++    const normalizeCourse = (c) => (!c || c === 'null') ? 'all' : String(c).replace(/\([^)]*\)/g, '').trim();
++    const cleanSyncCourse = normalizeCourse(courseFilter);
++    
++    // Scan from -2 months before anchor, up to +2 months after endAnchor
++    let startD = new Date(currentYear, currentMonth - 1 - 2, 1);
++    let endD = new Date(targetEndYear, targetEndMonth - 1 + 2, 1);
++    
++    let scanMonths = [];
++    let d = new Date(startD);
++    while (d <= endD) {
++        scanMonths.push({ y: d.getFullYear(), m: d.getMonth() + 1 });
++        d.setMonth(d.getMonth() + 1);
++    }
++    
++    for (let i = 0; i < scanMonths.length; i++) {
++        let y = scanMonths[i].y;
++        let m = scanMonths[i].m;
++        
++        let foundDateFromSync = false;
++        
++        // 1. Check ledgerSync using the EXACT cache key (stripped of time)
++        const syncKeyExact = `${memberId}_${y}_${m}_${cleanSyncCourse}`;
++        let rawSync = ledgerSync[syncKeyExact];
++        if (rawSync !== undefined) {
++            let days = Array.isArray(rawSync) ? rawSync : (typeof rawSync === 'number' ? [rawSync] : []);
++            days.forEach(d => {
++                milestones.push({ year: y, month: m, day: d });
++                foundDateFromSync = true;
++            });
++        }
++        
++        // Check 'all' as a fallback if specific course isn't found
++        if (!foundDateFromSync) {
++            const syncKeyAll = `${memberId}_${y}_${m}_all`;
++            let rawSyncAll = ledgerSync[syncKeyAll];
++            if (rawSyncAll !== undefined) {
++                let daysAll = Array.isArray(rawSyncAll) ? rawSyncAll : (typeof rawSyncAll === 'number' ? [rawSyncAll] : []);
++                daysAll.forEach(d => {
++                    milestones.push({ year: y, month: m, day: d });
++                    foundDateFromSync = true;
++                });
++            }
++        }
+         
+-        if (typeof window.calculateRedBoxesForMonth === 'function') {
+-            const result = window.calculateRedBoxesForMonth(memberObj, y, m, attendanceData || [], courseFilter, GLOBAL_DATA_ADJUSTMENTS);
++        // 2. Fallback to calculation if no cached sync data is found
++        if (!foundDateFromSync && typeof window.calculateRedBoxesForMonth === 'function') {
++            const result = window.calculateRedBoxesForMonth(memberObj, y, m, attendanceData || [], courseFilter, window.GLOBAL_DATA_ADJUSTMENTS || {});
+             if (result && result.redDays && result.redDays.length > 0) {
+                 for (let d of result.redDays) {
+                     milestones.push({ year: y, month: m, day: d });
+@@ -1688,6 +1660,18 @@ function getMemberAllMilestones(memberId, courseFilter, anchorYear = null, ancho
+         }
+     }
+     
++    // Deduplicate (just in case)
++    const uniqueMilestones = [];
++    const seen = new Set();
++    milestones.forEach(ms => {
++        const k = `${ms.year}_${ms.month}_${ms.day}`;
++        if (!seen.has(k)) {
++            seen.add(k);
++            uniqueMilestones.push(ms);
++        }
++    });
++    milestones = uniqueMilestones;
++    
+     // Sort milestones
+     milestones.sort((a, b) => new Date(a.year, a.month - 1, a.day) - new Date(b.year, b.month - 1, b.day));
+     
+@@ -1695,8 +1679,6 @@ function getMemberAllMilestones(memberId, courseFilter, anchorYear = null, ancho
+         return milestones;
+     }
+     
+-    // Filter out past milestones if limitDate is not provided
+-    // Actually getMemberScheduledDate just gets the first available upcoming or most recent one
+     return milestones.filter(m => new Date(m.year, m.month - 1, m.day) >= today.setHours(0,0,0,0));
+ }
+ 
