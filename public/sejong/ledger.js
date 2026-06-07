@@ -547,7 +547,7 @@ function renderTable(container, title, members, id) {
                             htmlParts.push(`
                                 <div style="display: flex; align-items: center; gap: 2px;">
                                     <span onclick="deleteMemberCourse('${m.id}', ${originalIdx}, '${c}')" style="cursor: pointer; color: #ef4444; display: flex; align-items: center;" title="과정 삭제"><span class="material-icons" style="font-size: 0.75rem;">delete</span></span>
-                                    <input type="text" value="${c}" onchange="updateMemberCourse('${m.id}', ${originalIdx}, this.value)" placeholder="+ 과정 추가" style="font-size: 0.6rem; color: #1d4ed8; background: #eff6ff; border: 1px solid transparent; border-radius: 2px; width: 80px; padding: 1px 3px;" onfocus="this.style.border='1px solid #bfdbfe'" onblur="this.style.border='1px solid transparent'">
+                                    <span onclick="openEditConfirmModal('${m.id}')" title="클릭하여 과정 수정" style="cursor: pointer; font-size: 0.6rem; color: #1d4ed8; background: #eff6ff; border: 1px solid transparent; border-radius: 2px; padding: 1px 3px; display: inline-block; max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" onmouseover="this.style.border='1px solid #bfdbfe'; this.style.background='#dbeafe'" onmouseout="this.style.border='1px solid transparent'; this.style.background='#eff6ff'">${c}</span>
                                 </div>
                             `);
                         });
@@ -556,7 +556,7 @@ function renderTable(container, title, members, id) {
                         htmlParts.push(`
                             <div style="display: flex; align-items: center; gap: 2px;">
                                 <span style="visibility: hidden; display: flex; align-items: center;"><span class="material-icons" style="font-size: 0.75rem;">delete</span></span>
-                                <input type="text" value="" readonly onclick="openEditConfirmModal('${m.id}')" placeholder="+ 과정 추가" style="cursor: pointer; font-size: 0.6rem; color: #1d4ed8; background: #eff6ff; border: 1px solid transparent; border-radius: 2px; width: 80px; padding: 1px 3px;">
+                                <span onclick="openEditConfirmModal('${m.id}')" style="cursor: pointer; font-size: 0.6rem; color: #94a3b8; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 2px; padding: 1px 3px; display: inline-block;">+ 과정 추가</span>
                             </div>
                         `);
                         return htmlParts.join('');
