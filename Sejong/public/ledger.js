@@ -52,6 +52,72 @@ let courseFees = {};
 let attendanceByMember = {}; // Optimized lookup
 window.targetMemberId = null;
 
+window.updateMemberField = async function(memberId, field, value) {
+    try {
+        const m = membersData.find(m => String(m.id) === String(memberId));
+        if (!m) return;
+        m[field] = value;
+        await fetch(getFetchUrl('members', true), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(m)
+        });
+    } catch(e) { console.error(e); }
+};
+
+window.updateMemberCourse = async function(memberId, index, value) {
+    try {
+        const m = membersData.find(m => String(m.id) === String(memberId));
+        if (!m) return;
+        const courses = (m.course || '').split(',').map(c => c.trim()).filter(Boolean);
+        courses[index] = value;
+        const newCourse = courses.filter(Boolean).join(', ');
+        m.course = newCourse;
+        await fetch(getFetchUrl('members', true), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(m)
+        });
+        renderLedger(); 
+    } catch(e) { console.error(e); }
+};
+
+window.deleteMemberCourse = async function(memberId, index, courseName) {
+    if(!confirm(`정말 '${courseName}' 과정을 휴지통으로 이동하시겠습니까?`)) return;
+    try {
+        const m = membersData.find(m => String(m.id) === String(memberId));
+        if (!m) return;
+        const courses = (m.course || '').split(',').map(c => c.trim()).filter(Boolean);
+        if (!courses[index].includes('[삭제]')) {
+            courses[index] = courses[index] + '[삭제]';
+        }
+        m.course = courses.join(', ');
+        await fetch(getFetchUrl('members', true), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(m)
+        });
+        renderLedger(); 
+    } catch(e) { console.error(e); }
+};
+
+window.moveToTrash = async function(memberId) {
+    if(!confirm('정말 휴지통으로 이동하시겠습니까? (이동 시 수강생 대장을 제외한 모든 화면에서 숨김 처리됩니다)')) return;
+    try {
+        const m = membersData.find(m => String(m.id) === String(memberId));
+        if (m) {
+            m.status = 'trash';
+            await fetch(getFetchUrl('members', true), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(m)
+            });
+            membersData = membersData.filter(md => String(md.id) !== String(memberId));
+            renderLedger();
+        }
+    } catch(e) { console.error(e); }
+};
+
 let currentYear = parseInt(localStorage.getItem('sejong_ledger_currentYear')) || new Date().getFullYear();
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -192,7 +258,7 @@ function getAllLedgerMonthStats(memberId, year, month) {
     const member = membersData.find(m => String(m.id) === String(memberId));
     if (!member || !member.course) return [];
 
-    let courses = member.course.split(',').map(c => c.split('(')[0].trim());
+    let courses = member.course.split(',').map(c => c.trim()).filter(c => c && !c.includes('[삭제]')).map(c => c.split('(')[0]);
     const hasJeggwa = courses.some(c => c.includes('제과') && !c.includes('제과제빵'));
     const hasJeppang = courses.some(c => c.includes('제빵') && !c.includes('제과제빵'));
     if (hasJeggwa && hasJeppang) {
@@ -365,9 +431,9 @@ function renderLedger() {
         let filteredMembers = membersData.filter(m => {
             if (courseName === '기타') {
                 if (!m.course) return true; // Members with no course are '기타'
-                const cList = m.course.split(',').map(c => c.trim());
-                // Return true if they ARE NOT in any defined course EXCEPT '기타' itself in the list
-                return !cList.some(c => COURSE_LIST.filter(cl => cl !== '기타').some(cl => c.includes(cl)));
+                const cList = m.course.split(',').map(c => c.trim()).filter(c => c && !c.includes('[삭제]'));
+                if (cList.length === 0) return true;
+                return !COURSE_LIST.filter(cl => cl !== '기타').some(cl => cList.some(c => c.includes(cl)));
             }
             return m.course && m.course.includes(courseName);
         }).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
@@ -385,12 +451,40 @@ function renderLedger() {
     // Case 3: Category
     else {
         const courses = COURSE_CATEGORIES[activeCategory];
+        let categoryMembers = [];
+        
         courses.forEach(courseName => {
             let filteredMembers = membersData.filter(m => {
                 if (courseName === '기타') {
                     if (!m.course) return true;
-                    const cList = m.course.split(',').map(c => c.trim());
-                    return !cList.some(c => COURSE_LIST.filter(cl => cl !== '기타').some(cl => c.includes(cl)));
+                    const cList = m.course.split(',').map(c => c.trim()).filter(c => c && !c.includes('[삭제]'));
+                    if (cList.length === 0) return true;
+                    return !COURSE_LIST.filter(cl => cl !== '기타').some(cl => cList.some(c => c.includes(cl)));
+                }
+                return m.course && m.course.includes(courseName);
+            }).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+            filteredMembers = filterByPeriod(filteredMembers);
+            if (filteredMembers.length > 0) {
+                // To avoid duplicate students in the badge panel if they take multiple courses in the same category
+                // we'll just push them and let renderMonthlyRedBoxPanel's inner loop handle it
+                // Actually, renderMonthlyRedBoxPanel iterates courses by itself if courseScope='all'.
+                // So if we just deduplicate members and call renderMonthlyRedBoxPanel with 'all', it will count all courses!
+                filteredMembers.forEach(m => {
+                    if (!categoryMembers.some(cm => cm.id === m.id)) {
+                        categoryMembers.push(m);
+                    }
+                });
+            }
+        });
+
+        courses.forEach(courseName => {
+            let filteredMembers = membersData.filter(m => {
+                if (courseName === '기타') {
+                    if (!m.course) return true;
+                    const cList = m.course.split(',').map(c => c.trim()).filter(c => c && !c.includes('[삭제]'));
+                    if (cList.length === 0) return true;
+                    return !COURSE_LIST.filter(cl => cl !== '기타').some(cl => cList.some(c => c.includes(cl)));
                 }
                 return m.course && m.course.includes(courseName);
             }).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
@@ -405,8 +499,9 @@ function renderLedger() {
     // Always check for "Other" members (if any) if in "Total" view
     const otherMembers = membersData.filter(m => {
         if (!m.course) return true;
-        const cList = m.course.split(',').map(c => c.trim());
-        return !cList.some(c => COURSE_LIST.filter(cl => cl !== '기타').some(cl => c.includes(cl)));
+        const cList = m.course.split(',').map(c => c.trim()).filter(c => c && !c.includes('[삭제]'));
+        if (cList.length === 0) return true;
+        return !COURSE_LIST.filter(cl => cl !== '기타').some(cl => cList.some(c => c.includes(cl)));
     }).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
 
     const filteredOthers = filterByPeriod(otherMembers);
@@ -432,6 +527,32 @@ function renderTable(container, title, members, id) {
     section.id = id;
     section.style.cssText = `margin-bottom: 40px;`;
 
+    const monthCounts = {1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 11:0, 12:0};
+    const blueCounts = {1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 11:0, 12:0};
+    
+    members.forEach(m => {
+        for (let month = 1; month <= 12; month++) {
+            const schedules = getAllLedgerMonthStats(m.id, currentYear, month);
+            schedules.forEach(s => {
+                if (!s.isSimulated && s.eighthDay && !isNaN(parseInt(s.eighthDay)) && Number(s.eighthDay) > 0) {
+                    const isPaid = (typeof paymentsData !== 'undefined' ? paymentsData : window.paymentsData || []).some(p =>
+                        String(p.memberId) === String(m.id) &&
+                        String(p.year) === String(currentYear) &&
+                        String(p.month) === String(month) &&
+                        p.status === 'paid' &&
+                        (p.course && s.course && (p.course.includes(s.course) || s.course.includes(p.course)))
+                    );
+
+                    if (isPaid) {
+                        blueCounts[month]++;
+                    } else {
+                        monthCounts[month]++;
+                    }
+                }
+            });
+        }
+    });
+
     let html = `
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #0f172a; margin-bottom: 12px; padding: 10px 0;">
             <h2 style="margin: 0; font-size: 1.4rem; font-weight: 900;">${title} (${members.length}명)</h2>
@@ -441,16 +562,39 @@ function renderTable(container, title, members, id) {
             </div>
         </div>
         <div style="overflow-x: auto; border: 1.5px solid #0f172a; border-radius: 4px; background: #fff;">
-            <table style="width: 100%; border-collapse: collapse; min-width: 1000px; font-family: 'Noto Sans KR', sans-serif;">
+            <table style="width: 100%; border-collapse: collapse; table-layout: fixed; font-family: 'Noto Sans KR', sans-serif;">
+                <colgroup>
+                    <col style="width: 35px;"><!-- NO -->
+                    <col style="width: 105px;"><!-- 회원정보/과정 -->
+                    ${Array.from({ length: 24 }, () => `<col style="width: calc((100% - 140px - 60px) / 24);">`).join('')}<!-- 12월 x 예/실 -->
+                    <col style="width: 60px;"><!-- 비고 -->
+                </colgroup>
                 <thead>
                     <tr style="background: #f8fafc; border-bottom: 1.5px solid #0f172a;">
-                        <th rowspan="2" style="width: 40px; border-right: 1.5px solid #0f172a; font-size: 0.75rem;">NO</th>
-                        <th rowspan="2" style="width: 180px; border-right: 1.5px solid #0f172a; font-size: 0.75rem; text-align: left; padding: 10px;">회원정보 / 과정</th>
-                        ${Array.from({ length: 12 }, (_, i) => `<th colspan="2" style="border-right: 1.5px solid #0f172a; border-bottom: 1px solid #cbd5e1; font-size: 0.8rem; padding: 5px;">${i + 1}월</th>`).join('')}
-                        <th rowspan="2" style="width: 100px; font-size: 0.75rem;">비고</th>
+                        <th rowspan="2" style="border-right: 1.5px solid #0f172a; font-size: 0.75rem;">NO</th>
+                        <th rowspan="2" style="border-right: 1.5px solid #0f172a; font-size: 0.75rem; text-align: left; padding: 10px 5px;">회원정보/과정</th>
+                        ${Array.from({ length: 12 }, (_, i) => {
+                            const month = i + 1;
+                            const rCount = monthCounts[month];
+                            const bCount = blueCounts[month];
+                            let contentHtml = '';
+                            if (rCount > 0 || bCount > 0) {
+                                contentHtml = `
+                                    <div style="display:flex; justify-content:center; align-items:center; gap:2px;">
+                                        ${rCount > 0 ? `<span style="background:#ef4444; color:white; border-radius:10px; padding:1px 4px; font-size:0.6rem; min-width:12px; text-align:center;">${rCount}</span>` : `<span style="visibility:hidden; padding:1px 4px; font-size:0.6rem; min-width:12px;">0</span>`}
+                                        <span style="font-size:0.75rem; font-weight:800;">${month}월</span>
+                                        ${bCount > 0 ? `<span style="background:#2563eb; color:white; border-radius:10px; padding:1px 4px; font-size:0.6rem; min-width:12px; text-align:center;">${bCount}</span>` : `<span style="visibility:hidden; padding:1px 4px; font-size:0.6rem; min-width:12px;">0</span>`}
+                                    </div>
+                                `;
+                            } else {
+                                contentHtml = `<span style="font-size:0.75rem; font-weight:800;">${month}월</span>`;
+                            }
+                            return `<th colspan="2" style="border-right: 1.5px solid #0f172a; border-bottom: 1px solid #cbd5e1; padding: 2px;">${contentHtml}</th>`;
+                        }).join('')}
+                        <th rowspan="2" style="font-size: 0.75rem;">비고</th>
                     </tr>
                     <tr style="background: #f8fafc; border-bottom: 1.5px solid #0f172a;">
-                        ${Array.from({ length: 12 }, () => `<th style="width: 45px; font-size: 0.65rem; border-right: 1px dotted #cbd5e1;">예</th><th style="width: 45px; font-size: 0.65rem; border-right: 1.5px solid #0f172a;">실</th>`).join('')}
+                        ${Array.from({ length: 12 }, () => `<th style="font-size: 0.65rem; border-right: 1px dotted #cbd5e1;">예</th><th style="font-size: 0.65rem; border-right: 1.5px solid #0f172a;">실</th>`).join('')}
                     </tr>
                 </thead>
                 <tbody>
@@ -461,25 +605,61 @@ function renderTable(container, title, members, id) {
         const rowId = `row-${id}-${m.id}`;
         html += `<tr id="${rowId}" style="border-bottom: 1px solid #0f172a; ${isTarget ? 'background: #fffbeb;' : ''}">
             <td style="text-align: center; font-weight: 700; border-right: 1.5px solid #0f172a;">${idx + 1}</td>
-            <td style="padding: 8px 10px; border-right: 1.5px solid #0f172a;">
-                <div style="font-weight: 900; font-size: 0.9rem;">${m.name}</div>
-                <div style="font-size: 0.7rem; color: #64748b;">${m.phone || ''}</div>
-                <div style="font-size: 0.6rem; font-weight: 700; margin-top: 4px; display: flex; flex-direction: column; gap: 2px; align-items: flex-start;">
+            <td style="padding: 6px 4px; border-right: 1.5px solid #0f172a; width: 105px; max-width: 105px; overflow: hidden;">
+                <div style="display: flex; align-items: center; gap: 2px;">
+                    <span onclick="moveToTrash('${m.id}')" style="cursor: pointer; color: #ef4444; font-size: 0.8rem; display: flex; align-items: center;" title="휴지통으로 이동"><span class="material-icons" style="font-size: 0.8rem;">delete</span></span>
+                    <span style="font-weight: 900; font-size: 0.85rem; color: #000;">${m.name || ''}</span>
+                </div>
+                    <span style="font-size: 0.7rem; color: #64748b;">${m.phone || ''}</span>
+                </div>
+                <div style="margin-top: 4px; display: flex; flex-direction: column; gap: 2px;">
                     ${(() => {
-    let cs = (m.course || '').split(',').map(c => c.trim()).filter(Boolean);
-    const hjg = cs.some(c => c.includes('제과') && !c.includes('제과제빵'));
-    const hjp = cs.some(c => c.includes('제빵') && !c.includes('제과제빵'));
-    if (hjg && hjp) {
-        cs = cs.filter(c => !c.includes('제과') && !c.includes('제빵'));
-        cs.push('제과제빵');
-    }
-    return cs.map(c => `<span style="background: #eff6ff; color: #1d4ed8; padding: 2px 5px; border-radius: 3px; border: 1px solid #bfdbfe; white-space: nowrap; line-height: 1; font-size: 0.55rem;">${c}</span>`).join('');
-})()}
+                        const courses = (m.course || '').split(',').map(c => c.trim());
+                        const htmlParts = [];
+                        let activeCount = 0;
+                        courses.forEach((c, originalIdx) => {
+                            if (!c || c.includes('[삭제]')) return;
+                            activeCount++;
+                            htmlParts.push(`
+                                <div style="display: flex; align-items: center; gap: 2px;">
+                                    <span onclick="deleteMemberCourse('${m.id}', ${originalIdx}, '${c}')" style="cursor: pointer; color: #ef4444; display: flex; align-items: center;" title="과정 삭제"><span class="material-icons" style="font-size: 0.75rem;">delete</span></span>
+                                    <span onclick="openEditConfirmModal('${m.id}')" title="클릭하여 과정 수정" style="cursor: pointer; font-size: 0.6rem; color: #1d4ed8; background: #eff6ff; border: 1px solid transparent; border-radius: 2px; padding: 1px 3px; display: inline-block; max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" onmouseover="this.style.border='1px solid #bfdbfe'; this.style.background='#dbeafe'" onmouseout="this.style.border='1px solid transparent'; this.style.background='#eff6ff'">${c}</span>
+                                </div>
+                            `);
+                        });
+                        
+                        // Add empty input at the end for adding new courses via modal
+                        htmlParts.push(`
+                            <div style="display: flex; align-items: center; gap: 2px;">
+                                <span style="visibility: hidden; display: flex; align-items: center;"><span class="material-icons" style="font-size: 0.75rem;">delete</span></span>
+                                <span onclick="openEditConfirmModal('${m.id}')" style="cursor: pointer; font-size: 0.6rem; color: #94a3b8; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 2px; padding: 1px 3px; display: inline-block;">+ 과정 추가</span>
+                            </div>
+                        `);
+                        return htmlParts.join('');
+                    })()}
                 </div>
             </td>`;
 
+        const allMonthsSchedules = [];
+        const courseLatestRealMonth = {};
+
         for (let month = 1; month <= 12; month++) {
             let schedules = getAllLedgerMonthStats(m.id, currentYear, month);
+            allMonthsSchedules.push(schedules);
+            
+            schedules.forEach(s => {
+                if (!s.isSimulated && s.eighthDay && !isNaN(parseInt(s.eighthDay)) && Number(s.eighthDay) > 0) {
+                    if (!courseLatestRealMonth[s.course] || courseLatestRealMonth[s.course] < month) {
+                        courseLatestRealMonth[s.course] = month;
+                    }
+                }
+            });
+        }
+
+        const coursesFoundSimulated = new Set();
+        
+        allMonthsSchedules.forEach((schedules, idx) => {
+            const month = idx + 1;
 
             if (currentFilterDate) {
                 let startM, startD, endM, endD;
@@ -530,29 +710,23 @@ function renderTable(container, title, members, id) {
                     if (!s.eighthDay || isNaN(parseInt(s.eighthDay)) || Number(s.eighthDay) <= 0) return false;
                     
                     if (s.isSimulated) {
-                        const today = new Date();
-                        today.setHours(0, 0, 0, 0);
-                        const msDate = new Date(currentYear, month - 1, parseInt(s.eighthDay));
-                        const diffTime = msDate.getTime() - today.getTime();
-                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                        
-                        // 2주(14일) 미만으로 남은 가상 결제일만 표시
-                        if (diffDays < 0 || diffDays >= 14) {
+                        if (courseLatestRealMonth[s.course] && month <= courseLatestRealMonth[s.course]) {
                             return false;
                         }
+                        if (coursesFoundSimulated.has(s.course)) return false;
+                        coursesFoundSimulated.add(s.course);
                     }
                     return true;
                 })
                 .map(s => {
                     const dayText = `${s.eighthDay}일`;
-                    // 가상 결재일(isSimulated)은 연한 파란색(#3b82f6), 진짜 결재일은 원래 색상 유지
                     const feeColor = s.isSimulated ? '#3b82f6' : '#d946ef';
-                    const dateColor = s.isSimulated ? '#3b82f6' : '#ff0000'; 
+                    const dateColor = s.isSimulated ? '#3b82f6' : '#ff0000';
                     return `
                     <div style="font-size: 0.65rem; font-weight: 800; display: flex; flex-direction: column; gap: 2px; align-items: center; margin-bottom: 4px;">
                         <div style="color: ${dateColor};">${dayText}</div>
                         <div style="font-size: 0.6rem; color: ${feeColor};">${s.fee / 10000}만</div>
-                        <div style="font-size: 0.55rem; color: #64748b; font-weight: 600; line-height: 1;">${s.course || ''}</div>
+                        <div style="font-size: 0.55rem; color: #64748b; font-weight: 600; line-height: 1;">${(s.course || '').replace('기능사', '')}</div>
                     </div>
                 `}).join('');
 
@@ -560,13 +734,13 @@ function renderTable(container, title, members, id) {
                 <div style="font-size: 0.65rem; font-weight: 900; display: flex; flex-direction: column; gap: 2px; align-items: center; margin-bottom: 4px;">
                     <div>${new Date(p.updatedAt).getDate()}일</div>
                     <div style="font-size: 0.6rem; color: #059669;">${p.amount / 10000}만</div>
-                    ${p.course ? `<div style="font-size: 0.55rem; color: #64748b; font-weight: 600; line-height: 1;">${p.course}</div>` : ''}
+                    ${p.course ? `<div style="font-size: 0.55rem; color: #64748b; font-weight: 600; line-height: 1;">${p.course.replace('기능사', '')}</div>` : ''}
                 </div>
             `).join('');
 
             html += `<td style="text-align: center; border-right: 1px dotted #cbd5e1; padding: 4px;">${expectedHTML}</td>
                      <td style="text-align: center; border-right: 1.5px solid #0f172a; padding: 4px;">${actualHTML}</td>`;
-        }
+        });
         html += `<td></td></tr>`;
     });
 
@@ -612,3 +786,348 @@ window.addEventListener('storage', (e) => {
     }
 });
 
+// ====== LEDGER MODAL ADDITIONS ======
+let editModal = null;
+let editForm = null;
+
+function initEditModal() {
+    editModal = document.getElementById('editStudentModal');
+    editForm = document.getElementById('editStudentForm');
+    if (editForm) {
+        editForm.addEventListener('submit', handleEditSubmit);
+    }
+}
+
+let targetMemberIdForEdit = null;
+function openEditConfirmModal(memberId) {
+    const modal = document.getElementById('editConfirmModal');
+    targetMemberIdForEdit = memberId;
+    if (modal) {
+        const member = membersData.find(m => m.id === memberId);
+        const titleEl = document.getElementById('editConfirmTitle');
+        if (titleEl && member) {
+            titleEl.textContent = `${member.name} 학생의 정보를 수정하시겠습니까?`;
+        }
+        modal.style.display = 'flex';
+        modal.classList.remove('hidden');
+    }
+}
+function closeEditConfirmModal() {
+    const modal = document.getElementById('editConfirmModal');
+    targetMemberIdForEdit = null;
+    if (modal) {
+        modal.style.display = 'none';
+        modal.classList.add('hidden');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    initEditModal();
+    const yesBtn = document.getElementById('editConfirmYesBtn');
+    if (yesBtn) {
+        yesBtn.addEventListener('click', function () {
+            if (targetMemberIdForEdit) {
+                openEditModal(targetMemberIdForEdit);
+                closeEditConfirmModal();
+            }
+        });
+    }
+});
+
+function openEditModal(memberId) {
+    const member = membersData.find(m => m.id === memberId);
+    if (!member) return;
+
+    if (editForm) {
+        editForm.id.value = member.id;
+        editForm.registeredDate.value = member.registeredDate || '';
+        editForm.name.value = member.name || '';
+        editForm.resident_num.value = member.resident_num || '';
+        editForm.address.value = member.address || '';
+        editForm.address_detail.value = member.address_detail || '';
+        editForm.phone.value = member.phone || '';
+        editForm.phone_guardian.value = member.phone_guardian || '';
+        
+        // Parse Start Date (20YY-MM-DD)
+        if (member.start_date) {
+            const parts = member.start_date.split('-');
+            if (parts.length === 3) {
+                editForm.start_yy.value = parts[0].length === 4 ? parts[0].slice(2) : parts[0];
+                editForm.start_mm.value = parts[1];
+                editForm.start_dd.value = parts[2];
+            }
+        } else {
+            editForm.start_yy.value = '';
+            editForm.start_mm.value = '';
+            editForm.start_dd.value = '';
+        }
+
+        // Handle Multiple Courses
+        const courseContainer = document.getElementById('edit_course_container');
+        if (courseContainer) {
+            courseContainer.innerHTML = ''; // Clear previous
+            const courses = (member.course || '').split(',');
+            let hasCourse = false;
+            courses.forEach(c => {
+                if (c.trim()) {
+                    addCourseInput(c);
+                    hasCourse = true;
+                }
+            });
+            if (!hasCourse) addCourseInput('');
+        }
+
+        // Handle Remarks Type
+        const type = member.type === 'student' ? 'student' : 'general';
+        const remarkSelect = document.getElementById('edit_remark_type');
+        if (remarkSelect) {
+            remarkSelect.value = type;
+            remarkSelect.dispatchEvent(new Event('change')); // Trigger toggle
+        }
+
+        // Split remarks or just load existing fields if they exist
+        editForm.school.value = member.school || '';
+        editForm.grade.value = member.grade || '';
+        editForm.job.value = member.job || '';
+        editForm.notes.value = member.notes || '';
+    }
+
+    if (editModal) {
+        editModal.style.display = 'flex';
+        editModal.classList.remove('hidden');
+    }
+}
+
+function closeEditModal() {
+    if (editModal) {
+        editModal.style.display = 'none';
+        editModal.classList.add('hidden');
+    }
+}
+
+function addCourseInput(value = '') {
+    const container = document.getElementById('edit_course_container');
+    if (!container) return;
+
+    let courseName = '';
+    let courseTime = '';
+
+    // Parse '과정명(시간)' format
+    const match = value.match(/(.*?)(?:\((.*?)\))?$/);
+    if (match) {
+        courseName = match[1] ? match[1].trim() : '';
+        courseTime = match[2] ? match[2].trim() : '';
+    }
+
+    const div = document.createElement('div');
+    div.className = 'course-input-row';
+    div.style.cssText = 'display: flex; gap: 5px; margin-bottom: 5px;';
+
+    const courseSelect = document.createElement('select');
+    courseSelect.className = 'course-edit-name full-width p-8 border-light rounded';
+    courseSelect.style.flex = '2';
+
+    const courses = ['', '한식기능사', '양식기능사', '일식기능사', '중식기능사', '제과기능사', '제빵기능사', '제과제빵기능사', '복어기능사', '산업기사', '가정요리', '브런치'];
+    courses.forEach(c => {
+        const option = document.createElement('option');
+        option.value = c;
+        option.textContent = c || '과정 선택';
+        if (c === courseName) option.selected = true;
+        courseSelect.appendChild(option);
+    });
+
+    if (courseName && !courses.includes(courseName)) {
+        const option = document.createElement('option');
+        option.value = courseName;
+        option.textContent = courseName;
+        option.selected = true;
+        courseSelect.appendChild(option);
+    }
+
+    const timeSelect = document.createElement('select');
+    timeSelect.className = 'course-edit-time full-width p-8 border-light rounded';
+    timeSelect.style.flex = '1';
+
+    const times = ['', '10:00', '12:00', '17:00', '19:00'];
+    const timeLabels = { '10:00': '오전 10:00', '12:00': '오전 12:00', '17:00': '오후 05:00', '19:00': '오후 07:00' };
+    times.forEach(t => {
+        const option = document.createElement('option');
+        option.value = t;
+        option.textContent = t ? timeLabels[t] || t : '시간 선택';
+        if (t === courseTime) option.selected = true;
+        timeSelect.appendChild(option);
+    });
+
+    if (courseTime && !times.includes(courseTime)) {
+        const option = document.createElement('option');
+        option.value = courseTime;
+        option.textContent = courseTime;
+        option.selected = true;
+        timeSelect.appendChild(option);
+    }
+
+    const delBtn = document.createElement('button');
+    delBtn.type = 'button';
+    delBtn.textContent = '-';
+    delBtn.style.cssText = 'padding: 0 15px; cursor: pointer; background: #ff4444; color: white; border: none; border-radius: 4px; font-weight: bold; font-size: 1.2rem;';
+    delBtn.onclick = () => {
+        div.remove();
+    };
+
+    div.appendChild(courseSelect);
+    div.appendChild(timeSelect);
+    div.appendChild(delBtn);
+
+    container.appendChild(div);
+}
+function removeCourseInput(btn) { btn.parentElement.remove(); }
+
+async function handleEditSubmit(e) {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const data = Object.fromEntries(fd.entries());
+
+    // Combine course items for 'course' field
+    const courseRows = document.querySelectorAll('#edit_course_container .course-input-row');
+    const courseValues = Array.from(courseRows)
+        .map(row => {
+            const name = row.querySelector('.course-edit-name')?.value.trim();
+            const time = row.querySelector('.course-edit-time')?.value.trim();
+            if (name && time) return `${name}(${time})`;
+            if (name) return name;
+            return '';
+        })
+        .filter(v => v !== '');
+
+    // --- Automatic Merging Exception Logic ---
+    const jevaIdx = courseValues.findIndex(v => v.startsWith('제과기능사('));
+    const jepangIdx = courseValues.findIndex(v => v.startsWith('제빵기능사('));
+
+    if (jevaIdx !== -1 && jepangIdx !== -1) {
+        const jevaStr = courseValues[jevaIdx];
+        const jepangStr = courseValues[jepangIdx];
+
+        const jevaTime = jevaStr.match(/\(([^)]+)\)/)?.[1] || '';
+        const jepangTime = jepangStr.match(/\(([^)]+)\)/)?.[1] || '';
+
+        const mergedTime = jevaTime === jepangTime ? jevaTime : `${jevaTime},${jepangTime}`;
+        const newEntry = `제과제빵기능사(${mergedTime})`;
+
+        if (jevaIdx > jepangIdx) {
+            courseValues.splice(jevaIdx, 1);
+            courseValues.splice(jepangIdx, 1, newEntry);
+        } else {
+            courseValues.splice(jepangIdx, 1);
+            courseValues.splice(jevaIdx, 1, newEntry);
+        }
+    }
+    // ------------------------------------------
+
+    data.course = courseValues.join(', ');
+
+    // Extract timeSlot from course strings
+    const extractedTimes = [];
+    courseValues.forEach(c => {
+        const match = c.match(/\(([^)]+)\)/);
+        if (match && match[1]) {
+            extractedTimes.push(match[1]);
+        }
+    });
+    data.timeSlot = extractedTimes.join(',');
+
+    if (data.course_item) delete data.course_item;
+
+    // Combine Start Date
+    const yy = data.start_yy || '';
+    const mm = data.start_mm || '';
+    const dd = data.start_dd || '';
+    if (yy && mm && dd) {
+        data.start_date = `20${yy}-${mm}-${dd}`;
+    } else {
+        data.start_date = '';
+    }
+    delete data.start_yy;
+    delete data.start_mm;
+    delete data.start_dd;
+
+    // Handle Remarks Type and Cleanup
+    const selectedType = document.getElementById('edit_remark_type').value;
+    data.type = selectedType;
+
+    if (selectedType === 'student') {
+        data.job = '';
+    } else {
+        data.school = '';
+        data.grade = '';
+    }
+
+    // ------------------------------------------
+    // Data Preservation Logic: Merge new data into existing member object 
+    // to ensure no fields (like memo, status, etc.) are lost.
+    const existingMember = membersData.find(m => m.id === data.id);
+    let finalData = data;
+
+    if (existingMember) {
+        // Merge: form data takes precedence
+        finalData = { ...existingMember, ...data };
+    }
+    // ------------------------------------------
+
+    try {
+        const res = await fetch(getFetchUrl('members', true), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(finalData)
+        });
+        const result = await res.json();
+        if (result.success !== false) {
+            closeEditModal();
+            const idx = membersData.findIndex(m => m.id === finalData.id);
+            if(idx !== -1) membersData[idx] = finalData;
+            renderLedger(); 
+        } else {
+            alert("수정 실패");
+        }
+    } catch (err) {
+        console.error(err);
+        alert("통신 오류");
+    }
+}
+
+function toggleEditMemberType() {
+    const type = document.getElementById('edit_remark_type').value;
+    const studentFields = document.getElementById('edit_student_fields');
+    const generalFields = document.getElementById('edit_general_fields');
+    if (type === 'student') {
+        studentFields.classList.remove('hidden');
+        generalFields.classList.add('hidden');
+        document.querySelector('#editStudentForm select[name="job"]').value = '';
+    } else {
+        studentFields.classList.add('hidden');
+        generalFields.classList.remove('hidden');
+        document.querySelector('#editStudentForm input[name="school"]').value = '';
+        document.querySelector('#editStudentForm input[name="grade"]').value = '';
+    }
+}
+
+function openDaumPostcode(targetId) {
+    if (typeof daum !== 'undefined' && daum.Postcode) {
+        new daum.Postcode({
+            oncomplete: function(data) {
+                document.getElementById(targetId).value = data.roadAddress || data.jibunAddress;
+                const detail = document.querySelector('input[name="address_detail"]');
+                if (detail) detail.focus();
+            }
+        }).open();
+    } else {
+        alert("카카오 우편번호 서비스를 불러올 수 없습니다. 다시 시도해주세요.");
+    }
+}
+window.openEditConfirmModal = openEditConfirmModal;
+window.closeEditConfirmModal = closeEditConfirmModal;
+window.openEditModal = openEditModal;
+window.closeEditModal = closeEditModal;
+window.addCourseInput = addCourseInput;
+window.removeCourseInput = removeCourseInput;
+window.toggleEditMemberType = toggleEditMemberType;
+window.openDaumPostcode = openDaumPostcode;

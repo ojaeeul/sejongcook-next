@@ -1,0 +1,125 @@
+diff --git a/public/sejong/sms.html b/public/sejong/sms.html
+index 1313844..aacf1ea 100644
+--- a/public/sejong/sms.html
++++ b/public/sejong/sms.html
+@@ -11,8 +11,8 @@
+     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
+         rel="stylesheet">
+     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+-    <script src="shared_calc.js?v=1780796013_215727"></script>
+-    <script src="sms_v3.js?v=1780796013_084600" defer></script>
++    <script src="shared_calc.js?v=${Date.now()}?v=${Date.now()}"></script>
++    <script src="sms_v3.js?v=${Date.now()}?v=${Date.now()}?v=${Date.now()}?v=new10" defer></script>
+     <style>
+         .sms-container {
+             display: flex;
+@@ -520,6 +520,24 @@
+         .modal-btn-confirm:hover {
+             background: #2563eb;
+         }
++    
++        .month-btn {
++            padding: 8px 0;
++            background: #f8fafc;
++            border: 1px solid #cbd5e1;
++            border-radius: 6px;
++            font-size: 0.85rem;
++            font-weight: 700;
++            color: #475569;
++            cursor: pointer;
++            transition: all 0.2s;
++        }
++        .month-btn:hover {
++            background: #e2e8f0;
++            color: #1e3a8a;
++            border-color: #94a3b8;
++        }
++
+     </style>
+     <link rel="manifest" href="manifest.json">
+     <meta name="theme-color" content="#ffffff">
+@@ -715,58 +733,37 @@
+                         </div>
+ 
+                         <div id="rangeFilterBody" style="display: none;">
+-                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+-                                <input type="date" id="paymentRangeStart" onchange="syncCalendarSelection()"
+-                                    style="flex: 1; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.8rem;">
+-                                <span style="color: #94a3b8;">~</span>
+-                                <input type="date" id="paymentRangeEnd" onchange="syncCalendarSelection()"
+-                                    style="flex: 1; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.8rem;">
++                            <div style="display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px;">
++                                <button onclick="changeAutoAddYear(-1)" style="border: none; background: #e2e8f0; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; display: flex; align-items: center; justify-content: center;"><i class="material-icons" style="font-size: 1rem; color: #475569;">chevron_left</i></button>
++                                <span id="autoAddYearDisplay" style="font-weight: 700; font-size: 1.1rem; color: #1e3a8a;">2026년</span>
++                                <button onclick="changeAutoAddYear(1)" style="border: none; background: #e2e8f0; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; display: flex; align-items: center; justify-content: center;"><i class="material-icons" style="font-size: 1rem; color: #475569;">chevron_right</i></button>
+                             </div>
+-
+-                            <div style="display: flex; gap: 4px; margin-bottom: 10px;">
+-                                <button onclick="setQuickRange(7)"
+-                                    style="flex:1; padding:4px; font-size:0.75rem; background:#fff; border:1px solid #cbd5e1; border-radius:4px; cursor:pointer;">7일</button>
+-                                <button onclick="setQuickRange(14)"
+-                                    style="flex:1; padding:4px; font-size:0.75rem; background:#fff; border:1px solid #cbd5e1; border-radius:4px; cursor:pointer;">14일</button>
+-                                <button onclick="setQuickRange(30)"
+-                                    style="flex:1; padding:4px; font-size:0.75rem; background:#fff; border:1px solid #cbd5e1; border-radius:4px; cursor:pointer;">1개월</button>
++                            
++                            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 15px;">
++                                <button class="month-btn" onclick="selectAutoAddMonth(1)">1월</button>
++                                <button class="month-btn" onclick="selectAutoAddMonth(2)">2월</button>
++                                <button class="month-btn" onclick="selectAutoAddMonth(3)">3월</button>
++                                <button class="month-btn" onclick="selectAutoAddMonth(4)">4월</button>
++                                <button class="month-btn" onclick="selectAutoAddMonth(5)">5월</button>
++                                <button class="month-btn" onclick="selectAutoAddMonth(6)">6월</button>
++                                <button class="month-btn" onclick="selectAutoAddMonth(7)">7월</button>
++                                <button class="month-btn" onclick="selectAutoAddMonth(8)">8월</button>
++                                <button class="month-btn" onclick="selectAutoAddMonth(9)">9월</button>
++                                <button class="month-btn" onclick="selectAutoAddMonth(10)">10월</button>
++                                <button class="month-btn" onclick="selectAutoAddMonth(11)">11월</button>
++                                <button class="month-btn" onclick="selectAutoAddMonth(12)">12월</button>
+                             </div>
+ 
+-                            <div id="rangeCalendarRoot" class="range-calendar-container">
+-                                <div class="calendar-nav">
+-                                    <i class="material-icons" onclick="changeRangeMonth(-1)">chevron_left</i>
+-                                    <span id="calendarTitle">2026.03</span>
+-                                    <i class="material-icons" onclick="changeRangeMonth(1)">chevron_right</i>
+-                                </div>
+-                                <div class="calendar-grid" style="margin-bottom:2px;">
+-                                    <div class="calendar-day-header" style="color:#ef4444;">일</div>
+-                                    <div class="calendar-day-header">월</div>
+-                                    <div class="calendar-day-header">화</div>
+-                                    <div class="calendar-day-header">수</div>
+-                                    <div class="calendar-day-header">목</div>
+-                                    <div class="calendar-day-header">금</div>
+-                                    <div class="calendar-day-header" style="color:#3b82f6;">토</div>
+-                                </div>
+-                                <div id="calendarDays" class="calendar-grid"></div>
+-                                <div style="margin-top:10px; font-size:0.7rem; color:#64748b; text-align:center;">
+-                                    날짜를 클릭하거나 <span style="color:#3b82f6; font-weight:700;">드래그</span>하여 범위를 선택하세요.
+-                                </div>
+-                                <div style="margin-top: 10px; text-align: center;">
+-                                    <button onclick="showSmsLogsForSelectedDate()" style="padding: 6px 12px; font-size: 0.8rem; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 4px; cursor: pointer; color: #475569; width: 100%; display: flex; align-items: center; justify-content: center; gap: 5px;">
+-                                        <i class="material-icons" style="font-size: 1rem;">history</i> 
+-                                        선택된 시작 날짜 발송 내역 보기
+-                                    </button>
+-                                </div>
++                            <div id="autoAddResultMsg" style="text-align: center; font-size: 0.95rem; color: #ef4444; font-weight: bold; min-height: 20px;">
++                                <!-- 결과 메시지 표시 영역 -->
+                             </div>
+ 
+-                            <div
+-                                style="display: flex; align-items: center; justify-content: space-between; margin-top:10px;">
+-                                <label
+-                                    style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: #475569; cursor: pointer;">
+-                                    <input type="checkbox" id="usePaymentFilter"> 필정 대상만 보기
+-                                </label>
+-                                <button onclick="renderTargetList()"
+-                                    style="padding: 5px 15px; background: #1e3a8a; color: white; border: none; border-radius: 4px; font-size: 0.8rem; font-weight: 700; cursor: pointer;">적용</button>
++                            <input type="date" id="paymentRangeStart" style="display:none;">
++                            <input type="date" id="paymentRangeEnd" style="display:none;">
++                            <input type="checkbox" id="usePaymentFilter" checked style="display:none;">
++
++                            <div style="display: flex; align-items: center; justify-content: flex-end; margin-top:15px; border-top: 1px solid #e2e8f0; padding-top: 10px;">
++                                <button onclick="toggleRangeCalendar()" style="padding: 5px 15px; background: #e2e8f0; color: #475569; border: none; border-radius: 4px; font-size: 0.8rem; font-weight: 700; cursor: pointer;">닫기</button>
+                             </div>
+                         </div>
+                     </div>
