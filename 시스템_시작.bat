@@ -14,22 +14,8 @@ echo    세종요리제과기술학원 시스템 통합 시작기
 echo ======================================================
 echo.
 echo [1/4] 파일 동기화 (최신 데이터 및 수정사항 반영) 중...
-copy /y "%ROOT_DIR%Sejong\SejongAttendance\public\sms.html" "%ROOT_DIR%Sejong\public\sms.html"
-copy /y "%ROOT_DIR%Sejong\SejongAttendance\public\sms.html" "%ROOT_DIR%public\sejong\sms.html"
-copy /y "%ROOT_DIR%Sejong\SejongAttendance\public\sms_v3.js" "%ROOT_DIR%Sejong\public\sms_v3.js"
-copy /y "%ROOT_DIR%Sejong\SejongAttendance\public\sms_v3.js" "%ROOT_DIR%public\sejong\sms_v3.js"
-copy /y "%ROOT_DIR%Sejong\SejongAttendance\public\sheet.html" "%ROOT_DIR%Sejong\public\sheet.html"
-copy /y "%ROOT_DIR%Sejong\SejongAttendance\public\sheet.html" "%ROOT_DIR%public\sejong\sheet.html"
-copy /y "%ROOT_DIR%Sejong\SejongAttendance\public\ledger.js" "%ROOT_DIR%Sejong\public\ledger.js"
-copy /y "%ROOT_DIR%Sejong\SejongAttendance\public\ledger.js" "%ROOT_DIR%public\sejong\ledger.js"
-copy /y "%ROOT_DIR%Sejong\SejongAttendance\public\tuition_v3.js" "%ROOT_DIR%Sejong\public\tuition_v3.js"
-copy /y "%ROOT_DIR%Sejong\SejongAttendance\public\tuition_v3.js" "%ROOT_DIR%public\sejong\tuition_v3.js"
-copy /y "%ROOT_DIR%Sejong\SejongAttendance\public\tuition.html" "%ROOT_DIR%Sejong\public\tuition.html"
-copy /y "%ROOT_DIR%Sejong\SejongAttendance\public\tuition.html" "%ROOT_DIR%public\sejong\tuition.html"
-copy /y "%ROOT_DIR%Sejong\SejongAttendance\public\phonebook.html" "%ROOT_DIR%Sejong\public\phonebook.html"
-copy /y "%ROOT_DIR%Sejong\SejongAttendance\public\phonebook.html" "%ROOT_DIR%public\sejong\phonebook.html"
-copy /y "%ROOT_DIR%Sejong\SejongAttendance\public\phonebook.js" "%ROOT_DIR%Sejong\public\phonebook.js"
-copy /y "%ROOT_DIR%Sejong\SejongAttendance\public\phonebook.js" "%ROOT_DIR%public\sejong\phonebook.js"
+xcopy "%ROOT_DIR%Sejong\SejongAttendance\public\*" "%ROOT_DIR%Sejong\public\" /E /Y /Q > nul
+xcopy "%ROOT_DIR%Sejong\SejongAttendance\public\*" "%ROOT_DIR%public\sejong\" /E /Y /Q > nul
 echo [1/3] JSON 데이터 동기화 (SejongAttendance\data -^> Sejong\data 백업) 중...
 xcopy "%ROOT_DIR%Sejong\SejongAttendance\data\*.json" "%ROOT_DIR%Sejong\data\" /Y /Q > nul
 echo     ✅ 데이터 동기화 및 백업 완료
