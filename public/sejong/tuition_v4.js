@@ -1028,6 +1028,9 @@ function renderTable() {
     if (window.currentState.viewMode === 'total') renderTotalView(rows, tbody);
     else if (window.currentState.viewMode === 'card') renderCardView(rows, tableCard);
     else if (window.currentState.viewMode === 'grouped') renderGroupedView(rows, tableCard);
+
+    // 월별 미납 패널 뱃지 업데이트 (비동기로 실행하여 렌더링 블로킹 방지)
+    setTimeout(() => updateMonthlyUnpaidPanel(), 0);
 }
 
 function renderTotalView(rows, tbody) {
@@ -1633,3 +1636,80 @@ window.addEventListener('storage', (e) => {
         loadData();
     }
 });
+
+// ============================================================
+// 월별 미납 패널: 각 달의 미납 결제일 수 계산 및 뱃지 업데이트
+// ============================================================
+
+/** 특정 연도·월의 미납 결제일(미납 milestone) 총 개수를 반환 */
+function countUnpaidMilestonesForMonth(year, month) {
+    const normalizeCourse = (c) => (!c || c === 'null') ? null : String(c).trim();
+    let count = 0;
+    const today = new Date();
+
+    membersData.forEach(m => {
+        // 삭제된 과정은 제외
+        const courses = (m.course || '').split(',').map(c => c.trim()).filter(c => c && !c.includes('[삭제]'));
+        courses.forEach(fullCourse => {
+            const courseNameOnly = fullCourse.split('(')[0].trim();
+            const stats = getMemberEighthDayInMonth(m.id, year, month, courseNameOnly);
+            if (!stats || !stats.allMilestones) return;
+
+            const targetCount = (courseNameOnly && courseNameOnly.replace(/\s/g, '').includes('제과제빵')) ? 17 : 9;
+            let remainingForLoop = stats.currentCount ? stats.currentCount.count : 0;
+
+            stats.allMilestones.forEach(ms => {
+                if (ms.year !== year || ms.month !== month) return;
+                const msPayment = paymentsData.find(p =>
+                    p.memberId == m.id &&
+                    p.year == ms.year &&
+                    p.month == ms.month &&
+                    normalizeCourse(p.course) === normalizeCourse(courseNameOnly) &&
+                    p.status !== 'delete'
+                );
+                if (msPayment && msPayment.status === 'paid') {
+                    remainingForLoop -= targetCount;
+                } else {
+                    const msDateObj = new Date(ms.year, ms.month - 1, ms.day);
+                    if (remainingForLoop >= targetCount || msDateObj <= today) {
+                        count++;
+                        remainingForLoop -= targetCount;
+                    }
+                }
+            });
+        });
+    });
+    return count;
+}
+
+/** 모든 달(1~12)의 미납 수를 계산하고 패널 뱃지를 업데이트 */
+function updateMonthlyUnpaidPanel() {
+    const year = window.currentState.year;
+    const currentMonth = window.currentState.month;
+
+    for (let m = 1; m <= 12; m++) {
+        const badge = document.getElementById(`monthUnpaidBadge-${m}`);
+        const btn = document.getElementById(`monthUnpaidBtn-${m}`);
+        if (!badge || !btn) continue;
+
+        // 현재 선택된 월 강조
+        btn.classList.toggle('is-current', m === currentMonth);
+
+        const cnt = countUnpaidMilestonesForMonth(year, m);
+        if (cnt > 0) {
+            badge.textContent = cnt;
+            badge.style.display = 'inline-block';
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+}
+
+/** 월 패널 클릭 시 해당 월로 이동 */
+function jumpToMonth(month) {
+    window.currentState.month = month;
+    const monthSelect = document.getElementById('monthSelect');
+    if (monthSelect) monthSelect.value = month;
+    localStorage.setItem('sejong_tuition_currentMonth', month);
+    renderTable();
+}

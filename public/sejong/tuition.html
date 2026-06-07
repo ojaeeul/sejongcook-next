@@ -8,11 +8,11 @@
     <meta http-equiv=1780796013"Expires" content="0">    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>수강료 관리 - 세종요리</title>
-    <link rel="stylesheet" href="style.css?v=1780796013_211823">
+    <link rel="stylesheet" href="style.css?v=1780803166_211823">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="tuition_v4.js?v=1780796013_215152" defer></script>
+    <script src="tuition_v4.js?v=1780803166_215152" defer></script>
 </head>
 
 <body>
@@ -182,8 +182,30 @@
                 </header>
 
                 <div class="content-body" style="padding-top: 20px;">
+
+                    <!-- 연간 월별 미납 현황 패널 -->
+                    <div id="monthlyUnpaidPanel" style="display:flex; gap:6px; flex-wrap:wrap; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:10px 14px; margin-bottom:14px; align-items:center;">
+                        <span style="font-size:0.75rem; font-weight:700; color:#64748b; white-space:nowrap; margin-right:4px;">
+                            <span class="material-icons" style="font-size:0.9rem; vertical-align:middle;">calendar_month</span>
+                            월별 미납
+                        </span>
+                        <div id="monthUnpaidBtn-1" onclick="jumpToMonth(1)" class="month-unpaid-btn" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#fff'"><span>1월</span><span id="monthUnpaidBadge-1" class="month-unpaid-badge" style="display:none;">0</span></div>
+                        <div id="monthUnpaidBtn-2" onclick="jumpToMonth(2)" class="month-unpaid-btn" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#fff'"><span>2월</span><span id="monthUnpaidBadge-2" class="month-unpaid-badge" style="display:none;">0</span></div>
+                        <div id="monthUnpaidBtn-3" onclick="jumpToMonth(3)" class="month-unpaid-btn" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#fff'"><span>3월</span><span id="monthUnpaidBadge-3" class="month-unpaid-badge" style="display:none;">0</span></div>
+                        <div id="monthUnpaidBtn-4" onclick="jumpToMonth(4)" class="month-unpaid-btn" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#fff'"><span>4월</span><span id="monthUnpaidBadge-4" class="month-unpaid-badge" style="display:none;">0</span></div>
+                        <div id="monthUnpaidBtn-5" onclick="jumpToMonth(5)" class="month-unpaid-btn" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#fff'"><span>5월</span><span id="monthUnpaidBadge-5" class="month-unpaid-badge" style="display:none;">0</span></div>
+                        <div id="monthUnpaidBtn-6" onclick="jumpToMonth(6)" class="month-unpaid-btn" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#fff'"><span>6월</span><span id="monthUnpaidBadge-6" class="month-unpaid-badge" style="display:none;">0</span></div>
+                        <div id="monthUnpaidBtn-7" onclick="jumpToMonth(7)" class="month-unpaid-btn" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#fff'"><span>7월</span><span id="monthUnpaidBadge-7" class="month-unpaid-badge" style="display:none;">0</span></div>
+                        <div id="monthUnpaidBtn-8" onclick="jumpToMonth(8)" class="month-unpaid-btn" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#fff'"><span>8월</span><span id="monthUnpaidBadge-8" class="month-unpaid-badge" style="display:none;">0</span></div>
+                        <div id="monthUnpaidBtn-9" onclick="jumpToMonth(9)" class="month-unpaid-btn" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#fff'"><span>9월</span><span id="monthUnpaidBadge-9" class="month-unpaid-badge" style="display:none;">0</span></div>
+                        <div id="monthUnpaidBtn-10" onclick="jumpToMonth(10)" class="month-unpaid-btn" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#fff'"><span>10월</span><span id="monthUnpaidBadge-10" class="month-unpaid-badge" style="display:none;">0</span></div>
+                        <div id="monthUnpaidBtn-11" onclick="jumpToMonth(11)" class="month-unpaid-btn" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#fff'"><span>11월</span><span id="monthUnpaidBadge-11" class="month-unpaid-badge" style="display:none;">0</span></div>
+                        <div id="monthUnpaidBtn-12" onclick="jumpToMonth(12)" class="month-unpaid-btn" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#fff'"><span>12월</span><span id="monthUnpaidBadge-12" class="month-unpaid-badge" style="display:none;">0</span></div>
+                    </div>
+
                     <!-- Filter Bar -->
                     <div class="filter-card">
+
                         <div class="filter-row" style="align-items: center; gap: 20px;">
                             <div class="month-nav">
                                 <button onclick="changeMonth(-1)">&lt;</button>
