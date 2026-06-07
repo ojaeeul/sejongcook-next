@@ -81,6 +81,23 @@ window.updateMemberCourse = async function(memberId, index, value) {
     } catch(e) { console.error(e); }
 };
 
+window.deleteMemberCourse = async function(memberId, index, courseName) {
+    if(!confirm(`정말 '${courseName}' 과정을 삭제하시겠습니까?`)) return;
+    try {
+        const m = membersData.find(m => String(m.id) === String(memberId));
+        if (!m) return;
+        const courses = (m.course || '').split(',').map(c => c.trim()).filter(Boolean);
+        courses.splice(index, 1);
+        m.course = courses.join(', ');
+        await fetch(getFetchUrl('members', true), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(m)
+        });
+        renderLedger(); 
+    } catch(e) { console.error(e); }
+};
+
 window.moveToTrash = async function(memberId) {
     if(!confirm('정말 휴지통으로 이동하시겠습니까? (이동 시 수강생 대장을 제외한 모든 화면에서 숨김 처리됩니다)')) return;
     try {
@@ -532,15 +549,15 @@ function renderTable(container, title, members, id) {
 
                         return `
                             <div style="display: flex; align-items: center; gap: 2px;">
-                                <span onclick="moveToTrash('${m.id}')" style="cursor: pointer; color: #ef4444; display: flex; align-items: center; visibility: ${c1 ? 'visible' : 'hidden'};" title="과정 삭제"><span class="material-icons" style="font-size: 0.75rem;">delete</span></span>
+                                <span onclick="deleteMemberCourse('${m.id}', 0, '${c1}')" style="cursor: pointer; color: #ef4444; display: flex; align-items: center; visibility: ${c1 ? 'visible' : 'hidden'};" title="과정 삭제"><span class="material-icons" style="font-size: 0.75rem;">delete</span></span>
                                 ${renderInput(c1, 0)}
                             </div>
                             <div style="display: flex; align-items: center; gap: 2px;">
-                                <span onclick="moveToTrash('${m.id}')" style="cursor: pointer; color: #ef4444; display: flex; align-items: center; visibility: ${c2 ? 'visible' : 'hidden'};" title="과정 삭제"><span class="material-icons" style="font-size: 0.75rem;">delete</span></span>
+                                <span onclick="deleteMemberCourse('${m.id}', 1, '${c2}')" style="cursor: pointer; color: #ef4444; display: flex; align-items: center; visibility: ${c2 ? 'visible' : 'hidden'};" title="과정 삭제"><span class="material-icons" style="font-size: 0.75rem;">delete</span></span>
                                 ${renderInput(c2, 1)}
                             </div>
                             <div style="display: flex; align-items: center; gap: 2px;">
-                                <span onclick="moveToTrash('${m.id}')" style="cursor: pointer; color: #ef4444; display: flex; align-items: center; visibility: ${c3 ? 'visible' : 'hidden'};" title="과정 삭제"><span class="material-icons" style="font-size: 0.75rem;">delete</span></span>
+                                <span onclick="deleteMemberCourse('${m.id}', 2, '${c3}')" style="cursor: pointer; color: #ef4444; display: flex; align-items: center; visibility: ${c3 ? 'visible' : 'hidden'};" title="과정 삭제"><span class="material-icons" style="font-size: 0.75rem;">delete</span></span>
                                 ${renderInput(c3, 2)}
                             </div>
                         `;
