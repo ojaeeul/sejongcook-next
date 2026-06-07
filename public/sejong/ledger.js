@@ -509,16 +509,22 @@ function renderTable(container, title, members, id) {
             </div>
         </div>
         <div style="overflow-x: auto; border: 1.5px solid #0f172a; border-radius: 4px; background: #fff;">
-            <table style="width: 100%; border-collapse: collapse; min-width: 1000px; font-family: 'Noto Sans KR', sans-serif;">
+            <table style="width: 100%; border-collapse: collapse; table-layout: fixed; font-family: 'Noto Sans KR', sans-serif;">
+                <colgroup>
+                    <col style="width: 35px;"><!-- NO -->
+                    <col style="width: 105px;"><!-- 회원정보/과정 -->
+                    ${Array.from({ length: 24 }, () => `<col style="width: calc((100% - 140px - 60px) / 24);">`).join('')}<!-- 12월 x 예/실 -->
+                    <col style="width: 60px;"><!-- 비고 -->
+                </colgroup>
                 <thead>
                     <tr style="background: #f8fafc; border-bottom: 1.5px solid #0f172a;">
-                        <th rowspan="2" style="width: 35px; border-right: 1.5px solid #0f172a; font-size: 0.75rem;">NO</th>
-                        <th rowspan="2" style="width: 105px; max-width: 105px; white-space: nowrap; border-right: 1.5px solid #0f172a; font-size: 0.75rem; text-align: left; padding: 10px 5px;">회원정보/과정</th>
+                        <th rowspan="2" style="border-right: 1.5px solid #0f172a; font-size: 0.75rem;">NO</th>
+                        <th rowspan="2" style="border-right: 1.5px solid #0f172a; font-size: 0.75rem; text-align: left; padding: 10px 5px;">회원정보/과정</th>
                         ${Array.from({ length: 12 }, (_, i) => `<th colspan="2" style="border-right: 1.5px solid #0f172a; border-bottom: 1px solid #cbd5e1; font-size: 0.8rem; padding: 5px;">${i + 1}월</th>`).join('')}
-                        <th rowspan="2" style="width: 100px; font-size: 0.75rem;">비고</th>
+                        <th rowspan="2" style="font-size: 0.75rem;">비고</th>
                     </tr>
                     <tr style="background: #f8fafc; border-bottom: 1.5px solid #0f172a;">
-                        ${Array.from({ length: 12 }, () => `<th style="width: 45px; font-size: 0.65rem; border-right: 1px dotted #cbd5e1;">예</th><th style="width: 45px; font-size: 0.65rem; border-right: 1.5px solid #0f172a;">실</th>`).join('')}
+                        ${Array.from({ length: 12 }, () => `<th style="font-size: 0.65rem; border-right: 1px dotted #cbd5e1;">예</th><th style="font-size: 0.65rem; border-right: 1.5px solid #0f172a;">실</th>`).join('')}
                     </tr>
                 </thead>
                 <tbody>

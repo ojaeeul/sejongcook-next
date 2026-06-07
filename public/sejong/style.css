@@ -3382,24 +3382,17 @@ label {
         border: 1px solid #000 !important;
     }
 
-    /* Column specific widths for print to ensure 100% fit */
-    th:nth-child(1),
-    td:nth-child(1) {
-        width: 30px !important;
-    }
-
-    /* NO */
-    th:nth-child(2),
-    td:nth-child(2) {
-        width: 110px !important;
-    }
-
-    /* Name/Phone */
-    /* Months take remaining space */
-    /* Remarks */
-    th:last-child,
-    td:last-child {
-        width: 80px !important;
+    /* Column widths for print are handled by <colgroup> in ledger.js
+       - NO col: 35px
+       - 회원정보/과정 col: 105px
+       - 월별 예/실 24 cols: equal (remaining space / 24)
+       - 비고 col: 60px
+    */
+    /* Prevent any col override from breaking layout */
+    .ledger-table-wrapper table th,
+    .ledger-table-wrapper table td {
+        overflow: hidden;
+        word-break: break-all;
     }
 }
 
