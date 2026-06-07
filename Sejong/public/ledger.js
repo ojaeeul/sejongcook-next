@@ -526,11 +526,28 @@ function renderTable(container, title, members, id) {
             const paid = paymentsData.filter(p => String(p.memberId) === String(m.id) && String(p.year) === String(currentYear) && String(p.month) === String(month) && p.status === 'paid');
 
             let expectedHTML = schedules
-                .filter(s => s.eighthDay && !isNaN(parseInt(s.eighthDay)) && Number(s.eighthDay) > 0)
+                .filter(s => {
+                    if (!s.eighthDay || isNaN(parseInt(s.eighthDay)) || Number(s.eighthDay) <= 0) return false;
+                    
+                    if (s.isSimulated) {
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        const msDate = new Date(currentYear, month - 1, parseInt(s.eighthDay));
+                        const diffTime = msDate.getTime() - today.getTime();
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        
+                        // 2주(14일) 미만으로 남은 가상 결제일만 표시
+                        if (diffDays < 0 || diffDays >= 14) {
+                            return false;
+                        }
+                    }
+                    return true;
+                })
                 .map(s => {
                     const dayText = `${s.eighthDay}일`;
-                    const feeColor = s.isSimulated ? '#a855f7' : '#d946ef';
-                    const dateColor = s.isSimulated ? '#a855f7' : '#ff0000'; // 예정일 숫자 아주 빨강
+                    // 가상 결재일(isSimulated)은 연한 파란색(#3b82f6), 진짜 결재일은 원래 색상 유지
+                    const feeColor = s.isSimulated ? '#3b82f6' : '#d946ef';
+                    const dateColor = s.isSimulated ? '#3b82f6' : '#ff0000'; 
                     return `
                     <div style="font-size: 0.65rem; font-weight: 800; display: flex; flex-direction: column; gap: 2px; align-items: center; margin-bottom: 4px;">
                         <div style="color: ${dateColor};">${dayText}</div>

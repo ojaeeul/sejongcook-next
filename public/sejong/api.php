@@ -105,17 +105,10 @@ if ($board === 'sejong_attendance/batch' && $method === 'POST') {
     if (!is_array($data))
         $data = [];
 
-    $clearAllCourses = !array_key_exists('course', $input) || $input['course'] === null;
-
     $filtered = [];
     foreach ($data as $log) {
-        $isMatchMemberAndDate = strval($log['memberId'] ?? '') === strval($memberId) && in_array($log['date'] ?? '', $dates);
-        if ($isMatchMemberAndDate) {
-            if ($clearAllCourses) {
-                continue; // Drop everything for this member/date
-            } else if (($log['course'] ?? null) === $course) {
-                continue; // Drop specific course
-            }
+        if (strval($log['memberId'] ?? '') === strval($memberId) && in_array($log['date'] ?? '', $dates) && ($log['course'] ?? null) === $course) {
+            continue;
         }
         $filtered[] = $log;
     }
@@ -135,48 +128,6 @@ if ($board === 'sejong_attendance/batch' && $method === 'POST') {
     echo json_encode(['success' => true]);
     exit;
 }
-
-// Specialized Logic for sejong_attendance (Single object POST)
-if ($board === 'sejong_attendance' && $method === 'POST') {
-    $input = json_decode(file_get_contents('php://input'), true);
-    // If it's a full array replacement, let the generic list logic handle it
-    if ($input && isset($input[0])) {
-        // do nothing here, let it fall through
-    } else if ($input && isset($input['memberId']) && isset($input['date'])) {
-        $data = file_exists($filePath) ? json_decode(file_get_contents($filePath), true) : [];
-        if (!is_array($data)) $data = [];
-
-        $memberId = $input['memberId'];
-        $date = $input['date'];
-        $course = $input['course'] ?? null;
-        $status = $input['status'] ?? 'unchecked';
-
-        $existing_idx = -1;
-        foreach ($data as $i => $log) {
-            if (strval($log['memberId'] ?? '') === strval($memberId) && ($log['date'] ?? '') === $date && ($log['course'] ?? null) === $course) {
-                $existing_idx = $i;
-                break;
-            }
-        }
-
-        if ($existing_idx !== -1) {
-            if ($status === 'unchecked') {
-                array_splice($data, $existing_idx, 1);
-            } else {
-                $data[$existing_idx]['status'] = $status;
-            }
-        } else {
-            if ($status !== 'unchecked') {
-                $data[] = $input;
-            }
-        }
-
-        file_put_contents($filePath, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-        echo json_encode(['success' => true]);
-        exit;
-    }
-}
-
 
 // Specialized Logic for sejong_payments (Upsert based on memberId, year, month, course)
 if ($board === 'sejong_payments' && $method === 'POST') {

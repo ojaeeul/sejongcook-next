@@ -1189,6 +1189,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (viewYear) {
         setTimeout(() => loadExamView(viewYear), 500);
     }
+    const editMemberId = params.get('editMember');
+    if (editMemberId) {
+        setTimeout(() => {
+            if (typeof openEditConfirmModal === 'function') {
+                openEditConfirmModal(editMemberId);
+            }
+        }, 500);
+    }
 
     // Reset all nav items first
     document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));

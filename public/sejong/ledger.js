@@ -52,6 +52,49 @@ let courseFees = {};
 let attendanceByMember = {}; // Optimized lookup
 window.targetMemberId = null;
 
+window.updateMemberField = async function(memberId, field, value) {
+    try {
+        const m = membersData.find(m => String(m.id) === String(memberId));
+        if (m) m[field] = value;
+        await fetch(`/api/sejong/members/${memberId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ [field]: value })
+        });
+    } catch(e) { console.error(e); }
+};
+
+window.updateMemberCourse = async function(memberId, index, value) {
+    try {
+        const m = membersData.find(m => String(m.id) === String(memberId));
+        if (!m) return;
+        const courses = (m.course || '').split(',').map(c => c.trim()).filter(Boolean);
+        courses[index] = value;
+        const newCourse = courses.filter(Boolean).join(', ');
+        m.course = newCourse;
+        await fetch(getFetchUrl('members', true), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: memberId, course: newCourse })
+        });
+        renderLedger(); 
+    } catch(e) { console.error(e); }
+};
+
+window.moveToTrash = async function(memberId) {
+    if(!confirm('정말 휴지통으로 이동하시겠습니까? (이동 시 수강생 대장을 제외한 모든 화면에서 숨김 처리됩니다)')) return;
+    try {
+        const m = membersData.find(m => String(m.id) === String(memberId));
+        if (m) m.status = 'trash';
+        await fetch(getFetchUrl('members', true), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: memberId, status: 'trash' })
+        });
+        renderLedger();
+    } catch(e) { console.error(e); }
+};
+
 let currentYear = parseInt(localStorage.getItem('sejong_ledger_currentYear')) || new Date().getFullYear();
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -461,25 +504,67 @@ function renderTable(container, title, members, id) {
         const rowId = `row-${id}-${m.id}`;
         html += `<tr id="${rowId}" style="border-bottom: 1px solid #0f172a; ${isTarget ? 'background: #fffbeb;' : ''}">
             <td style="text-align: center; font-weight: 700; border-right: 1.5px solid #0f172a;">${idx + 1}</td>
-            <td style="padding: 8px 10px; border-right: 1.5px solid #0f172a;">
-                <div style="font-weight: 900; font-size: 0.9rem;">${m.name}</div>
-                <div style="font-size: 0.7rem; color: #64748b;">${m.phone || ''}</div>
-                <div style="font-size: 0.6rem; font-weight: 700; margin-top: 4px; display: flex; flex-direction: column; gap: 2px; align-items: flex-start;">
+            <td style="padding: 6px 8px; border-right: 1.5px solid #0f172a;">
+                <div style="display: flex; align-items: center; gap: 4px;">
+                    <span onclick="moveToTrash('${m.id}')" style="cursor: pointer; color: #ef4444; font-size: 0.8rem; display: flex; align-items: center;" title="휴지통으로 이동"><span class="material-icons" style="font-size: 0.8rem;">delete</span></span>
+                    <input type="text" value="${m.name || ''}" onchange="updateMemberField('${m.id}', 'name', this.value)" style="font-weight: 900; font-size: 0.9rem; border: 1px solid transparent; width: 65px; padding: 0 2px; background: transparent; color: #000;" onfocus="this.style.border='1px solid #cbd5e1'; this.style.background='#fff'" onblur="this.style.border='1px solid transparent'; this.style.background='transparent'">
+                </div>
+                <div style="margin-top: 2px;">
+                    <input type="text" value="${m.phone || ''}" onchange="updateMemberField('${m.id}', 'phone', this.value)" style="font-size: 0.7rem; color: #64748b; border: 1px solid transparent; width: 95px; padding: 0 2px; background: transparent;" onfocus="this.style.border='1px solid #cbd5e1'; this.style.background='#fff'" onblur="this.style.border='1px solid transparent'; this.style.background='transparent'" placeholder="전화번호">
+                </div>
+                <div style="margin-top: 4px; display: flex; flex-direction: column; gap: 2px;">
                     ${(() => {
-    let cs = (m.course || '').split(',').map(c => c.trim()).filter(Boolean);
-    const hjg = cs.some(c => c.includes('제과') && !c.includes('제과제빵'));
-    const hjp = cs.some(c => c.includes('제빵') && !c.includes('제과제빵'));
-    if (hjg && hjp) {
-        cs = cs.filter(c => !c.includes('제과') && !c.includes('제빵'));
-        cs.push('제과제빵');
-    }
-    return cs.map(c => `<span style="background: #eff6ff; color: #1d4ed8; padding: 2px 5px; border-radius: 3px; border: 1px solid #bfdbfe; white-space: nowrap; line-height: 1; font-size: 0.55rem;">${c}</span>`).join('');
-})()}
+                        const courses = (m.course || '').split(',').map(c => c.trim()).filter(Boolean);
+                        const c1 = courses[0] || '';
+                        const c2 = courses[1] || '';
+                        const c3 = courses[2] || '';
+
+                        const renderInput = (val, idx) => {
+                            if (!val) {
+                                return `<input type="text" value="" readonly onclick="openEditConfirmModal('${m.id}')" placeholder="+ 과정 추가" style="cursor: pointer; font-size: 0.6rem; color: #1d4ed8; background: #eff6ff; border: 1px solid transparent; border-radius: 2px; width: 80px; padding: 1px 3px;">`;
+                            } else {
+                                return `<input type="text" value="${val}" onchange="updateMemberCourse('${m.id}', ${idx}, this.value)" placeholder="+ 과정 추가" style="font-size: 0.6rem; color: #1d4ed8; background: #eff6ff; border: 1px solid transparent; border-radius: 2px; width: 80px; padding: 1px 3px;" onfocus="this.style.border='1px solid #bfdbfe'" onblur="this.style.border='1px solid transparent'">`;
+                            }
+                        };
+
+                        return `
+                            <div style="display: flex; align-items: center; gap: 2px;">
+                                <span onclick="updateMemberCourse('${m.id}', 0, '')" style="cursor: pointer; color: #ef4444; display: flex; align-items: center; visibility: ${c1 ? 'visible' : 'hidden'};" title="과정 삭제"><span class="material-icons" style="font-size: 0.75rem;">delete</span></span>
+                                ${renderInput(c1, 0)}
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 2px;">
+                                <span onclick="updateMemberCourse('${m.id}', 1, '')" style="cursor: pointer; color: #ef4444; display: flex; align-items: center; visibility: ${c2 ? 'visible' : 'hidden'};" title="과정 삭제"><span class="material-icons" style="font-size: 0.75rem;">delete</span></span>
+                                ${renderInput(c2, 1)}
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 2px;">
+                                <span onclick="updateMemberCourse('${m.id}', 2, '')" style="cursor: pointer; color: #ef4444; display: flex; align-items: center; visibility: ${c3 ? 'visible' : 'hidden'};" title="과정 삭제"><span class="material-icons" style="font-size: 0.75rem;">delete</span></span>
+                                ${renderInput(c3, 2)}
+                            </div>
+                        `;
+                    })()}
                 </div>
             </td>`;
 
+        const allMonthsSchedules = [];
+        const courseLatestRealMonth = {};
+
         for (let month = 1; month <= 12; month++) {
             let schedules = getAllLedgerMonthStats(m.id, currentYear, month);
+            allMonthsSchedules.push(schedules);
+            
+            schedules.forEach(s => {
+                if (!s.isSimulated && s.eighthDay && !isNaN(parseInt(s.eighthDay)) && Number(s.eighthDay) > 0) {
+                    if (!courseLatestRealMonth[s.course] || courseLatestRealMonth[s.course] < month) {
+                        courseLatestRealMonth[s.course] = month;
+                    }
+                }
+            });
+        }
+
+        const coursesFoundSimulated = new Set();
+        
+        allMonthsSchedules.forEach((schedules, idx) => {
+            const month = idx + 1;
 
             if (currentFilterDate) {
                 let startM, startD, endM, endD;
@@ -526,11 +611,22 @@ function renderTable(container, title, members, id) {
             const paid = paymentsData.filter(p => String(p.memberId) === String(m.id) && String(p.year) === String(currentYear) && String(p.month) === String(month) && p.status === 'paid');
 
             let expectedHTML = schedules
-                .filter(s => s.eighthDay && !isNaN(parseInt(s.eighthDay)) && Number(s.eighthDay) > 0)
+                .filter(s => {
+                    if (!s.eighthDay || isNaN(parseInt(s.eighthDay)) || Number(s.eighthDay) <= 0) return false;
+                    
+                    if (s.isSimulated) {
+                        if (courseLatestRealMonth[s.course] && month <= courseLatestRealMonth[s.course]) {
+                            return false;
+                        }
+                        if (coursesFoundSimulated.has(s.course)) return false;
+                        coursesFoundSimulated.add(s.course);
+                    }
+                    return true;
+                })
                 .map(s => {
                     const dayText = `${s.eighthDay}일`;
-                    const feeColor = s.isSimulated ? '#a855f7' : '#d946ef';
-                    const dateColor = s.isSimulated ? '#a855f7' : '#ff0000'; // 예정일 숫자 아주 빨강
+                    const feeColor = s.isSimulated ? '#3b82f6' : '#d946ef';
+                    const dateColor = s.isSimulated ? '#3b82f6' : '#ff0000';
                     return `
                     <div style="font-size: 0.65rem; font-weight: 800; display: flex; flex-direction: column; gap: 2px; align-items: center; margin-bottom: 4px;">
                         <div style="color: ${dateColor};">${dayText}</div>
@@ -549,7 +645,7 @@ function renderTable(container, title, members, id) {
 
             html += `<td style="text-align: center; border-right: 1px dotted #cbd5e1; padding: 4px;">${expectedHTML}</td>
                      <td style="text-align: center; border-right: 1.5px solid #0f172a; padding: 4px;">${actualHTML}</td>`;
-        }
+        });
         html += `<td></td></tr>`;
     });
 
@@ -595,3 +691,259 @@ window.addEventListener('storage', (e) => {
     }
 });
 
+// ====== LEDGER MODAL ADDITIONS ======
+let editModal = null;
+let editForm = null;
+
+function initEditModal() {
+    editModal = document.getElementById('editStudentModal');
+    editForm = document.getElementById('editStudentForm');
+    if (editForm) {
+        editForm.addEventListener('submit', handleEditSubmit);
+    }
+}
+
+let targetMemberIdForEdit = null;
+function openEditConfirmModal(memberId) {
+    const modal = document.getElementById('editConfirmModal');
+    targetMemberIdForEdit = memberId;
+    if (modal) {
+        const member = membersData.find(m => m.id === memberId);
+        const titleEl = document.getElementById('editConfirmTitle');
+        if (titleEl && member) {
+            titleEl.textContent = `${member.name} 학생의 정보를 수정하시겠습니까?`;
+        }
+        modal.style.display = 'flex';
+        modal.classList.remove('hidden');
+    }
+}
+function closeEditConfirmModal() {
+    const modal = document.getElementById('editConfirmModal');
+    targetMemberIdForEdit = null;
+    if (modal) {
+        modal.style.display = 'none';
+        modal.classList.add('hidden');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    initEditModal();
+    const yesBtn = document.getElementById('editConfirmYesBtn');
+    if (yesBtn) {
+        yesBtn.addEventListener('click', function () {
+            if (targetMemberIdForEdit) {
+                openEditModal(targetMemberIdForEdit);
+                closeEditConfirmModal();
+            }
+        });
+    }
+});
+
+function openEditModal(memberId) {
+    const member = membersData.find(m => m.id === memberId);
+    if (!member) return;
+
+    if (editForm) {
+        editForm.id.value = member.id;
+        editForm.registeredDate.value = member.registeredDate || '';
+        editForm.name.value = member.name || '';
+        editForm.resident_num.value = member.resident_num || '';
+        editForm.address.value = member.address || '';
+        editForm.address_detail.value = member.address_detail || '';
+        editForm.phone.value = member.phone || '';
+        editForm.phone_guardian.value = member.phone_guardian || '';
+        if (member.start_date) {
+            const parts = member.start_date.split('-');
+            if (parts.length === 3) {
+                editForm.start_yy.value = parts[0].length === 4 ? parts[0].slice(2) : parts[0];
+                editForm.start_mm.value = parts[1];
+                editForm.start_dd.value = parts[2];
+            }
+        } else {
+            editForm.start_yy.value = ''; editForm.start_mm.value = ''; editForm.start_dd.value = '';
+        }
+
+        const courseContainer = document.getElementById('edit_course_container');
+        if (courseContainer) {
+            courseContainer.innerHTML = '';
+            const courses = (member.course || '').split(',');
+            let hasCourse = false;
+            courses.forEach(c => {
+                if (c.trim()) { addCourseInput(c); hasCourse = true; }
+            });
+            if (!hasCourse) addCourseInput('');
+        }
+
+        const type = member.type === 'student' ? 'student' : 'general';
+        const remarkSelect = document.getElementById('edit_remark_type');
+        if (remarkSelect) {
+            remarkSelect.value = type;
+            remarkSelect.dispatchEvent(new Event('change'));
+        }
+
+        editForm.school.value = member.school || '';
+        editForm.grade.value = member.grade || '';
+        editForm.job.value = member.job || '';
+        editForm.notes.value = member.notes || '';
+    }
+
+    if (editModal) {
+        editModal.style.display = 'flex';
+        editModal.classList.remove('hidden');
+    }
+}
+
+function closeEditModal() {
+    if (editModal) {
+        editModal.style.display = 'none';
+        editModal.classList.add('hidden');
+    }
+}
+
+function addCourseInput(initialValue = '') {
+    const container = document.getElementById('edit_course_container');
+    if (!container) return;
+
+    const div = document.createElement('div');
+    div.className = 'flex-group gap-5 mb-5 course-input-row';
+    
+    let courseName = initialValue;
+    let courseTime = '';
+    const match = initialValue.match(/^(.*?)\((.*?)\)$/);
+    if (match) {
+        courseName = match[1].trim();
+        courseTime = match[2].trim();
+    }
+
+    div.innerHTML = `
+        <select class="flex-2 p-8 border-light rounded course-edit-name" title="과정명 선택">
+            <option value="">직접입력</option>
+            <option value="한식" ${courseName === '한식' ? 'selected' : ''}>한식</option>
+            <option value="양식" ${courseName === '양식' ? 'selected' : ''}>양식</option>
+            <option value="일식" ${courseName === '일식' ? 'selected' : ''}>일식</option>
+            <option value="중식" ${courseName === '중식' ? 'selected' : ''}>중식</option>
+            <option value="제과" ${courseName === '제과' ? 'selected' : ''}>제과</option>
+            <option value="제빵" ${courseName === '제빵' ? 'selected' : ''}>제빵</option>
+            <option value="바리스타" ${courseName === '바리스타' ? 'selected' : ''}>바리스타</option>
+            <option value="원데이" ${courseName === '원데이' ? 'selected' : ''}>원데이</option>
+        </select>
+        <input type="text" value="${courseName}" class="flex-2 course-edit-name-custom ${courseName && ['한식', '양식', '일식', '중식', '제과', '제빵', '바리스타', '원데이'].includes(courseName) ? 'hidden' : ''}" placeholder="과정명 직접입력">
+        <select class="flex-1 p-8 border-light rounded course-edit-time" title="시간 선택">
+            <option value="">직접입력</option>
+            <option value="10:00" ${courseTime === '10:00' ? 'selected' : ''}>10:00</option>
+            <option value="14:00" ${courseTime === '14:00' ? 'selected' : ''}>14:00</option>
+            <option value="18:30" ${courseTime === '18:30' ? 'selected' : ''}>18:30</option>
+        </select>
+        <input type="text" value="${courseTime}" class="flex-1 course-edit-time-custom ${courseTime && ['10:00', '14:00', '18:30'].includes(courseTime) ? 'hidden' : ''}" placeholder="시간">
+        <button type="button" class="btn-danger p-8" onclick="removeCourseInput(this)" title="과정 삭제">
+            <span class="material-icons fs-16">remove</span>
+        </button>
+    `;
+    
+    const nameSelect = div.querySelector('.course-edit-name');
+    const nameCustom = div.querySelector('.course-edit-name-custom');
+    nameSelect.addEventListener('change', (e) => {
+        if (e.target.value === "") { nameCustom.classList.remove('hidden'); nameCustom.value = ''; }
+        else { nameCustom.classList.add('hidden'); nameCustom.value = e.target.value; }
+    });
+
+    const timeSelect = div.querySelector('.course-edit-time');
+    const timeCustom = div.querySelector('.course-edit-time-custom');
+    timeSelect.addEventListener('change', (e) => {
+        if (e.target.value === "") { timeCustom.classList.remove('hidden'); timeCustom.value = ''; }
+        else { timeCustom.classList.add('hidden'); timeCustom.value = e.target.value; }
+    });
+
+    container.appendChild(div);
+}
+function removeCourseInput(btn) { btn.parentElement.remove(); }
+
+async function handleEditSubmit(e) {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const data = Object.fromEntries(fd.entries());
+
+    const courseRows = document.querySelectorAll('#edit_course_container .course-input-row');
+    const courseValues = Array.from(courseRows).map(row => {
+        const name = row.querySelector('.course-edit-name-custom')?.value.trim();
+        const time = row.querySelector('.course-edit-time-custom')?.value.trim();
+        if (name && time) return `${name}(${time})`;
+        if (name) return name;
+        return '';
+    }).filter(v => v !== '');
+
+    data.course = courseValues.join(', ');
+    data.type = document.getElementById('edit_remark_type').value;
+
+    if (data.start_yy && data.start_mm && data.start_dd) {
+        data.start_date = `20${data.start_yy}-${data.start_mm.padStart(2, '0')}-${data.start_dd.padStart(2, '0')}`;
+    }
+
+    // ------------------------------------------
+    // Data Preservation Logic: Merge new data into existing member object 
+    // to ensure no fields (like memo, status, etc.) are lost.
+    const existingMember = membersData.find(m => m.id === data.id);
+    let finalData = data;
+
+    if (existingMember) {
+        // Merge: form data takes precedence
+        finalData = { ...existingMember, ...data };
+    }
+    // ------------------------------------------
+
+    try {
+        const res = await fetch(getFetchUrl('members', true), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(finalData)
+        });
+        const result = await res.json();
+        if (result.success !== false) { // Assuming Next.js returns success or the object
+            closeEditModal();
+            fetchData(); 
+        } else {
+            alert("수정 실패");
+        }
+    } catch (err) {
+        console.error(err);
+        alert("통신 오류");
+    }
+}
+
+function toggleEditMemberType() {
+    const type = document.getElementById('edit_remark_type').value;
+    const studentFields = document.getElementById('edit_student_fields');
+    const generalFields = document.getElementById('edit_general_fields');
+    if (type === 'student') {
+        studentFields.classList.remove('hidden');
+        generalFields.classList.add('hidden');
+        document.querySelector('#editStudentForm select[name="job"]').value = '';
+    } else {
+        studentFields.classList.add('hidden');
+        generalFields.classList.remove('hidden');
+        document.querySelector('#editStudentForm input[name="school"]').value = '';
+        document.querySelector('#editStudentForm input[name="grade"]').value = '';
+    }
+}
+
+function openDaumPostcode(targetId) {
+    if (typeof daum !== 'undefined' && daum.Postcode) {
+        new daum.Postcode({
+            oncomplete: function(data) {
+                document.getElementById(targetId).value = data.roadAddress || data.jibunAddress;
+                const detail = document.querySelector('input[name="address_detail"]');
+                if (detail) detail.focus();
+            }
+        }).open();
+    } else {
+        alert("카카오 우편번호 서비스를 불러올 수 없습니다. 다시 시도해주세요.");
+    }
+}
+window.openEditConfirmModal = openEditConfirmModal;
+window.closeEditConfirmModal = closeEditConfirmModal;
+window.openEditModal = openEditModal;
+window.closeEditModal = closeEditModal;
+window.addCourseInput = addCourseInput;
+window.removeCourseInput = removeCourseInput;
+window.toggleEditMemberType = toggleEditMemberType;
+window.openDaumPostcode = openDaumPostcode;

@@ -1,3 +1,4 @@
+// AI ASSISTANT RULE: 원장님의 명시적인 허가 없이 이 파일(수강료 납부대장 로직)을 절대 수정하지 마세요. 수정이 필요하다면 먼저 한국어로 질문하고 허가를 받아야 합니다.
 
 function getFetchUrl(endpoint, isPost = false) {
     const url = `/api/sejong/${endpoint}`;

@@ -823,7 +823,20 @@ function selectFilteredCourses() {
     saveSelectedTargets();
     saveAllDrafts();
 
-    showModalAlert(`필터링 구간에 해당하는 수강생 ${totalSelectedNow}명이 선택되었습니다.`);
+    let detailMsg = '';
+    if (totalSelectedNow > 0 && totalSelectedNow <= 30) {
+        detailMsg = '<br><br><div style="font-size:0.9rem; text-align:left; background:#f8fafc; padding:10px; border-radius:5px; max-height:200px; overflow-y:auto;">';
+        selectedTargets.forEach(t => {
+            const d = t.specificMilestone ? `${t.specificMilestone.month}월 ${t.specificMilestone.day}일` : '날짜미정';
+            const price = typeof calculateTotalFee === 'function' ? calculateTotalFee(t.selectedCourse).toLocaleString() + '원' : '금액확인필요';
+            detailMsg += `<div style="margin-bottom:5px;">- <b>${t.name}</b> (${t.selectedCourse}) : <span style="color:#ef4444;">${d} 결제</span> / <span style="color:#2563eb; font-weight:bold;">${price}</span></div>`;
+        });
+        detailMsg += '</div>';
+    } else if (totalSelectedNow > 30) {
+        detailMsg = '<br><br><div style="font-size:0.9rem; color:#64748b;">(인원이 너무 많아 전체 명단은 생략합니다.)</div>';
+    }
+
+    showModalAlert(`필터링 구간에 해당하는 수강생 <b>${totalSelectedNow}</b>명이 선택되었습니다.${detailMsg}`);
 }
 
 function deselectAllCourses() {
@@ -1513,10 +1526,7 @@ function renderRangeCalendar() {
         // Highlight payment milestones with NAMES
         if (paymentNamesByDay[i] && paymentNamesByDay[i].length > 0) {
             d.style.fontWeight = '900';
-            d.style.color = '#ef4444'; // Make the day number red
-            d.style.background = '#fef2f2'; // Subtle red background
-            d.style.borderBottom = '2px solid #ef4444'; // Red bottom border to indicate event
-            d.title = `결제 예정: ${paymentNamesByDay[i].length}건\n` + paymentNamesByDay[i].join('\n');
+            d.title = `결제 대상: ${paymentNamesByDay[i].length}건\n` + paymentNamesByDay[i].join('\n');
         }
 
         // Mouse Events for Drag
@@ -1549,9 +1559,6 @@ function renderRangeCalendar() {
                     selectFilteredCourses();
                 }
                 saveAllDrafts();
-                if (typeof showModalAlert === 'function') {
-                    showModalAlert('선택하신 기간이 결제일 필터로 자동 적용되었습니다.', true);
-                }
             }
         });
         window.hasGlobalMouseUp = true;
@@ -1596,9 +1603,6 @@ function endDrag(date) {
         selectFilteredCourses();
     }
     saveAllDrafts();
-    if (typeof showModalAlert === 'function') {
-        showModalAlert('선택하신 기간이 결제일 필터로 자동 적용되었습니다.', true);
-    }
 }
 
 function changeRangeMonth(offset) {
@@ -1638,7 +1642,7 @@ function setQuickRange(days) {
 function getAllMilestonesForRange(memberId, courseFilter, startRange, endRange) {
     const normalizeCourse = (c) => (!c || c === 'null') ? null : String(c).trim();
     const cleanFilter = String(courseFilter || 'all').replace(/\([^)]*\)/g, '').trim();
-    const allDue = getMemberAllMilestones(memberId, courseFilter, startRange.getFullYear(), startRange.getMonth() + 1);
+    const allDue = getMemberAllMilestones(memberId, courseFilter, startRange.getFullYear(), startRange.getMonth() + 1, true);
     
     let matched = allDue.filter(ms => {
         const msDate = new Date(ms.year, ms.month - 1, ms.day);
@@ -1658,7 +1662,7 @@ function getAllMilestonesForMonth(memberId, courseFilter, year, month) {
     return getAllMilestonesForRange(memberId, courseFilter, startRange, endRange);
 }
 
-function getMemberAllMilestones(memberId, courseFilter, anchorYear = null, anchorMonth = null) {
+function getMemberAllMilestones(memberId, courseFilter, anchorYear = null, anchorMonth = null, includePast = false) {
     let milestones = [];
     const today = new Date();
     const currentYear = anchorYear !== null ? anchorYear : today.getFullYear();
@@ -1686,6 +1690,10 @@ function getMemberAllMilestones(memberId, courseFilter, anchorYear = null, ancho
     
     // Sort milestones
     milestones.sort((a, b) => new Date(a.year, a.month - 1, a.day) - new Date(b.year, b.month - 1, b.day));
+    
+    if (includePast) {
+        return milestones;
+    }
     
     // Filter out past milestones if limitDate is not provided
     // Actually getMemberScheduledDate just gets the first available upcoming or most recent one

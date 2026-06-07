@@ -2,21 +2,22 @@
 <html lang="ko">
 
 <head>
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">    <meta charset="UTF-8">
+    <meta http-equiv=1780793977"Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv=1780793977"Pragma" content="no-cache">
+    <meta http-equiv=1780793977"Expires" content="0">    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>수강료 납부대장 - 세종요리</title>
-    <link rel="stylesheet" href="style.css?v=20260530_211823">
+    <link rel="stylesheet" href="style.css?v=1780793977_211823">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="questions_data.js?v=20260606_215152" defer></script>
+    <script src="questions_data.js?v=1780793977_215152" defer></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://npmcdn.com/flatpickr/dist/l10n/ko.js"></script>
-    <script src="shared_calc.js?v=20260606_215727"></script>
-    <script src="ledger.js?v=20260606_215152" defer></script>
+    <script src="shared_calc.js?v=1780793977_215727"></script>
+    <script src="ledger.js?v=1780793977_091100" defer></script>
+    <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 </head>
 
 <body>
@@ -160,7 +161,7 @@
                     <a href="attendance_daily.html" id="navDailyAttendance" class="nav-item">일일 출석부</a>
                     <a href="sms.html" id="navSms" class="nav-item">문자 발송</a>
                 </div>
-                <a href="monitor.html?v=20260530_211823" target="_blank" class="nav-item highlight">키오스크 모니터</a>
+                <a href="monitor.html?v=1780793977_211823" target="_blank" class="nav-item highlight">키오스크 모니터</a>
             </nav>
         </aside>
 
@@ -201,6 +202,121 @@
             </div> <!-- memberListSection -->
         </main>
     </div> <!-- app-container -->
-</body>
+    <!-- Edit Student Modal -->
+    <div id="editStudentModal" class="modal-overlay hidden">
+        <div class="modal-content max-w-500 w-90">
+            <h3 class="mt-0">수강생 정보 수정</h3>
+            <form id="editStudentForm">
+                <input type="hidden" name="id">
+                <input type="hidden" name="registeredDate">
 
+                <div class="form-group">
+                    <label>이름</label>
+                    <input type="text" name="name" required title="수강생 이름">
+                </div>
+
+                <div class="form-group">
+                    <label>주민등록번호</label>
+                    <input type="text" name="resident_num" placeholder="000000-0000000" title="주민등록번호">
+                </div>
+
+                <div class="form-group">
+                    <label>주소</label>
+                    <div class="flex-group gap-5">
+                        <input type="text" name="address" id="edit_address" placeholder="기본 주소" class="flex-1"
+                            title="기본 주소">
+                        <button type="button" onclick="openDaumPostcode('edit_address')"
+                            class="btn-secondary p-8">검색</button>
+                    </div>
+                    <input type="text" name="address_detail" placeholder="상세 주소" class="mt-5 full-width" title="상세 주소">
+                </div>
+
+                <div class="form-group">
+                    <label>연락처</label>
+                    <input type="text" name="phone" placeholder="010-0000-0000" title="본인 연락처">
+                </div>
+
+                <div class="form-group">
+                    <label>연락처</label>
+                    <input type="text" name="phone_guardian" placeholder="010-0000-0000" title="보호자 연락처">
+                </div>
+
+                <div class="form-group">
+                    <label>과정 (예: 한식(10:00))</label>
+                    <div id="edit_course_container">
+                        <!-- Inputs will be added here dynamically -->
+                    </div>
+                    <button type="button" class="btn-secondary mt-5 full-width p-5" onclick="addCourseInput()">+
+                        과정 추가</button>
+                </div>
+
+                <div class="form-group">
+                    <label>수강 시작일</label>
+                    <div class="flex-center gap-5">
+                        <span class="fs-1-1-em bold">20</span>
+                        <input type="text" name="start_yy" maxlength="2" placeholder="YY" class="w-50 text-center"
+                            title="연도(YY)">
+                        <span>-</span>
+                        <input type="text" name="start_mm" maxlength="2" placeholder="MM" class="w-50 text-center"
+                            title="월(MM)">
+                        <span>-</span>
+                        <input type="text" name="start_dd" maxlength="2" placeholder="DD" class="w-50 text-center"
+                            title="일(DD)">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>비고 작성</label>
+                    <select id="edit_remark_type" class="full-width mb-5 p-8 border-light rounded" title="비고 유형 선택" onchange="toggleEditMemberType()">
+                        <option value="student">학생</option>
+                        <option value="general">일반</option>
+                    </select>
+
+                    <!-- Student Inputs -->
+                    <div id="edit_student_fields" class="flex-group gap-5">
+                        <input type="text" name="school" placeholder="학교명" class="flex-2" title="학교명">
+                        <input type="text" name="grade" placeholder="학년" class="flex-1" title="학년">
+                    </div>
+
+                    <!-- General Inputs -->
+                    <div id="edit_general_fields" class="hidden">
+                        <select name="job" class="full-width p-8 border-light rounded" title="직업 선택">
+                            <option value="">선택하세요</option>
+                            <option value="회사원">회사원</option>
+                            <option value="주부">주부</option>
+                            <option value="사업가">사업가</option>
+                            <option value="공무원">공무원</option>
+                            <option value="무직">무직</option>
+                            <option value="기타">기타</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>특이사항</label>
+                    <textarea name="notes" class="full-width h-80 p-8 border-light rounded resize-v"
+                        placeholder="보류 사유 및 기타 특이사항" title="특이사항"></textarea>
+                </div>
+
+                <div class="mt-20 flex-group gap-10 flex-end">
+                    <button type="button" onclick="closeEditModal()" class="btn-secondary">취소</button>
+                    <button type="submit" class="btn-primary">수정 저장</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Confirmation Modal -->
+    <div id="editConfirmModal" class="modal-overlay hidden">
+        <div class="modal-content text-center max-w-350">
+            <div class="fs-40 mb-10">✏️</div>
+            <h3 id="editConfirmTitle" class="mb-20">정보를 수정하시겠습니까?</h3>
+            <div class="flex-group gap-10 flex-center">
+                <button type="button" onclick="closeEditConfirmModal()" class="btn-secondary flex-1">취소</button>
+                <button type="button" id="editConfirmYesBtn" class="btn-primary flex-1">수정</button>
+            </div>
+        </div>
+    </div>
+
+</body>
 </html>
