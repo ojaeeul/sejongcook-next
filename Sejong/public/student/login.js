@@ -1,5 +1,5 @@
 // Main Configuration
-const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:8000/api' : '../../api.php?board=sejong_';
+const API_BASE = '/api/sejong';
 let currentInput = "";
 let stream = null;
 let currentMode = 'home';
@@ -151,6 +151,37 @@ async function capturePhoto() {
     }
 }
 
+function determineAttendanceStatus(member) {
+    if (!member || !member.timeSlot) return 'present';
+
+    const now = new Date();
+    const currentMins = now.getHours() * 60 + now.getMinutes();
+
+    const slots = member.timeSlot.split(',').map(s => {
+        const parts = s.trim().split(':');
+        if (parts.length < 2) return -1;
+        return parseInt(parts[0]) * 60 + parseInt(parts[1]);
+    }).filter(m => m !== -1);
+
+    if (slots.length === 0) return 'present';
+
+    for (const slotMins of slots) {
+        if (currentMins >= (slotMins - 120) && currentMins <= (slotMins + 120)) {
+            if (currentMins >= slotMins + 5) {
+                return 'late';
+            }
+            const h = Math.floor(slotMins / 60);
+            if (h === 10) return '10';
+            if (h === 12) return '12';
+            if (h === 14 || h === 2) return '2';
+            if (h === 17 || h === 5) return '5';
+            if (h === 19 || h === 7) return '7';
+            return 'present';
+        }
+    }
+    return 'invalid_time';
+}
+
 async function processAttendance(inputNum, overridePhoto = null) {
     try {
         const res = await fetch(`${API_BASE}/members?t=` + Date.now());
@@ -163,10 +194,17 @@ async function processAttendance(inputNum, overridePhoto = null) {
         }
 
         const today = new Date().toISOString().split('T')[0];
+        const status = determineAttendanceStatus(member);
+
+        if (status === 'invalid_time') {
+            showStatus("현재는 예약된 수강 시간이 아닙니다.", "red");
+            return;
+        }
+
         const postRes = await fetch(`${API_BASE}/attendance`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ memberId: member.id, date: today, status: 'present' })
+            body: JSON.stringify({ memberId: member.id, date: today, status: status, course: member.course })
         });
 
         if (postRes.ok) {
@@ -179,13 +217,21 @@ async function processAttendance(inputNum, overridePhoto = null) {
     }
 }
 
-function addNum(num) { if (currentInput.length < 8) { currentInput += num; updateDisplay(); } }
+function addNum(num) {
+    if (currentInput.length < 8) {
+        currentInput += num;
+        updateDisplay();
+        if (currentInput.length === 8 && currentMode === 'number') {
+            submitAttendance();
+        }
+    }
+}
 function clearNum() { currentInput = ""; updateDisplay(); }
 function updateDisplay() { if (inputDisplay) inputDisplay.textContent = currentInput; }
 
 async function startCamera() {
     try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 } });
+        stream = await navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720, focusMode: { ideal: "continuous" } } });
         if (video) video.srcObject = stream;
     } catch (e) { showStatus("카메라 에러", "red"); }
 }

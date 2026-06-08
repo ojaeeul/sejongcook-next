@@ -1817,12 +1817,38 @@
             }
         }
 
+        let lastAttendanceHash = '';
+
         async function fetchAttendance() {
             const res = await fetch(`${SHEET_API_BASE}/attendance?t=${Date.now()}`);
             if (!res.ok) throw new Error('Attendance fetch failed: ' + res.status);
-            attendanceData = await res.json();
-            window.attendanceData = attendanceData;
+            const newData = await res.json();
+            
+            const newHash = JSON.stringify(newData);
+            if (newHash !== lastAttendanceHash) {
+                attendanceData = newData;
+                window.attendanceData = attendanceData;
+                lastAttendanceHash = newHash;
+                return true;
+            }
+            return false;
         }
+
+        // Auto-refresh polling every 5 seconds
+        setInterval(async () => {
+            if (typeof isDragging !== 'undefined' && isDragging) return;
+            const modals = document.querySelectorAll('.modal-overlay:not(.hidden)');
+            if (modals.length > 0) return;
+
+            try {
+                const changed = await fetchAttendance();
+                if (changed) {
+                    renderSheet();
+                }
+            } catch (err) {
+                console.error('Auto-refresh failed:', err);
+            }
+        }, 5000);
 
         async function fetchHolidays() {
             try {

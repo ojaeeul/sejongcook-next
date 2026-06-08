@@ -202,13 +202,14 @@ body {
 }
 
 .top-header {
-    height: 56px;
+    min-height: 56px;
+    height: auto;
     background-color: var(--bg-card);
     border-bottom: 1px solid var(--border-color);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 24px;
+    padding: 10px 24px;
     flex-shrink: 0;
 }
 

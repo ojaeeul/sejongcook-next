@@ -358,8 +358,90 @@
                 <h3>음성 안내 (TTS) 설정</h3>
                 <label style="display: flex; align-items: center; cursor: pointer; gap: 12px; padding: 10px 0;">
                     <input type="checkbox" id="voiceToggle" onchange="saveSettings()" style="width: 24px; height: 24px; cursor: pointer;">
-                    <span style="font-size: 1.1rem; color: #334155; font-weight: 600;">출석 완료 시 음성 안내 켜기 ("OOO님 등원 완료되었습니다")</span>
+                    <span style="font-size: 1.1rem; color: #334155; font-weight: 600;">출석 완료 시 음성 안내 켜기</span>
                 </label>
+                <div style="margin-top: 5px; margin-left: 36px;">
+                    <label style="font-size: 0.95rem; color: #475569; display:block; margin-bottom: 8px; font-weight:bold;">음성 안내 방식 선택</label>
+                    <select id="ttsModeSelect" onchange="window.toggleTtsModeUI && window.toggleTtsModeUI(); saveSettings();" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 1rem; margin-bottom: 15px;">
+                        <option value="browser">1. 브라우저 기본 TTS (이름 부르기 가능)</option>
+                        <option value="mp3">2. 고품질 성우 녹음음 (이름 생략, 프리미엄 목소리)</option>
+                        <option value="api">3. 클라우드 고급 AI 성우 (네이버 클로바 등, API키 필요)</option>
+                    </select>
+
+                    <!-- 1. Browser TTS UI -->
+                    <div id="ttsModeBrowserUI" style="display:none; padding: 15px; background: #f1f5f9; border-radius:8px; margin-bottom: 15px;">
+                        <label style="font-size: 0.95rem; color: #475569; display:block; margin-bottom: 8px;">브라우저 기본 톤(목소리 조작)</label>
+                        <select id="ttsStyleSelect" onchange="saveSettings(); window.playTTSSample && window.playTTSSample();" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 1rem; margin-bottom: 15px;">
+                            <option value="1">1. 기본 목소리 (보통 속도, 보통 톤)</option>
+                            <option value="2">2. 친절한 상담원 (약간 높고 경쾌하게)</option>
+                            <option value="3">3. 침착한 아나운서 (약간 낮고 또렷하게)</option>
+                            <option value="4">4. 빠르고 활기찬 (톤업, 빠른 속도)</option>
+                            <option value="5">5. 느긋하고 중후한 (낮은 톤, 느리게)</option>
+                            <option value="6">6. 귀여운 아이 (높은 톤)</option>
+                            <option value="7">7. 다람쥐 (매우 높은 톤, 빠름)</option>
+                            <option value="8">8. 근엄한 교장선생님 (매우 낮은 톤)</option>
+                            <option value="9">9. 로봇 목소리 (감정 없는 톤)</option>
+                            <option value="10">10. 역내 안내방송 (살짝 높고 또렷)</option>
+                            <option value="11">11. 다급한 목소리 (매우 빠름)</option>
+                            <option value="12">12. 나긋나긋한 (살짝 높고 느리게)</option>
+                            <option value="13">13. 할아버지 (낮고 느림)</option>
+                            <option value="14">14. DJ 스타일 (낮은 톤, 약간 빠름)</option>
+                            <option value="15">15. 장난꾸러기 (높은 톤, 리듬감)</option>
+                            <option value="16">16. AI 비서 (살짝 빠른 기본 톤)</option>
+                            <option value="17">17. 졸린 목소리 (낮고 매우 느림)</option>
+                            <option value="18">18. 강조하는 톤 (살짝 높고 천천히)</option>
+                            <option value="19">19. 외계인 (매우 낮고 빠름)</option>
+                            <option value="20">20. 하이톤 쾌활 (높고 통통 튀게)</option>
+                        </select>
+
+                        <label style="font-size: 0.95rem; color: #475569; display:block; margin-bottom: 8px;">안내 문구 (<span style="color:#2563eb; font-weight:bold;">{name}</span> 자동 변환)</label>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="text" id="ttsTemplateInput" value="{name}님 등원 완료되었습니다." style="flex: 1; margin-bottom: 0;" onchange="saveSettings();">
+                            <button onclick="window.playTTSSample && window.playTTSSample()" style="background: #3b82f6; color: white; border: none; padding: 12px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; white-space: nowrap;">미리듣기</button>
+                        </div>
+                    </div>
+
+                    <!-- 2. MP3 Preset UI -->
+                    <div id="ttsModeMp3UI" style="display:none; padding: 15px; background: #f0fdf4; border-radius:8px; margin-bottom: 15px;">
+                        <label style="font-size: 0.95rem; color: #475569; display:block; margin-bottom: 8px;">프리미엄 녹음음 선택 (이름 생략)</label>
+                        <select id="ttsMp3Select" onchange="saveSettings(); window.playTTSSample && window.playTTSSample();" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 1rem; margin-bottom: 15px;">
+                            <option value="1">여자 성우 A - "출석이 완료되었습니다"</option>
+                            <option value="2">여자 성우 B - "오늘도 환영합니다!"</option>
+                            <option value="3">남자 성우 A - "등원 확인되었습니다"</option>
+                            <option value="4">남자 성우 B - "좋은 하루 보내세요!"</option>
+                            <option value="5">어린아이 - "안녕! 출석 체크 완료!"</option>
+                            <option value="6">로봇 - "삐빅- 출석 확인되었습니다"</option>
+                            <option value="7">할아버지 - "허허, 잘 왔구나"</option>
+                            <option value="8">단호한 여자 - "출석 되었습니다."</option>
+                            <option value="9">활기찬 안내 - "출석 등록 완료! 화이팅!"</option>
+                            <option value="10">효과음(차임) - 띵동댕동</option>
+                        </select>
+                        <button onclick="window.playTTSSample && window.playTTSSample()" style="background: #16a34a; color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; width:100%;">미리듣기 (샘플)</button>
+                        <p style="font-size:0.85rem; color:#64748b; margin-top:10px;">* mp3 파일은 /audio/voice_1.mp3 형태로 서버에 준비해야 합니다.</p>
+                    </div>
+
+                    <!-- 3. Cloud API UI -->
+                    <div id="ttsModeApiUI" style="display:none; padding: 15px; background: #eff6ff; border-radius:8px; margin-bottom: 15px;">
+                        <label style="font-size: 0.95rem; color: #475569; display:block; margin-bottom: 8px;">네이버 클로바 API 설정 (Client ID / Secret)</label>
+                        <input type="text" id="ttsApiKey" placeholder="API Client ID 입력..." onchange="saveSettings()" style="width:100%; padding: 10px; margin-bottom: 5px; border-radius: 8px; border: 1px solid #cbd5e1;">
+                        <input type="text" id="ttsApiSecret" placeholder="API Client Secret 입력..." onchange="saveSettings()" style="width:100%; padding: 10px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #cbd5e1;">
+                        
+                        <label style="font-size: 0.95rem; color: #475569; display:block; margin-bottom: 8px;">AI 성우 선택 (예시)</label>
+                        <select id="ttsApiVoice" onchange="saveSettings(); window.playTTSSample && window.playTTSSample();" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 1rem; margin-bottom: 15px;">
+                            <option value="nara">아라 (여성, 차분함)</option>
+                            <option value="ndain">다인 (여성, 친절함)</option>
+                            <option value="nminsang">민상 (남성, 중후함)</option>
+                            <option value="njihun">지훈 (남성, 활기참)</option>
+                            <option value="nhajun">하준 (어린이, 남)</option>
+                            <option value="ndara">다라 (어린이, 여)</option>
+                        </select>
+                        <label style="font-size: 0.95rem; color: #475569; display:block; margin-bottom: 8px;">안내 문구 ({name} 지원)</label>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="text" id="ttsApiTemplate" value="{name}님 등원 완료되었습니다." style="flex: 1; margin-bottom: 0;" onchange="saveSettings();">
+                            <button onclick="window.playTTSSample && window.playTTSSample()" style="background: #2563eb; color: white; border: none; padding: 12px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; white-space: nowrap;">문구 미리듣기(테스트)</button>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="setting-card">

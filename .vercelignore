@@ -1,0 +1,10 @@
+*.zip
+*.log
+*.tar.gz
+*.bak
+*.orig
+backup*/
+hostinger_upload*/
+sejongcook_backup*/
+.DS_Store
+sejong.db

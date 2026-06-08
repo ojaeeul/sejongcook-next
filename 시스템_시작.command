@@ -83,29 +83,36 @@ echo "    ✅ Next.js 서버 시작 명령 전달"
 echo ""
 
 # ==============================================================================
-# [STEP 3] Python 출석관리 서버 (Port 8000)
+# [STEP 3] 브라우저 열기
 # ==============================================================================
-echo "[3/4] 출석관리 파이썬 서버 (Port 8000) 시작 중..."
-if [ -f "$BASE_DIR/Sejong/SejongAttendance/server.py" ]; then
-    osascript -e 'tell app "Terminal" to do script "cd \"'"$BASE_DIR"'/Sejong/SejongAttendance\" && python3 server.py"'
-    echo "    ✅ Python 서버 시작 명령 전달"
-else
-    echo "    [!] Sejong/SejongAttendance/server.py 를 찾을 수 없습니다."
-fi
-echo ""
-
-# ==============================================================================
-# [STEP 4] 브라우저 열기
-# ==============================================================================
-echo "[4/4] 브라우저 열기 (서버 준비 대기 3초)..."
+echo "[3/4] 브라우저 열기 (서버 준비 대기 3초)..."
 sleep 3
 open "http://localhost:3000/sejong/ledger.html"
-open "http://localhost:3000/sejong/index.html"
+open "http://localhost:3000/sejong/sheet.html"
 open "http://localhost:3000"
 
+# ==============================================================================
+# [STEP 4] 깃허브(Git) 자동 백업 저장
+# ==============================================================================
 echo ""
+echo "[4/5] 전체 소스코드 변경사항을 깃허브(Git)에 자동 저장합니다..."
+git add .
+git commit -m "Auto backup: $(date '+%Y-%m-%d %H:%M:%S')"
+git push
+echo "    ✅ Git 백업 완료"
+echo ""
+
+# ==============================================================================
+# [STEP 5] Vercel 실서버 자동 배포 (Background)
+# ==============================================================================
+echo ""
+echo "[5/5] Vercel 실서버 자동 업로드(배포)를 백그라운드에서 진행합니다..."
+osascript -e 'tell app "Terminal" to do script "cd \"'"$BASE_DIR"'\" && npx vercel --prod --yes"'
+echo "    ✅ 실서버 배포 명령 전달 (터미널 창에서 배포가 진행됩니다)"
+echo ""
+
 echo "======================================================"
-echo "✅ 시스템 시작 완료!"
+echo "✅ 시스템 시작 및 실서버 배포 준비 완료!"
 echo ""
 echo "  📌 정본 파일 위치 (항상 여기서만 수정):"
 echo "     $SRC_DIR"
@@ -117,5 +124,6 @@ echo "     $DST3_DIR"
 echo ""
 echo "  🌐 메인 사이트:        http://localhost:3000"
 echo "  🌐 출석/납부 시스템:   http://localhost:3000/sejong"
+echo "  🌐 Vercel 실서버:      https://sejongcook.co.kr"
 echo "======================================================"
 echo ""

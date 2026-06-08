@@ -198,6 +198,110 @@ async function loadFaceModels() {
     }
 }
 
+window.toggleTtsModeUI = function() {
+    const mode = document.getElementById('ttsModeSelect') ? document.getElementById('ttsModeSelect').value : 'browser';
+    
+    const browserUI = document.getElementById('ttsModeBrowserUI');
+    const mp3UI = document.getElementById('ttsModeMp3UI');
+    const apiUI = document.getElementById('ttsModeApiUI');
+    
+    if (browserUI) browserUI.style.display = (mode === 'browser') ? 'block' : 'none';
+    if (mp3UI) mp3UI.style.display = (mode === 'mp3') ? 'block' : 'none';
+    if (apiUI) apiUI.style.display = (mode === 'api') ? 'block' : 'none';
+};
+
+window.playTTSSample = function() {
+    const mode = document.getElementById('ttsModeSelect') ? document.getElementById('ttsModeSelect').value : 'browser';
+    
+    if (mode === 'browser') {
+        const ttsInput = document.getElementById('ttsTemplateInput');
+        const template = ttsInput ? ttsInput.value : '{name}님 등원 완료되었습니다.';
+        const text = template.replace(/{name}/g, '홍길동');
+        
+        if (!window.speechSynthesis) return;
+        window.speechSynthesis.cancel();
+        
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'ko-KR';
+        
+        const style = localStorage.getItem('kiosk_tts_style') || '1';
+        let pitch = 1.0, rate = 1.0;
+        switch(style) {
+            case '1': pitch = 1.0; rate = 1.0; break;
+            case '2': pitch = 1.2; rate = 1.1; break;
+            case '3': pitch = 0.9; rate = 0.9; break;
+            case '4': pitch = 1.3; rate = 1.3; break;
+            case '5': pitch = 0.7; rate = 0.8; break;
+            case '6': pitch = 1.8; rate = 1.1; break;
+            case '7': pitch = 2.0; rate = 1.5; break;
+            case '8': pitch = 0.5; rate = 0.85; break;
+            case '9': pitch = 0.1; rate = 0.9; break;
+            case '10': pitch = 1.1; rate = 0.95; break;
+            case '11': pitch = 1.5; rate = 1.6; break;
+            case '12': pitch = 1.6; rate = 0.7; break;
+            case '13': pitch = 0.4; rate = 0.7; break;
+            case '14': pitch = 0.8; rate = 1.2; break;
+            case '15': pitch = 1.4; rate = 1.2; break;
+            case '16': pitch = 1.0; rate = 1.15; break;
+            case '17': pitch = 0.6; rate = 0.6; break;
+            case '18': pitch = 1.1; rate = 0.8; break;
+            case '19': pitch = 0.2; rate = 1.4; break;
+            case '20': pitch = 1.7; rate = 1.2; break;
+        }
+        utterance.pitch = pitch;
+        utterance.rate = rate;
+        
+        const voices = window.speechSynthesis.getVoices();
+        const koVoice = voices.find(v => v.lang.includes('ko'));
+        if (koVoice) utterance.voice = koVoice;
+        
+        window.speechSynthesis.speak(utterance);
+    } else if (mode === 'mp3') {
+        const mp3Index = document.getElementById('ttsMp3Select') ? document.getElementById('ttsMp3Select').value : '1';
+        // mp3 파일은 /audio/voice_1.mp3 형태로 있다고 가정. 아직 없으면 소리 안날 수 있음.
+        const audio = new Audio(`/audio/voice_${mp3Index}.mp3`);
+        audio.play().catch(e => {
+            alert(`안내: 해당 성우의 녹음 파일(/audio/voice_${mp3Index}.mp3)이 서버에 아직 없습니다.\n\n💡 직접 문구를 쓰고 20가지 다양한 목소리로 들어보시려면 위의 [1. 브라우저 기본 TTS] 모드를 선택해주세요!`);
+            console.error('Audio play error:', e);
+            
+            // Fallback for preview
+            if (window.speechSynthesis) {
+                const fallbackTexts = {
+                    '1': '출석이 완료되었습니다', '2': '오늘도 환영합니다!', '3': '등원 확인되었습니다',
+                    '4': '좋은 하루 보내세요!', '5': '안녕! 출석 체크 완료!', '6': '삐빅- 출석 확인되었습니다',
+                    '7': '허허, 잘 왔구나', '8': '출석 되었습니다.', '9': '출석 등록 완료! 화이팅!', '10': '띵동댕동'
+                };
+                const utterance = new SpeechSynthesisUtterance(fallbackTexts[mp3Index] || '출석 완료');
+                utterance.lang = 'ko-KR';
+                window.speechSynthesis.speak(utterance);
+            }
+        });
+    } else if (mode === 'api') {
+        const ttsInput = document.getElementById('ttsApiTemplate');
+        const template = ttsInput ? ttsInput.value : '{name}님 등원 완료되었습니다.';
+        const text = template.replace(/{name}/g, '홍길동');
+        
+        // API 연동 전이므로 구글 번역기 TTS 또는 브라우저 기본 TTS로 미리듣기 제공
+        try {
+            const url = 'https://translate.google.com/translate_tts?ie=UTF-8&tl=ko&client=tw-ob&q=' + encodeURIComponent(text);
+            const audio = new Audio(url);
+            audio.play().catch(e => {
+                if (window.speechSynthesis) {
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    utterance.lang = 'ko-KR';
+                    window.speechSynthesis.speak(utterance);
+                }
+            });
+        } catch(err) {
+            if (window.speechSynthesis) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'ko-KR';
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+    }
+};
+
 window.manualFaceUpload = async function(event, memberId) {
     const file = event.target.files[0];
     if (!file) return;
@@ -220,32 +324,34 @@ async function processFaceImage(src, memberId) {
     const img = new Image();
     img.src = src;
     img.onload = async () => {
+        // 먼저 캔버스에 이미지를 작게 리사이징합니다. (모바일 고해상도 사진 처리 중 메모리 부족 방지)
+        const tempCanvas = document.getElementById('hiddenCanvas');
+        const ctx = tempCanvas.getContext('2d');
+        const MAX_WIDTH = 640;
+        const MAX_HEIGHT = 480;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+            if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+        } else {
+            if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
+        }
+        tempCanvas.width = width;
+        tempCanvas.height = height;
+        ctx.drawImage(img, 0, 0, width, height);
+
         alert("사진에서 얼굴을 분석 중입니다... 잠시만 기다려주세요.");
         
         try {
-            const detection = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
+            // 원본 이미지 대신 작게 줄인 캔버스에서 얼굴을 찾습니다. 훨씬 빠르고 안정적입니다.
+            const detection = await faceapi.detectSingleFace(tempCanvas).withFaceLandmarks().withFaceDescriptor();
             
             if (!detection) {
-                alert("사진에서 얼굴을 명확히 인식할 수 없습니다. 정면이 잘 보이는 사진으로 다시 시도해주세요.");
+                alert("사진에서 얼굴을 명확히 인식할 수 없습니다. 밝은 곳에서 정면이 잘 보이는 사진으로 다시 시도해주세요.");
                 return;
             }
             
-            // Scale down
-            const tempCanvas = document.getElementById('hiddenCanvas');
-            const ctx = tempCanvas.getContext('2d');
-            const MAX_WIDTH = 640;
-            const MAX_HEIGHT = 480;
-            let width = img.width;
-            let height = img.height;
-
-            if (width > height) {
-                if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
-            } else {
-                if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
-            }
-            tempCanvas.width = width;
-            tempCanvas.height = height;
-            ctx.drawImage(img, 0, 0, width, height);
             const photoDataUrl = tempCanvas.toDataURL('image/jpeg', 0.7);
 
             member.photo = photoDataUrl;
@@ -277,13 +383,36 @@ window.openWebcamCapture = async function(memberId) {
         alert("웹캠 모달이 없습니다.");
         return;
     }
+
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        // 모바일(HTTP) 환경에서는 보안상 카메라 스트리밍 지원 안됨 -> 네이티브 카메라 앱 띄우기로 우회!
+        const fallbackInput = document.createElement('input');
+        fallbackInput.type = 'file';
+        fallbackInput.accept = 'image/*';
+        fallbackInput.capture = 'user'; // 전면 카메라 직접 호출
+        fallbackInput.style.display = 'none';
+        
+        fallbackInput.onchange = (event) => {
+            if(event.target.files && event.target.files.length > 0) {
+                window.manualFaceUpload(event, memberId);
+            }
+        };
+        
+        document.body.appendChild(fallbackInput);
+        fallbackInput.click();
+        document.body.removeChild(fallbackInput);
+        return;
+    }
+
     modal.style.display = 'flex';
     
     try {
-        webcamStream = await navigator.mediaDevices.getUserMedia({ video: true });
+        webcamStream = await navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } } 
+        });
         video.srcObject = webcamStream;
     } catch (e) {
-        alert("카메라에 접근할 수 없거나 권한이 없습니다.");
+        alert("카메라에 접근할 수 없거나 권한이 없습니다.\n핸드폰인 경우 초록색 [AI찍기] 버튼을 사용해주세요!");
         closeWebcamModal();
     }
 };
@@ -341,14 +470,46 @@ window.faceReading = function(memberId) {
 // Device Settings (Local Storage)
 // ---------------------------------------------------------
 function loadSettings() {
-    const isVoiceEnabled = localStorage.getItem('kiosk_voice_enabled') === 'true';
+    const isVoiceEnabled = localStorage.getItem('kiosk_voice_enabled') !== 'false'; // default true
     const sensitivity = localStorage.getItem('kiosk_sensitivity') || '0.65';
+    
+    const ttsMode = localStorage.getItem('kiosk_tts_mode') || 'browser';
+    
+    const ttsTemplate = localStorage.getItem('kiosk_tts_template') || '{name}님 등원 완료되었습니다.';
+    const ttsStyle = localStorage.getItem('kiosk_tts_style') || '1';
+    
+    const ttsMp3 = localStorage.getItem('kiosk_tts_mp3') || '1';
+    
+    const ttsApiKey = localStorage.getItem('kiosk_tts_api_key') || '';
+    const ttsApiSecret = localStorage.getItem('kiosk_tts_api_secret') || '';
+    const ttsApiVoice = localStorage.getItem('kiosk_tts_api_voice') || 'nara';
+    const ttsApiTemplate = localStorage.getItem('kiosk_tts_api_template') || '{name}님 등원 완료되었습니다.';
     
     const toggleEl = document.getElementById('voiceToggle');
     const sensEl = document.getElementById('sensitivitySelect');
     
+    const ttsModeEl = document.getElementById('ttsModeSelect');
+    const ttsInput = document.getElementById('ttsTemplateInput');
+    const ttsStyleEl = document.getElementById('ttsStyleSelect');
+    const ttsMp3El = document.getElementById('ttsMp3Select');
+    const ttsApiKeyEl = document.getElementById('ttsApiKey');
+    const ttsApiSecretEl = document.getElementById('ttsApiSecret');
+    const ttsApiVoiceEl = document.getElementById('ttsApiVoice');
+    const ttsApiTemplateEl = document.getElementById('ttsApiTemplate');
+    
     if (toggleEl) toggleEl.checked = isVoiceEnabled;
     if (sensEl) sensEl.value = sensitivity;
+    
+    if (ttsModeEl) ttsModeEl.value = ttsMode;
+    if (ttsInput) ttsInput.value = ttsTemplate;
+    if (ttsStyleEl) ttsStyleEl.value = ttsStyle;
+    if (ttsMp3El) ttsMp3El.value = ttsMp3;
+    if (ttsApiKeyEl) ttsApiKeyEl.value = ttsApiKey;
+    if (ttsApiSecretEl) ttsApiSecretEl.value = ttsApiSecret;
+    if (ttsApiVoiceEl) ttsApiVoiceEl.value = ttsApiVoice;
+    if (ttsApiTemplateEl) ttsApiTemplateEl.value = ttsApiTemplate;
+    
+    if (window.toggleTtsModeUI) window.toggleTtsModeUI();
 }
 
 function saveSettings() {
@@ -356,9 +517,27 @@ function saveSettings() {
     const sensEl = document.getElementById('sensitivitySelect');
     const camEl = document.getElementById('cameraSelect');
     
+    const ttsModeEl = document.getElementById('ttsModeSelect');
+    const ttsInput = document.getElementById('ttsTemplateInput');
+    const ttsStyleEl = document.getElementById('ttsStyleSelect');
+    const ttsMp3El = document.getElementById('ttsMp3Select');
+    const ttsApiKeyEl = document.getElementById('ttsApiKey');
+    const ttsApiSecretEl = document.getElementById('ttsApiSecret');
+    const ttsApiVoiceEl = document.getElementById('ttsApiVoice');
+    const ttsApiTemplateEl = document.getElementById('ttsApiTemplate');
+    
     if (toggleEl) localStorage.setItem('kiosk_voice_enabled', toggleEl.checked);
     if (sensEl) localStorage.setItem('kiosk_sensitivity', sensEl.value);
     if (camEl && camEl.value) localStorage.setItem('kiosk_camera_id', camEl.value);
+    
+    if (ttsModeEl) localStorage.setItem('kiosk_tts_mode', ttsModeEl.value);
+    if (ttsInput) localStorage.setItem('kiosk_tts_template', ttsInput.value);
+    if (ttsStyleEl) localStorage.setItem('kiosk_tts_style', ttsStyleEl.value);
+    if (ttsMp3El) localStorage.setItem('kiosk_tts_mp3', ttsMp3El.value);
+    if (ttsApiKeyEl) localStorage.setItem('kiosk_tts_api_key', ttsApiKeyEl.value);
+    if (ttsApiSecretEl) localStorage.setItem('kiosk_tts_api_secret', ttsApiSecretEl.value);
+    if (ttsApiVoiceEl) localStorage.setItem('kiosk_tts_api_voice', ttsApiVoiceEl.value);
+    if (ttsApiTemplateEl) localStorage.setItem('kiosk_tts_api_template', ttsApiTemplateEl.value);
 }
 
 async function populateCameraList() {
@@ -376,7 +555,7 @@ async function populateCameraList() {
         
         if (videoDevices.length > 0 && !videoDevices[0].label) {
             try {
-                const tempStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                const tempStream = await navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720, focusMode: { ideal: "continuous" } } });
                 tempStream.getTracks().forEach(t => t.stop()); 
                 devices = await navigator.mediaDevices.enumerateDevices();
                 videoDevices = devices.filter(device => device.kind === 'videoinput');

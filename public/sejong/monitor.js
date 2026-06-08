@@ -147,20 +147,19 @@ async function recognizeAndAttend() {
     setTimeout(() => { if (shutter) shutter.style.opacity = '0'; }, 150);
 
     // Give browser time to paint the UI text updates before heavy ML block
-    await new Promise(r => setTimeout(r, 50));
+    await new Promise(r => setTimeout(r, 10));
 
     try {
-        const detection = await faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor();
+        const [detection, res] = await Promise.all([
+            faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor(),
+            fetch(getFetchUrl('members') + '&t=' + Date.now())
+        ]);
 
         if (!detection) {
             showStatus("얼굴이 감지되지 않았습니다. 밝은 곳에서 시도하세요.", "red");
             return;
         }
 
-        showStatus("서버 데이터를 불러오는 중...", "#059669");
-        await new Promise(r => setTimeout(r, 20));
-
-        const res = await fetch(getFetchUrl('members') + '&t=' + Date.now());
         const rawMembers = await res.json();
         const members = Array.isArray(rawMembers) ? rawMembers.filter(m => !['delete', 'trash', 'hold', 'completed'].includes(m.status)) : [];
 
@@ -169,10 +168,7 @@ async function recognizeAndAttend() {
         let bestMatch = null;
         let smallestDistance = parseFloat(localStorage.getItem('kiosk_sensitivity')) || 0.65; // Dynamic confidence threshold
 
-        // Save current frame for the popup overlay instead of stored photo
-        const context = canvas.getContext('2d');
-        context.drawImage(video, 0, 0, 640, 480);
-        const captureData = canvas.toDataURL('image/jpeg', 0.5);
+        const captureData = capturePrettyFrame();
 
         for (const m of members) {
             if (m.faceDescriptor) {
@@ -200,6 +196,41 @@ async function recognizeAndAttend() {
     }
 }
 
+function capturePrettyFrame() {
+    const context = canvas.getContext('2d');
+    const vW = video.videoWidth || 1280;
+    const vH = video.videoHeight || 720;
+    const cW = canvas.width || 640;
+    const cH = canvas.height || 480;
+    const vRatio = vW / vH;
+    const cRatio = cW / cH;
+    let sW, sH, sX = 0, sY = 0;
+    
+    // 비율 왜곡 방지 (찌그러짐 방지 - 가운데 크롭)
+    if (vRatio > cRatio) {
+        sH = vH;
+        sW = vH * cRatio;
+        sX = (vW - sW) / 2;
+    } else {
+        sW = vW;
+        sH = vW / cRatio;
+        sY = (vH - sH) / 2;
+    }
+    
+    // 뷰티 필터 (뽀샤시 효과: 밝기+15%, 대비+5%, 채도+15%)
+    context.filter = 'brightness(1.15) contrast(1.05) saturate(1.15)';
+    
+    // 좌우 반전 (거울 모드로 찍히도록)
+    context.save();
+    context.scale(-1, 1);
+    context.translate(-cW, 0);
+    
+    context.drawImage(video, sX, sY, sW, sH, 0, 0, cW, cH);
+    context.restore();
+    
+    return canvas.toDataURL('image/jpeg', 0.85); // 고화질
+}
+
 async function capturePhoto() {
     if (currentInput.length !== 8) {
         showStatus("먼저 뒷번호 8자리를 입력해주세요.", "red");
@@ -222,15 +253,16 @@ async function capturePhoto() {
     setTimeout(() => { if (shutter) shutter.style.opacity = '0'; }, 150);
 
     // Yield for UI paint
-    await new Promise(r => setTimeout(r, 50));
+    await new Promise(r => setTimeout(r, 10));
 
     try {
-        const context = canvas.getContext('2d');
-        context.drawImage(video, 0, 0, 640, 480);
-        const photoDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+        const photoDataUrl = capturePrettyFrame();
 
-        showStatus("회원 정보를 조회 중입니다...", "#3b82f6");
-        const res = await fetch(getFetchUrl('members') + '&t=' + Date.now());
+        const [res, detection] = await Promise.all([
+            fetch(getFetchUrl('members') + '&t=' + Date.now()),
+            faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor()
+        ]);
+
         const rawMembers = await res.json();
         const members = Array.isArray(rawMembers) ? rawMembers.filter(m => !['delete', 'trash', 'hold', 'completed'].includes(m.status)) : [];
         const member = members.find(m => m.phone && m.phone.replace(/-/g, '').endsWith(currentInput));
@@ -239,11 +271,6 @@ async function capturePhoto() {
             showStatus("뒷번호 8자리와 일치하는 수강생 대장 회원이 없습니다.", "red");
             return;
         }
-
-        showStatus("얼굴 데이터를 병합 분석 중입니다. 가만히 계세요...", "#3b82f6");
-        await new Promise(r => setTimeout(r, 50));
-
-        const detection = await faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor();
 
         if (!detection) {
             showStatus("얼굴이 명확히 인식되지 않았습니다. 밝은 곳에서 시도해주세요.", "red");
@@ -287,17 +314,24 @@ function determineAttendanceStatus(member) {
         return parseInt(parts[0]) * 60 + parseInt(parts[1]);
     }).filter(m => m !== -1);
 
+    if (slots.length === 0) return 'present';
+
     for (const slotMins of slots) {
-        if (currentMins >= (slotMins - 80) && currentMins <= (slotMins + 30)) {
+        // Valid attendance window: 120 mins before to 120 mins after the slot
+        if (currentMins >= (slotMins - 120) && currentMins <= (slotMins + 120)) {
+            if (currentMins >= slotMins + 5) {
+                return 'late';
+            }
             const h = Math.floor(slotMins / 60);
             if (h === 10) return '10';
             if (h === 12) return '12';
             if (h === 14 || h === 2) return '2';
             if (h === 17 || h === 5) return '5';
             if (h === 19 || h === 7) return '7';
+            return 'present';
         }
     }
-    return 'present';
+    return 'invalid_time';
 }
 
 let timetableData = {
@@ -379,13 +413,26 @@ async function processAttendance(inputNumOrObj, overridePhoto = null) {
         // --- NEW: Check if today is a valid class day ---
         const isAllowed = await checkTimetableAllowed(member);
         if (!isAllowed) {
-            showStatus("오늘은 수업이 없는 날입니다.", "red");
+            const msg = "오늘은 수강 요일이 아닙니다.";
+            showStatus(msg, "red");
+            if (localStorage.getItem('kiosk_voice_enabled') !== 'false' && window.speakTTS) {
+                speakTTS(msg, 'browser');
+            }
             return; // Reject attendance
         }
         // ------------------------------------------------
 
         const today = new Date().toISOString().split('T')[0];
         const status = determineAttendanceStatus(member);
+
+        if (status === 'invalid_time') {
+            const msg = "현재는 예약된 수강 시간이 아닙니다.";
+            showStatus(msg, "red");
+            if (localStorage.getItem('kiosk_voice_enabled') !== 'false' && window.speakTTS) {
+                speakTTS(msg, 'browser');
+            }
+            return; // Reject attendance
+        }
 
         const postRes = await fetch(getFetchUrl('attendance', true), {
             method: 'POST',
@@ -397,9 +444,23 @@ async function processAttendance(inputNumOrObj, overridePhoto = null) {
             showStatus(`${member.name}님, 등원 완료!`, "#3b82f6");
             showFaceOverlay(overridePhoto || member.photo, member.name);
             
+            // Play login success sound
+            if (window.playLoginSound) window.playLoginSound();
+
             // TTS Voice Feedback
-            if (localStorage.getItem('kiosk_voice_enabled') === 'true') {
-                speakTTS(`${member.name}님, 등원 완료되었습니다.`);
+            if (localStorage.getItem('kiosk_voice_enabled') !== 'false') {
+                const mode = localStorage.getItem('kiosk_tts_mode') || 'browser';
+                let ttsMsg = '';
+                if (mode === 'browser') {
+                    const template = localStorage.getItem('kiosk_tts_template') || '{name}님 등원 완료되었습니다.';
+                    ttsMsg = template.replace(/{name}/g, member.name);
+                } else if (mode === 'api') {
+                    const template = localStorage.getItem('kiosk_tts_api_template') || '{name}님 등원 완료되었습니다.';
+                    ttsMsg = template.replace(/{name}/g, member.name);
+                } else if (mode === 'mp3') {
+                    ttsMsg = '__MP3_SUCCESS__';
+                }
+                if (window.speakTTS) speakTTS(ttsMsg, mode);
             }
             
             setTimeout(() => switchMode('home'), 2500);
@@ -409,14 +470,22 @@ async function processAttendance(inputNumOrObj, overridePhoto = null) {
     }
 }
 
-function addNum(num) { if (currentInput.length < 8) { currentInput += num; updateDisplay(); } }
+function addNum(num) {
+    if (currentInput.length < 8) {
+        currentInput += num;
+        updateDisplay();
+        if (currentInput.length === 8 && currentMode === 'number') {
+            submitAttendance();
+        }
+    }
+}
 function clearNum() { currentInput = ""; updateDisplay(); }
 function updateDisplay() { if (inputDisplay) inputDisplay.textContent = currentInput; }
 
 async function startCamera() {
     try {
         const cameraId = localStorage.getItem('kiosk_camera_id');
-        const constraints = { video: { width: 1280, height: 720 } };
+        const constraints = { video: { width: 1280, height: 720, focusMode: { ideal: "continuous" } } };
         
         if (cameraId) {
             constraints.video.deviceId = { exact: cameraId };
@@ -428,7 +497,7 @@ async function startCamera() {
         console.error("Camera Error:", e);
         // Fallback if specific camera fails
         try {
-            stream = await navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 } });
+            stream = await navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720, focusMode: { ideal: "continuous" } } });
             if (video) video.srcObject = stream;
         } catch(e2) {
             showStatus("카메라 에러", "red");
@@ -471,7 +540,22 @@ document.addEventListener('DOMContentLoaded', () => { switchMode('home'); });
 
 
 
-window.speakTTS = function(text) {
+window.speakTTS = function(text, forceMode = null) {
+    const mode = forceMode || localStorage.getItem('kiosk_tts_mode') || 'browser';
+    
+    if (mode === 'mp3' && text === '__MP3_SUCCESS__') {
+        const mp3Index = localStorage.getItem('kiosk_tts_mp3') || '1';
+        const audio = new Audio(`/audio/voice_${mp3Index}.mp3`);
+        audio.play().catch(e => console.error("MP3 Play Error:", e));
+        return;
+    }
+
+    if (mode === 'api' && text !== '__MP3_SUCCESS__') {
+        // TODO: Call cloud API backend when implemented
+        console.log("Cloud TTS API Mode - text to synthesize:", text);
+    }
+
+    // Fallback or explicit browser mode
     if (!window.speechSynthesis) return;
     
     // Stop any currently playing audio
@@ -479,8 +563,141 @@ window.speakTTS = function(text) {
     
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'ko-KR';
-    utterance.rate = 1.0;
-    utterance.pitch = 1.0;
+    
+    const style = localStorage.getItem('kiosk_tts_style') || '1';
+    let pitch = 1.0, rate = 1.0;
+    switch(style) {
+        case '1': pitch = 1.0; rate = 1.0; break;
+        case '2': pitch = 1.2; rate = 1.1; break;
+        case '3': pitch = 0.9; rate = 0.9; break;
+        case '4': pitch = 1.3; rate = 1.3; break;
+        case '5': pitch = 0.7; rate = 0.8; break;
+        case '6': pitch = 1.8; rate = 1.1; break;
+        case '7': pitch = 2.0; rate = 1.5; break;
+        case '8': pitch = 0.5; rate = 0.85; break;
+        case '9': pitch = 0.1; rate = 0.9; break;
+        case '10': pitch = 1.1; rate = 0.95; break;
+        case '11': pitch = 1.5; rate = 1.6; break;
+        case '12': pitch = 1.6; rate = 0.7; break;
+        case '13': pitch = 0.4; rate = 0.7; break;
+        case '14': pitch = 0.8; rate = 1.2; break;
+        case '15': pitch = 1.4; rate = 1.2; break;
+        case '16': pitch = 1.0; rate = 1.15; break;
+        case '17': pitch = 0.6; rate = 0.6; break;
+        case '18': pitch = 1.1; rate = 0.8; break;
+        case '19': pitch = 0.2; rate = 1.4; break;
+        case '20': pitch = 1.7; rate = 1.2; break;
+    }
+    utterance.pitch = pitch;
+    utterance.rate = rate;
+    
+    const voices = window.speechSynthesis.getVoices();
+    const koVoice = voices.find(v => v.lang.includes('ko'));
+    if (koVoice) utterance.voice = koVoice;
     
     window.speechSynthesis.speak(utterance);
+};
+
+window.playLoginSound = function() {
+    const type = localStorage.getItem('kiosk_sound_type') || 'dingdong';
+    if (type === 'none') return;
+    
+    if (type === 'custom') {
+        const customData = localStorage.getItem('kiosk_custom_sound');
+        if (customData) {
+            const audio = new Audio(customData);
+            audio.play().catch(e => console.log("Custom audio play blocked", e));
+        }
+        return;
+    }
+    
+    try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playNote(freq, startTime, duration, vol=0.3, wave='sine') {
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            oscillator.type = wave;
+            oscillator.frequency.value = freq;
+            
+            gainNode.gain.setValueAtTime(0, startTime);
+            gainNode.gain.linearRampToValueAtTime(vol, startTime + 0.05);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+            
+            oscillator.start(startTime);
+            oscillator.stop(startTime + duration);
+        }
+
+        const now = audioCtx.currentTime;
+        if (type === 'dingdong') {
+            playNote(659.25, now, 0.4); playNote(523.25, now + 0.3, 0.6); 
+        } else if (type === 'chime') {
+            playNote(523.25, now, 0.2); playNote(659.25, now + 0.1, 0.2); playNote(783.99, now + 0.2, 0.2); playNote(1046.50, now + 0.3, 0.5);
+        } else if (type === 'beep') {
+            playNote(1046.50, now, 0.15);
+        } else if (type === 'mario') {
+            playNote(987.77, now, 0.1, 0.2, 'square'); playNote(1318.51, now + 0.1, 0.4, 0.2, 'square');
+        } else if (type === 'arcade1') {
+            for(let i=0; i<5; i++) playNote(400 + i*100, now + i*0.05, 0.1, 0.2, 'square');
+        } else if (type === 'arcade2') {
+            playNote(300, now, 0.1, 0.2, 'sawtooth'); playNote(600, now+0.1, 0.2, 0.2, 'sawtooth');
+        } else if (type === 'magic') {
+            [523, 659, 783, 1046, 1318].forEach((f, i) => playNote(f, now + i*0.05, 0.3, 0.1, 'sine'));
+        } else if (type === 'level_up') {
+            playNote(523, now, 0.15); playNote(659, now+0.15, 0.15); playNote(783, now+0.3, 0.15); playNote(1046, now+0.45, 0.4);
+        } else if (type === 'bell1') {
+            playNote(880, now, 0.8, 0.4, 'sine');
+        } else if (type === 'bell2') {
+            playNote(880, now, 0.2, 0.3, 'sine'); playNote(880, now+0.25, 0.6, 0.3, 'sine');
+        } else if (type === 'sci_fi') {
+            playNote(2000, now, 0.05, 0.1, 'square'); playNote(2200, now+0.1, 0.05, 0.1, 'square'); playNote(2400, now+0.2, 0.1, 0.1, 'square');
+        } else if (type === 'future_click') {
+            playNote(3000, now, 0.02, 0.1, 'triangle');
+        } else if (type === 'bubble') {
+            const osc = audioCtx.createOscillator(); const gn = audioCtx.createGain();
+            osc.connect(gn); gn.connect(audioCtx.destination);
+            osc.frequency.setValueAtTime(200, now); osc.frequency.exponentialRampToValueAtTime(800, now+0.1);
+            gn.gain.setValueAtTime(0.3, now); gn.gain.exponentialRampToValueAtTime(0.01, now+0.1);
+            osc.start(now); osc.stop(now+0.1);
+        } else if (type === 'laser') {
+            const osc = audioCtx.createOscillator(); const gn = audioCtx.createGain();
+            osc.connect(gn); gn.connect(audioCtx.destination); osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(1200, now); osc.frequency.exponentialRampToValueAtTime(100, now+0.2);
+            gn.gain.setValueAtTime(0.2, now); gn.gain.exponentialRampToValueAtTime(0.01, now+0.2);
+            osc.start(now); osc.stop(now+0.2);
+        } else if (type === 'fanfare') {
+            playNote(523, now, 0.1, 0.2, 'square'); playNote(523, now+0.15, 0.1, 0.2, 'square'); playNote(523, now+0.3, 0.1, 0.2, 'square'); playNote(880, now+0.45, 0.6, 0.2, 'square');
+        } else if (type === 'drum_kick') {
+            const osc = audioCtx.createOscillator(); const gn = audioCtx.createGain();
+            osc.connect(gn); gn.connect(audioCtx.destination);
+            osc.frequency.setValueAtTime(150, now); osc.frequency.exponentialRampToValueAtTime(0.01, now+0.2);
+            gn.gain.setValueAtTime(0.5, now); gn.gain.exponentialRampToValueAtTime(0.01, now+0.2);
+            osc.start(now); osc.stop(now+0.2);
+        } else if (type === 'robot') {
+            [400,300,500,200].forEach((f,i) => playNote(f, now+i*0.1, 0.1, 0.2, 'sawtooth'));
+        } else if (type === 'bird') {
+            const osc = audioCtx.createOscillator(); const gn = audioCtx.createGain();
+            osc.connect(gn); gn.connect(audioCtx.destination);
+            osc.frequency.setValueAtTime(2000, now); osc.frequency.linearRampToValueAtTime(3000, now+0.05); osc.frequency.linearRampToValueAtTime(2000, now+0.1);
+            gn.gain.setValueAtTime(0, now); gn.gain.linearRampToValueAtTime(0.2, now+0.05); gn.gain.linearRampToValueAtTime(0, now+0.1);
+            osc.start(now); osc.stop(now+0.1);
+        } else if (type === 'coin2') {
+            playNote(1200, now, 0.05, 0.2, 'square'); playNote(1600, now+0.05, 0.3, 0.2, 'square');
+        } else if (type === 'trill') {
+            for(let i=0; i<8; i++) playNote(i%2===0?800:1000, now+i*0.05, 0.05, 0.2);
+        } else if (type === 'soft_pop') {
+            playNote(400, now, 0.05, 0.1);
+        } else if (type === 'warm_pad') {
+            playNote(300, now, 1.0, 0.15, 'triangle'); playNote(380, now, 1.0, 0.15, 'triangle'); playNote(450, now, 1.0, 0.15, 'triangle');
+        } else if (type === 'xylophone') {
+            playNote(800, now, 0.1, 0.4, 'triangle');
+        } else if (type === 'success2') {
+            playNote(440, now, 0.15); playNote(554, now+0.15, 0.15); playNote(659, now+0.3, 0.4);
+        }
+    } catch(e) {
+        console.log("Audio not supported or blocked");
+    }
 };

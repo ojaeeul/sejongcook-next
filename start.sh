@@ -37,42 +37,29 @@ cp -f Sejong/SejongAttendance/data/*.json Sejong/data/ 2>/dev/null || true
 echo "    ✅ 데이터 동기화 및 백업 완료"
 echo ""
 
-echo "[2/4] Next.js 웹사이트 서버 (Port 3000) 시작 중..."
+echo "[2/2] Next.js 웹사이트 및 API 서버 (Port 3000) 시작 중..."
 npm run dev &
 NEXT_PID=$!
 
-echo "[3/4] 출석관리 파이썬 서버 (Port 8000) 시작 중..."
-if [ -f "Sejong/SejongAttendance/server.py" ]; then
-    cd "Sejong/SejongAttendance"
-    python3 server.py &
-    PYTHON_PID=$!
-    cd "$ROOT_DIR"
-else
-    echo "[!] Sejong/SejongAttendance/server.py 를 찾을 수 없습니다."
-fi
-
 echo ""
-echo "[4/4] 브라우저 페이지 열기..."
+echo "[완료] 브라우저 페이지 열기..."
 sleep 2
 
 # macOS (open) or Linux (xdg-open)
 if command -v open > /dev/null; then
-    open http://localhost:8000/ledger.html
-    open http://localhost:8000/index.html
-    open http://localhost:3000
+    open http://localhost:3000/sejong/ledger.html
+    open http://localhost:3000/sejong/sheet.html
 elif command -v xdg-open > /dev/null; then
-    xdg-open http://localhost:8000/ledger.html
-    xdg-open http://localhost:8000/index.html
-    xdg-open http://localhost:3000
+    xdg-open http://localhost:3000/sejong/ledger.html
+    xdg-open http://localhost:3000/sejong/sheet.html
 fi
 
 echo "------------------------------------------------------"
-echo "모든 필수 서버가 실행되었습니다."
-echo "메인 사이트: http://localhost:3000"
-echo "출석 시스템 (데이터 서버): http://localhost:8000"
+echo "✅ Vercel/Supabase 최적화된 로컬 서버가 실행되었습니다."
+echo "통합 사이트: http://localhost:3000"
 echo "종료하려면 Ctrl+C를 누르세요."
 echo "------------------------------------------------------"
 echo ""
 
 # Wait for background processes
-wait $NEXT_PID $PYTHON_PID
+wait $NEXT_PID

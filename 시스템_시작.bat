@@ -24,24 +24,29 @@ echo.
 echo [2/4] Next.js 웹사이트 서버 (Port 3000) 시작 중...
 start "NEXT.JS - 3000" cmd /c "npm run dev"
 
-echo [3/4] 출석관리 파이썬 서버 (Port 8000) 시작 중...
-if exist "Sejong\SejongAttendance\server.py" (
-    start "PYTHON - 8000" cmd /c "cd Sejong\SejongAttendance && py server.py"
-) else (
-    echo [!] Sejong\SejongAttendance\server.py 를 찾을 수 없습니다.
-)
-
 echo.
-echo [4/4] 브라우저 페이지 열기...
+echo [3/4] 브라우저 페이지 열기...
 timeout /t 2 >nul
-start http://localhost:8000/ledger.html
-start http://localhost:8000/index.html
+start http://localhost:3000/sejong/ledger.html
+start http://localhost:3000/sejong/sheet.html
 start http://localhost:3000
 
+echo.
+echo [4/5] 전체 소스코드 변경사항을 깃허브(Git)에 자동 저장합니다...
+git add .
+git commit -m "Auto backup"
+git push
+echo     ✅ Git 백업 완료
+
+echo.
+echo [5/5] Vercel 실서버 자동 업로드(배포) 진행 중...
+start "VERCEL DEPLOY" cmd /c "npx vercel --prod --yes"
+
 echo ------------------------------------------------------
-echo 모든 필수 서버가 실행되었습니다.
+echo 모든 필수 서버 및 배포 명령이 실행되었습니다.
 echo 메인 사이트: http://localhost:3000
-echo 출석 시스템 (데이터 서버): http://localhost:8000
+echo 출석 시스템: http://localhost:3000/sejong/sheet.html
+echo Vercel 실서버: https://sejongcook.co.kr
 echo ------------------------------------------------------
 echo 이 창을 닫아도 서버는 계속 실행됩니다.
 echo.

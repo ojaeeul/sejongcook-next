@@ -67,15 +67,36 @@ async function fetchMembers() {
     }
 }
 
+let lastAttendanceHash = '';
+
 async function fetchAttendance() {
     try {
         const res = await fetch(getFetchUrl('attendance') + `&date=${currentDate}`);
-        attendanceData = await res.json();
-        renderAttendanceTbody();
+        const newData = await res.json();
+        
+        const newHash = JSON.stringify(newData);
+        if (newHash !== lastAttendanceHash) {
+            attendanceData = newData;
+            lastAttendanceHash = newHash;
+            currentAttendanceState = {}; // Clear local state so new DB records take effect
+            renderAttendanceTbody();
+            return true;
+        }
+        return false;
     } catch (err) {
         console.error('Failed to fetch attendance:', err);
+        return false;
     }
 }
+
+// Auto-refresh polling every 5 seconds
+setInterval(async () => {
+    // Check if any modal is open
+    const modals = document.querySelectorAll('.modal-overlay:not(.hidden)');
+    if (modals.length > 0) return;
+
+    await fetchAttendance();
+}, 5000);
 
 function processCourses() {
     groupedCourses = { '미지정': [] };
