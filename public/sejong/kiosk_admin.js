@@ -375,17 +375,22 @@ async function processFaceImage(src, memberId) {
             member.photo = photoDataUrl;
             member.faceDescriptor = Array.from(detection.descriptor);
             
-            await fetch(getFetchUrl('members', true), {
+            const response = await fetch(getFetchUrl('members', true), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(member)
             });
             
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.error || 'Server returned an error');
+            }
+            
             alert(`${member.name}님의 사진 등록이 완료되었습니다.`);
             renderList();
         } catch(error) {
             console.error("Registration error:", error);
-            alert("사진 분석 중 오류가 발생했습니다.");
+            alert(`사진 등록 중 오류가 발생했습니다: ${error.message}`);
         }
     };
 }
