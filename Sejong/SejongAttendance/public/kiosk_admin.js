@@ -178,24 +178,31 @@ async function initializeAllFaces() {
 // ---------------------------------------------------------
 // Face AI & Manual Upload
 // ---------------------------------------------------------
-async function loadFaceModels() {
-    if (modelsLoaded || modelsLoading) return;
-    modelsLoading = true;
-    
-    try {
-        const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/';
-        try { await faceapi.tf.setBackend('webgl'); } catch (e) { console.log('WebGL fallback'); }
+let modelsPromise = null;
 
-        await Promise.all([
-            faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
-            faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
-            faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
-        ]);
-        modelsLoaded = true;
-        console.log("Face API Models loaded.");
-    } catch (e) {
-        console.error("Face API load error:", e);
+function loadFaceModels() {
+    if (modelsLoaded) return Promise.resolve();
+    if (!modelsPromise) {
+        modelsPromise = (async () => {
+            try {
+                const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/';
+                try { await faceapi.tf.setBackend('webgl'); } catch (e) { console.log('WebGL fallback'); }
+
+                await Promise.all([
+                    faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
+                    faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+                    faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+                ]);
+                modelsLoaded = true;
+                console.log("Face API Models loaded.");
+            } catch (e) {
+                console.error("Face API load error:", e);
+                modelsPromise = null; // 실패시 다시 시도할 수 있게 초기화
+                throw e;
+            }
+        })();
     }
+    return modelsPromise;
 }
 
 window.toggleTtsModeUI = function() {
@@ -314,8 +321,13 @@ window.manualFaceUpload = async function(event, memberId) {
 
 async function processFaceImage(src, memberId) {
     if (!modelsLoaded) {
-        alert("AI 얼굴 인식 엔진을 아직 불러오고 있습니다. 잠시 후 다시 시도해주세요.");
-        return;
+        alert("AI 엔진을 로딩하고 있습니다. 잠시만 기다려주세요...");
+        try {
+            await loadFaceModels();
+        } catch(e) {
+            alert("AI 얼굴 인식 엔진 로딩에 실패했습니다. 인터넷 연결을 확인하고 새로고침 후 다시 시도해주세요.");
+            return;
+        }
     }
     
     const member = adminMembers.find(m => String(m.id) === String(memberId));
@@ -384,23 +396,31 @@ window.openWebcamCapture = async function(memberId) {
         return;
     }
 
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    // iOS/Mobile 디바이스 감지 (HTTPS라도 iOS Safari에서 getUserMedia보다 파일 입력 팝업이 더 안정적임)
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+    if (isIOS || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         // 모바일(HTTP) 환경에서는 보안상 카메라 스트리밍 지원 안됨 -> 네이티브 카메라 앱 띄우기로 우회!
-        const fallbackInput = document.createElement('input');
-        fallbackInput.type = 'file';
-        fallbackInput.accept = 'image/*';
-        fallbackInput.capture = 'user'; // 전면 카메라 직접 호출
-        fallbackInput.style.display = 'none';
+        let fallbackInput = document.getElementById('mobileCameraInput');
+        if (!fallbackInput) {
+            fallbackInput = document.createElement('input');
+            fallbackInput.id = 'mobileCameraInput';
+            fallbackInput.type = 'file';
+            fallbackInput.accept = 'image/*';
+            fallbackInput.capture = 'user'; // 전면 카메라 직접 호출
+            fallbackInput.style.display = 'none';
+            document.body.appendChild(fallbackInput);
+        }
         
         fallbackInput.onchange = (event) => {
             if(event.target.files && event.target.files.length > 0) {
                 window.manualFaceUpload(event, memberId);
             }
+            // iOS에서 바로 remove하면 cancel 되므로 요소는 재사용 목적으로 살려둡니다.
+            fallbackInput.value = ''; // 초기화
         };
         
-        document.body.appendChild(fallbackInput);
         fallbackInput.click();
-        document.body.removeChild(fallbackInput);
         return;
     }
 
