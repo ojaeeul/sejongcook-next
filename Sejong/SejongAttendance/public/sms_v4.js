@@ -1493,7 +1493,6 @@ window.syncSmsDate = async function(val) {
 };
 
 window.confirmSmsSend = async function() {
-    const text = document.getElementById('messageInput').value;
     const dateHeader = document.getElementById('currentDateHeader');
     const dateStr = (dateHeader && dateHeader.tagName === 'INPUT') ? dateHeader.value : dateHeader.textContent;
     
@@ -1506,13 +1505,16 @@ window.confirmSmsSend = async function() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 date: dateStr,
-                messages: selectedTargets.map(t => ({
-                    memberId: t.id,
-                    name: t.name,
-                    phone: t.phone,
-                    text: text,
-                    timestamp: new Date().toISOString()
-                }))
+                messages: selectedTargets.map((t, idx) => {
+                    const sentText = (lastGeneratedPreviews && lastGeneratedPreviews[idx]) ? lastGeneratedPreviews[idx].text : document.getElementById('messageInput').value;
+                    return {
+                        memberId: t.id,
+                        name: t.name,
+                        phone: t.phone,
+                        text: sentText,
+                        timestamp: new Date().toISOString()
+                    };
+                })
             })
         });
         showModalAlert('전송 및 저장이 완료되었습니다.');
@@ -1521,7 +1523,7 @@ window.confirmSmsSend = async function() {
         showModalAlert('전송이 완료되었습니다. (저장 실패)');
     }
     
-    closeSmsModal();
+    if (typeof closeSmsModal === 'function') closeSmsModal();
 }
 
 /* --- Range Selection Calendar Logic (Interactive Drag Support) --- */

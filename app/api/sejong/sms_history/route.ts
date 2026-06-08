@@ -1,17 +1,17 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
-
-const dataFilePath = path.join(process.cwd(), 'public', 'sejong', 'data', 'sms_history.json');
+import { supabase } from '@/lib/sejongDataHandler';
 
 export async function GET() {
     try {
-        if (!fs.existsSync(dataFilePath)) {
-            return NextResponse.json([]);
-        }
-        const data = fs.readFileSync(dataFilePath, 'utf8');
-        return NextResponse.json(JSON.parse(data));
+        const { data, error } = await supabase.from('settings').select('key, value').like('key', 'sms_history_%');
+        if (error) throw error;
+
+        const historyData = data.map(row => ({
+            date: row.key.replace('sms_history_', ''),
+            messages: row.value
+        }));
+        return NextResponse.json(historyData || []);
     } catch (e: any) {
         console.error("GET SMS History Error:", e);
         return NextResponse.json({ error: e.message }, { status: 500 });
@@ -27,22 +27,21 @@ export async function POST(req: NextRequest) {
             timestamp: new Date().toISOString()
         }));
 
-        let historyData: any[] = [];
-        if (fs.existsSync(dataFilePath)) {
-            historyData = JSON.parse(fs.readFileSync(dataFilePath, 'utf8'));
+        const key = `sms_history_${dateStr}`;
+
+        // Get existing messages for this date
+        const { data: existingData } = await supabase.from('settings').select('value').eq('key', key).maybeSingle();
+        
+        let messages = [];
+        if (existingData && Array.isArray(existingData.value)) {
+            messages = existingData.value;
         }
 
-        const entryIndex = historyData.findIndex(d => d.date === dateStr);
-        if (entryIndex > -1) {
-            historyData[entryIndex].messages.push(...newMessages);
-        } else {
-            historyData.push({
-                date: dateStr,
-                messages: newMessages
-            });
-        }
+        messages.push(...newMessages);
 
-        fs.writeFileSync(dataFilePath, JSON.stringify(historyData, null, 2), 'utf8');
+        // Save back to settings table
+        const { error } = await supabase.from('settings').upsert({ key, value: messages }, { onConflict: 'key' });
+        if (error) throw error;
 
         return NextResponse.json({ success: true });
     } catch (e: any) {
