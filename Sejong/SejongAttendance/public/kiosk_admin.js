@@ -186,7 +186,12 @@ function loadFaceModels() {
         modelsPromise = (async () => {
             try {
                 const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/';
-                try { await faceapi.tf.setBackend('webgl'); } catch (e) { console.log('WebGL fallback'); }
+                try { 
+                    await Promise.race([
+                        faceapi.tf.setBackend("webgl"),
+                        new Promise((_, r) => setTimeout(() => r("timeout"), 3000))
+                    ]);
+                } catch (e) { console.log("WebGL fallback"); }
 
                 await Promise.all([
                     faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
@@ -321,7 +326,7 @@ window.manualFaceUpload = async function(event, memberId) {
 
 async function processFaceImage(src, memberId) {
     if (!modelsLoaded) {
-        alert("AI 엔진을 로딩하고 있습니다. 잠시만 기다려주세요...");
+        document.getElementById("memberList").innerHTML = "<div style=\"text-align:center; padding:50px; font-weight:bold; color:#f59e0b; font-size:1.2rem;\">AI 엔진을 최초 1회 로딩 중입니다.<br>잠시만 기다려주세요... (10~20초 소요)</div>";
         try {
             await loadFaceModels();
         } catch(e) {
@@ -353,7 +358,8 @@ async function processFaceImage(src, memberId) {
         tempCanvas.height = height;
         ctx.drawImage(img, 0, 0, width, height);
 
-        alert("사진에서 얼굴을 분석 중입니다... 잠시만 기다려주세요.");
+        document.getElementById("memberList").innerHTML = "<div style=\"text-align:center; padding:50px; font-weight:bold; color:#3b82f6; font-size:1.2rem;\">사진에서 얼굴을 분석 중입니다... 잠시만 기다려주세요.</div>";
+        await new Promise(r => setTimeout(r, 100)); // UI 업데이트 대기
         
         try {
             // 원본 이미지 대신 작게 줄인 캔버스에서 얼굴을 찾습니다. 훨씬 빠르고 안정적입니다.
