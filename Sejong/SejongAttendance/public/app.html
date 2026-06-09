@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>선생님용 업무 애플리케이션</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Noto Sans KR', sans-serif; background: #f4f5f7; display: flex; justify-content: center; }
+        
+        #appContainer {
+            width: 100%;
+            max-width: 480px;
+            min-height: 100vh;
+            background: #ffffff;
+            box-shadow: 0 0 20px rgba(0,0,0,0.05);
+            position: relative;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* App Header */
+        .app-header {
+            background: #2563eb;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 20px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .app-header .material-icons { cursor: pointer; }
+
+        /* Views */
+        .view { display: none; flex-direction: column; flex: 1; }
+        .view.active { display: flex; }
+
+        /* Home View (Grid) */
+        .grid-menu {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            padding: 30px 20px;
+        }
+        .menu-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 15px 5px;
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            text-decoration: none;
+            color: #333;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+            transition: background 0.2s;
+            position: relative;
+        }
+        .menu-item:active { background: #f8fafc; }
+        .menu-item .icon-wrapper {
+            width: 45px;
+            height: 45px;
+            border-radius: 10px;
+            background: #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 8px;
+            color: #64748b;
+        }
+        .menu-item.highlight .icon-wrapper { background: #e0e7ff; color: #4f46e5; }
+        .menu-item span.label { font-size: 0.85rem; font-weight: 500; }
+        
+        .red-dot {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 8px;
+            height: 8px;
+            background: #ef4444;
+            border-radius: 50%;
+        }
+
+        /* Attendance View */
+        .att-top-panel { padding: 15px 20px; border-bottom: 1px solid #e2e8f0; }
+        .att-date-course {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+        .att-date-course input[type="date"] {
+            border: none;
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #1e293b;
+            font-family: inherit;
+            background: transparent;
+            outline: none;
+        }
+        .att-date-course select {
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 5px 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #333;
+            background: #f8fafc;
+        }
+
+        .att-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8fafc;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .stat-item { display: flex; flex-direction: column; align-items: center; }
+        .stat-item .label { font-size: 0.75rem; color: #64748b; font-weight: 500; }
+        .stat-item .val { font-size: 1.2rem; font-weight: 800; }
+        
+        /* Matching the image colors */
+        .val.present { color: #22c55e; } /* 출석: 녹색 */
+        .val.absent { color: #ef4444; }  /* 결석: 빨강 */
+        .val.late { color: #eab308; }    /* 지각: 노랑 */
+        .val.early { color: #06b6d4; }   /* 조퇴: 청록 */
+        .val.outing { color: #f97316; }  /* 외출: 주황 */
+
+        .att-actions {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        .btn-grey {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        .btn-blue {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            flex: 1;
+            text-align: center;
+        }
+
+        .list-header {
+            display: flex;
+            background: #2563eb;
+            color: white;
+            padding: 10px 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        .list-header > div:first-child { width: 80px; }
+        .list-header > div:last-child { flex: 1; text-align: center; }
+
+        .student-list { flex: 1; overflow-y: auto; padding-bottom: 80px; }
+        .student-row {
+            display: flex;
+            align-items: center;
+            padding: 12px 10px 12px 20px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .student-name {
+            width: 80px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #1e293b;
+        }
+        .student-name i { font-size: 1rem; color: #94a3b8; }
+        
+        .status-toggles {
+            flex: 1;
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .status-toggles::-webkit-scrollbar { display: none; }
+        
+        .toggle-btn {
+            flex: 0 0 auto;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            background: white;
+            border: 1px solid #e2e8f0;
+            color: #64748b;
+            transition: all 0.2s;
+        }
+        /* Active colors matching the screenshot */
+        .toggle-btn.active[data-val="present"] { background: #22c55e; border-color: #22c55e; color: white; }
+        .toggle-btn.active[data-val="absent"] { background: #ef4444; border-color: #ef4444; color: white; }
+        .toggle-btn.active[data-val="late"] { background: #eab308; border-color: #eab308; color: white; }
+        .toggle-btn.active[data-val="early"] { background: #06b6d4; border-color: #06b6d4; color: white; }
+        .toggle-btn.active[data-val="outing"] { background: #f97316; border-color: #f97316; color: white; }
+        .toggle-btn.active[data-val="return"] { background: #9333ea; border-color: #9333ea; color: white; }
+        .toggle-btn.active[data-val="extension"] { background: #3b82f6; border-color: #3b82f6; color: white; }
+
+        .loading-overlay {
+            position: absolute; top:0; left:0; width:100%; height:100%;
+            background: rgba(255,255,255,0.8);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1000; display: none;
+        }
+        
+        /* Toast Alert */
+        #toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            z-index: 9999;
+        }
+    </style>
+</head>
+<body>
+
+<div id="appContainer">
+    <!-- Home View -->
+    <div id="viewHome" class="view active">
+        <div class="app-header">
+            <span class="material-icons">menu</span>
+            <span>세종요리제과학원</span>
+            <span class="material-icons">person</span>
+        </div>
+        <div class="grid-menu">
+            <div class="menu-item highlight" onclick="goView('viewAttendance')">
+                <div class="red-dot"></div>
+                <div class="icon-wrapper"><span class="material-icons">event_note</span></div>
+                <span class="label">출석부</span>
+            </div>
+            <div class="menu-item">
+                <div class="icon-wrapper"><span class="material-icons">calendar_month</span></div>
+                <span class="label">스케줄</span>
+            </div>
+            <div class="menu-item">
+                <div class="red-dot"></div>
+                <div class="icon-wrapper"><span class="material-icons">mail</span></div>
+                <span class="label">문자</span>
+            </div>
+            <div class="menu-item">
+                <div class="red-dot"></div>
+                <div class="icon-wrapper"><span class="material-icons">chat</span></div>
+                <span class="label">상담</span>
+            </div>
+            <div class="menu-item">
+                <div class="red-dot"></div>
+                <div class="icon-wrapper"><span class="material-icons">edit_document</span></div>
+                <span class="label">일지정리</span>
+            </div>
+            <div class="menu-item">
+                <div class="icon-wrapper"><span class="material-icons">menu_book</span></div>
+                <span class="label">일지확인</span>
+            </div>
+            <div class="menu-item">
+                <div class="icon-wrapper"><span class="material-icons">groups</span></div>
+                <span class="label">회원</span>
+            </div>
+            <div class="menu-item">
+                <div class="icon-wrapper"><span class="material-icons">work</span></div>
+                <span class="label">출근부</span>
+            </div>
+            <div class="menu-item">
+                <div class="icon-wrapper"><span class="material-icons">assignment</span></div>
+                <span class="label">과제물</span>
+            </div>
+            <div class="menu-item">
+                <div class="red-dot"></div>
+                <div class="icon-wrapper"><span class="material-icons">pie_chart</span></div>
+                <span class="label">보강차트</span>
+            </div>
+            <div class="menu-item">
+                <div class="icon-wrapper"><span class="material-icons">checklist</span></div>
+                <span class="label">진도처리</span>
+            </div>
+        </div>
+        
+        <div style="padding: 20px; text-align: center; margin-top: auto; margin-bottom: 20px;">
+            <h2 style="color: #1e3a8a; font-weight: 800; font-size: 1.3rem; margin-bottom: 5px;">선생님용 업무 애플리케이션</h2>
+            <p style="color: #64748b; font-size: 0.9rem; line-height: 1.4;">언제, 어디서든지 수업내용을<br>기록할 수 있어요.</p>
+        </div>
+    </div>
+
+    <!-- Attendance View -->
+    <div id="viewAttendance" class="view">
+        <div class="app-header">
+            <span class="material-icons" onclick="goView('viewHome')">arrow_back</span>
+            <span>출석 체크</span>
+            <span style="width: 24px;"></span> <!-- Spacer -->
+        </div>
+        
+        <div class="att-top-panel">
+            <div class="att-date-course">
+                <input type="date" id="attDate" />
+                <select id="courseSelect" onchange="renderStudentList()">
+                    <option value="">반(과정)을 선택하세요</option>
+                </select>
+            </div>
+            
+            <div class="att-stats">
+                <div class="stat-item"><span class="label">출석</span><span class="val present" id="s_present">0</span></div>
+                <div class="stat-item"><span class="label">결석</span><span class="val absent" id="s_absent">0</span></div>
+                <div class="stat-item"><span class="label">지각</span><span class="val late" id="s_late">0</span></div>
+                <div class="stat-item"><span class="label">조퇴</span><span class="val early" id="s_early">0</span></div>
+                <div class="stat-item"><span class="label">외출</span><span class="val outing" id="s_outing">0</span></div>
+            </div>
+            
+            <div class="att-actions">
+                <button class="btn-grey">문자발송</button>
+                <div style="display: flex; gap: 8px; flex: 1;">
+                    <button class="btn-blue" onclick="setAllPresent()">전체출석</button>
+                    <button class="btn-blue" onclick="saveAttendance()">저장</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="list-header">
+            <div>학생</div>
+            <div>출결사항</div>
+        </div>
+        
+        <div class="student-list" id="studentList">
+            <!-- JS populated -->
+        </div>
+    </div>
+    
+    <div class="loading-overlay" id="loadingOverlay"><span class="material-icons" style="animation: spin 1s infinite linear;">refresh</span></div>
+    <div id="toast">저장되었습니다</div>
+</div>
+
+<style>
+@keyframes spin { 100% { transform: rotate(360deg); } }
+</style>
+
+<script>
+const API_BASE = '/api/sejong';
+let allMembers = [];
+let groupedCourses = {};
+let attendanceData = [];
+let localState = {}; // phone -> status
+
+const today = new Date().toISOString().split('T')[0];
+document.getElementById('attDate').value = today;
+
+document.getElementById('attDate').addEventListener('change', () => {
+    fetchAttendance();
+});
+
+// Navigation
+function goView(viewId) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById(viewId).classList.add('active');
+    if (viewId === 'viewAttendance') {
+        initAttendanceData();
+    }
+}
+
+async function initAttendanceData() {
+    showLoading(true);
+    try {
+        const [mRes, aRes] = await Promise.all([
+            fetch(`${API_BASE}/members?t=${Date.now()}`),
+            fetch(`${API_BASE}/attendance?date=${document.getElementById('attDate').value}&t=${Date.now()}`)
+        ]);
+        allMembers = await mRes.json();
+        attendanceData = await aRes.json();
+        
+        processCourses();
+        populateCourseSelect();
+        renderStudentList();
+    } catch(e) {
+        showToast('데이터 로딩 실패');
+    }
+    showLoading(false);
+}
+
+async function fetchAttendance() {
+    showLoading(true);
+    try {
+        const aRes = await fetch(`${API_BASE}/attendance?date=${document.getElementById('attDate').value}&t=${Date.now()}`);
+        attendanceData = await aRes.json();
+        localState = {};
+        renderStudentList();
+    } catch(e) {}
+    showLoading(false);
+}
+
+function processCourses() {
+    groupedCourses = {};
+    allMembers.forEach(m => {
+        if (m.status === 'trash' || m.status === 'delete' || m.status === 'completed' || m.status === 'hold') return;
+        if (!m.course || m.course.trim() === '') return;
+        m.course.split(',').forEach(c => {
+            const cName = c.trim();
+            if (!groupedCourses[cName]) groupedCourses[cName] = [];
+            groupedCourses[cName].push(m);
+        });
+    });
+}
+
+function populateCourseSelect() {
+    const sel = document.getElementById('courseSelect');
+    sel.innerHTML = '<option value="">반(과정)을 선택하세요</option>';
+    Object.keys(groupedCourses).sort().forEach(cName => {
+        const opt = document.createElement('option');
+        opt.value = cName;
+        opt.textContent = `${cName} (${groupedCourses[cName].length}명)`;
+        sel.appendChild(opt);
+    });
+    
+    // Auto select first
+    if (sel.options.length > 1) {
+        sel.selectedIndex = 1;
+    }
+}
+
+function getStatusForMember(phone) {
+    if (localState[phone]) return localState[phone];
+    const rec = attendanceData.find(a => a.phone === phone);
+    if (!rec) return '';
+    let st = String(rec.status).trim();
+    if (['10','12','2','3','5','7','9','출석','present'].includes(st) || st.includes('출석')) return 'present';
+    if (st === 'absent' || st.includes('결석') || st === 'X') return 'absent';
+    if (st === 'late' || st.includes('지각') || st === '△') return 'late';
+    if (st === 'early' || st.includes('조퇴') || st.includes('퇴실')) return 'early';
+    if (st === 'outing' || st.includes('외출')) return 'outing';
+    if (st === 'return' || st.includes('복귀')) return 'return';
+    if (st === 'extension' || st.includes('연장') || st === 'E') return 'extension';
+    return '';
+}
+
+function renderStudentList() {
+    const list = document.getElementById('studentList');
+    const cName = document.getElementById('courseSelect').value;
+    list.innerHTML = '';
+    
+    let stats = { present: 0, absent: 0, late: 0, early: 0, outing: 0 };
+    
+    if (!cName || !groupedCourses[cName]) {
+        updateStats(stats);
+        return;
+    }
+    
+    const statuses = [
+        { val: 'present', label: '출석' },
+        { val: 'absent', label: '결석' },
+        { val: 'late', label: '지각' },
+        { val: 'early', label: '조퇴' },
+        { val: 'outing', label: '외출' },
+        { val: 'return', label: '복귀' },
+        { val: 'extension', label: '연장' }
+    ];
+
+    groupedCourses[cName].forEach(m => {
+        const curStat = getStatusForMember(m.phone);
+        if (stats[curStat] !== undefined) stats[curStat]++;
+        
+        const row = document.createElement('div');
+        row.className = 'student-row';
+        
+        // Name Column
+        const nameCol = document.createElement('div');
+        nameCol.className = 'student-name';
+        nameCol.innerHTML = `<span>${m.name}</span> <i class="material-icons">edit</i>`;
+        
+        // Status Toggles
+        const toggles = document.createElement('div');
+        toggles.className = 'status-toggles';
+        
+        statuses.forEach(s => {
+            const btn = document.createElement('button');
+            btn.className = `toggle-btn ${curStat === s.val ? 'active' : ''}`;
+            btn.dataset.val = s.val;
+            btn.textContent = s.label;
+            btn.onclick = () => {
+                localState[m.phone] = (localState[m.phone] === s.val) ? '' : s.val;
+                renderStudentList(); // re-render to update UI and stats
+            };
+            toggles.appendChild(btn);
+        });
+        
+        row.appendChild(nameCol);
+        row.appendChild(toggles);
+        list.appendChild(row);
+    });
+    
+    updateStats(stats);
+}
+
+function updateStats(stats) {
+    document.getElementById('s_present').textContent = stats.present;
+    document.getElementById('s_absent').textContent = stats.absent;
+    document.getElementById('s_late').textContent = stats.late;
+    document.getElementById('s_early').textContent = stats.early;
+    document.getElementById('s_outing').textContent = stats.outing;
+}
+
+function setAllPresent() {
+    const cName = document.getElementById('courseSelect').value;
+    if (!cName || !groupedCourses[cName]) return;
+    groupedCourses[cName].forEach(m => {
+        localState[m.phone] = 'present';
+    });
+    renderStudentList();
+}
+
+async function saveAttendance() {
+    const cName = document.getElementById('courseSelect').value;
+    if (!cName || !groupedCourses[cName]) return;
+    
+    const date = document.getElementById('attDate').value;
+    const membersToSave = groupedCourses[cName];
+    
+    let updates = [];
+    membersToSave.forEach(m => {
+        if (localState[m.phone] !== undefined) {
+            updates.push({
+                phone: m.phone,
+                name: m.name,
+                course: m.course,
+                status: localState[m.phone],
+                timestamp: new Date().toISOString()
+            });
+        }
+    });
+    
+    if (updates.length === 0) {
+        showToast('변경된 내용이 없습니다.');
+        return;
+    }
+
+    showLoading(true);
+    try {
+        const res = await fetch(`${API_BASE}/attendance`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                date: date,
+                records: updates
+            })
+        });
+        
+        if (res.ok) {
+            showToast('성공적으로 저장되었습니다.');
+            localState = {};
+            await fetchAttendance();
+        } else {
+            showToast('저장 중 오류가 발생했습니다.');
+        }
+    } catch(e) {
+        showToast('통신 오류');
+    }
+    showLoading(false);
+}
+
+function showLoading(show) {
+    document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
+}
+
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.style.opacity = '1';
+    setTimeout(() => { t.style.opacity = '0'; }, 2000);
+}
+</script>
+</body>
+</html>

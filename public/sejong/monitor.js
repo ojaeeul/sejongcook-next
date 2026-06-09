@@ -9,6 +9,7 @@ const API_BASE = '/api/sejong';
 let currentInput = "";
 let stream = null;
 let currentMode = 'home';
+let pendingStatus = null;
 
 const video = document.getElementById('video');
 const canvas = document.getElementById('canvas');
@@ -39,6 +40,8 @@ const mirrorSection = document.getElementById('mirrorSection');
 function switchMode(mode) {
     currentMode = mode;
     clearNum();
+    pendingStatus = null;
+    updatePendingStatusUI();
     if (statusMsg) statusMsg.textContent = "";
 
     // 화면 전환 시 무조건 루프 정지 (안전 장치)
@@ -48,6 +51,7 @@ function switchMode(mode) {
         if (homeScreen) homeScreen.style.display = 'flex';
         if (workspace) workspace.style.display = 'none';
         stopCamera();
+        stopQRScanner();
     } else {
         if (homeScreen) homeScreen.style.display = 'none';
         if (workspace) {
@@ -55,26 +59,44 @@ function switchMode(mode) {
             workspace.className = 'mode-' + mode;
         }
 
+        stopCamera();
+        stopQRScanner();
+
         if (mode === 'number') {
-            setupUI("번호 출석", "휴대폰 뒷번호 8자리를 입력하세요", true, false, false);
+            setupUI("번호 출석", "휴대폰 뒷번호 8자리를 입력하세요", true, false, false, false, true);
             if (mirrorSection) mirrorSection.style.opacity = '0.2';
-            stopCamera();
         }
         else if (mode === 'face_only') {
-            setupUI("얼굴 출석", "버튼을 누를 필요 없이 카메라를 정면으로 바라봐 주세요", false, true, true);
+            setupUI("얼굴 출석", "버튼을 누를 필요 없이 카메라를 정면으로 바라봐 주세요", false, true, true, false, false);
             if (mirrorSection) mirrorSection.style.opacity = '1';
             startCamera().then(() => {
                 startAutoDetectionLoop();
             });
-            loadFaceModels(); // Preload ML
+            loadFaceModels();
         }
         else if (mode === 'register') {
-            setupUI("신규 얼굴 등록", "번호 입력 후 얼굴을 촬영하세요", true, false, true);
+            setupUI("신규 얼굴 등록", "번호 입력 후 얼굴을 촬영하세요", true, false, true, false, false);
             if (mirrorSection) mirrorSection.style.opacity = '1';
             if (faceSubmitBtn) faceSubmitBtn.style.display = 'block';
             if (mainSubmitBtn) mainSubmitBtn.style.display = 'none';
             startCamera();
             loadFaceModels(); // Preload ML
+        }
+        else if (mode === 'qr') {
+            setupUI("QR 출석", "학원에서 발급된 QR코드를 스캔하세요", false, false, false, true, false);
+            if (mirrorSection) mirrorSection.style.opacity = '1';
+            startQRScanner();
+        }
+        else if (mode === 'hybrid') {
+            setupUI("스마트 출석", "얼굴, QR, 또는 번호 중 하나로 출석하세요", true, false, true, true, true);
+            if (mirrorSection) mirrorSection.style.opacity = '1';
+            // Start Face Camera and Auto Detection
+            startCamera().then(() => {
+                startAutoDetectionLoop();
+            });
+            // Also Start QR Scanner
+            startQRScanner();
+            loadFaceModels();
         }
     }
 }
@@ -111,7 +133,7 @@ async function loadFaceModels() {
     }
 }
 
-function setupUI(title, sub, showKeypad, showFacePanel, showMirror) {
+function setupUI(title, sub, showKeypad, showFacePanel, showFaceCamera, showQRScanner, showManualButtons) {
     if (mainTitle) mainTitle.textContent = title;
     if (mainSub) mainSub.textContent = sub;
 
@@ -119,23 +141,96 @@ function setupUI(title, sub, showKeypad, showFacePanel, showMirror) {
     if (keypadGrid) keypadGrid.style.display = showKeypad ? 'grid' : 'none';
     if (faceOnlyPanel) faceOnlyPanel.style.display = showFacePanel ? 'block' : 'none';
 
-    if (mainSubmitBtn) mainSubmitBtn.style.display = (currentMode === 'number') ? 'block' : 'none';
+    const faceCameraWrapper = document.getElementById('faceCameraWrapper');
+    if (faceCameraWrapper) faceCameraWrapper.style.display = showFaceCamera ? 'block' : 'none';
+
+    const qrReaderWrapper = document.getElementById('qrReaderWrapper');
+    if (qrReaderWrapper) qrReaderWrapper.style.display = showQRScanner ? 'block' : 'none';
+
+    const manualStatusBtns = document.getElementById('manualStatusBtns');
+    if (manualStatusBtns) manualStatusBtns.style.display = showManualButtons ? 'grid' : 'none';
+
+    if (mainSubmitBtn) {
+        // Only show main submit button in pure number mode if manual buttons are not taking its place
+        // Actually, let's hide main submit if manual buttons are showing.
+        mainSubmitBtn.style.display = (currentMode === 'number' && !showManualButtons) ? 'block' : 'none';
+        // Wait, hybrid mode uses keypad too. Let's show submit if it's hybrid and we don't force manual buttons.
+        // The image shows manual buttons INSTEAD of submit? No, the image has '확인' and below it manual buttons.
+        // So we show it for both number and hybrid.
+        mainSubmitBtn.style.display = (currentMode === 'number' || currentMode === 'hybrid') ? 'block' : 'none';
+    }
     if (faceSubmitBtn) faceSubmitBtn.style.display = (currentMode === 'register') ? 'block' : 'none';
+
+    // Scan status icon/text update based on mode
+    const scanStatusIcon = document.getElementById('scanStatusIcon');
+    const scanStatusText = document.getElementById('scanStatusText');
+    if (scanStatusIcon && scanStatusText) {
+        if (showQRScanner) {
+            scanStatusIcon.textContent = 'qr_code_scanner';
+            scanStatusText.textContent = 'QR 코드를 스캐너에 비춰주세요';
+        } else if (showFaceCamera) {
+            scanStatusIcon.textContent = 'videocam';
+            scanStatusText.textContent = '실시간 에코 미러 작동 중';
+        }
+    }
 }
 
 // ---------------------------------------------------------
 // Attendance Logic
 // ---------------------------------------------------------
 
-async function submitAttendance() {
+async function submitAttendance(forcedStatus = null) {
     if (currentInput.length !== 8) {
         showStatus("번호 8자리를 입력해주세요.", "red");
         return;
     }
     if (mainSubmitBtn) { mainSubmitBtn.disabled = true; mainSubmitBtn.textContent = "처리중..."; mainSubmitBtn.style.opacity = "0.7"; }
     showStatus("출석 처리 중입니다...", "#3b82f6");
-    await processAttendance(currentInput);
+    await processAttendance(currentInput, null, forcedStatus);
     if (mainSubmitBtn) { mainSubmitBtn.disabled = false; mainSubmitBtn.textContent = "출석"; mainSubmitBtn.style.opacity = "1"; }
+}
+
+function submitAttendanceWithStatus(status) {
+    submitAttendance(status);
+}
+
+function handleManualStatusBtn(status) {
+    if (currentInput.length === 8) {
+        submitAttendance(status);
+        pendingStatus = null;
+        updatePendingStatusUI();
+    } else {
+        // Toggle pending status
+        if (pendingStatus === status) {
+            pendingStatus = null; // 취소
+        } else {
+            pendingStatus = status;
+        }
+        updatePendingStatusUI();
+    }
+}
+
+function updatePendingStatusUI() {
+    const btns = document.querySelectorAll('.status-action-btn');
+    btns.forEach(btn => btn.classList.remove('pending'));
+
+    const msgEl = document.getElementById('pendingStatusMsg');
+    
+    if (pendingStatus) {
+        const activeBtn = document.querySelector(`.status-action-btn.${pendingStatus}`);
+        if (activeBtn) activeBtn.classList.add('pending');
+        
+        const labels = { present: '입실', early: '퇴실', outing: '외출', return: '복귀' };
+        if (msgEl) {
+            msgEl.textContent = `[${labels[pendingStatus]}] 선택됨. 카메라를 보거나 번호를 누르세요.`;
+            msgEl.style.display = 'block';
+        }
+    } else {
+        if (msgEl) {
+            msgEl.textContent = '';
+            msgEl.style.display = 'none';
+        }
+    }
 }
 
 let autoDetectInterval = null;
@@ -159,7 +254,7 @@ function startAutoDetectionLoop() {
                 const box = detections[0].detection.box;
                 if (box.width > 80 && box.height > 80) { // 너무 멀리 있는 얼굴은 무시
                     isAuthenticating = true;
-                    await processAutoAttendance();
+                    await processAutoAttendance(pendingStatus);
                 }
             }
         } catch(e) {
@@ -243,13 +338,14 @@ function drawMultiFocusUI(detections) {
     });
 }
 
-async function processAutoAttendance() {
+async function processAutoAttendance(forcedStatus = null) {
+    if (!modelsLoaded) return;
+    
     try {
-        showStatus("AI 정밀 스캔 중...", "#3b82f6");
-        
         if (shutter) shutter.style.opacity = '1';
-        setTimeout(() => { if (shutter) shutter.style.opacity = '0'; }, 100);
+        setTimeout(() => { if (shutter) shutter.style.opacity = '0'; }, 150);
 
+        showStatus("AI 얼굴 특징 매칭 중...", "#3b82f6");
         const [detection, res] = await Promise.all([
             faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor(),
             fetch(getFetchUrl('members') + '&t=' + Date.now())
@@ -288,7 +384,11 @@ async function processAutoAttendance() {
         if (bestMatch) {
             const phoneStr = bestMatch.phone.replace(/-/g, '');
             const phone8 = phoneStr.length >= 8 ? phoneStr.slice(-8) : phoneStr;
-            await processAttendance(phone8, captureData);
+            await processAttendance(phone8, captureData, forcedStatus);
+            // 성공 시 상태 초기화
+            pendingStatus = null;
+            updatePendingStatusUI();
+            
             // 성공 시 연속 출석 방지를 위한 3초 쿨다운
             setTimeout(() => { isAuthenticating = false; }, 3000);
         } else {
@@ -501,7 +601,7 @@ async function checkTimetableAllowed(member) {
     return true;
 }
 
-async function processAttendance(inputNumOrObj, overridePhoto = null) {
+async function processAttendance(inputNumOrObj, overridePhoto = null, forcedStatus = null) {
     try {
         let member = null;
         if (typeof inputNumOrObj === 'object' && inputNumOrObj !== null) {
@@ -541,21 +641,23 @@ async function processAttendance(inputNumOrObj, overridePhoto = null) {
         // ---------------------------------------------
         
         // --- NEW: Check if today is a valid class day ---
-        const isAllowed = await checkTimetableAllowed(member);
-        if (!isAllowed) {
-            const msg = "오늘은 수강 요일이 아닙니다.";
-            showStatus(msg, "red");
-            if (localStorage.getItem('kiosk_voice_enabled') !== 'false' && window.speakTTS) {
-                speakTTS(msg, 'browser');
+        if (!forcedStatus) {
+            const isAllowed = await checkTimetableAllowed(member);
+            if (!isAllowed) {
+                const msg = "오늘은 수강 요일이 아닙니다.";
+                showStatus(msg, "red");
+                if (localStorage.getItem('kiosk_voice_enabled') !== 'false' && window.speakTTS) {
+                    speakTTS(msg, 'browser');
+                }
+                return; // Reject attendance
             }
-            return; // Reject attendance
         }
         // ------------------------------------------------
 
         const today = new Date().toISOString().split('T')[0];
-        const status = determineAttendanceStatus(member);
+        const status = forcedStatus || determineAttendanceStatus(member);
 
-        if (status === 'invalid_time') {
+        if (status === 'invalid_time' && !forcedStatus) {
             const msg = "현재는 예약된 수강 시간이 아닙니다.";
             showStatus(msg, "red");
             if (localStorage.getItem('kiosk_voice_enabled') !== 'false' && window.speakTTS) {
@@ -617,6 +719,47 @@ function updateDisplay() { if (inputDisplay) inputDisplay.textContent = currentI
 
 let cameraHealthCheckInterval = null;
 let lastVideoTime = 0;
+
+let html5QrCode = null;
+
+function startQRScanner() {
+    if (html5QrCode) return;
+    html5QrCode = new Html5Qrcode("qrReader");
+    const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+    
+    html5QrCode.start({ facingMode: "user" }, config, async (decodedText) => {
+        if (isAuthenticating) return;
+        isAuthenticating = true;
+        
+        showStatus("QR코드 인식 완료. 처리 중...", "#3b82f6");
+        
+        let phone8 = decodedText.replace(/-/g, '');
+        if (phone8.length >= 8) phone8 = phone8.slice(-8);
+        
+        await processAttendance(phone8, null, pendingStatus);
+        
+        pendingStatus = null;
+        updatePendingStatusUI();
+        
+        setTimeout(() => { isAuthenticating = false; }, 3000);
+    }, (error) => {
+        // ignore
+    }).catch(err => {
+        showStatus("QR 스캐너 시작 오류: " + err, "red");
+        console.error(err);
+    });
+}
+
+function stopQRScanner() {
+    if (html5QrCode) {
+        html5QrCode.stop().then(() => {
+            html5QrCode.clear();
+            html5QrCode = null;
+        }).catch(err => {
+            html5QrCode = null;
+        });
+    }
+}
 
 async function startCamera() {
     try {

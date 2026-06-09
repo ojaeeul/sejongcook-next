@@ -93,12 +93,12 @@ function updateDashboard() {
     if(document.getElementById('statTodayAttendance')) document.getElementById('statTodayAttendance').innerText = `${uniquePeriodAttenders.size}명`;
 
     // Update Tab 1: Daily Dashboard
-    if(document.getElementById('dashPayment')) document.getElementById('dashPayment').innerText = periodRevenue.toLocaleString();
-    if(document.getElementById('dashPaymentAcc')) document.getElementById('dashPaymentAcc').innerText = totalRevenue.toLocaleString();
-    if(document.getElementById('dashStudents')) document.getElementById('dashStudents').innerText = activeMembers.length;
+    // if(document.getElementById('dashPayment')) document.getElementById('dashPayment').innerText = periodRevenue.toLocaleString();
+    // if(document.getElementById('dashPaymentAcc')) document.getElementById('dashPaymentAcc').innerText = totalRevenue.toLocaleString();
+    // if(document.getElementById('dashStudents')) document.getElementById('dashStudents').innerText = activeMembers.length;
     
     // Count new members (dummy logic: assuming roughly 10% are new based on some date, using random for effect)
-    if(document.getElementById('dashStudentsNew')) document.getElementById('dashStudentsNew').innerText = Math.max(1, Math.floor(activeMembers.length * 0.05));
+    // if(document.getElementById('dashStudentsNew')) document.getElementById('dashStudentsNew').innerText = Math.max(1, Math.floor(activeMembers.length * 0.05));
     
     const courseSet = new Set();
     let adults = 0;
@@ -110,13 +110,13 @@ function updateDashboard() {
         if (m.age && parseInt(m.age) >= 20) adults++;
         else students++;
     });
-    if(document.getElementById('dashCourses')) document.getElementById('dashCourses').innerText = courseSet.size;
-    if(document.getElementById('ageAdult')) document.getElementById('ageAdult').innerText = adults;
-    if(document.getElementById('ageStudent')) document.getElementById('ageStudent').innerText = students;
+    // if(document.getElementById('dashCourses')) document.getElementById('dashCourses').innerText = courseSet.size;
+    // if(document.getElementById('ageAdult')) document.getElementById('ageAdult').innerText = adults;
+    // if(document.getElementById('ageStudent')) document.getElementById('ageStudent').innerText = students;
     
     // Absent
     const absentCount = Math.max(0, activeMembers.length - uniquePeriodAttenders.size);
-    if(document.getElementById('dashAbsent')) document.getElementById('dashAbsent').innerText = absentCount;
+    // if(document.getElementById('dashAbsent')) document.getElementById('dashAbsent').innerText = absentCount;
 
     // Update Tab 3: Comprehensive
     if(document.getElementById('compTotalMembers')) document.getElementById('compTotalMembers').innerText = activeMembers.length;
