@@ -70,14 +70,19 @@ function renderList() {
         const item = document.createElement('div');
         item.className = 'member-item';
         
+        const photoPreview = hasFace && m.photo ? `<img src="${m.photo}" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid #3b82f6; flex-shrink: 0; cursor: pointer;" onclick="previewLargePhoto('${m.photo}', '${m.name}', '${m.id}')">` : `<div style="width: 60px; height: 60px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><span class="material-icons" style="color:#94a3b8; font-size: 32px;">person</span></div>`;
+
         const infoHtml = `
-            <div>
-                <div style="font-weight:700; font-size:1.15rem; color:#0f172a; margin-bottom:4px;">
-                    ${m.name} <span style="font-size:0.95rem; color:#64748b; font-weight:400;">(${m.phone || '번호없음'})</span>
-                </div>
-                <div style="font-size:0.9rem; color:#475569; margin-bottom:4px;">${m.course || '과목 없음'}</div>
-                <div style="font-weight:700; font-size: 0.9rem; ${hasFace ? 'color:#059669;' : 'color:#94a3b8;'}">
-                    ${hasFace ? '<span class="material-icons" style="vertical-align:middle; font-size:16px;">check_circle</span> 등록 완료' : '<span class="material-icons" style="vertical-align:middle; font-size:16px;">cancel</span> 사진 미등록'}
+            <div style="display: flex; gap: 15px; align-items: center;">
+                ${photoPreview}
+                <div>
+                    <div style="font-weight:700; font-size:1.15rem; color:#0f172a; margin-bottom:4px;">
+                        ${m.name} <span style="font-size:0.95rem; color:#64748b; font-weight:400;">(${m.phone || '번호없음'})</span>
+                    </div>
+                    <div style="font-size:0.9rem; color:#475569; margin-bottom:4px;">${m.course || '과목 없음'}</div>
+                    <div style="font-weight:700; font-size: 0.9rem; ${hasFace ? 'color:#059669;' : 'color:#94a3b8;'}">
+                        ${hasFace ? '<span class="material-icons" style="vertical-align:middle; font-size:16px;">check_circle</span> 등록 완료' : '<span class="material-icons" style="vertical-align:middle; font-size:16px;">cancel</span> 사진 미등록'}
+                    </div>
                 </div>
             </div>
         `;
@@ -121,6 +126,35 @@ function filterList() {
 // ---------------------------------------------------------
 // Face Data Management (Server side)
 // ---------------------------------------------------------
+function previewLargePhoto(photoUrl, name, memberId) {
+    const editUrl = `${window.location.origin}/sejong/photo_edit.html?id=${memberId}`;
+    
+    const modalHtml = `
+        <div id="photoPreviewModal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); display:flex; justify-content:center; align-items:center; z-index:10000; flex-direction: column;">
+            <div style="background: white; padding: 30px; border-radius: 16px; text-align: center; width: 90%; max-width: 400px; display: flex; flex-direction: column; align-items: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+                <h3 style="margin-top: 0; margin-bottom: 20px; color: #0f172a; font-size: 1.4rem;">${name}님의 얼굴</h3>
+                
+                <img src="${photoUrl}" style="width: 200px; height: 200px; border-radius: 50%; border: 4px solid #3b82f6; object-fit: cover; margin-bottom: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                
+                <button class="btn btn-success" onclick="copyToClipboard('${editUrl}')" style="width: 100%; padding: 12px; margin-bottom: 10px; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 8px; background: #10b981; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">
+                    <span class="material-icons">content_copy</span> 개인 사진 수정 링크 복사
+                </button>
+                
+                <button class="btn btn-secondary" onclick="document.getElementById('photoPreviewModal').remove()" style="width: 100%; padding: 12px; font-size: 1rem; background: #e2e8f0; color: #475569; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">닫기</button>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
+
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        alert("링크가 복사되었습니다! 카카오톡이나 문자로 전송해 주세요.\\n\\n" + text);
+    }).catch(err => {
+        alert("복사 실패. 직접 아래 링크를 복사하세요:\\n" + text);
+    });
+}
+
 async function deleteFace(memberId) {
     if (!confirm('해당 수강생의 얼굴 데이터를 정말 삭제하시겠습니까?')) return;
     

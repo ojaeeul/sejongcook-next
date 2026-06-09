@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>개인 사진 수정 - 세종요리제과학원</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+    <style>
+        body { margin: 0; padding: 0; font-family: 'Noto Sans KR', sans-serif; background: #f8fafc; color: #334155; }
+        .header { background: #0f172a; color: white; padding: 15px 20px; text-align: center; font-weight: bold; font-size: 1.2rem; }
+        .container { padding: 20px; max-width: 500px; margin: 0 auto; }
+        .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); text-align: center; margin-bottom: 20px; }
+        .current-photo { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 4px solid #e2e8f0; margin: 0 auto 15px; display: block; background: #f1f5f9; }
+        
+        .btn { display: inline-block; width: 100%; padding: 14px; border-radius: 8px; font-weight: bold; font-size: 1rem; border: none; cursor: pointer; margin-bottom: 10px; box-sizing: border-box; text-align: center; }
+        .btn-primary { background: #3b82f6; color: white; }
+        .btn-secondary { background: #e2e8f0; color: #475569; }
+        .btn-success { background: #10b981; color: white; }
+
+        /* Cropper Modal */
+        #cropperModal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 1000; display: none; flex-direction: column; }
+        .cropper-container-wrapper { flex: 1; width: 100%; display: flex; justify-content: center; align-items: center; background: #000; overflow: hidden; }
+        .cropper-container-wrapper img { max-width: 100%; max-height: 100%; }
+        .cropper-controls { padding: 20px; background: #1e293b; display: flex; gap: 10px; justify-content: space-between; }
+        
+        /* Loading Overlay */
+        #loadingOverlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.9); z-index: 2000; display:flex; justify-content:center; align-items:center; flex-direction:column; display:none; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #3b82f6; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 15px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Make cropper look circular */
+        .cropper-view-box,
+        .cropper-face {
+          border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        수강생 사진 등록
+    </div>
+
+    <div class="container">
+        <div class="card" id="userInfoCard" style="display:none;">
+            <img id="currentPhoto" class="current-photo" src="" alt="현재 사진">
+            <h2 style="margin: 0 0 5px; color: #0f172a;" id="memberName">홍길동</h2>
+            <p style="margin: 0 0 20px; color: #64748b; font-size: 0.95rem;" id="memberCourse">제과제빵 기능사</p>
+
+            <label for="fileInput" class="btn btn-primary" style="display:flex; align-items:center; justify-content:center; gap:8px;">
+                <span class="material-icons">photo_camera</span> 내 휴대폰에서 사진 선택
+            </label>
+            <input type="file" id="fileInput" accept="image/*" style="display: none;">
+            
+            <p style="font-size: 0.85rem; color: #94a3b8; margin-top: 15px;">
+                * 사진은 출석 확인용으로만 사용되며, 정면 얼굴이 잘 보이는 밝은 사진을 권장합니다.
+            </p>
+        </div>
+
+        <div id="errorCard" class="card" style="display:none; color:#ef4444;">
+            <span class="material-icons" style="font-size:48px; margin-bottom:10px;">error_outline</span>
+            <h3>잘못된 접근입니다.</h3>
+            <p>전달받으신 전용 링크로 다시 접속해 주세요.</p>
+        </div>
+    </div>
+
+    <!-- Cropper Modal -->
+    <div id="cropperModal">
+        <div class="cropper-container-wrapper">
+            <img id="imageToCrop" src="">
+        </div>
+        
+        <!-- Filter Controls -->
+        <div style="background: #0f172a; color: white; padding: 15px 10px; overflow-x: auto; white-space: nowrap; border-bottom: 1px solid #334155;">
+            <p style="margin: 0 0 10px; font-size: 0.85rem; color: #94a3b8;">✨ 색감 보정 (인식률 저하 없음)</p>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-secondary filter-btn" style="width: auto; padding: 8px 16px; margin-bottom: 0;" onclick="applyFilter('none')">원본</button>
+                <button class="btn btn-secondary filter-btn" style="width: auto; padding: 8px 16px; margin-bottom: 0;" onclick="applyFilter('brightness(1.1) contrast(1.1)')">화사하게</button>
+                <button class="btn btn-secondary filter-btn" style="width: auto; padding: 8px 16px; margin-bottom: 0;" onclick="applyFilter('sepia(0.5) contrast(1.1)')">따뜻하게</button>
+                <button class="btn btn-secondary filter-btn" style="width: auto; padding: 8px 16px; margin-bottom: 0;" onclick="applyFilter('grayscale(1)')">흑백</button>
+                <button class="btn btn-secondary filter-btn" style="width: auto; padding: 8px 16px; margin-bottom: 0;" onclick="applyFilter('contrast(1.3) saturate(1.2)')">선명하게</button>
+            </div>
+        </div>
+
+        <div style="background: #1e293b; color: white; text-align: center; padding: 10px; font-size: 0.9rem;">
+            손가락으로 확대/축소하고, 원 안에 얼굴을 맞춰주세요.
+        </div>
+        <div class="cropper-controls">
+            <button class="btn btn-secondary" onclick="closeCropper()" style="margin-bottom:0; width: 48%;">취소</button>
+            <button class="btn btn-success" onclick="cropAndSave()" style="margin-bottom:0; width: 48%;">자르기 완료</button>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay">
+        <div class="spinner"></div>
+        <h3 style="color:#0f172a; margin:0;" id="loadingText">얼굴 분석 중...</h3>
+        <p style="color:#64748b; font-size:0.9rem; margin-top:5px;">잠시만 기다려주세요 (10~20초 소요)</p>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
+    <script src="/sejong/photo_edit.js?v=1"></script>
+</body>
+</html>

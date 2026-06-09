@@ -409,6 +409,28 @@ async function processAttendance(inputNumOrObj, overridePhoto = null) {
             showStatus("등록되지 않은 번호입니다.", "red");
             return;
         }
+
+        // --- NEW: Check if already logged in today ---
+        const todayStrForCheck = new Date().toISOString().split('T')[0];
+        try {
+            const attRes = await fetch(getFetchUrl(`attendance?date=${todayStrForCheck}`));
+            if (attRes.ok) {
+                const attData = await attRes.json();
+                const alreadyCheckedIn = attData.some(row => row.memberId === member.id && row.status !== 'unchecked');
+                if (alreadyCheckedIn) {
+                    const msg = "이미 로그인되어 있습니다.";
+                    showStatus(msg, "orange");
+                    if (localStorage.getItem('kiosk_voice_enabled') !== 'false' && window.speakTTS) {
+                        speakTTS(msg, 'browser');
+                    }
+                    setTimeout(() => switchMode('home'), 2500);
+                    return;
+                }
+            }
+        } catch(e) {
+            console.error("Duplicate check failed", e);
+        }
+        // ---------------------------------------------
         
         // --- NEW: Check if today is a valid class day ---
         const isAllowed = await checkTimetableAllowed(member);

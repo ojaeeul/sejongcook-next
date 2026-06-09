@@ -1433,7 +1433,8 @@ window.filterSmsHistory = function() {
     }
 };
 
-window.syncSmsDate = async function() {
+window.syncSmsDate = async function(val) {
+    if (!val) return;
     try {
         const fetchUrl = `${API_BASE}/sms_history`;
         
@@ -1443,56 +1444,48 @@ window.syncSmsDate = async function() {
             historyData = await res.json();
         }
         
+        // Find data for this date
+        const entry = historyData.find(d => d.date === val);
+        const messages = entry ? entry.messages : [];
+        
         let html = '';
-        if (historyData.length === 0) {
+        if (messages.length === 0) {
             html = `<div style="text-align:center; padding: 40px 20px; color:#64748b; font-size:1.05rem;">
                         <i class="material-icons" style="font-size:3rem; color:#cbd5e1; margin-bottom:10px; display:block;">history_toggle_off</i>
-                        발송된 문자 내역이 없습니다.
+                        ${val} 일자에 발송된 문자 내역이 없습니다.
                     </div>`;
         } else {
-            // Sort historyData by date descending
-            historyData.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-            
-            let totalMessages = historyData.reduce((sum, item) => sum + (item.messages ? item.messages.length : 0), 0);
+            // Sort by timestamp desc
+            messages.sort((a,b) => new Date(b.timestamp || b.sentAt || 0).getTime() - new Date(a.timestamp || a.sentAt || 0).getTime());
             
             html = `
             <div style="margin-bottom:15px; position:relative;">
                 <i class="material-icons" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); color:#94a3b8;">search</i>
                 <input type="text" id="smsHistorySearch" oninput="filterSmsHistory()" placeholder="이름으로 찾기..." style="width:100%; padding:10px 10px 10px 35px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.95rem; box-sizing:border-box;">
             </div>
-            <div id="smsHistoryCounter" style="margin-bottom:15px; font-weight:700; color:#0369a1; text-align:center;">총 ${totalMessages}건의 발송 내역이 있습니다.</div>
+            <div id="smsHistoryCounter" style="margin-bottom:15px; font-weight:700; color:#0369a1; text-align:center;">총 ${messages.length}건의 발송 내역이 있습니다.</div>
             <div style="height: 50vh; min-height: 300px; overflow-y: auto; padding-right:10px;" id="smsHistoryContainer">`;
             
-            historyData.forEach(entry => {
-                if (!entry.messages || entry.messages.length === 0) return;
-                
-                // Group header for the date
-                html += `<div class="sms-history-date-header" style="font-weight:800; font-size:1.1rem; color:#0f172a; margin: 25px 0 10px 0; border-bottom: 2px solid #e2e8f0; padding-bottom:5px;">📅 ${entry.date}</div>`;
-                
-                // Sort messages in this date by timestamp descending
-                entry.messages.sort((a,b) => new Date(b.timestamp || b.sentAt || 0).getTime() - new Date(a.timestamp || a.sentAt || 0).getTime());
-                
-                entry.messages.forEach(m => {
-                    const timeVal = m.timestamp || m.sentAt;
-                    const timeStr = timeVal ? new Date(timeVal).toLocaleTimeString('ko-KR') : '시간 알수없음';
-                    const nameStr = m.name || '이름 없음';
-                    const phoneStr = m.phone || '번호 없음';
-                    const textContent = m.text || m.message || '';
-                    html += `
-                        <div class="sms-history-item" data-name="${nameStr}" style="background:#f8fafc; border:1px solid #e2e8f0; padding:15px; border-radius:8px; margin-bottom:12px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
-                            <div style="display:flex; justify-content:space-between; margin-bottom:8px; border-bottom:1px solid #cbd5e1; padding-bottom:6px; align-items:center;">
-                                <span style="font-weight:700; color:#0f172a; font-size:1.05rem;">${nameStr} <span style="font-size:0.85rem; color:#64748b; font-weight:400;">(${phoneStr})</span></span>
-                                <span style="font-size:0.8rem; color:#64748b; background:#e2e8f0; padding:3px 8px; border-radius:12px;">${timeStr}</span>
-                            </div>
-                            <div style="font-size:0.95rem; color:#334155; white-space:pre-wrap; line-height:1.5;">${textContent}</div>
+            messages.forEach((m, idx) => {
+                const timeVal = m.timestamp || m.sentAt;
+                const timeStr = timeVal ? new Date(timeVal).toLocaleTimeString('ko-KR') : '시간 알수없음';
+                const nameStr = m.name || '이름 없음';
+                const phoneStr = m.phone || '번호 없음';
+                const textContent = m.text || m.message || '';
+                html += `
+                    <div class="sms-history-item" data-name="${nameStr}" style="background:#f8fafc; border:1px solid #e2e8f0; padding:15px; border-radius:8px; margin-bottom:12px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:8px; border-bottom:1px solid #cbd5e1; padding-bottom:6px; align-items:center;">
+                            <span style="font-weight:700; color:#0f172a; font-size:1.05rem;">${nameStr} <span style="font-size:0.85rem; color:#64748b; font-weight:400;">(${phoneStr})</span></span>
+                            <span style="font-size:0.8rem; color:#64748b; background:#e2e8f0; padding:3px 8px; border-radius:12px;">${timeStr}</span>
                         </div>
-                    `;
-                });
+                        <div style="font-size:0.95rem; color:#334155; white-space:pre-wrap; line-height:1.5;">${textContent}</div>
+                    </div>
+                `;
             });
             html += `</div>`;
         }
         
-        openModal(`전체 문자 발송 내역`, html, null);
+        openModal(`${val} 문자 발송 내역`, html, null);
     } catch(e) {
         console.error(e);
         showModalAlert('문자 내역을 불러오는 중 오류가 발생했습니다.', true);
@@ -1500,7 +1493,6 @@ window.syncSmsDate = async function() {
 };
 
 window.confirmSmsSend = async function() {
-    const text = document.getElementById('messageInput').value;
     const dateHeader = document.getElementById('currentDateHeader');
     const dateStr = (dateHeader && dateHeader.tagName === 'INPUT') ? dateHeader.value : dateHeader.textContent;
     
@@ -1513,13 +1505,16 @@ window.confirmSmsSend = async function() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 date: dateStr,
-                messages: selectedTargets.map(t => ({
-                    memberId: t.id,
-                    name: t.name,
-                    phone: t.phone,
-                    text: text,
-                    timestamp: new Date().toISOString()
-                }))
+                messages: selectedTargets.map((t, idx) => {
+                    const sentText = (lastGeneratedPreviews && lastGeneratedPreviews[idx]) ? lastGeneratedPreviews[idx].text : document.getElementById('messageInput').value;
+                    return {
+                        memberId: t.id,
+                        name: t.name,
+                        phone: t.phone,
+                        text: sentText,
+                        timestamp: new Date().toISOString()
+                    };
+                })
             })
         });
         showModalAlert('전송 및 저장이 완료되었습니다.');
@@ -1528,7 +1523,7 @@ window.confirmSmsSend = async function() {
         showModalAlert('전송이 완료되었습니다. (저장 실패)');
     }
     
-    closeSmsModal();
+    if (typeof closeSmsModal === 'function') closeSmsModal();
 }
 
 /* --- Range Selection Calendar Logic (Interactive Drag Support) --- */

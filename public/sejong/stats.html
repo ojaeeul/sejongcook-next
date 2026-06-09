@@ -173,83 +173,163 @@
                     <span class="material-icons">menu</span>
                 </button>
                 <div class="page-title">
-                    <h1>통계 및 리포트 설정</h1>
+                    <h1>통계 및 납부 대시보드</h1>
                 </div>
             </header>
 
-            <div class="content-scroll">
-
-                <!-- Report Card -->
-                <div class="form-container border-heavy">
+            <div class="content-scroll" style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); padding: 30px;">
+                
+                <!-- Report Card (Restored Original UI) -->
+                <div class="form-container border-heavy" style="background: white; border-radius: 12px; padding: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.03);">
 
                     <!-- Report Name -->
-                    <div class="form-group">
-                        <span class="section-label">학습 리포트 명</span>
-                        <input type="text" value="세종요리 정기 학습 리포트" class="bg-gray-100" title="리포트 제목">
+                    <div class="form-group" style="margin-bottom: 25px;">
+                        <span class="section-label" style="display: block; font-weight: 600; color: #475569; margin-bottom: 8px;">학습 리포트 명</span>
+                        <input type="text" value="세종요리 정기 학습 리포트" class="bg-gray-100" title="리포트 제목" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 1rem; color: #1e293b;">
                     </div>
 
                     <!-- Period -->
-                    <div class="form-group">
-                        <span class="section-label">기간</span>
-                        <div class="date-range-picker">
-                            <span>2024-10-07</span>
+                    <div class="form-group" style="margin-bottom: 25px;">
+                        <span class="section-label" style="display: block; font-weight: 600; color: #475569; margin-bottom: 8px;">기간</span>
+                        <div class="date-range-picker" style="display: inline-flex; align-items: center; gap: 10px; padding: 10px 15px; border: 1px solid #22c55e; border-radius: 8px; background: #f0fdf4; color: #15803d; font-weight: 500;">
+                            <span id="reportStartDate">2024-10-07</span>
                             <span class="c-aaa">···</span>
-                            <span>2024-10-11</span>
+                            <span id="reportEndDate">2024-10-11</span>
                         </div>
                     </div>
 
-                    <!-- Configuration -->
+                    <!-- Configuration List (Accordion) -->
                     <div class="form-group">
-                        <span class="section-label">학습 리포트 구성</span>
+                        <span class="section-label" style="display: block; font-weight: 600; color: #475569; margin-bottom: 15px;">학습 리포트 구성</span>
 
-                        <div class="settings-list">
-                            <!-- Item 1 -->
-                            <div class="setting-item">
-                                <div class="setting-text">
-                                    <h4>출석 정보</h4>
-                                    <p>기간 내 출석, 조퇴, 결석에 대한 정보가 제공됩니다.</p>
+                        <div class="settings-list" style="border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
+                            
+                            <!-- 1. 출석 정보 -->
+                            <div class="setting-wrapper" style="border-bottom: 1px solid #e2e8f0;">
+                                <div class="setting-item" onclick="toggleAccordion('acc-attendance', this)" style="padding: 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: background 0.2s;">
+                                    <div class="setting-text">
+                                        <h4 style="margin: 0 0 5px 0; color: #0f172a; font-size: 1.05rem; display: flex; align-items: center; gap: 8px;"><span class="material-icons" style="color: #8b5cf6;">how_to_reg</span> 출석 정보</h4>
+                                        <p style="margin: 0; color: #64748b; font-size: 0.9rem;">기간 내 출석, 결석, 일일 출석 트렌드에 대한 정보가 제공됩니다.</p>
+                                    </div>
+                                    <label class="switch" style="pointer-events: none;">
+                                        <input type="checkbox" checked>
+                                        <span class="slider"></span>
+                                    </label>
                                 </div>
-                                <label class="switch">
-                                    <input type="checkbox" checked title="출석 정보 포함">
-                                    <span class="slider"></span>
-                                </label>
+                                <div id="acc-attendance" class="accordion-body" style="display: none; padding: 20px; background: #f8fafc; border-top: 1px dashed #cbd5e1;">
+                                    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                                        <!-- Today's Attendance Card -->
+                                        <div style="background: white; flex: 1; min-width: 200px; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; align-items: center; border-left: 5px solid #8b5cf6;">
+                                            <div style="background: #f5f3ff; padding: 15px; border-radius: 10px; margin-right: 15px;">
+                                                <span class="material-icons" style="color: #8b5cf6; font-size: 28px;">how_to_reg</span>
+                                            </div>
+                                            <div>
+                                                <p style="margin: 0; color: #64748b; font-size: 0.9rem; font-weight: 600;">오늘 출석자</p>
+                                                <h2 style="margin: 5px 0 0 0; color: #0f172a; font-size: 1.8rem;" id="statTodayAttendance">--명</h2>
+                                            </div>
+                                        </div>
+                                        <!-- Attendance Trend Chart -->
+                                        <div style="background: white; flex: 3; min-width: 300px; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                                            <h3 style="margin-top: 0; margin-bottom: 15px; color: #1e293b; font-size: 1.1rem;">📅 최근 14일 일일 출석 현황</h3>
+                                            <div style="position: relative; height: 250px; width: 100%;">
+                                                <canvas id="attendanceChart"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
-                            <!-- Item 2 -->
-                            <div class="setting-item">
-                                <div class="setting-text">
-                                    <h4>성적 정보</h4>
-                                    <p>기간 내 성적 정보가 제공됩니다.</p>
+                            <!-- 2. 수납 및 매출 정보 -->
+                            <div class="setting-wrapper" style="border-bottom: 1px solid #e2e8f0;">
+                                <div class="setting-item" onclick="toggleAccordion('acc-revenue', this)" style="padding: 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: background 0.2s;">
+                                    <div class="setting-text">
+                                        <h4 style="margin: 0 0 5px 0; color: #0f172a; font-size: 1.05rem; display: flex; align-items: center; gap: 8px;"><span class="material-icons" style="color: #10b981;">payments</span> 수납 및 매출 정보</h4>
+                                        <p style="margin: 0; color: #64748b; font-size: 0.9rem;">이번 달 수납 금액 및 최근 6개월 매출 추이가 제공됩니다.</p>
+                                    </div>
+                                    <label class="switch" style="pointer-events: none;">
+                                        <input type="checkbox">
+                                        <span class="slider"></span>
+                                    </label>
                                 </div>
-                                <label class="switch">
-                                    <input type="checkbox" checked title="성적 정보 포함">
-                                    <span class="slider"></span>
-                                </label>
+                                <div id="acc-revenue" class="accordion-body" style="display: none; padding: 20px; background: #f8fafc; border-top: 1px dashed #cbd5e1;">
+                                    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                                        <!-- Revenue Card -->
+                                        <div style="background: white; flex: 1; min-width: 200px; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; align-items: center; border-left: 5px solid #10b981;">
+                                            <div style="background: #ecfdf5; padding: 15px; border-radius: 10px; margin-right: 15px;">
+                                                <span class="material-icons" style="color: #10b981; font-size: 28px;">payments</span>
+                                            </div>
+                                            <div>
+                                                <p style="margin: 0; color: #64748b; font-size: 0.9rem; font-weight: 600;">이번 달 수납 금액</p>
+                                                <h2 style="margin: 5px 0 0 0; color: #0f172a; font-size: 1.8rem;" id="statMonthlyRevenue">--원</h2>
+                                            </div>
+                                        </div>
+                                        <!-- Revenue Chart -->
+                                        <div style="background: white; flex: 3; min-width: 300px; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                                            <h3 style="margin-top: 0; margin-bottom: 15px; color: #1e293b; font-size: 1.1rem;">📈 최근 6개월 매출 추이</h3>
+                                            <div style="position: relative; height: 250px; width: 100%;">
+                                                <canvas id="revenueChart"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
-                            <!-- Item 3 -->
-                            <div class="setting-item">
-                                <div class="setting-text">
-                                    <h4>평균 성적 보기</h4>
-                                    <p>클래스 내 평균 점수가 같이 제공됩니다.</p>
+                            <!-- 3. 수강생 분포 정보 -->
+                            <div class="setting-wrapper" style="border-bottom: 1px solid #e2e8f0;">
+                                <div class="setting-item" onclick="toggleAccordion('acc-course', this)" style="padding: 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: background 0.2s;">
+                                    <div class="setting-text">
+                                        <h4 style="margin: 0 0 5px 0; color: #0f172a; font-size: 1.05rem; display: flex; align-items: center; gap: 8px;"><span class="material-icons" style="color: #3b82f6;">pie_chart</span> 수강생 분포 정보</h4>
+                                        <p style="margin: 0; color: #64748b; font-size: 0.9rem;">학원 전체 활성 수강생 수 및 과목별 분포 통계가 제공됩니다.</p>
+                                    </div>
+                                    <label class="switch" style="pointer-events: none;">
+                                        <input type="checkbox">
+                                        <span class="slider"></span>
+                                    </label>
                                 </div>
-                                <label class="switch">
-                                    <input type="checkbox" checked title="평균 성적 보기">
-                                    <span class="slider"></span>
-                                </label>
+                                <div id="acc-course" class="accordion-body" style="display: none; padding: 20px; background: #f8fafc; border-top: 1px dashed #cbd5e1;">
+                                    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                                        <!-- Active Students Card -->
+                                        <div style="background: white; flex: 1; min-width: 200px; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; align-items: center; border-left: 5px solid #3b82f6;">
+                                            <div style="background: #eff6ff; padding: 15px; border-radius: 10px; margin-right: 15px;">
+                                                <span class="material-icons" style="color: #3b82f6; font-size: 28px;">groups</span>
+                                            </div>
+                                            <div>
+                                                <p style="margin: 0; color: #64748b; font-size: 0.9rem; font-weight: 600;">총 활성 수강생</p>
+                                                <h2 style="margin: 5px 0 0 0; color: #0f172a; font-size: 1.8rem;" id="statActiveMembers">--명</h2>
+                                            </div>
+                                        </div>
+                                        <!-- Course Chart -->
+                                        <div style="background: white; flex: 2; min-width: 300px; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                                            <h3 style="margin-top: 0; margin-bottom: 15px; color: #1e293b; font-size: 1.1rem;">🍩 과목별 수강생 분포</h3>
+                                            <div style="position: relative; height: 250px; width: 100%; display: flex; justify-content: center;">
+                                                <canvas id="courseChart"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
-                            <!-- Item 4 -->
-                            <div class="setting-item">
-                                <div class="setting-text">
-                                    <h4>과제 정보</h4>
-                                    <p>기간 내 과제 제출에 대한 정보가 제공됩니다.</p>
+                            <!-- 4. AI 스마트 브리핑 -->
+                            <div class="setting-wrapper">
+                                <div class="setting-item" onclick="toggleAccordion('acc-ai', this)" style="padding: 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: background 0.2s;">
+                                    <div class="setting-text">
+                                        <h4 style="margin: 0 0 5px 0; color: #0f172a; font-size: 1.05rem; display: flex; align-items: center; gap: 8px;"><span class="material-icons" style="color: #f59e0b;">auto_awesome</span> AI 스마트 운영 브리핑</h4>
+                                        <p style="margin: 0; color: #64748b; font-size: 0.9rem;">수집된 통계를 바탕으로 AI가 자동으로 학원 상황을 요약 및 분석해 드립니다.</p>
+                                    </div>
+                                    <label class="switch" style="pointer-events: none;">
+                                        <input type="checkbox">
+                                        <span class="slider"></span>
+                                    </label>
                                 </div>
-                                <label class="switch">
-                                    <input type="checkbox" title="과제 정보 포함">
-                                    <span class="slider"></span>
-                                </label>
+                                <div id="acc-ai" class="accordion-body" style="display: none; padding: 20px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);">
+                                    <div id="aiReportBox" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 25px; color: #cbd5e1; font-size: 1.05rem; line-height: 1.8;">
+                                        <div style="display: flex; align-items: center; gap: 10px; color: #94a3b8;">
+                                            <span class="material-icons" style="animation: spin 2s linear infinite;">sync</span> 데이터를 분석하는 중입니다...
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
+
                         </div>
                     </div>
 
@@ -259,7 +339,49 @@
         </main>
     </div>
 
+    <!-- Load Chart.js from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="script.js"></script>
+    <script src="stats.js"></script>
+    <script>
+        // Set Date to today
+        const d = new Date();
+        document.getElementById('reportEndDate').innerText = d.toISOString().split('T')[0];
+        d.setDate(d.getDate() - 14);
+        document.getElementById('reportStartDate').innerText = d.toISOString().split('T')[0];
+    </script>
+    <style>
+        .setting-item:hover { background-color: #f1f5f9; }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc; transition: .4s;
+            border-radius: 24px;
+        }
+        .slider:before {
+            position: absolute; content: "";
+            height: 18px; width: 18px; left: 3px; bottom: 3px;
+            background-color: white; transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider { background-color: #22c55e; }
+        input:checked + .slider:before { transform: translateX(20px); }
+        
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        
+        @media (max-width: 1024px) {
+            .charts-container {
+                grid-template-columns: 1fr !important;
+            }
+        }
+    </style>
 </body>
 
 </html>
