@@ -17,8 +17,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const nameInput = document.getElementById('phoneSearchInput');
     const courseFilter = document.getElementById('courseFilter');
     const yearFilter = document.getElementById('yearFilter');
+    const monthFilter = document.getElementById('monthFilter');
+    const dayFilter = document.getElementById('dayFilter');
 
-    [nameInput, courseFilter, yearFilter].forEach(el => {
+    [nameInput, courseFilter, yearFilter, monthFilter, dayFilter].forEach(el => {
         if (el) el.addEventListener('input', () => renderPhonebook());
     });
 });
@@ -87,111 +89,215 @@ function getChosung(name) {
     return chosungs[Math.floor(charCode / 588)];
 }
 
+let currentChosung = 'ㄱ';
+let currentPage = 0;
+const ITEMS_PER_PAGE = 12;
+const ALL_CHOSUNGS = ['ㄱ', 'ㄴ', 'ㄷ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅅ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ', '기타'];
+let currentGrouped = {};
+
 function renderPhonebook() {
     const nameTerm = document.getElementById('phoneSearchInput')?.value.toLowerCase() || '';
     const courseTerm = document.getElementById('courseFilter')?.value || '';
     const yearTerm = document.getElementById('yearFilter')?.value || '';
-
-    const container = document.getElementById('phonebookContainer');
-    container.innerHTML = '';
+    const monthTerm = document.getElementById('monthFilter')?.value || '';
+    const dayTerm = document.getElementById('dayFilter')?.value || '';
 
     const filtered = members.filter(m => {
         const nameMatch = m.name.toLowerCase().includes(nameTerm) || (m.phone && m.phone.replace(/-/g, '').includes(nameTerm));
         const courseMatch = !courseTerm || (m.course && m.course.includes(courseTerm));
+        
         const yearMatch = !yearTerm || (m.registeredDate && m.registeredDate.startsWith(yearTerm));
-        return nameMatch && courseMatch && yearMatch;
+        
+        let monthMatch = true;
+        let dayMatch = true;
+        if (m.registeredDate && m.registeredDate.length >= 10) {
+            const parts = m.registeredDate.split('-');
+            if (parts.length >= 3) {
+                if (monthTerm && parts[1] !== monthTerm) monthMatch = false;
+                if (dayTerm && parts[2] !== dayTerm) dayMatch = false;
+            } else {
+                if (monthTerm || dayTerm) monthMatch = false;
+            }
+        } else {
+            if (monthTerm || dayTerm) monthMatch = false;
+        }
+
+        return nameMatch && courseMatch && yearMatch && monthMatch && dayMatch;
     });
 
-    if (filtered.length === 0) {
-        container.innerHTML = '<div style="text-align:center; padding:50px; color:#94a3b8; font-size:0.9rem;">검색 결과가 없습니다.</div>';
+    // Reset grouping
+    currentGrouped = {};
+    ALL_CHOSUNGS.forEach(cs => currentGrouped[cs] = []);
+
+    filtered.sort((a, b) => a.name.localeCompare(b.name, 'ko')).forEach(m => {
+        let cs = getChosung(m.name);
+        if (!ALL_CHOSUNGS.includes(cs)) cs = '기타';
+        currentGrouped[cs].push(m);
+    });
+
+    // Find the first chosung that has members if searching
+    if (nameTerm || courseTerm || yearTerm || monthTerm || dayTerm) {
+        const firstWithData = ALL_CHOSUNGS.find(cs => currentGrouped[cs].length > 0);
+        if (firstWithData) {
+            currentChosung = firstWithData;
+            currentPage = 0;
+        }
+    } else {
+        // If empty group selected naturally, that's fine, but if we just loaded, stay on ㄱ
+        if (!currentGrouped[currentChosung] && currentGrouped['ㄱ']) {
+            currentChosung = 'ㄱ';
+            currentPage = 0;
+        }
+    }
+
+    renderTabs();
+    renderPage();
+}
+
+function renderTabs() {
+    const tabsContainer = document.getElementById('indexTabs');
+    if (!tabsContainer) return;
+    
+    tabsContainer.innerHTML = '';
+    
+    // Colorful tab palette based on the user's reference image
+    const tabColors = [
+        { bg: '#f97316', text: '#ffffff' }, // Orange
+        { bg: '#facc15', text: '#334155' }, // Yellow
+        { bg: '#22c55e', text: '#ffffff' }, // Green
+        { bg: '#a855f7', text: '#ffffff' }, // Purple
+        { bg: '#ec4899', text: '#ffffff' }  // Pink
+    ];
+    
+    ALL_CHOSUNGS.forEach((cs, index) => {
+        const count = currentGrouped[cs]?.length || 0;
+        const colorObj = tabColors[index % tabColors.length];
+
+        const tab = document.createElement('div');
+        tab.className = `index-tab ${cs === currentChosung ? 'active' : ''}`;
+        tab.style.setProperty('--tab-bg', colorObj.bg);
+        tab.style.setProperty('--tab-text', colorObj.text);
+
+        tab.innerHTML = `${cs} <span style="font-size:0.65rem; opacity:0.8; display:block;">${count > 0 ? count : ''}</span>`;
+        tab.onclick = () => {
+            currentChosung = cs;
+            currentPage = 0;
+            renderTabs();
+            renderPage();
+        };
+        tabsContainer.appendChild(tab);
+    });
+}
+
+function renderPage() {
+    const container = document.getElementById('phonebookContainer');
+    if (!container) return;
+    
+    // Clear and force animation trigger by replacing the inner HTML entirely
+    const items = currentGrouped[currentChosung] || [];
+    
+    if (items.length === 0) {
+        container.innerHTML = `
+            <div class="notebook-page active">
+                <div class="page-header">
+                    <h2 class="page-title">${currentChosung}</h2>
+                </div>
+                <div style="text-align:center; padding:50px; color:#94a3b8; font-size:1rem; margin-top:50px;">해당 초성에 수강생이 없습니다.</div>
+            </div>
+        `;
         return;
     }
 
-    // Group by chosung
-    const grouped = {};
-    filtered.sort((a, b) => a.name.localeCompare(b.name, 'ko')).forEach(m => {
-        const cs = getChosung(m.name);
-        if (!grouped[cs]) grouped[cs] = [];
-        grouped[cs].push(m);
-    });
+    const totalPages = Math.ceil(items.length / ITEMS_PER_PAGE);
+    if (currentPage >= totalPages) currentPage = totalPages - 1;
+    if (currentPage < 0) currentPage = 0;
+    
+    const startIdx = currentPage * ITEMS_PER_PAGE;
+    const pageItems = items.slice(startIdx, startIdx + ITEMS_PER_PAGE);
 
-    Object.keys(grouped).sort().forEach(cs => {
-        const groupDiv = document.createElement('div');
-        groupDiv.className = 'chosung-group';
+    let html = `
+        <div class="notebook-page active">
+            <div class="page-header">
+                <h2 class="page-title">${currentChosung}</h2>
+            </div>
+            <div class="phone-card-list">
+    `;
 
-        const label = document.createElement('span');
-        label.className = 'chosung-label';
-        label.style.fontSize = '1.1rem';
-        label.style.marginBottom = '10px';
-        label.textContent = cs;
-        groupDiv.appendChild(label);
+    pageItems.forEach(m => {
+        const coursesStr = m.course || '';
+        const courseBadges = coursesStr ? coursesStr.split(',').map(c => `
+            <div class="course-badge">
+                <i class="material-icons">menu_book</i>
+                ${c.trim()}
+            </div>
+        `).join('') : '';
 
-        const listDiv = document.createElement('div');
-        listDiv.className = 'phone-card-list';
-
-        grouped[cs].forEach(m => {
-            const card = document.createElement('div');
-            card.className = 'phone-card';
-            card.style.padding = '12px 20px'; // Smaller padding
-
-            const coursesStr = m.course || '';
-            const courseBadges = coursesStr ? coursesStr.split(',').map(c => `
-                <div class="course-badge">
-                    <i class="material-icons">menu_book</i>
-                    ${c.trim()}
+        const getPhoneButtons = (phone, courseName) => {
+            if (!phone) return '';
+            return `
+                <div class="card-actions">
+                    <button class="action-icon-btn call" onclick="window.location.href='tel:${phone}'" title="전화 걸기">
+                        <i class="material-icons">call</i>
+                    </button>
+                    <button class="action-icon-btn sms" onclick="window.location.href='sms:${phone}'" title="문자 보내기">
+                        <i class="material-icons">chat_bubble</i>
+                    </button>
                 </div>
-            `).join('') : '';
+            `;
+        };
 
-            const getPhoneButtons = (phone, courseName) => {
-                if (!phone) return '';
-                return `
-                    <div class="card-actions">
-                        <button class="action-icon-btn call" onclick="window.location.href='tel:${phone}'" title="전화 걸기">
-                            <i class="material-icons">call</i>
-                        </button>
-                        <button class="action-icon-btn sms" onclick="window.location.href='sms:${phone}'" title="문자 보내기">
-                            <i class="material-icons">chat_bubble</i>
-                        </button>
-                        ${courseName ? `<span style="font-size: 0.65rem; color: #64748b; margin-left: 4px; font-weight: normal;">(${courseName})</span>` : ''}
-                    </div>
-                `;
-            };
+        const regDateText = m.registeredDate ? m.registeredDate.replace(/-/g, '.') : '';
 
-            const regDateText = m.registeredDate ? m.registeredDate.replace(/-/g, '.') : '';
-
-            card.innerHTML = `
+        html += `
+            <div class="phone-card">
                 <div class="card-left">
-                    <div style="display: flex; align-items: center; gap: 8px; min-width: 110px;">
-                        <span class="member-name" style="margin: 0; padding: 0;">${m.name}</span>
-                        <span class="member-reg-date" style="margin: 0; padding: 0;">${regDateText}</span>
+                    <div style="display: flex; align-items: center; gap: 8px; min-width: 100px;">
+                        <span class="member-name">${m.name}</span>
+                        <span class="member-reg-date">${regDateText}</span>
                     </div>
                     <div class="contact-info">
-                        <div class="contact-box" style="flex-wrap: wrap;">
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <span class="contact-label">본인</span>
-                                <span class="phone-number" style="margin-right: 2px;">${m.phone || '-'}</span>
-                                ${getPhoneButtons(m.phone, coursesStr)}
-                            </div>
-                            
-                            ${m.phone_guardian ? `
-                            <div style="display: flex; align-items: center; gap: 8px; margin-left: 5px;">
-                                <span class="contact-label guardian">보호자</span>
-                                <span class="phone-number" style="margin-right: 2px;">${m.phone_guardian}</span>
-                                ${getPhoneButtons(m.phone_guardian, coursesStr)}
-                            </div>
-                            ` : ''}
-                            
-                            <div class="course-badge-list" style="margin-left: auto;">
-                                ${courseBadges}
-                            </div>
+                        <div class="contact-box">
+                            <span class="contact-label">본인</span>
+                            <span class="phone-number">${m.phone || '-'}</span>
+                            ${getPhoneButtons(m.phone, coursesStr)}
+                        </div>
+                        ${m.phone_guardian ? `
+                        <div class="contact-box" style="margin-left: 10px;">
+                            <span class="contact-label guardian">보호자</span>
+                            <span class="phone-number">${m.phone_guardian}</span>
+                            ${getPhoneButtons(m.phone_guardian, coursesStr)}
+                        </div>
+                        ` : ''}
+                        <div class="course-badge-list" style="margin-left: auto;">
+                            ${courseBadges}
                         </div>
                     </div>
                 </div>
-            `;
-            listDiv.appendChild(card);
-        });
-
-        groupDiv.appendChild(listDiv);
-        container.appendChild(groupDiv);
+            </div>
+        `;
     });
+
+    html += `</div>`; // end phone-card-list
+
+    if (totalPages > 1) {
+        html += `
+            <div class="pagination-controls">
+                <button class="page-btn" onclick="changePage(-1)" ${currentPage === 0 ? 'disabled' : ''}>
+                    <i class="material-icons">chevron_left</i> 이전
+                </button>
+                <span class="page-indicator">${currentPage + 1} / ${totalPages}</span>
+                <button class="page-btn" onclick="changePage(1)" ${currentPage === totalPages - 1 ? 'disabled' : ''}>
+                    다음 <i class="material-icons">chevron_right</i>
+                </button>
+            </div>
+        `;
+    }
+
+    html += `</div>`; // end notebook-page
+    container.innerHTML = html;
 }
+
+window.changePage = function(delta) {
+    currentPage += delta;
+    renderPage();
+};

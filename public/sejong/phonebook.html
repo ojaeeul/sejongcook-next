@@ -13,117 +13,190 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <script src="phonebook.js?v=1780796013_215152" defer></script>
     <style>
-        .phone-grid {
+        .notebook-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 0px 10px 20px 10px; /* Removed top padding */
+            max-width: 1000px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .notebook-container {
+            flex: 1;
+            display: flex;
+            background: #fffdf8; /* light warm paper color */
+            border-radius: 4px 12px 12px 4px;
+            box-shadow: -15px 15px 30px rgba(0,0,0,0.12), inset 0 0 60px rgba(0,0,0,0.02); /* Premium shadow */
+            position: relative;
+            min-height: 75vh;
+            border: 1px solid #d1d5db;
+            border-left: 18px solid #1e293b; /* Premium dark leather spine */
+            border-right: none;
+            background-image: repeating-linear-gradient(transparent, transparent 39px, #e2e8f0 39px, #e2e8f0 40px);
+            background-position: 0 40px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        /* Binder rings effect near the spine */
+        .notebook-container::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 40px;
+            background: linear-gradient(to right, rgba(0,0,0,0.15), rgba(0,0,0,0.02) 50%, transparent);
+            z-index: 2;
+            pointer-events: none;
+            border-right: 1px solid rgba(0,0,0,0.04);
+        }
+
+        .notebook-page {
+            flex: 1;
+            padding: 30px 40px 80px 45px; /* bottom padding for pagination, left for binder */
+            display: none; /* hidden by default */
+            animation: flipPage 0.3s ease-out forwards;
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .notebook-page.active {
             display: flex;
             flex-direction: column;
-            gap: 5px;
-            /* highly compressed gap */
-            padding: 5px 0;
-            max-height: 80vh;
-            overflow-y: auto;
         }
 
-        .chosung-group {
-            border-top: 2px solid #e2e8f0;
-            padding-top: 15px;
+        @keyframes flipPage {
+            0% { opacity: 0; transform: translateX(30px) rotateY(-10deg); }
+            100% { opacity: 1; transform: translateX(0) rotateY(0); }
         }
 
-        .chosung-label {
-            font-size: 1.4rem;
-            font-weight: 900;
-            color: #3b82f6;
+        .notebook-tabs {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            margin-top: 30px;
+            z-index: 10;
+        }
+
+        .index-tab {
+            background-color: var(--tab-bg, #f8fafc);
+            background-image: linear-gradient(150deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.2) 35%, transparent 50%, rgba(0,0,0,0.05) 100%);
+            color: var(--tab-text, #64748b);
+            border: 1px solid rgba(0,0,0,0.15);
+            border-left: none;
+            padding: 8px 12px;
+            border-radius: 0 8px 8px 0;
+            cursor: pointer;
+            font-weight: 800;
+            box-shadow: inset 1px 1px 2px rgba(255,255,255,0.8), 2px 2px 4px rgba(0,0,0,0.08);
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+            text-align: center;
+            min-width: 35px;
+            opacity: 0.7;
+            text-shadow: 0 1px 1px rgba(0,0,0,0.1);
+        }
+
+        .index-tab:hover {
+            opacity: 0.95;
+            transform: translateX(4px);
+        }
+
+        .index-tab.active {
+            opacity: 1;
+            transform: translateX(8px);
+            z-index: 11;
+            position: relative;
+            box-shadow: inset 1px 1px 3px rgba(255,255,255,0.8), 4px 2px 8px rgba(0, 0, 0, 0.25);
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 15px;
-            display: block;
-            padding-left: 10px;
+            padding-bottom: 5px;
+            border-bottom: 3px solid #3b82f6;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 900;
+            color: #1e293b;
+            margin: 0;
+            line-height: 1;
         }
 
         .phone-card-list {
             display: flex;
             flex-direction: column;
-            gap: 2px;
-            /* ultra thin list gap */
+            gap: 0px; 
+            flex: 1;
         }
 
         .phone-card {
-            background: white;
-            border-radius: 4px;
-            padding: 0 4px;
-            /* almost 0 padding */
+            background: transparent;
+            padding: 6px 0;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            box-shadow: none;
-            /* remove shadow to make it flatter */
             transition: all 0.2s ease;
-            border: 1px solid #e2e8f0;
-            /* standard border */
-            font-size: 0.75rem;
-            min-height: auto;
-            /* fit exactly to text height */
+            font-size: 0.85rem;
+            height: 40px; /* match line height of notebook paper */
         }
 
         .phone-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
-            border-color: #e2e8f0;
+            background: rgba(59, 130, 246, 0.05);
+            transform: translateX(5px);
+            border-radius: 4px;
+            padding-left: 10px;
         }
 
         .card-left {
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 15px;
             flex: 1;
         }
 
         .member-name {
-            font-size: 0.85rem;
+            font-size: 1rem;
             font-weight: 700;
             color: #1e293b;
-            min-width: 40px;
+            min-width: 60px;
         }
 
         .member-reg-date {
-            font-size: 0.65rem;
+            font-size: 0.75rem;
             color: #64748b;
             font-weight: 400;
-            margin-left: 2px;
         }
 
         .contact-info {
             display: flex;
             flex-direction: row;
-            gap: 12px;
-            flex: 1;
-            margin-right: 15px;
+            gap: 10px;
+            flex: 2;
+            justify-content: flex-start;
         }
 
         .contact-box {
             display: flex;
             align-items: center;
-            gap: 4px;
-            background: #f8fafc;
-            padding: 1px 4px;
-            /* thinnest padding inside */
-            border-radius: 4px;
-            border: 1px solid #edf2f7;
-            justify-content: space-between;
-        }
-
-        .contact-main {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex: 1;
+            gap: 8px;
         }
 
         .contact-label {
-            font-size: 0.6rem;
+            font-size: 0.7rem;
             font-weight: 800;
             color: #1e40af;
             background: #ebf2ff;
-            padding: 1px 4px;
+            padding: 2px 6px;
             border-radius: 50px;
-            min-width: 32px;
             text-align: center;
         }
 
@@ -136,19 +209,20 @@
             font-family: 'Inter', sans-serif;
             font-weight: 600;
             color: #334155;
-            font-size: 0.7rem;
+            font-size: 0.9rem;
             letter-spacing: -0.01em;
         }
 
         .card-actions {
             display: flex;
-            gap: 4px;
+            gap: 8px;
+            margin-left: auto;
         }
 
         .action-icon-btn {
-            width: 22px;
-            height: 22px;
-            border-radius: 4px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -156,65 +230,123 @@
             cursor: pointer;
             transition: all 0.2s;
             color: white;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
-        .action-icon-btn.call {
-            background: #10b981;
-        }
-
-        .action-icon-btn.call:hover {
-            background: #059669;
-            transform: scale(1.05);
-        }
-
-        .action-icon-btn.sms {
-            background: #3b82f6;
-        }
-
-        .action-icon-btn.sms:hover {
-            background: #2563eb;
-            transform: scale(1.05);
-        }
-
-        .action-icon-btn i {
-            font-size: 0.75rem;
-        }
+        .action-icon-btn.call { background: #10b981; }
+        .action-icon-btn.call:hover { background: #059669; transform: scale(1.1); box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3); }
+        .action-icon-btn.sms { background: #3b82f6; }
+        .action-icon-btn.sms:hover { background: #2563eb; transform: scale(1.1); box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3); }
+        .action-icon-btn i { font-size: 1rem; }
 
         .course-badge-list {
             display: flex;
-            flex-wrap: nowrap;
-            overflow-x: auto;
+            flex-wrap: wrap;
             gap: 4px;
-            max-width: 100%;
-            font-size: 0.65rem;
-            /* slightly smaller to fit more */
+            margin-left: 10px;
         }
 
         .course-badge {
-            font-size: 0.65rem;
+            font-size: 0.7rem;
             color: #475569;
-            background: #f8fafc;
-            padding: 2px 6px;
-            border-radius: 4px;
-            border: 1px solid #e2e8f0;
+            background: rgba(248, 250, 252, 0.8);
+            padding: 2px 8px;
+            border-radius: 12px;
+            border: 1px solid #cbd5e1;
             display: flex;
             align-items: center;
             gap: 3px;
         }
-
-        .course-badge i {
-            font-size: 0.8rem;
-            color: #94a3b8;
-        }
+        .course-badge i { font-size: 0.85rem; color: #94a3b8; }
 
         .search-bar-container {
             position: sticky;
             top: 0;
-            z-index: 10;
-            background: #f8fafc;
-            padding: 10px 0 20px 0;
-            margin-bottom: 10px;
+            z-index: 20;
+            background: transparent; /* Removed white background */
+            padding: 0px 0 10px 0; /* Reduced top padding */
+            margin-bottom: 5px;
+        }
+
+        /* Pagination Controls */
+        .pagination-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+        }
+        .page-btn {
+            background: white;
+            border: 1px solid #cbd5e1;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #475569;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .page-btn:hover:not(:disabled) {
+            background: #f1f5f9;
+            color: #1e293b;
+            transform: translateY(-1px);
+        }
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        .page-indicator {
+            font-weight: bold;
+            color: #64748b;
+            font-size: 1rem;
+            background: rgba(255,255,255,0.7);
+            padding: 4px 12px;
+            border-radius: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .notebook-page {
+                padding: 20px 15px 70px 30px;
+            }
+            .phone-card {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+                padding: 12px 0;
+                height: auto;
+                border-bottom: 1px dashed #cbd5e1;
+            }
+            .phone-card:hover {
+                transform: none;
+                padding-left: 0;
+                background: transparent;
+            }
+            .card-left {
+                width: 100%;
+                justify-content: space-between;
+            }
+            .contact-info {
+                flex-direction: column;
+                width: 100%;
+            }
+            .card-actions {
+                margin-left: 0;
+                justify-content: flex-end;
+                width: 100%;
+                margin-top: 5px;
+            }
+            .index-tab {
+                padding: 10px 8px;
+                font-size: 0.8rem;
+            }
         }
     </style>
 </head>
@@ -393,14 +525,71 @@
                             </select>
                         </div>
 
-                        <!-- Year Filter -->
-                        <div style="flex: 1; position: relative;">
-                            <span class="material-icons"
-                                style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 1.1rem;">calendar_today</span>
-                            <select id="yearFilter"
-                                style="width: 100%; padding: 8px 10px 8px 34px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.85rem; outline: none; appearance: none; background: #fff;">
-                                <option value="">전체 년도</option>
-                            </select>
+                        <!-- Date Filters (Year, Month, Day) -->
+                        <div style="flex: 2; display: flex; gap: 4px;">
+                            <div style="flex: 1.2; position: relative;">
+                                <span class="material-icons"
+                                    style="position: absolute; left: 8px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 1rem;">calendar_today</span>
+                                <select id="yearFilter"
+                                    style="width: 100%; padding: 8px 6px 8px 30px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.8rem; outline: none; appearance: none; background: #fff;">
+                                    <option value="">년도 전체</option>
+                                </select>
+                            </div>
+                            <div style="flex: 1;">
+                                <select id="monthFilter"
+                                    style="width: 100%; padding: 8px 6px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.8rem; outline: none; appearance: none; background: #fff; text-align: center;">
+                                    <option value="">월 전체</option>
+                                    <option value="01">1월</option>
+                                    <option value="02">2월</option>
+                                    <option value="03">3월</option>
+                                    <option value="04">4월</option>
+                                    <option value="05">5월</option>
+                                    <option value="06">6월</option>
+                                    <option value="07">7월</option>
+                                    <option value="08">8월</option>
+                                    <option value="09">9월</option>
+                                    <option value="10">10월</option>
+                                    <option value="11">11월</option>
+                                    <option value="12">12월</option>
+                                </select>
+                            </div>
+                            <div style="flex: 1;">
+                                <select id="dayFilter"
+                                    style="width: 100%; padding: 8px 6px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.8rem; outline: none; appearance: none; background: #fff; text-align: center;">
+                                    <option value="">일 전체</option>
+                                    <option value="01">1일</option>
+                                    <option value="02">2일</option>
+                                    <option value="03">3일</option>
+                                    <option value="04">4일</option>
+                                    <option value="05">5일</option>
+                                    <option value="06">6일</option>
+                                    <option value="07">7일</option>
+                                    <option value="08">8일</option>
+                                    <option value="09">9일</option>
+                                    <option value="10">10일</option>
+                                    <option value="11">11일</option>
+                                    <option value="12">12일</option>
+                                    <option value="13">13일</option>
+                                    <option value="14">14일</option>
+                                    <option value="15">15일</option>
+                                    <option value="16">16일</option>
+                                    <option value="17">17일</option>
+                                    <option value="18">18일</option>
+                                    <option value="19">19일</option>
+                                    <option value="20">20일</option>
+                                    <option value="21">21일</option>
+                                    <option value="22">22일</option>
+                                    <option value="23">23일</option>
+                                    <option value="24">24일</option>
+                                    <option value="25">25일</option>
+                                    <option value="26">26일</option>
+                                    <option value="27">27일</option>
+                                    <option value="28">28일</option>
+                                    <option value="29">29일</option>
+                                    <option value="30">30일</option>
+                                    <option value="31">31일</option>
+                                </select>
+                            </div>
                         </div>
 
                         <!-- Name/Phone Search -->
@@ -413,8 +602,12 @@
                     </div>
                 </div>
 
-                <div id="phonebookContainer" class="phone-grid">
-                    <div class="loading" style="text-align:center; padding:50px; color:#64748b;">수강생 정보를 불러오는 중입니다...
+                <div class="notebook-wrapper">
+                    <div id="phonebookContainer" class="notebook-container">
+                        <div class="loading" style="text-align:center; padding:50px; color:#64748b; width: 100%;">수강생 정보를 불러오는 중입니다...</div>
+                    </div>
+                    <div id="indexTabs" class="notebook-tabs">
+                        <!-- JS Injected Tabs -->
                     </div>
                 </div>
             </div>
