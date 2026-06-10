@@ -158,15 +158,21 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
             
             const isRegularAttendance = isPresent || isNumericPresent || isAbsent || isEarly || isTardy || isFirstLast;
 
-            if (isMakeupMarker) manualMakeup += attendanceIncrement;
+            let currentAttendanceIncrement = attendanceIncrement;
+            let numericValue = parseFloat(l.status);
+            if (!isNaN(numericValue) && numericValue > 0) {
+                currentAttendanceIncrement = numericValue;
+            }
+
+            if (isMakeupMarker) manualMakeup += currentAttendanceIncrement;
 
             if (isRegularAttendance) {
-                attendances += attendanceIncrement;
+                attendances += currentAttendanceIncrement;
             }
 
             if (isRegularAttendance || isMakeupMarker) {
                 const prevNet = globalRunningTotal;
-                globalRunningTotal += attendanceIncrement;
+                globalRunningTotal += currentAttendanceIncrement;
                 globalRunningTotal = Math.round(globalRunningTotal * 10) / 10;
                 const prevCycle = getCycle(prevNet);
                 const currCycle = getCycle(globalRunningTotal);
@@ -221,8 +227,14 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
             
             const isRegularAttendance = isPresentExt || isNumericPresent || isAbsent || isEarly || isTardy || isFirstLast;
 
+            let currentAttendanceIncrement = attendanceIncrement;
+            let numericValue = parseFloat(l.status);
+            if (!isNaN(numericValue) && numericValue > 0) {
+                currentAttendanceIncrement = numericValue;
+            }
+
             if (isRegularAttendance || isMakeupMarker) {
-                runningTotal += attendanceIncrement;
+                runningTotal += currentAttendanceIncrement;
                 runningTotal = Math.round(runningTotal * 10) / 10;
 
                 
@@ -294,7 +306,7 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
 
             if (isValidDay && !isHoliday) {
                 const prevSimCycle = getCycle(simTotal);
-                simTotal += attendanceIncrement;
+                simTotal += attendanceIncrement; // simulation doesn't know about float overrides
                 const newSimCycle = getCycle(simTotal);
                 
                 if (newSimCycle > prevSimCycle) {

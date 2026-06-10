@@ -16,7 +16,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="shared_calc.js?v=1781102964692"></script>
+    <script src="shared_calc.js?v=1781103703774"></script>
     <script src="script.js?v=1781101862809" defer></script>
     <style>
         .sheet-container {
@@ -2701,7 +2701,8 @@
                 // 모든 행 렌더링이 끝난 후 결재일 수강생 수 업데이트
                 const hcSpan2 = document.getElementById('currentHeadcount');
                 if (hcSpan2) {
-                    hcSpan2.innerHTML = `(총 ${uniqueHeadcount}명) <span style="margin-left: 15px; color: #dc2626; font-weight: 900; background: #fee2e2; padding: 4px 12px; border-radius: 20px; border: 2px solid #ef4444; font-size: 0.95rem; display: inline-flex; align-items: center; box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2);"><span class="material-icons" style="font-size: 1.1rem; margin-right: 4px;">event_available</span> 결재일 건수: ${redBoxOccurrences}건</span>`;
+                    // 뱃지 렌더링 함수에서 정확한 shared_calc 값을 바탕으로 업데이트합니다.
+                    hcSpan2.innerHTML = `(총 ${uniqueHeadcount}명)`;
                 }
 
                 // [신규] 상단 수강생결재일(1~12월) 뱃지 렌더링
