@@ -404,22 +404,7 @@ function getMemberEighthDayInMonth(memberId, year, month, courseFilter = null) {
     };
 }
 
-    if (!hasAnyAttendance) {
-        finalScheduledDate = null;
-    } else if (globalLastRecordDate && finalScheduledDate) {
-        let maxYear = globalLastRecordDate.getFullYear();
-        let maxMonth = globalLastRecordDate.getMonth() + 2;
-        if (maxMonth > 12) { maxMonth -= 12; maxYear += 1; }
-        if (finalScheduledDate.year > maxYear || (finalScheduledDate.year === maxYear && finalScheduledDate.month > maxMonth)) {
-            finalScheduledDate = null;
-        }
-    }
 
-    if (!finalScheduledDate && eighthDay) eighthDay = null; // Sync isDueInSelectedMonth if cleared
-
-    return { scheduledDate: finalScheduledDate, currentCount: currentCountObj, isDueInSelectedMonth: !!eighthDay, allMilestones };
-
-}
 
 function renderTable() {
     const tbody = document.getElementById('tuitionListBody');
@@ -1362,23 +1347,22 @@ window.addEventListener('storage', (e) => {
 // ============================================================
 
 /** 특정 연도·월의 미납 결제일(미납 milestone) 총 개수를 반환 */
-function countUnpaidMilestonesForMonth(year, month) {
-    let count = 0;
+function getUnpaidMilestoneDaysForMonth(year, month) {
+    let daysSet = new Set();
     membersData.forEach(m => {
-        // 삭제된 과정은 제외
         const courses = (m.course || "").split(",").map(c => c.trim()).filter(c => c && !c.includes("[삭제]"));
         courses.forEach(fullCourse => {
             const courseNameOnly = fullCourse.replace(/\([^)]*\)/g, "").trim();
             if (typeof window.calculateRedBoxesForMonth === "function") {
-                const result = window.calculateRedBoxesForMonth(m, year, month, window.attendanceData || [], courseNameOnly, window.GLOBAL_DATA_ADJUSTMENTS || {});
+                const result = window.calculateRedBoxesForMonth(m, year, month, attendanceData, courseNameOnly, GLOBAL_DATA_ADJUSTMENTS);
                 if (result && result.redDays && result.redDays.length > 0 && !result.isSimulated && result.hasAnyAttendance) {
-                    count += result.redDays.length;
+                    result.redDays.forEach(d => daysSet.add(d));
                 }
             }
         });
     });
-    return count;
-}
+    let daysArray = Array.from(daysSet).sort((a,b) => a-b);
+    return daysArray;
 }
 
 /** 모든 달(1~12)의 미납 수를 계산하고 패널 뱃지를 업데이트 */
@@ -1394,9 +1378,9 @@ function updateMonthlyUnpaidPanel() {
         // 현재 선택된 월 강조
         btn.classList.toggle('is-current', m === currentMonth);
 
-        const cnt = countUnpaidMilestonesForMonth(year, m);
-        if (cnt > 0) {
-            badge.textContent = cnt;
+        const days = getUnpaidMilestoneDaysForMonth(year, m);
+        if (days && days.length > 0) {
+            badge.textContent = days.join(', ');
             badge.style.display = 'inline-block';
         } else {
             badge.style.display = 'none';

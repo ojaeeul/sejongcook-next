@@ -1058,13 +1058,13 @@
                                 }
                             }
                             
-                            if (days && (Array.isArray(days) ? days.length > 0 : days > 0)) {
-                                monthCounts[month] += (Array.isArray(days) ? days.length : 1);
+                            if (days && Array.isArray(days) && days.length > 0) {
+                                days.forEach(d => monthDays[month].add(d));
                             }
                         }
                     });
                 }
-                const selectedMonthCount = monthCounts[cm] || 0;
+                const selectedMonthCount = monthDays[cm].size || 0;
                 
                 const spanCount = document.getElementById('smsTotalRedBoxCount');
                 if (spanCount) {
@@ -1082,11 +1082,11 @@
                             </span>
                     `;
                     for (let month = 1; month <= 12; month++) {
-                        const count = monthCounts[month];
-                        const displayCount = count > 0 ? `<span style="background:#2563eb; color:white; border-radius:12px; padding:2px 7px; font-size:0.7rem; font-weight:bold; margin-left:4px;">${count}</span>` : '';
+                        const daysArr = Array.from(monthDays[month]).sort((a,b)=>a-b);
+                        const displayCount = daysArr.length > 0 ? `<span style="background:#2563eb; color:white; border-radius:12px; padding:2px 7px; font-size:0.7rem; font-weight:bold; margin-left:4px;">${daysArr.join(', ')}</span>` : '';
                         
-                        const borderStyle = count > 0 ? 'border:1px solid #93c5fd; background:#eff6ff;' : 'border:1px solid #cbd5e1; background:#fff;';
-                        const textStyle = count > 0 ? 'color:#1e3a8a;' : 'color:#475569;';
+                        const borderStyle = daysArr.length > 0 ? 'border:1px solid #93c5fd; background:#eff6ff;' : 'border:1px solid #cbd5e1; background:#fff;';
+                        const textStyle = daysArr.length > 0 ? 'color:#1e3a8a;' : 'color:#475569;';
                         
                         badgesHtml += `
                             <div style="display:flex; align-items:center; padding:3px 10px; border-radius:20px; font-size:0.8rem; font-weight:700; margin-right:2px; cursor:pointer; ${borderStyle} ${textStyle}" onclick="if(window.jumpToRangeMonth) window.jumpToRangeMonth(${cy}, ${month})">

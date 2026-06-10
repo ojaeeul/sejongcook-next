@@ -16,7 +16,7 @@ const puppeteer = require('puppeteer');
 
     try {
         await page.goto('file://' + __dirname + '/Sejong/SejongAttendance/public/tuition.html');
-        await new Promise(r => setTimeout(r, 2000));
+        await new Promise(r => setTimeout(r, 3000));
     } catch (e) {
         console.log("Error loading page", e);
     }
