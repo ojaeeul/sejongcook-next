@@ -2074,6 +2074,23 @@
                     filteredRows = filteredRows.filter(r => r.courseFull.includes(sheetTimeFilter));
                 }
 
+                // [신규] 뱃지 클릭(월별 결재일) 필터
+                if (window.activeMonthBadgeFilter) {
+                    filteredRows = filteredRows.filter(r => {
+                        const m = r.member;
+                        if (!m) return false;
+                        const cName = r.courseName || '';
+                        let hasRedBox = false;
+                        if (typeof window.calculateRedBoxesForMonth === 'function') {
+                            const result = window.calculateRedBoxesForMonth(m, currentYear, window.activeMonthBadgeFilter, attendanceData || [], cName, window.GLOBAL_DATA_ADJUSTMENTS || {});
+                            if (result && result.redDays && result.redDays.length > 0 && !result.isSimulated && result.hasAnyAttendance) {
+                                hasRedBox = true;
+                            }
+                        }
+                        return hasRedBox;
+                    });
+                }
+
                 // User Request: "월간 출석부 이름 정렬해줘" (Sort Alphabetically by Member Name)
                 filteredRows.sort((a, b) => {
                     const nameA = a.member.name || '';
@@ -2795,8 +2812,11 @@
                 const borderStyle = count > 0 ? 'border:1px solid #93c5fd; background:#eff6ff;' : 'border:1px solid #cbd5e1; background:#fff;';
                 const textStyle = count > 0 ? 'color:#1e3a8a;' : 'color:#475569;';
                 
+                const isSelected = window.activeMonthBadgeFilter === month;
+                const finalBorderStyle = isSelected ? 'border:2px solid #ef4444; background:#fee2e2; cursor:pointer;' : (count > 0 ? borderStyle + ' cursor:pointer; hover:bg-blue-50;' : borderStyle);
+                
                 badgesHtml += `
-                    <div style="display:flex; align-items:center; padding:3px 10px; border-radius:20px; font-size:0.8rem; font-weight:700; margin-right:2px; ${borderStyle} ${textStyle}">
+                    <div onclick="if (${count} > 0 || ${isSelected}) window.toggleBadgeFilter(${month})" style="display:flex; align-items:center; padding:3px 10px; border-radius:20px; font-size:0.8rem; font-weight:700; margin-right:2px; ${finalBorderStyle} ${textStyle}; transition: all 0.2s;">
                         <span>${month}월</span>
                         ${displayCount}
                     </div>
