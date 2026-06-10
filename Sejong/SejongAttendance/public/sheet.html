@@ -2750,8 +2750,8 @@
                 const cName = r.courseName || '';
                 
                 for (let month = 1; month <= 12; month++) {
-                    // [수정] 뱃지의 일관성을 위해 현재 월도 shared_calc 로직을 동일하게 탑니다.
-                    // if (month === displayMonth) continue;
+                    // 무조건 현재 표시중인 월의 뱃지는 화면상의 "결재일 건수"와 일치시킵니다.
+                    if (month === displayMonth) continue;
 
                     const syncKey = `${m.id}_${targetYear}_${month}_${cName}`;
                     let days = null;
@@ -2771,10 +2771,10 @@
                 }
             });
 
-            // [수정] 현재 보고 있는 월도 shared_calc 값을 그대로 사용하여 다른 달을 볼 때와 갯수가 변하지 않도록 고정
-            // if (displayMonth >= 1 && displayMonth <= 12) {
-            //     monthCounts[displayMonth] = displayCountValue || 0;
-            // }
+            // 무조건 현재 표시중인 월의 뱃지는 화면상의 "결재일 건수"와 일치시킵니다.
+            if (displayMonth >= 1 && displayMonth <= 12) {
+                monthCounts[displayMonth] = displayCountValue || 0;
+            }
 
             const panel = document.getElementById('monthlyRedBoxPanel');
             if (!panel) return;
