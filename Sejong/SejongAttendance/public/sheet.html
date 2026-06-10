@@ -3086,7 +3086,7 @@
                 const isSelected = window.activeMonthBadgeFilter === month;
                 
                 // [요청 반영] 3달 중 결재일이 0건인 달은 아예 숨김 처리
-                if (count === 0 && !isSelected) {
+                if (count === 0) {
                     return; // continue for forEach
                 }
 
