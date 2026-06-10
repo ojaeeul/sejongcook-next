@@ -529,12 +529,25 @@ function renderTable() {
                 
                 let vRaw = Math.round(displayCount * 10);
                 let cycleCount = 0;
-                if (isDualLocal) {
-                    if (vRaw >= 170) cycleCount = Math.floor((vRaw - 170) / 160) + 1;
-                    displayCount = displayCount - (cycleCount * 16);
+                const cSettings = typeof getCycleSettings === 'function' ? getCycleSettings() : { default: 9, dual: 17, bogeo: 10 };
+                
+                const isBogeoLocal = (courseNameOnly && (courseNameOnly.replace(/\s/g, '').includes('복어') || courseNameOnly.replace(/\s/g, '').includes('산업기사'))) || (!courseNameOnly && localFinalCourse && (localFinalCourse.replace(/\s/g, '').includes('복어') || localFinalCourse.replace(/\s/g, '').includes('산업기사')));
+                
+                if (isBogeoLocal) {
+                    let trigger = cSettings.bogeo * 10;
+                    let limit = trigger - 10;
+                    if (vRaw >= trigger) cycleCount = Math.floor((vRaw - trigger) / limit) + 1;
+                    displayCount = displayCount - (cycleCount * (limit / 10));
+                } else if (isDualLocal) {
+                    let trigger = cSettings.dual * 10;
+                    let limit = trigger - 10;
+                    if (vRaw >= trigger) cycleCount = Math.floor((vRaw - trigger) / limit) + 1;
+                    displayCount = displayCount - (cycleCount * (limit / 10));
                 } else {
-                    if (vRaw >= 90) cycleCount = Math.floor((vRaw - 90) / 80) + 1;
-                    displayCount = displayCount - (cycleCount * 8);
+                    let trigger = cSettings.default * 10;
+                    let limit = trigger - 10;
+                    if (vRaw >= trigger) cycleCount = Math.floor((vRaw - trigger) / limit) + 1;
+                    displayCount = displayCount - (cycleCount * (limit / 10));
                 }
                 
                 courseProgressList.push({ name: courseNameOnly, count: displayCount, target: displayTarget });
@@ -555,7 +568,15 @@ function renderTable() {
                     }
                 }
                 const isDualBakeryLocal = (courseNameOnly && courseNameOnly.replace(/\s/g, '').includes('제과제빵')) || (!courseNameOnly && localFinalCourse && localFinalCourse.replace(/\s/g, '').includes('제과제빵'));
-                const targetCount = isDualBakeryLocal ? 17 : 9;
+                const isBogeoLocal = (courseNameOnly && (courseNameOnly.replace(/\s/g, '').includes('복어') || courseNameOnly.replace(/\s/g, '').includes('산업기사'))) || (!courseNameOnly && localFinalCourse && (localFinalCourse.replace(/\s/g, '').includes('복어') || localFinalCourse.replace(/\s/g, '').includes('산업기사')));
+                
+                const cycleSettings = typeof getCycleSettings === 'function' ? getCycleSettings() : { default: 9, dual: 17, bogeo: 10 };
+                let targetCount = cycleSettings.default;
+                if (isBogeoLocal) {
+                    targetCount = cycleSettings.bogeo;
+                } else if (isDualBakeryLocal) {
+                    targetCount = cycleSettings.dual;
+                }
                 
                 let remainingForLoop = currentProgressObj.count;
 

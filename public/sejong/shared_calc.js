@@ -25,7 +25,7 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
     if (!member) return { redDays: [], hasAnyAttendance: false, isSimulated: true };
 
     let isDualCourse = courseFilter === '제과제빵기능사' || courseFilter === 'all';
-    let isBogeoCourse = String(courseFilter || '').includes('복어');
+    let isBogeoCourse = String(courseFilter || '').includes('복어') || String(courseFilter || '').includes('산업기사');
     const courseStr = member.course || '';
     const hasJeggwa = courseStr.includes('제과') && !courseStr.includes('제과제빵');
     const hasJeppang = courseStr.includes('제빵') && !courseStr.includes('제과제빵');
@@ -113,15 +113,15 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
         if (isBogeoCourse) {
             let target = settings.bogeo * 10;
             if (vRaw < target) return 0;
-            return Math.floor((vRaw - target) / target) + 1;
+            return Math.floor((vRaw - target) / (target - 10)) + 1;
         } else if (isDualCourse) {
             let target = settings.dual * 10;
             if (vRaw < target) return 0;
-            return Math.floor((vRaw - target) / target) + 1;
+            return Math.floor((vRaw - target) / (target - 10)) + 1;
         } else {
             let target = settings.default * 10;
             if (vRaw < target) return 0;
-            return Math.floor((vRaw - target) / target) + 1;
+            return Math.floor((vRaw - target) / (target - 10)) + 1;
         }
     };
 
