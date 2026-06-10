@@ -311,7 +311,7 @@ async function fetchAllData() {
             allMembers = Array.isArray(raw) ? raw.filter(m => !['trash', 'delete', 'completed', 'archive', 'hold'].includes(m.status)) : [];
         }
         if (results[1].status === 'fulfilled') paymentsData = results[1].value;
-        if (results[2].status === 'fulfilled') attendanceData = results[2].value;
+        if (results[2].status === 'fulfilled') { attendanceData = results[2].value; window.attendanceData = attendanceData; window.GLOBAL_DATA_ADJUSTMENTS = GLOBAL_DATA_ADJUSTMENTS; }
         if (results[3].status === 'fulfilled') {
             holidaysData = results[3].value;
             window.holidaysData = holidaysData;
