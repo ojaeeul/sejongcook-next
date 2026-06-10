@@ -3,21 +3,21 @@
 <html lang="ko">
 
 <head>
-    <meta http-equiv=1780796013"Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv=1780796013"Pragma" content="no-cache">
-    <meta http-equiv=1780796013"Expires" content="0">    <meta charset="UTF-8">
+    <meta http-equiv=1781134243054"Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv=1781134243054"Pragma" content="no-cache">
+    <meta http-equiv=1781134243054"Expires" content="0">    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>월간 출석부 - 세종요리제과학원 (김포/세종 요리 전문)</title>
     <meta name="description" content="세종요리제과학원 수강생 관리 및 월간 출석부 시스템. 김포 및 세종 지역 요리 교육의 중심.">
     <meta name="keywords" content="세종요리, 김포요리, 세종요리학원, 김포요리학원, 요리학원, 출석관리, 수강생관리, 요리자격증">
     <meta property="og:title" content="세종요리제과학원 월간 출석부">
     <meta property="og:description" content="수강생들의 출석 현황을 한눈에 확인하세요.">
-    <link rel="stylesheet" href="style.css?v=1780796013_211823">
+    <link rel="stylesheet" href="style.css?v=1781134243054_211823">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="shared_calc.js?v=1781103703774"></script>
-    <script src="script.js?v=1781101862809" defer></script>
+    <script src="shared_calc.js?v=1781134243054"></script>
+    <script src="script.js?v=1781134243054" defer></script>
     <style>
         .sheet-container {
             background: white;
@@ -896,7 +896,7 @@
                 </div>
                 <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">수강료</div>
                 <div class="nav-sub-menu show">
-                    <a href="tuition.html?v=1780849479" class="nav-item">수강료 관리</a>
+                    <a href="tuition.html?v=1781134243054" class="nav-item">수강료 관리</a>
                     <a href="ledger.html" class="nav-item">수강료 납부대장</a>
                     <a href="paid_list.html" class="nav-item">납부완료 명단</a>
                 </div>
@@ -1024,9 +1024,9 @@
                 <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">학원문자</div>
                 <div class="nav-sub-menu show">
                     <a href="attendance_daily.html" id="navDailyAttendance" class="nav-item">일일 출석부</a>
-                    <a href="sms.html?v=1780849502" id="navSms" class="nav-item">문자 발송</a>
+                    <a href="sms.html?v=1781134243054" id="navSms" class="nav-item">문자 발송</a>
                 </div>
-                <a href="monitor.html?v=1780796013_211823" target="_blank" class="nav-item highlight">키오스크 모니터</a>
+                <a href="monitor.html?v=1781134243054_211823" target="_blank" class="nav-item highlight">키오스크 모니터</a>
                 <a href="kiosk_admin.html" id="navKioskAdmin" class="nav-item">키오스크 설정</a>
 
                 <a href="app.html" id="navMobileApp" class="nav-item" target="_blank">📱 모바일 앱</a>
@@ -3039,15 +3039,6 @@
             
 
         function renderMonthlyRedBoxPanel(filteredRows, targetYear, displayMonth, displayCountValue) {
-            const monthCounts = {1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 11:0, 12:0};
-            
-            // [원장님 특별 요청] 뱃지 전용 별도 계산 코드(calculateLocalRedBoxesForMonth)를 전면 폐기하고,
-            // 오직 실제 그리드(출석표) 화면에 찍혀있는 "결재일 건수(redBoxOccurrences)"만 100% 신뢰하여 표시합니다.
-            
-            if (displayMonth >= 1 && displayMonth <= 12 && displayCountValue !== null) {
-                monthCounts[displayMonth] = displayCountValue;
-            }
-
             const panel = document.getElementById('monthlyRedBoxPanel');
             if (!panel) return;
 
@@ -3055,20 +3046,51 @@
                 <div style="display:flex; gap:6px; flex-wrap:wrap; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:6px 14px; align-items:center;">
                     <span style="font-size:0.75rem; font-weight:700; color:#64748b; white-space:nowrap; margin-right:8px;">
                         <span class="material-icons" style="font-size:0.9rem; vertical-align:middle; margin-right:2px;">calendar_month</span>
-                        수강생결재일
+                        수강생결재일 미리보기
                     </span>
             `;
 
-            for (let month = 1; month <= 12; month++) {
-                const count = monthCounts[month];
-                const isSelected = window.activeMonthBadgeFilter === month;
+            // 3달씩 미리보기 (현재 월, 다음 월, 다다음 월)
+            let monthsToCheck = [];
+            for (let i = 0; i < 3; i++) {
+                let m = displayMonth + i;
+                let y = targetYear;
+                if (m > 12) {
+                    m -= 12;
+                    y += 1;
+                }
+                monthsToCheck.push({ month: m, year: y });
+            }
+
+            monthsToCheck.forEach(({month, year}, index) => {
+                let count = 0;
                 
-                // [요청 반영] 결재일(count)이 0건인 월은 아예 숨김 처리
-                if (count === 0 && !isSelected) {
-                    continue;
+                // 첫번째 달(현재 화면에 표시중인 달)은 하단의 결재일 건수(displayCountValue)를 그대로 100% 반영하여 불일치 원천 차단
+                if (index === 0 && displayCountValue !== null) {
+                    count = displayCountValue;
+                } else {
+                    // 미래의 달(2, 3번째 달)은 현재 화면의 필터조건(filteredRows)을 그대로 유지한 채로 계산
+                    if (typeof window.calculateLocalRedBoxesForMonth === 'function') {
+                        filteredRows.forEach(r => {
+                            const mObj = r.member;
+                            if (!mObj) return;
+                            const cName = r.courseFull || r.courseName || "";
+                            const result = window.calculateLocalRedBoxesForMonth(mObj, year, month, window.attendanceData || [], cName, window.GLOBAL_DATA_ADJUSTMENTS || {});
+                            if (result && result.redDays && result.redDays.length > 0) {
+                                count += result.redDays.length;
+                            }
+                        });
+                    }
                 }
 
-                const displayCount = count > 0 ? `<span style="background:#2563eb; color:white; border-radius:12px; padding:2px 7px; font-size:0.7rem; font-weight:bold; margin-left:4px;">${count}</span>` : '';
+                const isSelected = window.activeMonthBadgeFilter === month;
+                
+                // [요청 반영] 3달 중 결재일이 0건인 달은 아예 숨김 처리
+                if (count === 0 && !isSelected) {
+                    return; // continue for forEach
+                }
+
+                const displayCountLabel = count > 0 ? `<span style="background:#2563eb; color:white; border-radius:12px; padding:2px 7px; font-size:0.7rem; font-weight:bold; margin-left:4px;">${count}</span>` : '';
                 const borderStyle = count > 0 ? 'border:1px solid #93c5fd; background:#eff6ff;' : 'border:1px solid #cbd5e1; background:#fff;';
                 const textStyle = count > 0 ? 'color:#1e3a8a;' : 'color:#475569;';
                 
@@ -3077,13 +3099,15 @@
                 badgesHtml += `
                     <div onclick="if (${count} > 0 || ${isSelected}) window.toggleBadgeFilter(${month})" style="display:flex; align-items:center; padding:3px 10px; border-radius:20px; font-size:0.8rem; font-weight:700; margin-right:2px; ${finalBorderStyle} ${textStyle}; transition: all 0.2s;">
                         <span>${month}월</span>
-                        ${displayCount}
+                        ${displayCountLabel}
                     </div>
                 `;
-            }
+            });
+
             badgesHtml += `</div>`;
             panel.innerHTML = badgesHtml;
         }
+
 
         async function toggleHoliday(dateStr) {
             const isHoliday = !!holidaysData.find(h => h.date === dateStr);
