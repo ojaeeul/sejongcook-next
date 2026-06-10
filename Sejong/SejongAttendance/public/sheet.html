@@ -2050,64 +2050,6 @@
             }
 
             let isSimulated = false;
-            if (redBoxDates.size === 0 && currentMC && (uniqueLogs.length > 0 || (member.ledger && member.ledger.length > 0))) {
-                const now = new Date();
-                const limit = new Date(targetYear, targetMonth, 0); 
-                
-                let simDate = new Date(currentMC.year, currentMC.month - 1, 1);
-                
-                let lastRecordDateObj = null;
-                if (uniqueLogs.length > 0) {
-                    lastRecordDateObj = new Date(uniqueLogs[uniqueLogs.length - 1].date);
-                }
-                
-                if (lastRecordDateObj && lastRecordDateObj > simDate) {
-                    simDate = new Date(lastRecordDateObj.getTime() + 86400000);
-                }
-
-                let simTotal = runningTotal;
-                let limitCounter = 0;
-                
-                while (simDate <= limit && limitCounter < 100) {
-                    limitCounter++;
-                    const yy = simDate.getFullYear();
-                    const mm = String(simDate.getMonth() + 1).padStart(2, '0');
-                    const dd = String(simDate.getDate()).padStart(2, '0');
-                    const dateStr = `${yy}-${mm}-${dd}`;
-                    
-                    const isHolidayInSys = window.holidaysData && window.holidaysData.some(h => h.date === dateStr);
-                    const isNationalHoliday = window.KOREAN_HOLIDAYS_MAP && !!window.KOREAN_HOLIDAYS_MAP[dateStr];
-                    const isHoliday = isHolidayInSys || isNationalHoliday;
-                    const dayOfWeek = simDate.getDay();
-
-                    let isValidDay = false;
-                    if (courseFilter) {
-                        const cleanFilter = courseFilter.replace(/\([^)]*\)/g, '').trim();
-                        const schedule = window.COURSE_SCHEDULES ? window.COURSE_SCHEDULES[cleanFilter] : null;
-                        if (schedule) {
-                            if (schedule.includes(dayOfWeek)) isValidDay = true;
-                        } else {
-                            if (dayOfWeek !== 0) isValidDay = true;
-                        }
-                    } else {
-                        if (dayOfWeek !== 0) isValidDay = true;
-                    }
-
-                    if (isValidDay && !isHoliday) {
-                        const prevSimCycle = getCycle(simTotal);
-                        simTotal += attendanceIncrement;
-                        const newSimCycle = getCycle(simTotal);
-                        
-                        if (newSimCycle > prevSimCycle) {
-                            if (simDate.getFullYear() === Number(targetYear) && (simDate.getMonth() + 1) === Number(targetMonth)) {
-                                redBoxDates.add(dateStr);
-                                isSimulated = true;
-                            }
-                            break; 
-                        }
-                    }
-                    simDate.setDate(simDate.getDate() + 1);
-                }
             }
 
             const ledgerDays = new Set();
@@ -2386,7 +2328,7 @@
                         let hasRedBox = false;
                         if (typeof window.calculateLocalRedBoxesForMonth === 'function') {
                             const result = window.calculateLocalRedBoxesForMonth(m, currentYear, window.activeMonthBadgeFilter, attendanceData || [], cName, window.GLOBAL_DATA_ADJUSTMENTS || {});
-                            if (result && result.redDays && result.redDays.length > 0 && result.hasAnyAttendance) {
+                            if (result && result.redDays && result.redDays.length > 0) {
                                 hasRedBox = true;
                             }
                         }
@@ -2424,7 +2366,7 @@
                             const result = window.calculateLocalRedBoxesForMonth(m, currentYear, currentMonth, attendanceData || [], rowCourseNameScope, window.GLOBAL_DATA_ADJUSTMENTS || {});
                             const syncKeyNow = `${m.id}_${currentYear}_${currentMonth}_${rowCourseNameScope || 'all'}`;
                             
-                            if (result && result.redDays && result.redDays.length > 0 && result.hasAnyAttendance) {
+                            if (result && result.redDays && result.redDays.length > 0) {
                                 window.ledgerSyncData[syncKeyNow] = result.redDays;
                             } else {
                                 delete window.ledgerSyncData[syncKeyNow];
@@ -3071,53 +3013,18 @@
                 const cName = r.courseFull || r.courseName || "";
                 
                 for (let month = 1; month <= 12; month++) {
-                    // [복구] 무조건 현재 표시중인 월의 뱃지는 화면상의 "결재일 건수"와 일치시킵니다.
-                    if (month === displayMonth) continue;
-
-                    const syncKey = `${m.id}_${targetYear}_${month}_${cName}`;
-                    let days = null;
-                    
-                    if (!days) {
-                        if (typeof window.calculateLocalRedBoxesForMonth === 'function') {
-                            const result = window.calculateLocalRedBoxesForMonth(m, targetYear, month, window.attendanceData || [], cName, window.GLOBAL_DATA_ADJUSTMENTS || {});
-                            if (result && result.redDays && result.redDays.length > 0 && result.hasAnyAttendance) {
-                                days = result.redDays;
-                            }
-                        }
-                    }
-                    
-                    if (days && (Array.isArray(days) ? days.length > 0 : days > 0)) {
-                        monthCounts[month] += (Array.isArray(days) ? days.length : 1);
-                    }
-                }
-            });
-
-            
-
-            // 무조건 현재 표시중인 월의 뱃지는 화면상의 "결재일 건수"와 일치시킵니다.
-            // 단, 현재 뱃지 필터가 걸려있어서 displayCountValue가 null로 들어온 경우 덮어쓰지 않습니다.
-            if (displayMonth >= 1 && displayMonth <= 12 && displayCountValue !== null) {
-                monthCounts[displayMonth] = displayCountValue;
-            }
-
-            const panel = document.getElementById('monthlyRedBoxPanel');
-            if (!panel) return;
-
-            let badgesHtml = `
-                <div style="display:flex; gap:6px; flex-wrap:wrap; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:6px 14px; align-items:center;">
-                    <span style="font-size:0.75rem; font-weight:700; color:#64748b; white-space:nowrap; margin-right:8px;">
-                        <span class="material-icons" style="font-size:0.9rem; vertical-align:middle; margin-right:2px;">calendar_month</span>
-                        수강생결재일
-                    </span>
-            `;
-
-            for (let month = 1; month <= 12; month++) {
                 const count = monthCounts[month];
+                const isSelected = window.activeMonthBadgeFilter === month;
+                
+                // [요청 반영] 결재일(count)이 0건인 월은 아예 숨김 처리
+                if (count === 0 && !isSelected) {
+                    continue;
+                }
+
                 const displayCount = count > 0 ? `<span style="background:#2563eb; color:white; border-radius:12px; padding:2px 7px; font-size:0.7rem; font-weight:bold; margin-left:4px;">${count}</span>` : '';
                 const borderStyle = count > 0 ? 'border:1px solid #93c5fd; background:#eff6ff;' : 'border:1px solid #cbd5e1; background:#fff;';
                 const textStyle = count > 0 ? 'color:#1e3a8a;' : 'color:#475569;';
                 
-                const isSelected = window.activeMonthBadgeFilter === month;
                 const finalBorderStyle = isSelected ? 'border:2px solid #ef4444; background:#fee2e2; cursor:pointer;' : (count > 0 ? borderStyle + ' cursor:pointer; hover:bg-blue-50;' : borderStyle);
                 
                 badgesHtml += `
