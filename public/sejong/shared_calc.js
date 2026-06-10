@@ -75,14 +75,17 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
         }
     }
 
-    if (uniqueLogs.length > 0) {
-        const d = new Date(uniqueLogs[0].date);
-        const firstLogYear = d.getFullYear();
-        const firstLogMonth = d.getMonth() + 1;
-        if (firstLogYear < earliestYear || (firstLogYear === earliestYear && firstLogMonth < earliestMonth)) {
-            earliestYear = firstLogYear;
-            earliestMonth = firstLogMonth;
-        }
+    // [HOTFIX] 글로벌 데이터를 기준으로 earliest 계산 (sheet.html과 완벽하게 동일하게 맞춤)
+    if (allAttendanceLogs && allAttendanceLogs.length > 0) {
+        allAttendanceLogs.forEach(l => {
+            const d = new Date(l.date);
+            const yy = d.getFullYear();
+            const mm = d.getMonth() + 1;
+            if (yy < earliestYear || (yy === earliestYear && mm < earliestMonth)) {
+                earliestYear = yy;
+                earliestMonth = mm;
+            }
+        });
     }
 
     if (Number(earliestYear) > Number(targetYear) || (Number(earliestYear) === Number(targetYear) && Number(earliestMonth) > Number(targetMonth))) {
