@@ -169,10 +169,6 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
             const isRegularAttendance = isPresent || isNumericPresent || isAbsent || isEarly || isTardy || isFirstLast;
 
             let currentAttendanceIncrement = attendanceIncrement;
-            let numericValue = parseFloat(l.status);
-            if (!isNaN(numericValue) && numericValue > 0) {
-                currentAttendanceIncrement = numericValue;
-            }
 
             if (isMakeupMarker) manualMakeup += currentAttendanceIncrement;
 
@@ -235,10 +231,6 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
             const isRegularAttendance = isPresentExt || isNumericPresent || isAbsent || isEarly || isTardy || isFirstLast;
 
             let currentAttendanceIncrement = attendanceIncrement;
-            let numericValue = parseFloat(l.status);
-            if (!isNaN(numericValue) && numericValue > 0) {
-                currentAttendanceIncrement = numericValue;
-            }
 
             if (isRegularAttendance || isMakeupMarker) {
                 runningTotal += currentAttendanceIncrement;
