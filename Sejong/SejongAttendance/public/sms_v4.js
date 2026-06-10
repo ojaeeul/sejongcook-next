@@ -1568,6 +1568,17 @@ window.jumpToRangeMonth = function(targetYear, targetMonth) {
     if (calRoot) calRoot.scrollIntoView({ behavior: 'smooth', block: 'center' });
 };
 
+
+function getPaymentDaysForMemberOnTheFly(m, cy, cm, cName) {
+    if (typeof window.calculateRedBoxesForMonth === "function") {
+        const result = window.calculateRedBoxesForMonth(m, cy, cm, window.attendanceData || [], cName, window.GLOBAL_DATA_ADJUSTMENTS || {});
+        if (result && result.redDays && result.redDays.length > 0 && !result.isSimulated && result.hasAnyAttendance) {
+            return result.redDays;
+        }
+    }
+    return [];
+}
+
 function renderRangeCalendar() {
     const grid = document.getElementById('calendarDays');
     const title = document.getElementById('calendarTitle');
@@ -1590,7 +1601,6 @@ function renderRangeCalendar() {
     // Pre-calculate payment days for highlighting WITH NAMES
     const paymentNamesByDay = {}; // e.g. { 12: ['홍길동 (제과)', '김철수 (제빵)'] }
     try {
-        let ledgerSync = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
         if (Array.isArray(allMembers)) {
             allMembers.forEach(m => {
                 if (!m) return;
@@ -1604,30 +1614,15 @@ function renderRangeCalendar() {
                 }
                 myCourses.forEach(c => {
                     const cName = c.replace(/\([^)]*\)/g, '').trim();
-                    Object.keys(ledgerSync).forEach(k => {
-                        const parts = k.split('_');
-                        if (parts.length >= 4 && parts[0] === String(m.id) && parseInt(parts[1]) === calendarYear && parseInt(parts[2]) === calendarMonth + 1) {
-                            const courseFull = parts.slice(3).join('_');
-                            const cleanSyncCourse = courseFull === 'all' ? '미지정' : courseFull.replace(/\([^)]*\)/g, '').trim();
-                            if (cleanSyncCourse === cName || (cName === '미지정' && courseFull === 'all')) {
-                                const days = ledgerSync[k];
-                                let daysArr = [];
-                                if (Array.isArray(days)) {
-                                    daysArr = days;
-                                } else if (days > 0) {
-                                    daysArr = [days];
-                                }
-                                daysArr.forEach(dVal => {
-                                    const d = String(dVal).includes('-') ? parseInt(String(dVal).split('-')[2], 10) : parseInt(dVal, 10);
-                                    if (isNaN(d)) return;
-                                    if (!paymentNamesByDay[d]) paymentNamesByDay[d] = [];
-                                    const cClean = c.trim().replace('기능사', '');
-                                    const label = `${m.name}(${cClean})`;
-                                    if (!paymentNamesByDay[d].includes(label)) {
-                                        paymentNamesByDay[d].push(label);
-                                    }
-                                });
-                            }
+                    const daysArr = getPaymentDaysForMemberOnTheFly(m, calendarYear, calendarMonth + 1, cName);
+                    daysArr.forEach(dVal => {
+                        const d = String(dVal).includes('-') ? parseInt(String(dVal).split('-')[2], 10) : parseInt(dVal, 10);
+                        if (isNaN(d)) return;
+                        if (!paymentNamesByDay[d]) paymentNamesByDay[d] = [];
+                        const cClean = c.trim().replace('기능사', '');
+                        const label = `${m.name}(${cClean})`;
+                        if (!paymentNamesByDay[d].includes(label)) {
+                            paymentNamesByDay[d].push(label);
                         }
                     });
                 });
