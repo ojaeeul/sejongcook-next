@@ -9,7 +9,7 @@ const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PU
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function sync() {
-    const dataDir = path.join(process.cwd(), 'Sejong/SejongAttendance/data');
+    const dataDir = path.join(process.cwd(), 'Sejong/SejongAttendance/public/data');
     
     console.log("Downloading members...");
     const { data: members, error: err1 } = await supabase.from('members').select('*');

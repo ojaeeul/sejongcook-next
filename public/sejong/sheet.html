@@ -1670,9 +1670,9 @@
             let hitTargetInMonth = false;
             let hasAnyAttendance = false;
 
-            const getCycle = (val) => {
+            const getCycle = (val, isDualOverride) => {
                 let vRaw = Math.round(val * 10);
-                if (isDualBakery) {
+                if (isDualOverride) {
                     if (vRaw < 170) return 0;
                     return Math.floor((vRaw - 170) / 170) + 1;
                 } else {
@@ -1734,7 +1734,7 @@
                             rollingTotal = Math.round(rollingTotal * 10) / 10;
                             const currNet = rollingTotal;
 
-                            let prevCycle = getCycle(prevNet);
+                            let prevCycle = getCycle(prevNet, typeof isDualCourse !== "undefined" ? isDualCourse : isDualBakery);
                             let currCycle = getCycle(currNet);
                             const dateStr = r.date ? (r.date.includes('T') ? r.date.split('T')[0] : r.date) : (r.dateObj ? r.dateObj.toISOString().split('T')[0] : '');
                             const isForced = adj && adj.forceRedBoxDates && adj.forceRedBoxDates.includes(dateStr);
@@ -1932,7 +1932,7 @@
                     localStorage.removeItem('sejong_ledger_sync');
                     localStorage.setItem('sejong_ledger_v3_dedup_fix_2', 'true');
                 }
-                window.ledgerSyncData = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
+                window.ledgerSyncData = {};
 
 
 
@@ -2089,7 +2089,7 @@
                             const result = window.calculateRedBoxesForMonth(m, currentYear, currentMonth, attendanceData || [], rowCourseNameScope, window.GLOBAL_DATA_ADJUSTMENTS || {});
                             const syncKeyNow = `${m.id}_${currentYear}_${currentMonth}_${rowCourseNameScope || 'all'}`;
                             
-                            if (result && result.redDays && result.redDays.length > 0 && !result.isSimulated && result.hasAnyAttendance) {
+                            if (result && result.redDays && result.redDays.length > 0 && result.hasAnyAttendance) {
                                 window.ledgerSyncData[syncKeyNow] = result.redDays;
                             } else {
                                 delete window.ledgerSyncData[syncKeyNow];
@@ -2097,7 +2097,7 @@
                         }
                     });
                 }
-                localStorage.setItem('sejong_ledger_sync', JSON.stringify(window.ledgerSyncData));
+                // 더 이상 sejong_ledger_sync에 저장하지 않습니다.
 
                 const renderedArrows = new Set(); // memberId_date
                 const membersWithRedBox = new Set();
@@ -2331,10 +2331,10 @@
                                 let vRaw = Math.round(val * 10);
                                 if (isDualCourse) {
                                     if (vRaw < 170) return 0;
-                                    return Math.floor((vRaw - 170) / 160) + 1;
+                                    return Math.floor((vRaw - 170) / 170) + 1;
                                 } else {
                                     if (vRaw < 90) return 0;
-                                    return Math.floor((vRaw - 90) / 80) + 1;
+                                    return Math.floor((vRaw - 90) / 90) + 1;
                                 }
                             };
                             let currentCycle = getCycle(currentMC.carryFromPrev);
@@ -2377,16 +2377,9 @@
 
                             // [결정적 J/P 수정] - 당월의 주기(네모박스) 변화만 감지
                             // [수정] 연장은 무시되므로 순수 출석(runningTotal) 기준으로만 cycle 판정
-                            
-                            // EXPORT REAL RED BOXES TO LEDGER SYNC DATA
+                            // [수정] EXPORT REAL RED BOXES TO LEDGER SYNC DATA (캐시) 삭제됨
+                            // 각 페이지가 실시간으로 계산하므로 더 이상 ledgerSyncData에 강제 주입하지 않습니다.
                             const syncKeyNow = `${m.id}_${currentMC.year}_${currentMC.month}_${rowCourseNameScope || 'all'}`;
-                            const actualRedDays = Array.from(redBoxDates).map(d => parseInt(d.split('-')[2], 10));
-                            if (actualRedDays.length > 0) {
-                                window.ledgerSyncData[syncKeyNow] = actualRedDays;
-                            } else if (window.ledgerSyncData[syncKeyNow]) {
-                                delete window.ledgerSyncData[syncKeyNow];
-                            }
-                            
                             // 1. 당월 순수 출석일수 계산 (당월에 참석한 횟수)
                             let currentMonthAttendances = 0;
                             currentMonthLogs.forEach(l => {
@@ -2432,17 +2425,8 @@
                         }
                     }
 
-                    // [동기화 데이터 활용] 위에서 계산된 전체 동기화 데이터에서 가져오기
+                    // [동기화 데이터 활용] 이제 ledgerSyncData 캐시를 사용하지 않습니다. 
                     let syncScheduledDays = [];
-                    if (m && m.id) {
-                        const syncKeyNow = `${m.id}_${currentYear}_${currentMonth}_${rowCourseNameScope || 'all'}`;
-                        const rawSync = window.ledgerSyncData[syncKeyNow];
-                        if (Array.isArray(rawSync)) {
-                            syncScheduledDays = rawSync;
-                        } else if (typeof rawSync === 'number') {
-                            syncScheduledDays = [rawSync];
-                        }
-                    }
 
 
 
@@ -2687,7 +2671,7 @@
                 }
 
                 // [신규] 상단 수강생결재일(1~12월) 뱃지 렌더링
-                renderMonthlyRedBoxPanel(filteredRows, currentYear);
+                renderMonthlyRedBoxPanel(filteredRows, currentYear, currentMonth, redBoxOccurrences);
 
                 // [삭제] 위에서 루프 돌기전에 한 번에 저장함.
             } catch (e) {
@@ -2696,7 +2680,34 @@
             }
         }
 
-        function renderMonthlyRedBoxPanel(filteredRows, targetYear) {
+        
+            // [DIAGNOSTIC] Find mismatch between UI red boxes and shared_calc red boxes
+            setTimeout(() => {
+                let uiTotal = redBoxOccurrences;
+                let calcTotal = 0;
+                let calcDaysPerMember = {};
+
+                filteredRows.forEach(r => {
+                    const m = r.member;
+                    if (!m) return;
+                    const cName = r.courseName || "";
+                    const result = window.calculateRedBoxesForMonth(m, currentYear, currentMonth, window.attendanceData || [], cName, window.GLOBAL_DATA_ADJUSTMENTS || {});
+                    if (result && result.redDays && result.redDays.length > 0) {
+                        calcTotal += result.redDays.length;
+                        calcDaysPerMember[m.name] = result.redDays;
+                    }
+                });
+
+                if (uiTotal !== calcTotal) {
+                    console.error("🚨 BADGE MISMATCH 🚨");
+                    console.error("UI (redBoxOccurrences):", uiTotal);
+                    console.error("Calc (shared_calc):", calcTotal);
+                    console.error("Calc Details:", calcDaysPerMember);
+                    alert("뱃지 갯수 불일치 발생! 콘솔을 확인해주세요.\nUI: " + uiTotal + "개, 계산: " + calcTotal + "개");
+                }
+            }, 2000);
+
+        function renderMonthlyRedBoxPanel(filteredRows, targetYear, displayMonth, displayCountValue) {
             const monthCounts = {1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 11:0, 12:0};
             
             filteredRows.forEach(r => {
@@ -2705,8 +2716,11 @@
                 const cName = r.courseName || '';
                 
                 for (let month = 1; month <= 12; month++) {
+                    // [수정] 뱃지의 일관성을 위해 현재 월도 shared_calc 로직을 동일하게 탑니다.
+                    // if (month === displayMonth) continue;
+
                     const syncKey = `${m.id}_${targetYear}_${month}_${cName}`;
-                    let days = window.ledgerSyncData ? window.ledgerSyncData[syncKey] : null;
+                    let days = null;
                     
                     if (!days) {
                         if (typeof window.calculateRedBoxesForMonth === 'function') {
@@ -2722,6 +2736,11 @@
                     }
                 }
             });
+
+            // [수정] 현재 보고 있는 월도 shared_calc 값을 그대로 사용하여 다른 달을 볼 때와 갯수가 변하지 않도록 고정
+            // if (displayMonth >= 1 && displayMonth <= 12) {
+            //     monthCounts[displayMonth] = displayCountValue || 0;
+            // }
 
             const panel = document.getElementById('monthlyRedBoxPanel');
             if (!panel) return;
@@ -3304,10 +3323,7 @@
                 // 신규 수강생이 등록되거나 수정되었을 때 명단 즉시 새로고침
                 fetchMembers().catch(console.error);
             }
-            if (e.key === 'sejong_ledger_sync') {
-                window.ledgerSyncData = JSON.parse(e.newValue || '{}');
-                renderSheet();
-            }
+            // sejong_ledger_sync 이벤트 더 이상 수신하지 않음
             if (e.key === 'sejong_timetable_sync') {
                 fetchTimetable().then(() => renderSheet());
             }

@@ -10,7 +10,13 @@
 window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, allAttendanceLogs, courseFilter, GLOBAL_DATA_ADJUSTMENTS) {
     if (!member) return { redDays: [], hasAnyAttendance: false, isSimulated: true };
 
-    const isDualCourse = (courseFilter && String(courseFilter).replace(/\s/g, '').includes('제과제빵')) || (!courseFilter && String(member.course).replace(/\s/g, '').includes('제과제빵'));
+    let isDualCourse = courseFilter === '제과제빵기능사' || courseFilter === 'all';
+    const courseStr = member.course || '';
+    const hasJeggwa = courseStr.includes('제과') && !courseStr.includes('제과제빵');
+    const hasJeppang = courseStr.includes('제빵') && !courseStr.includes('제과제빵');
+    if (hasJeggwa && hasJeppang && (courseFilter === '제과기능사' || courseFilter === '제빵기능사')) {
+        isDualCourse = true;
+    }
     const attendanceIncrement = isDualCourse ? 1.0 : 1.0;
 
     let rowLogsRaw = allAttendanceLogs.filter(l => String(l.memberId) === String(member.id));
@@ -90,10 +96,10 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
         let vRaw = Math.round(val * 10);
         if (isDualCourse) {
             if (vRaw < 170) return 0;
-            return Math.floor((vRaw - 170) / 160) + 1;
+            return Math.floor((vRaw - 170) / 170) + 1;
         } else {
             if (vRaw < 90) return 0;
-            return Math.floor((vRaw - 90) / 80) + 1;
+            return Math.floor((vRaw - 90) / 90) + 1;
         }
     };
 
@@ -152,11 +158,15 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
             }
         });
 
+        // [수정] redBoxDates 계산을 위해 carryOverP는 sheet.html과 동일하게 순수 출석(raw attendances)만 합산해야 함.
+        // presentOverride는 화면 표시용이므로 이월(carryOver) 계산에서 제외.
+        let rawAttendancesForCarry = attendances;
+        
         if (adjustment && adjustment.presentOverride !== undefined) {
-            attendances = adjustment.presentOverride;
+            attendances = adjustment.presentOverride; // allMilestones 또는 외부 사용처를 위해 attendances 자체는 남겨둠 (필요시)
         }
 
-        let totalCombined = Math.round((carryOverP + manualMakeup + attendances) * 10) / 10;
+        let totalCombined = Math.round((carryOverP + manualMakeup + rawAttendancesForCarry) * 10) / 10;
 
         mc.carryFromPrev = carryOverP;
         carryOverP = totalCombined;

@@ -1010,34 +1010,32 @@
         // 뱃지 계산 로직 추가
         window.updateRedBoxes = function(targetYear, targetMonth) {
             try {
-                const syncData = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
                 const monthCounts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0, 11: 0, 12: 0 };
                 
                 const now = new Date();
                 let cy = targetYear;
                 let cm = targetMonth;
                 if (!cy || !cm) {
-                    cy = localStorage.getItem('sejongSmsCalYear') !== null ? parseInt(localStorage.getItem('sejongSmsCalYear'), 10) : now.getFullYear();
-                    cm = localStorage.getItem('sejongSmsCalMonth') !== null ? parseInt(localStorage.getItem('sejongSmsCalMonth'), 10) + 1 : now.getMonth() + 1;
+                    cy = localStorage.getItem("sejongSmsCalYear") !== null ? parseInt(localStorage.getItem("sejongSmsCalYear"), 10) : now.getFullYear();
+                    cm = localStorage.getItem("sejongSmsCalMonth") !== null ? parseInt(localStorage.getItem("sejongSmsCalMonth"), 10) + 1 : now.getMonth() + 1;
                 }
 
-                if (typeof allMembers !== 'undefined') {
-                    // 월간출석부와 정확히 동일한 기준으로 '정상 수강중인' 학생만 필터링하여 계산
+                if (typeof allMembers !== "undefined") {
                     let allCourseRows = [];
                     allMembers.forEach(m => {
-                        if (m.status === 'trash' || m.status === 'delete' || m.status === 'completed' || m.status === 'hold') return;
+                        if (m.status === "trash" || m.status === "delete" || m.status === "completed" || m.status === "hold") return;
                         
-                        let courses = (m.course || '').split(',').map(c => c.trim()).filter(c => c !== '');
-                        const hasJeggwa = courses.some(c => c.includes('제과') && !c.includes('제과제빵'));
-                        const hasJeppang = courses.some(c => c.includes('제빵') && !c.includes('제과제빵'));
+                        let courses = (m.course || "").split(",").map(c => c.trim()).filter(c => c !== "");
+                        const hasJeggwa = courses.some(c => c.includes("제과") && !c.includes("제과제빵"));
+                        const hasJeppang = courses.some(c => c.includes("제빵") && !c.includes("제과제빵"));
                         if (hasJeggwa && hasJeppang) {
-                            courses = courses.filter(c => !c.includes('제과') && !c.includes('제빵'));
-                            courses.push('제과제빵기능사');
+                            courses = courses.filter(c => !c.includes("제과") && !c.includes("제빵"));
+                            courses.push("제과제빵기능사");
                         }
                         
                         if (courses.length > 0) {
                             courses.forEach(courseFull => {
-                                let courseName = courseFull.replace(/\([^)]*\)/g, '').trim();
+                                let courseName = courseFull.replace(/\([^)]*\)/g, "").trim();
                                 allCourseRows.push({ member: m, courseName: courseName });
                             });
                         }
@@ -1045,11 +1043,16 @@
 
                     allCourseRows.forEach(r => {
                         const m = r.member;
-                        const cName = r.courseName || '';
+                        const cName = r.courseName || "";
                         
                         for (let month = 1; month <= 12; month++) {
-                            const syncKey = `${m.id}_${cy}_${month}_${cName}`;
-                            let days = syncData[syncKey];
+                            let days = null;
+                            if (typeof window.calculateRedBoxesForMonth === "function") {
+                                const result = window.calculateRedBoxesForMonth(m, cy, month, window.attendanceData || [], cName, window.GLOBAL_DATA_ADJUSTMENTS || {});
+                                if (result && result.redDays && result.redDays.length > 0 && result.hasAnyAttendance) {
+                                    days = result.redDays;
+                                }
+                            }
                             
                             if (days && (Array.isArray(days) ? days.length > 0 : days > 0)) {
                                 monthCounts[month] += (Array.isArray(days) ? days.length : 1);
@@ -1057,7 +1060,6 @@
                         }
                     });
                 }
-                
                 const selectedMonthCount = monthCounts[cm] || 0;
                 
                 const spanCount = document.getElementById('smsTotalRedBoxCount');

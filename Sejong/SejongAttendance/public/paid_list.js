@@ -153,11 +153,6 @@ function renderPaidList() {
     }
 
     // Load Sync Data for Expected Dates
-    let syncData = {};
-    try {
-        syncData = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
-    } catch (e) { }
-
     const monthText = currentMonth === 'all' ? '전체 월' : `${currentMonth}월`;
     let html = `
         <div class="course-header" style="background:#fff; padding:15px 0; border-bottom:3px solid #059669; margin-bottom:20px; display:flex; align-items:flex-end; justify-content: space-between;">
@@ -191,8 +186,7 @@ function renderPaidList() {
 
             // Get Expected Date from Sync
             const courseNameOnly = (p.course || '').split('(')[0].trim();
-            const syncKey = `${p.memberId}_${p.year}_${p.month}_${courseNameOnly || 'all'}`;
-            const expectedDay = syncData[syncKey];
+            const expectedDay = null; // sejong_ledger_sync 캐시 폐기됨
             const expectedDisplay = expectedDay ? `<span style="color:#d946ef; font-weight:900;">${expectedDay}일</span>` : '-';
 
             html += `
@@ -343,7 +337,7 @@ window.loadExamView = function (key) { window.location.href = `index.html?viewEx
 
 // Listen for payment sync updates from other tabs
 window.addEventListener('storage', (e) => {
-    if (e.key === 'sejong_payment_sync' || e.key === 'sejong_ledger_sync') {
+    if (e.key === 'sejong_payment_sync') {
         renderPaidList(); // Re-render to show updated expected dates
     }
 });

@@ -223,34 +223,14 @@ if (!localStorage.getItem('cache_cleared_v2')) {
 }
 
 function getLedgerMonthStats(memberId, targetYear, targetMonth, courseFilter = null) {
-    const syncKey = `${memberId}_${targetYear}_${targetMonth}_${courseFilter || 'all'}`;
-    let syncData = {};
-    try {
-        const parsed = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
-        syncData = window.ledgerSyncData || parsed || {};
-    } catch(e) {
-        syncData = {};
-    }
-    
-    // 1. Check real milestone
-    if (syncData && syncData[syncKey]) {
-        const rawSync = syncData[syncKey];
-        const days = Array.isArray(rawSync) ? rawSync : (typeof rawSync === 'number' ? [rawSync] : []);
-        if (days.length > 0) {
-            return { eighthDays: days, eighthMonth: targetMonth, isSimulated: false, hasAnyAttendance: true };
+    if (typeof window.calculateRedBoxesForMonth === 'function') {
+        const memberObj = membersData.find(m => String(m.id) === String(memberId));
+        if (memberObj) {
+            const result = window.calculateRedBoxesForMonth(memberObj, targetYear, targetMonth, attendanceData || [], courseFilter, window.GLOBAL_DATA_ADJUSTMENTS || {});
+            // Convert to format expected by ledger.js
+            return { eighthDays: result.redDays, eighthMonth: targetMonth, isSimulated: result.isSimulated, hasAnyAttendance: result.hasAnyAttendance };
         }
     }
-
-    const m = membersData.find(m => String(m.id) === String(memberId));
-        if (typeof window.calculateRedBoxesForMonth === 'function') {
-            const memberObj = membersData.find(m => String(m.id) === String(memberId));
-            if (memberObj) {
-                const result = window.calculateRedBoxesForMonth(memberObj, targetYear, targetMonth, attendanceData || [], courseFilter, window.GLOBAL_DATA_ADJUSTMENTS || {});
-                if (result && result.redDays && result.redDays.length > 0) {
-                    return { eighthDays: result.redDays, eighthMonth: targetMonth, isSimulated: result.isSimulated, hasAnyAttendance: result.hasAnyAttendance };
-                }
-            }
-        }
     return { eighthDays: [], eighthMonth: targetMonth, isSimulated: false, hasAnyAttendance: false };
 }
 
@@ -781,7 +761,7 @@ window.loadExamView = function (key) { window.location.href = `index.html?viewEx
 
 // [신규 - 즉각 동기화] 다른 탭에서 예정일이 변경되면 즉시 반영
 window.addEventListener('storage', (e) => {
-    if (e.key === 'sejong_ledger_sync' || e.key === 'sejong_timetable_sync' || e.key === 'sejong_attendance_sync') {
+    if (e.key === 'sejong_timetable_sync' || e.key === 'sejong_attendance_sync') {
         loadData(window.targetMemberId, currentYear);
     }
 });
