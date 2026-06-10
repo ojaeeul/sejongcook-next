@@ -11,6 +11,7 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
     if (!member) return { redDays: [], hasAnyAttendance: false, isSimulated: true };
 
     let isDualCourse = courseFilter === '제과제빵기능사' || courseFilter === 'all';
+    let isBogeoCourse = String(courseFilter || '').includes('복어');
     const courseStr = member.course || '';
     const hasJeggwa = courseStr.includes('제과') && !courseStr.includes('제과제빵');
     const hasJeppang = courseStr.includes('제빵') && !courseStr.includes('제과제빵');
@@ -94,7 +95,10 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
     
     const getCycle = (val) => {
         let vRaw = Math.round(val * 10);
-        if (isDualCourse) {
+        if (isBogeoCourse) {
+            if (vRaw < 100) return 0;
+            return Math.floor((vRaw - 100) / 100) + 1;
+        } else if (isDualCourse) {
             if (vRaw < 170) return 0;
             return Math.floor((vRaw - 170) / 170) + 1;
         } else {
