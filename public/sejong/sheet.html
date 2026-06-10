@@ -2104,8 +2104,8 @@
                         if (!m) return false;
                         const cName = r.courseFull || r.courseName || "";
                         let hasRedBox = false;
-                        if (typeof window.calculateRedBoxesForMonth === 'function') {
-                            const result = window.calculateRedBoxesForMonth(m, currentYear, window.activeMonthBadgeFilter, attendanceData || [], cName, window.GLOBAL_DATA_ADJUSTMENTS || {});
+                        if (typeof window.calculateLocalRedBoxesForMonth === 'function') {
+                            const result = window.calculateLocalRedBoxesForMonth(m, currentYear, window.activeMonthBadgeFilter, attendanceData || [], cName, window.GLOBAL_DATA_ADJUSTMENTS || {});
                             if (result && result.redDays && result.redDays.length > 0 && !result.isSimulated && result.hasAnyAttendance) {
                                 hasRedBox = true;
                             }
@@ -2136,12 +2136,12 @@
 
                 // [신규 - 전체 동기화] 현재 학원에 등록된 모든 과정/모든 학생에 대해 (필터 무관) 실제 레드박스 예정일 계산 및 동기화 저장
                 // (기존에는 상위 20명만 렌더링되어 다른 학생 데이터가 누락되는 문제 해결)
-                if (typeof window.calculateRedBoxesForMonth === 'function') {
+                if (typeof window.calculateLocalRedBoxesForMonth === 'function') {
                     allCourseRows.forEach(row => {
                         const m = row.member;
                         const rowCourseNameScope = row.courseName;
                         if (m && m.id) {
-                            const result = window.calculateRedBoxesForMonth(m, currentYear, currentMonth, attendanceData || [], rowCourseNameScope, window.GLOBAL_DATA_ADJUSTMENTS || {});
+                            const result = window.calculateLocalRedBoxesForMonth(m, currentYear, currentMonth, attendanceData || [], rowCourseNameScope, window.GLOBAL_DATA_ADJUSTMENTS || {});
                             const syncKeyNow = `${m.id}_${currentYear}_${currentMonth}_${rowCourseNameScope || 'all'}`;
                             
                             if (result && result.redDays && result.redDays.length > 0 && result.hasAnyAttendance) {
@@ -2766,7 +2766,7 @@
                     const m = r.member;
                     if (!m) return;
                     const cName = r.courseFull || r.courseName || "";
-                    const result = window.calculateRedBoxesForMonth(m, currentYear, currentMonth, window.attendanceData || [], cName, window.GLOBAL_DATA_ADJUSTMENTS || {});
+                    const result = window.calculateLocalRedBoxesForMonth(m, currentYear, currentMonth, window.attendanceData || [], cName, window.GLOBAL_DATA_ADJUSTMENTS || {});
                     if (result && result.redDays && result.redDays.length > 0) {
                         calcTotal += result.redDays.length;
                         calcDaysPerMember[m.name] = result.redDays;
@@ -2798,8 +2798,8 @@
                     let days = null;
                     
                     if (!days) {
-                        if (typeof window.calculateRedBoxesForMonth === 'function') {
-                            const result = window.calculateRedBoxesForMonth(m, targetYear, month, window.attendanceData || [], cName, window.GLOBAL_DATA_ADJUSTMENTS || {});
+                        if (typeof window.calculateLocalRedBoxesForMonth === 'function') {
+                            const result = window.calculateLocalRedBoxesForMonth(m, targetYear, month, window.attendanceData || [], cName, window.GLOBAL_DATA_ADJUSTMENTS || {});
                             if (result && result.redDays && result.redDays.length > 0 && !result.isSimulated && result.hasAnyAttendance) {
                                 days = result.redDays;
                             }
