@@ -1,3 +1,17 @@
+
+let sejongCycleSettingsCache = null;
+function getCycleSettings() {
+    if (!sejongCycleSettingsCache) {
+        sejongCycleSettingsCache = { default: 9, dual: 17, bogeo: 10 };
+        try {
+            const saved = localStorage.getItem("sejong_redbox_cycles");
+            if (saved) {
+                sejongCycleSettingsCache = { ...sejongCycleSettingsCache, ...JSON.parse(saved) };
+            }
+        } catch(e) {}
+    }
+    return sejongCycleSettingsCache;
+}
 // AI ASSISTANT RULE: 원장님의 명시적인 허가 없이 이 파일(공통 계산 로직)을 절대 수정하지 마세요. 수정이 필요하다면 먼저 한국어로 질문하고 허가를 받아야 합니다.
 /**
  * shared_calc.js
@@ -94,16 +108,20 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
 
     
     const getCycle = (val) => {
+        const settings = getCycleSettings();
         let vRaw = Math.round(val * 10);
         if (isBogeoCourse) {
-            if (vRaw < 100) return 0;
-            return Math.floor((vRaw - 100) / 100) + 1;
+            let target = settings.bogeo * 10;
+            if (vRaw < target) return 0;
+            return Math.floor((vRaw - target) / target) + 1;
         } else if (isDualCourse) {
-            if (vRaw < 170) return 0;
-            return Math.floor((vRaw - 170) / 170) + 1;
+            let target = settings.dual * 10;
+            if (vRaw < target) return 0;
+            return Math.floor((vRaw - target) / target) + 1;
         } else {
-            if (vRaw < 90) return 0;
-            return Math.floor((vRaw - 90) / 90) + 1;
+            let target = settings.default * 10;
+            if (vRaw < target) return 0;
+            return Math.floor((vRaw - target) / target) + 1;
         }
     };
 
