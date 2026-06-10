@@ -92,6 +92,16 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
 
     let iterYear = earliestYear;
     let iterMonth = earliestMonth;
+    // [신규] 납부대장(ledger) 데이터도 결재일에 포함
+    const ledgerDays = new Set();
+    if (member.ledger && Array.isArray(member.ledger)) {
+        member.ledger.forEach(l => {
+            if (Number(l.year) === Number(targetYear) && Number(l.month) === Number(targetMonth)) {
+                ledgerDays.add(Number(l.day));
+            }
+        });
+    }
+
     let monthsToCalc = [];
     let safetyCounter = 0;
     while (safetyCounter < 300) {
