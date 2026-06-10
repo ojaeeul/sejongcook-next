@@ -16,8 +16,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="shared_calc.js?v=1"></script>
-    <script src="script.js?v=1780796013_215152" defer></script>
+    <script src="shared_calc.js?v=1781101862809"></script>
+    <script src="script.js?v=1781101862809" defer></script>
     <style>
         .sheet-container {
             background: white;
@@ -1271,19 +1271,7 @@
 
     <script>
 
-    let sejongCycleSettingsCache = null;
-    function getCycleSettings() {
-        if (!sejongCycleSettingsCache) {
-            sejongCycleSettingsCache = { default: 9, dual: 17, bogeo: 10 };
-            try {
-                const saved = localStorage.getItem("sejong_redbox_cycles");
-                if (saved) {
-                    sejongCycleSettingsCache = { ...sejongCycleSettingsCache, ...JSON.parse(saved) };
-                }
-            } catch(e) {}
-        }
-        return sejongCycleSettingsCache;
-    }
+    
 
         // Force API Calls to port 8000 API for Bidirectional Sync
         const SHEET_API_BASE = '/api/sejong';

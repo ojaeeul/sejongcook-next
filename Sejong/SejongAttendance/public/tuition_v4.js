@@ -405,6 +405,22 @@ function getMemberEighthDayInMonth(memberId, year, month, courseFilter = null) {
 }
 
     if (!hasAnyAttendance) {
+        finalScheduledDate = null;
+    } else if (globalLastRecordDate && finalScheduledDate) {
+        let maxYear = globalLastRecordDate.getFullYear();
+        let maxMonth = globalLastRecordDate.getMonth() + 2;
+        if (maxMonth > 12) { maxMonth -= 12; maxYear += 1; }
+        if (finalScheduledDate.year > maxYear || (finalScheduledDate.year === maxYear && finalScheduledDate.month > maxMonth)) {
+            finalScheduledDate = null;
+        }
+    }
+
+    if (!finalScheduledDate && eighthDay) eighthDay = null; // Sync isDueInSelectedMonth if cleared
+
+    return { scheduledDate: finalScheduledDate, currentCount: currentCountObj, isDueInSelectedMonth: !!eighthDay, allMilestones };
+
+}
+
 function renderTable() {
     const tbody = document.getElementById('tuitionListBody');
     const tableCard = document.querySelector('.table-card');
