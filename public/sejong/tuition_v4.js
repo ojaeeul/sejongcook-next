@@ -1371,7 +1371,7 @@ function countUnpaidMilestonesForMonth(year, month) {
             const courseNameOnly = fullCourse.replace(/\([^)]*\)/g, "").trim();
             if (typeof window.calculateRedBoxesForMonth === "function") {
                 const result = window.calculateRedBoxesForMonth(m, year, month, window.attendanceData || [], courseNameOnly, window.GLOBAL_DATA_ADJUSTMENTS || {});
-                if (result && result.redDays && result.redDays.length > 0 && result.hasAnyAttendance) {
+                if (result && result.redDays && result.redDays.length > 0 && !result.isSimulated && result.hasAnyAttendance) {
                     count += result.redDays.length;
                 }
             }
