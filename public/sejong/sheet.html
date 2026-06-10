@@ -2102,7 +2102,7 @@
                     filteredRows = filteredRows.filter(r => {
                         const m = r.member;
                         if (!m) return false;
-                        const cName = r.courseName || '';
+                        const cName = r.courseFull || r.courseName || "";
                         let hasRedBox = false;
                         if (typeof window.calculateRedBoxesForMonth === 'function') {
                             const result = window.calculateRedBoxesForMonth(m, currentYear, window.activeMonthBadgeFilter, attendanceData || [], cName, window.GLOBAL_DATA_ADJUSTMENTS || {});
@@ -2765,7 +2765,7 @@
                 filteredRows.forEach(r => {
                     const m = r.member;
                     if (!m) return;
-                    const cName = r.courseName || "";
+                    const cName = r.courseFull || r.courseName || "";
                     const result = window.calculateRedBoxesForMonth(m, currentYear, currentMonth, window.attendanceData || [], cName, window.GLOBAL_DATA_ADJUSTMENTS || {});
                     if (result && result.redDays && result.redDays.length > 0) {
                         calcTotal += result.redDays.length;
@@ -2788,7 +2788,7 @@
             filteredRows.forEach(r => {
                 const m = r.member;
                 if (!m) return;
-                const cName = r.courseName || '';
+                const cName = r.courseFull || r.courseName || "";
                 
                 for (let month = 1; month <= 12; month++) {
                     // [복구] 무조건 현재 표시중인 월의 뱃지는 화면상의 "결재일 건수"와 일치시킵니다.
