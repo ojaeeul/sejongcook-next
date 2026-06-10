@@ -276,16 +276,6 @@
             border: 1px solid #FF0000 !important;
         }
 
-        .stat-outing {
-            color: #ea580c !important;
-            font-weight: bold;
-        }
-
-        .stat-return {
-            color: #9333ea !important;
-            font-weight: bold;
-        }
-
         .stat-text {
             color: #334155;
         }
@@ -687,14 +677,6 @@
                 border: 1px solid #FF0000 !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
-            }
-
-            .stat-outing {
-                color: #ea580c !important;
-            }
-
-            .stat-return {
-                color: #9333ea !important;
             }
 
             .is-holiday-col {
@@ -1196,10 +1178,6 @@
                                         class="symbol stat-absent">X</span> 결석</div>
                                 <div class="legend-item" id="brush-extension" onclick="setBrush('extension')"><span
                                         class="symbol stat-extension">연</span> 장</div>
-                                <div class="legend-item" id="brush-outing" onclick="setBrush('outing')"><span
-                                        class="symbol stat-outing" style="border:1px solid #ea580c;">외</span> 출</div>
-                                <div class="legend-item" id="brush-return" onclick="setBrush('return')"><span
-                                        class="symbol stat-return" style="border:1px solid #9333ea;">복</span> 귀</div>
                                 <div class="legend-item" id="brush-arrow" onclick="setBrush('arrow')"><span
                                         class="symbol stat-arrow">→</span> 살표</div>
                                 <div class="legend-item" id="brush-makeup" onclick="toggleMakeupDropdown(event)">
@@ -1511,8 +1489,6 @@
             if (status === 'present') document.getElementById('brush-present').classList.add('active');
             else if (status === 'absent') document.getElementById('brush-absent').classList.add('active');
             else if (status === 'extension') document.getElementById('brush-extension').classList.add('active');
-            else if (status === 'outing') document.getElementById('brush-outing').classList.add('active');
-            else if (status === 'return') document.getElementById('brush-return').classList.add('active');
             else if (status === 'arrow') document.getElementById('brush-arrow').classList.add('active');
             else if (status === '[' || status === ']') document.getElementById('brush-makeup').classList.add('active');
             else if (status === 'unchecked' && status !== null) document.getElementById('brush-eraser').classList.add('active');
@@ -1632,8 +1608,7 @@
                 const isExtension = r.status === 'extension' || strStatus.startsWith('연') || strStatus.includes('연장') || strStatus.startsWith('E');
                 const isAbsent = r.status === 'absent' || strStatus.startsWith('X') || strStatus.includes('결석');
                 const isEarlyTardy = r.status === 'early' || r.status === 'tardy' || strStatus.includes('조퇴') || strStatus.includes('지각') || strStatus.includes('△');
-                const isOutingReturn = r.status === 'outing' || r.status === 'return' || strStatus.includes('외출') || strStatus.includes('복귀');
-                const hasValidAttendance = isPresent || isExtension || isAbsent || isEarlyTardy || isOutingReturn;
+                const hasValidAttendance = isPresent || isExtension || isAbsent || isEarlyTardy;
 
                 if (hasValidAttendance) return true; // 출석 기록이 있으면 공휴일/일요일이라도 인정
 
@@ -2840,12 +2815,6 @@
                         td.style.color = '#2563eb';
                         td.style.fontWeight = 'bold';
                         td.classList.add('stat-text');
-                    } else if (status === 'outing' || status === '외출') {
-                        td.textContent = '외';
-                        td.classList.add('stat-outing');
-                    } else if (status === 'return' || status === '복귀') {
-                        td.textContent = '복';
-                        td.classList.add('stat-return');
                     } else {
                         // Custom Memo - Preview Bubble
                         if (status.length > 2) {
