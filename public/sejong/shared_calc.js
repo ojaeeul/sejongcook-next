@@ -1,16 +1,18 @@
 
-let sejongCycleSettingsCache = null;
 function getCycleSettings() {
-    if (!sejongCycleSettingsCache) {
-        sejongCycleSettingsCache = { default: 9, dual: 17, bogeo: 10 };
-        try {
-            const saved = localStorage.getItem("sejong_redbox_cycles");
-            if (saved) {
-                sejongCycleSettingsCache = { ...sejongCycleSettingsCache, ...JSON.parse(saved) };
-            }
-        } catch(e) {}
+    let defaultVal = 9;
+    let dualVal = 17;
+    let bogeoVal = 17; // Changed from 10 to 17 to match sheet.html
+    
+    if (typeof document !== 'undefined') {
+        const sd = document.getElementById('cycleStandard');
+        const dd = document.getElementById('cycleDual');
+        const bd = document.getElementById('cycleBogeo');
+        if (sd) defaultVal = parseFloat(sd.value) || 9;
+        if (dd) dualVal = parseFloat(dd.value) || 17;
+        if (bd) bogeoVal = parseFloat(bd.value) || 17;
     }
-    return sejongCycleSettingsCache;
+    return { default: defaultVal, dual: dualVal, bogeo: bogeoVal };
 }
 // AI ASSISTANT RULE: 원장님의 명시적인 허가 없이 이 파일(공통 계산 로직)을 절대 수정하지 마세요. 수정이 필요하다면 먼저 한국어로 질문하고 허가를 받아야 합니다.
 /**
@@ -24,12 +26,16 @@ function getCycleSettings() {
 window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, allAttendanceLogs, courseFilter, GLOBAL_DATA_ADJUSTMENTS) {
     if (!member) return { redDays: [], hasAnyAttendance: false, isSimulated: true };
 
-    let isDualCourse = courseFilter === '제과제빵기능사' || courseFilter === 'all';
-    let isBogeoCourse = String(courseFilter || '').includes('복어') || String(courseFilter || '').includes('산업기사');
-    const courseStr = member.course || '';
+    // [HOTFIX] sheet.html과 완벽하게 동일한 조건식 적용
+    let cleanFilter = String(courseFilter || '').replace(/\s/g, '');
+    let isDualCourse = cleanFilter.includes('제과제빵');
+    let isBogeoCourse = cleanFilter.includes('복어') || cleanFilter.includes('산업기사');
+    
+    // 혹시라도 개별 과목(제과, 제빵) 두 개를 모두 듣는 특수 경우 (기존 로직 유지하되 안전하게)
+    const courseStr = String(member.course || '').replace(/\s/g, '');
     const hasJeggwa = courseStr.includes('제과') && !courseStr.includes('제과제빵');
     const hasJeppang = courseStr.includes('제빵') && !courseStr.includes('제과제빵');
-    if (hasJeggwa && hasJeppang && (courseFilter === '제과기능사' || courseFilter === '제빵기능사')) {
+    if (hasJeggwa && hasJeppang && (cleanFilter.includes('제과기능사') || cleanFilter.includes('제빵기능사'))) {
         isDualCourse = true;
     }
     const attendanceIncrement = isDualCourse ? 1.0 : 1.0;
