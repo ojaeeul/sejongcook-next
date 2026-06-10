@@ -1,33 +1,26 @@
 const fs = require('fs');
-let content = fs.readFileSync('public/sejong/shared_calc.js', 'utf8');
+let content = fs.readFileSync('Sejong/SejongAttendance/public/shared_calc.js', 'utf8');
 
-// The problematic block:
-//                let newCycle = getCycle(runningTotal);
-//                if (isNaN(newCycle)) newCycle = 0;
-//
-//                let currentCycle = getCycle(currentMC.carryFromPrev);
-//                if (isNaN(currentCycle)) currentCycle = 0;
-//                let shouldShowRedBox = false;
+const target = `        // [수정] redBoxDates 계산을 위해 carryOverP는 sheet.html과 동일하게 순수 출석(raw attendances)만 합산해야 함.
+        // presentOverride는 화면 표시용이므로 이월(carryOver) 계산에서 제외.
+        let rawAttendancesForCarry = attendances;
+        
+        if (adjustment && adjustment.presentOverride !== undefined) {
+            attendances = adjustment.presentOverride; // allMilestones 또는 외부 사용처를 위해 attendances 자체는 남겨둠 (필요시)
+        }
 
-const fixBlock = `
-        let currentCycleForMonth = getCycle(currentMC.carryFromPrev);
-        if (isNaN(currentCycleForMonth)) currentCycleForMonth = 0;
-        const adjustment = GLOBAL_DATA_ADJUSTMENTS[String(member.id)]?.[currentMC.key];
+        let totalCombined = Math.round((carryOverP + manualMakeup + rawAttendancesForCarry) * 10) / 10;`;
 
-        currentMonthLogs.forEach(l => {`;
+const replacement = `        // [복구] sheet.html과 완전히 동일하게 presentOverride를 적용한 값을 이월(carryOver) 계산에 사용합니다.
+        if (adjustment && adjustment.presentOverride !== undefined) {
+            attendances = adjustment.presentOverride;
+        }
 
-content = content.replace(/const adjustment = GLOBAL_DATA_ADJUSTMENTS\[String\(member\.id\)\]\?\.\[currentMC\.key\];\s*currentMonthLogs\.forEach\(l => \{/, fixBlock);
+        let totalCombined = Math.round((carryOverP + manualMakeup + attendances) * 10) / 10;`;
 
-const fixLoop = `
-                let newCycle = getCycle(runningTotal);
-                if (isNaN(newCycle)) newCycle = 0;
+content = content.replace(target, replacement);
+fs.writeFileSync('Sejong/SejongAttendance/public/shared_calc.js', content);
 
-                let shouldShowRedBox = false;
-                if (newCycle > currentCycleForMonth) {
-                    shouldShowRedBox = true;
-                    currentCycleForMonth = newCycle;
-                }`;
+const { execSync } = require('child_process');
+execSync('cp Sejong/SejongAttendance/public/shared_calc.js public/sejong/shared_calc.js');
 
-content = content.replace(/let newCycle = getCycle\(runningTotal\);\s*if \(isNaN\(newCycle\)\) newCycle = 0;\s*let currentCycle = getCycle\(currentMC\.carryFromPrev\);\s*if \(isNaN\(currentCycle\)\) currentCycle = 0;\s*let shouldShowRedBox = false;\s*if \(newCycle > currentCycle\) \{\s*shouldShowRedBox = true;\s*currentCycle = newCycle;\s*\}/, fixLoop);
-
-fs.writeFileSync('public/sejong/shared_calc.js', content, 'utf8');
