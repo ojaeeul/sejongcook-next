@@ -2050,6 +2050,64 @@
             }
 
             let isSimulated = false;
+            if (redBoxDates.size === 0 && currentMC && (uniqueLogs.length > 0 || (member.ledger && member.ledger.length > 0))) {
+                const now = new Date();
+                const limit = new Date(targetYear, targetMonth, 0); 
+                
+                let simDate = new Date(currentMC.year, currentMC.month - 1, 1);
+                
+                let lastRecordDateObj = null;
+                if (uniqueLogs.length > 0) {
+                    lastRecordDateObj = new Date(uniqueLogs[uniqueLogs.length - 1].date);
+                }
+                
+                if (lastRecordDateObj && lastRecordDateObj > simDate) {
+                    simDate = new Date(lastRecordDateObj.getTime() + 86400000);
+                }
+
+                let simTotal = runningTotal;
+                let limitCounter = 0;
+                
+                while (simDate <= limit && limitCounter < 100) {
+                    limitCounter++;
+                    const yy = simDate.getFullYear();
+                    const mm = String(simDate.getMonth() + 1).padStart(2, '0');
+                    const dd = String(simDate.getDate()).padStart(2, '0');
+                    const dateStr = `${yy}-${mm}-${dd}`;
+                    
+                    const isHolidayInSys = window.holidaysData && window.holidaysData.some(h => h.date === dateStr);
+                    const isNationalHoliday = window.KOREAN_HOLIDAYS_MAP && !!window.KOREAN_HOLIDAYS_MAP[dateStr];
+                    const isHoliday = isHolidayInSys || isNationalHoliday;
+                    const dayOfWeek = simDate.getDay();
+
+                    let isValidDay = false;
+                    if (courseFilter) {
+                        const cleanFilter = courseFilter.replace(/\([^)]*\)/g, '').trim();
+                        const schedule = window.COURSE_SCHEDULES ? window.COURSE_SCHEDULES[cleanFilter] : null;
+                        if (schedule) {
+                            if (schedule.includes(dayOfWeek)) isValidDay = true;
+                        } else {
+                            if (dayOfWeek !== 0) isValidDay = true;
+                        }
+                    } else {
+                        if (dayOfWeek !== 0) isValidDay = true;
+                    }
+
+                    if (isValidDay && !isHoliday) {
+                        const prevSimCycle = getCycle(simTotal);
+                        simTotal += attendanceIncrement;
+                        const newSimCycle = getCycle(simTotal);
+                        
+                        if (newSimCycle > prevSimCycle) {
+                            if (simDate.getFullYear() === Number(targetYear) && (simDate.getMonth() + 1) === Number(targetMonth)) {
+                                redBoxDates.add(dateStr);
+                                isSimulated = true;
+                            }
+                            break; 
+                        }
+                    }
+                    simDate.setDate(simDate.getDate() + 1);
+                }
             }
 
             const ledgerDays = new Set();
@@ -2968,7 +3026,7 @@
 
                 // [신규] 상단 수강생결재일(1~12월) 뱃지 렌더링
                 // 뱃지는 선택된 월 필터링(filteredRows)에 영향을 받지 않고 전체 목록(rowsForBadges)을 기준으로 표시합니다.
-                renderMonthlyRedBoxPanel(rowsForBadges, currentYear, currentMonth, window.activeMonthBadgeFilter ? null : redBoxOccurrences);
+                renderMonthlyRedBoxPanel(filteredRows, currentYear, currentMonth, window.activeMonthBadgeFilter ? null : redBoxOccurrences);
 
                 // [삭제] 위에서 루프 돌기전에 한 번에 저장함.
             } catch (e) {
@@ -2978,41 +3036,30 @@
         }
 
         
-            // [DIAGNOSTIC] Find mismatch between UI red boxes and shared_calc red boxes
-            setTimeout(() => {
-                let uiTotal = redBoxOccurrences;
-                let calcTotal = 0;
-                let calcDaysPerMember = {};
-
-                filteredRows.forEach(r => {
-                    const m = r.member;
-                    if (!m) return;
-                    const cName = r.courseFull || r.courseName || "";
-                    const result = window.calculateLocalRedBoxesForMonth(m, currentYear, currentMonth, window.attendanceData || [], cName, window.GLOBAL_DATA_ADJUSTMENTS || {});
-                    if (result && result.redDays && result.redDays.length > 0) {
-                        calcTotal += result.redDays.length;
-                        calcDaysPerMember[m.name] = result.redDays;
-                    }
-                });
-
-                if (uiTotal !== calcTotal) {
-                    console.error("🚨 BADGE MISMATCH 🚨");
-                    console.error("UI (redBoxOccurrences):", uiTotal);
-                    console.error("Calc (shared_calc):", calcTotal);
-                    console.error("Calc Details:", calcDaysPerMember);
-                    alert("뱃지 갯수 불일치 발생! 콘솔을 확인해주세요.\nUI: " + uiTotal + "개, 계산: " + calcTotal + "개");
-                }
-            }, 2000);
+            
 
         function renderMonthlyRedBoxPanel(filteredRows, targetYear, displayMonth, displayCountValue) {
             const monthCounts = {1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 11:0, 12:0};
             
-            filteredRows.forEach(r => {
-                const m = r.member;
-                if (!m) return;
-                const cName = r.courseFull || r.courseName || "";
-                
-                for (let month = 1; month <= 12; month++) {
+            // [원장님 특별 요청] 뱃지 전용 별도 계산 코드(calculateLocalRedBoxesForMonth)를 전면 폐기하고,
+            // 오직 실제 그리드(출석표) 화면에 찍혀있는 "결재일 건수(redBoxOccurrences)"만 100% 신뢰하여 표시합니다.
+            
+            if (displayMonth >= 1 && displayMonth <= 12 && displayCountValue !== null) {
+                monthCounts[displayMonth] = displayCountValue;
+            }
+
+            const panel = document.getElementById('monthlyRedBoxPanel');
+            if (!panel) return;
+
+            let badgesHtml = `
+                <div style="display:flex; gap:6px; flex-wrap:wrap; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:6px 14px; align-items:center;">
+                    <span style="font-size:0.75rem; font-weight:700; color:#64748b; white-space:nowrap; margin-right:8px;">
+                        <span class="material-icons" style="font-size:0.9rem; vertical-align:middle; margin-right:2px;">calendar_month</span>
+                        수강생결재일
+                    </span>
+            `;
+
+            for (let month = 1; month <= 12; month++) {
                 const count = monthCounts[month];
                 const isSelected = window.activeMonthBadgeFilter === month;
                 
