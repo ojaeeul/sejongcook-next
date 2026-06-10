@@ -486,56 +486,34 @@ function renderTargetList() {
         // 3. Filter by Payment Schedule (8th day) if enabled
         if (usePaymentFilter && rangeStart && rangeEnd) {
             let expandedMembers = [];
-            const ledgerSync = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
             
             membersInCourse.forEach(m => {
                 let foundDates = new Set();
                 
-                // Match exactly with what sheet.html rendered
-                Object.keys(ledgerSync).forEach(k => {
-                    const parts = k.split('_'); // [id, year, month, courseFull]
-                    if (parts.length >= 4 && parts[0] === String(m.id)) {
-                        const syncYear = parseInt(parts[1]);
-                        const syncMonth = parseInt(parts[2]);
+                const startMonthBound = rangeStart.getFullYear() * 12 + rangeStart.getMonth();
+                const endMonthBound = rangeEnd.getFullYear() * 12 + rangeEnd.getMonth();
+                
+                for (let bound = startMonthBound; bound <= endMonthBound; bound++) {
+                    const syncYear = Math.floor(bound / 12);
+                    const syncMonth = (bound % 12) + 1;
+                    
+                    const daysArr = getPaymentDaysForMemberOnTheFly(m, syncYear, syncMonth, cName);
+                    
+                    daysArr.forEach(dVal => {
+                        const d = String(dVal).includes('-') ? parseInt(String(dVal).split('-')[2], 10) : parseInt(dVal, 10);
+                        if (isNaN(d)) return;
                         
-                        // Create a dummy date for the sync month to check if it falls within the range
-                        // Since we just have year and month, we check if the month overlaps the range
-                        const startMonthBound = rangeStart.getFullYear() * 12 + rangeStart.getMonth();
-                        const endMonthBound = rangeEnd.getFullYear() * 12 + rangeEnd.getMonth();
-                        const syncMonthBound = syncYear * 12 + (syncMonth - 1);
-
-                        if (syncMonthBound >= startMonthBound && syncMonthBound <= endMonthBound) {
-                            const courseFull = parts.slice(3).join('_');
-                            const cleanSyncCourse = courseFull === 'all' ? '미지정' : courseFull.replace(/\([^)]*\)/g, '').trim();
-                            
-                            if (cleanSyncCourse === cName || (cName === '미지정' && courseFull === 'all')) {
-                                const days = ledgerSync[k];
-                                let daysArr = [];
-                                if (Array.isArray(days)) {
-                                    daysArr = days;
-                                } else if (days && days > 0) {
-                                    daysArr = [days];
-                                }
-                                
-                                daysArr.forEach(dVal => {
-                                    const d = String(dVal).includes('-') ? parseInt(String(dVal).split('-')[2], 10) : parseInt(dVal, 10);
-                                    if (isNaN(d)) return;
-                                    
-                                    // Check if the specific day is within the exact date range
-                                    const exactDate = new Date(syncYear, syncMonth - 1, d);
-                                    // Set to midnight to ensure inclusive edge checking
-                                    const exactTime = exactDate.getTime();
-                                    const startTime = new Date(rangeStart.getFullYear(), rangeStart.getMonth(), rangeStart.getDate()).getTime();
-                                    const endTime = new Date(rangeEnd.getFullYear(), rangeEnd.getMonth(), rangeEnd.getDate(), 23, 59, 59).getTime();
-                                    
-                                    if (exactTime >= startTime && exactTime <= endTime) {
-                                        foundDates.add(`${syncYear}-${syncMonth}-${d}`);
-                                    }
-                                });
-                            }
+                        // Check if the specific day is within the exact date range
+                        const exactDate = new Date(syncYear, syncMonth - 1, d);
+                        const exactTime = exactDate.getTime();
+                        const startTime = new Date(rangeStart.getFullYear(), rangeStart.getMonth(), rangeStart.getDate()).getTime();
+                        const endTime = new Date(rangeEnd.getFullYear(), rangeEnd.getMonth(), rangeEnd.getDate(), 23, 59, 59).getTime();
+                        
+                        if (exactTime >= startTime && exactTime <= endTime) {
+                            foundDates.add(`${syncYear}-${syncMonth}-${d}`);
                         }
-                    }
-                });
+                    });
+                }
                 
                 // If sheet.html had red boxes for this member in this range, use them exactly!
                 if (foundDates.size > 0) {
@@ -1935,7 +1913,10 @@ function getMemberAllMilestones(memberId, courseFilter, anchorYear = null, ancho
 }
 
 function syncCalendarSelection() {
+    const pf = document.getElementById('usePaymentFilter');
+    if (pf) pf.checked = true;
     renderRangeCalendar();
+    renderTargetList();
     saveAllDrafts(); // Auto save on date change
 }
 
