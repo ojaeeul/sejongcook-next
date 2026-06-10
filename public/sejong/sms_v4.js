@@ -1820,55 +1820,63 @@ function setWeekRange(week) {
 function getAllMilestonesForRange(memberId, courseFilter, startRange, endRange) {
     const cleanFilter = String(courseFilter || 'all').replace(/\([^)]*\)/g, '').trim();
     
-    const syncData = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
     let matched = [];
-
     let current = new Date(startRange);
+    
+    // Member object is required
+    let targetMember = null;
+    if (Array.isArray(allMembers)) {
+        targetMember = allMembers.find(m => String(m.id) === String(memberId));
+    }
+    if (!targetMember) return matched;
+
+    // Build cache of days per month to avoid calling calculateRedBoxesForMonth 31 times per month
+    const monthCache = {};
+
     while (current <= endRange) {
         const y = current.getFullYear();
         const m = current.getMonth() + 1;
         const d = current.getDate();
+        const cacheKey = y + "_" + m;
 
-        Object.keys(syncData).forEach(k => {
-            if (k.includes('_simulated')) return;
-            const parts = k.split('_'); 
-            if (parts.length >= 4 && parts[0] == memberId && parts[1] == y && parts[2] == m) {
-                const courseName = parts[3];
-                if (cleanFilter !== 'all' && courseName !== 'all' && !courseName.includes(cleanFilter)) {
+        if (!monthCache[cacheKey]) {
+            let myCourses = String(targetMember.course || '').split(',').map(c => c.trim()).filter(c => c !== '');
+            const hasJeggwa = myCourses.some(c => c.includes('제과') && !c.includes('제과제빵'));
+            const hasJeppang = myCourses.some(c => c.includes('제빵') && !c.includes('제과제빵'));
+            if (hasJeggwa && hasJeppang) {
+                myCourses = myCourses.filter(c => !c.includes('제과') && !c.includes('제빵'));
+                myCourses.push('제과제빵기능사');
+            }
+            
+            monthCache[cacheKey] = [];
+            myCourses.forEach(c => {
+                const cName = c.replace(/\([^)]*\)/g, '').trim();
+                if (cleanFilter !== 'all' && cName !== '미지정' && !cName.includes(cleanFilter)) {
                     return;
                 }
-                const days = syncData[k];
-                let hasRedBoxOnDay = false;
-                
-                const normalizeDay = (val) => {
-                    return String(val).includes('-') ? parseInt(String(val).split('-')[2], 10) : parseInt(val, 10);
-                };
+                const daysArr = getPaymentDaysForMemberOnTheFly(targetMember, y, m, cName);
+                daysArr.forEach(dVal => {
+                    const parsedD = String(dVal).includes('-') ? parseInt(String(dVal).split('-')[2], 10) : parseInt(dVal, 10);
+                    if (!isNaN(parsedD)) {
+                        monthCache[cacheKey].push({ day: parsedD, course: cName });
+                    }
+                });
+            });
+        }
 
-                if (Array.isArray(days)) {
-                    hasRedBoxOnDay = days.some(dVal => normalizeDay(dVal) === d);
-                } else if (days !== null && days !== undefined) {
-                    hasRedBoxOnDay = (normalizeDay(days) === d);
-                }
-                
-                if (hasRedBoxOnDay) {
-                    matched.push({
-                        year: y,
-                        month: m,
-                        day: d,
-                        course: courseName === 'all' ? null : courseName
-                    });
-                }
-            }
+        const hits = monthCache[cacheKey].filter(item => item.day === d);
+        hits.forEach(hit => {
+            matched.push({
+                year: y,
+                month: m,
+                day: d,
+                course: hit.course === '미지정' ? null : hit.course
+            });
         });
+
         current.setDate(current.getDate() + 1);
     }
     return matched;
-}
-
-function getAllMilestonesForMonth(memberId, courseFilter, year, month) {
-    const startRange = new Date(year, month - 1, 1);
-    const endRange = new Date(year, month, 0);
-    return getAllMilestonesForRange(memberId, courseFilter, startRange, endRange);
 }
 
 function getMemberAllMilestones(memberId, courseFilter, anchorYear = null, anchorMonth = null, includePast = false) {
