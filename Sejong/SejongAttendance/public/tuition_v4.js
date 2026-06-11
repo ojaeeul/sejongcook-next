@@ -313,8 +313,8 @@ async function loadData() {
     try {
         
         
-        const [mRes, pRes, sRes, aRes, hRes, tRes] = if(typeof window.loadCycleSettings === 'function') await window.loadCycleSettings();
-        await Promise.all([
+        if(typeof window.loadCycleSettings === 'function') await window.loadCycleSettings();
+        const [mRes, pRes, sRes, aRes, hRes, tRes] = await Promise.all([
             fetch(getFetchUrl('members')),
             fetch(getFetchUrl('payments')),
             fetch(getFetchUrl('settings')),
