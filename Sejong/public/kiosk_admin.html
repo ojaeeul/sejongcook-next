@@ -296,6 +296,8 @@
                 </div>
                 <a href="monitor.html?v=1780796013_211823" target="_blank" class="nav-item highlight">키오스크 모니터</a>
                 <a href="kiosk_admin.html" id="navKioskAdmin" class="nav-item active">키오스크 설정</a>
+
+                <a href="app.html" id="navMobileApp" class="nav-item" target="_blank">📱 모바일 앱</a>
             </nav>
         </aside>
 
@@ -448,9 +450,9 @@
                 <h3>AI 얼굴 인식 민감도 조절</h3>
                 <p style="font-size: 0.95rem; color: #475569; margin-top: 0; margin-bottom: 12px;">오인식이 잦으면 엄격하게, 잘 인식되지 않으면 느슨하게 설정하세요.</p>
                 <select id="sensitivitySelect" onchange="saveSettings()">
-                    <option value="0.5">매우 엄격하게 (정확도 우선)</option>
-                    <option value="0.65" selected>보통 (권장 기본값)</option>
-                    <option value="0.75">느슨하게 (인식 속도 우선)</option>
+                    <option value="0.35">매우 엄격하게 (오인식 방지, 0.35)</option>
+                    <option value="0.45" selected>보통 (권장 기본값, 0.45)</option>
+                    <option value="0.55">느슨하게 (인식 속도 우선, 0.55)</option>
                 </select>
             </div>
         </div>

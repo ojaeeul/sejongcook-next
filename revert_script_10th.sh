@@ -1,11 +1,11 @@
 #!/bin/bash
 set -e
 
-echo "1. Checking out all files from 7bb9b93..."
-git checkout 7bb9b93 -- .
+echo "1. Checking out all files from 7c10a5a..."
+git checkout 7c10a5a -- .
 
-echo "2. Handling files added since 7bb9b93..."
-git diff --name-status 7bb9b93 HEAD | grep '^A' | awk '{print $2}' | while read file; do
+echo "2. Handling files added since 7c10a5a..."
+git diff --name-status 7c10a5a HEAD | grep '^A' | awk '{print $2}' | while read file; do
     # If the file is NOT in our exclusion list, delete it
     if [[ "$file" != "Sejong/SejongAttendance/public/phonebook.html" && \
           "$file" != "Sejong/SejongAttendance/public/phonebook.js" && \
@@ -96,6 +96,6 @@ git checkout HEAD -- \
 
 echo "4. Committing the rollback..."
 git add .
-git commit -m "Rollback: Revert to 7bb9b93 (June 9 10AM), keeping Phonebook, Cycle Settings, Stats/Tuition, and Mobile app changes"
+git commit -m "Rollback: Revert to 7c10a5a (June 10 10AM), keeping Phonebook, Cycle Settings, Stats/Tuition, and Mobile app changes"
 
 echo "Rollback script completed!"

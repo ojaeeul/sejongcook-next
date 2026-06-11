@@ -236,6 +236,8 @@ function renderAttendanceTbody() {
                 else if (st === '연' || st === 'extension' || (typeof st === 'string' && st.includes('연장'))) st = 'extension';
                 else if (st === '지각' || st === 'late') st = 'late';
                 else if (st === '조퇴' || st === 'early') st = 'early';
+                else if (st === '외출' || st === 'outing') st = 'outing';
+                else if (st === '복귀' || st === 'return') st = 'return';
                 else if (st === '[' || st === '첫출석' || st === '진입출석' || st === 'entry') st = 'entry';
                 else if (st === ']' || st === '종료출석' || st === '마감출석' || st === 'exit') st = 'exit';
             }
@@ -267,6 +269,8 @@ function renderAttendanceTbody() {
                 <button class="status-btn ${st === 'absent' ? 'active' : ''}" data-type="absent" onclick="setStatus(${m.id}, 'absent', this)">결석</button>
                 <button class="status-btn ${st === 'late' ? 'active' : ''}" data-type="late" onclick="setStatus(${m.id}, 'late', this)">지각</button>
                 <button class="status-btn ${st === 'early' ? 'active' : ''}" data-type="early" onclick="setStatus(${m.id}, 'early', this)">조퇴</button>
+                <button class="status-btn ${st === 'outing' ? 'active' : ''}" data-type="outing" onclick="setStatus(${m.id}, 'outing', this)">외출</button>
+                <button class="status-btn ${st === 'return' ? 'active' : ''}" data-type="return" onclick="setStatus(${m.id}, 'return', this)">복귀</button>
                 <button class="status-btn ${st === 'extension' ? 'active' : ''}" data-type="extension" onclick="setStatus(${m.id}, 'extension', this)">연장</button>
                 <button class="status-btn ${st === 'exit' ? 'active' : ''}" data-type="exit" style="${st === 'exit' ? 'background:#6366f1;color:white;border-color:#6366f1;' : ''}" onclick="setStatus(${m.id}, 'exit', this)">종료출석</button>
             </div>
@@ -299,6 +303,14 @@ window.setStatus = async function (memberId, statusType, btnElement) {
             btnElement.style.background = '#6366f1';
             btnElement.style.color = 'white';
             btnElement.style.borderColor = '#6366f1';
+        } else if (statusType === 'outing') {
+            btnElement.style.background = '#ea580c';
+            btnElement.style.color = 'white';
+            btnElement.style.borderColor = '#ea580c';
+        } else if (statusType === 'return') {
+            btnElement.style.background = '#9333ea';
+            btnElement.style.color = 'white';
+            btnElement.style.borderColor = '#9333ea';
         }
         currentAttendanceState[memberId] = statusType;
     }
@@ -373,7 +385,7 @@ window.markAllPresent = function () {
 };
 
 function updateStats() {
-    const stats = { present: 0, absent: 0, late: 0, early: 0, extension: 0, entry: 0, exit: 0 };
+    const stats = { present: 0, absent: 0, late: 0, early: 0, extension: 0, entry: 0, exit: 0, outing: 0, return: 0 };
 
     if (activeCourse && groupedCourses[activeCourse]) {
         let membersToRender = groupedCourses[activeCourse];
@@ -396,6 +408,8 @@ function updateStats() {
     document.getElementById('statAbsent').textContent = stats.absent;
     document.getElementById('statLate').textContent = stats.late;
     document.getElementById('statEarly').textContent = stats.early;
+    if(document.getElementById('statOuting')) document.getElementById('statOuting').textContent = stats.outing;
+    if(document.getElementById('statReturn')) document.getElementById('statReturn').textContent = stats.return;
     document.getElementById('statExtension').textContent = stats.extension;
 }
 

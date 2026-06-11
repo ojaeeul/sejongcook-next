@@ -1,15 +1,51 @@
-127.0.0.1 - - [05/Jun/2026 23:36:02] "GET /api/members HTTP/1.1" 200 -
-127.0.0.1 - - [05/Jun/2026 23:37:16] "GET /sheet.html HTTP/1.1" 200 -
-127.0.0.1 - - [05/Jun/2026 23:37:16] code 404, message File not found
-127.0.0.1 - - [05/Jun/2026 23:37:16] "GET /apple-touch-icon-precomposed.png HTTP/1.1" 404 -
-127.0.0.1 - - [05/Jun/2026 23:37:16] "GET /sheet.html HTTP/1.1" 200 -
-127.0.0.1 - - [05/Jun/2026 23:37:16] code 404, message File not found
-127.0.0.1 - - [05/Jun/2026 23:37:16] "GET /apple-touch-icon.png HTTP/1.1" 404 -
-127.0.0.1 - - [05/Jun/2026 23:37:16] code 404, message File not found
-127.0.0.1 - - [05/Jun/2026 23:37:16] "GET /favicon.ico HTTP/1.1" 404 -
-127.0.0.1 - - [05/Jun/2026 23:37:16] code 404, message File not found
-127.0.0.1 - - [05/Jun/2026 23:37:16] "GET /apple-touch-icon-precomposed.png HTTP/1.1" 404 -
-127.0.0.1 - - [05/Jun/2026 23:37:16] code 404, message File not found
-127.0.0.1 - - [05/Jun/2026 23:37:16] "GET /apple-touch-icon.png HTTP/1.1" 404 -
-127.0.0.1 - - [05/Jun/2026 23:37:16] code 404, message File not found
-127.0.0.1 - - [05/Jun/2026 23:37:16] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [09/Jun/2026 23:09:04] "GET /ledger.html HTTP/1.1" 200 -
+127.0.0.1 - - [09/Jun/2026 23:09:05] "GET /style.css?v=1780801936 HTTP/1.1" 200 -
+127.0.0.1 - - [09/Jun/2026 23:09:05] "GET /questions_data.js?v=1780796013_215152 HTTP/1.1" 200 -
+127.0.0.1 - - [09/Jun/2026 23:09:05] "GET /shared_calc.js?v=${Date.now()}?v=${Date.now()}?v=${Date.now()}_215727_2 HTTP/1.1" 200 -
+127.0.0.1 - - [09/Jun/2026 23:09:05] "GET /ledger.js?v=${Date.now()}?v=${Date.now()} HTTP/1.1" 200 -
+127.0.0.1 - - [09/Jun/2026 23:09:05] code 404, message File not found
+127.0.0.1 - - [09/Jun/2026 23:09:05] "GET /api/sejong/members?t=1781014145501 HTTP/1.1" 404 -
+127.0.0.1 - - [09/Jun/2026 23:09:05] code 404, message File not found
+127.0.0.1 - - [09/Jun/2026 23:09:05] code 404, message File not found
+127.0.0.1 - - [09/Jun/2026 23:09:05] code 404, message File not found
+127.0.0.1 - - [09/Jun/2026 23:09:05] "GET /api/sejong/payments?t=1781014145502 HTTP/1.1" 404 -
+127.0.0.1 - - [09/Jun/2026 23:09:05] code 404, message File not found
+127.0.0.1 - - [09/Jun/2026 23:09:05] "GET /api/sejong/settings?t=1781014145502 HTTP/1.1" 404 -
+127.0.0.1 - - [09/Jun/2026 23:09:05] "GET /api/sejong/attendance?t=1781014145502 HTTP/1.1" 404 -
+127.0.0.1 - - [09/Jun/2026 23:09:05] code 404, message File not found
+127.0.0.1 - - [09/Jun/2026 23:09:05] "GET /api/sejong/timetable?t=1781014145502 HTTP/1.1" 404 -
+127.0.0.1 - - [09/Jun/2026 23:09:05] "GET /api/sejong/holidays?t=1781014145502 HTTP/1.1" 404 -
+127.0.0.1 - - [09/Jun/2026 23:09:05] "GET /index.html HTTP/1.1" 200 -
+127.0.0.1 - - [09/Jun/2026 23:09:05] "GET /style.css?v=1780796013_211823 HTTP/1.1" 200 -
+127.0.0.1 - - [09/Jun/2026 23:09:05] "GET /exam_view.css?v=1780796013_211823 HTTP/1.1" 200 -
+127.0.0.1 - - [09/Jun/2026 23:09:05] "GET /script.js?v=1780796013_215152 HTTP/1.1" 200 -
+127.0.0.1 - - [09/Jun/2026 23:09:05] "GET /questions_data.js?v=1780796013_215152 HTTP/1.1" 200 -
+127.0.0.1 - - [09/Jun/2026 23:09:05] "GET /manifest.json HTTP/1.1" 200 -
+127.0.0.1 - - [09/Jun/2026 23:09:05] code 404, message File not found
+127.0.0.1 - - [09/Jun/2026 23:09:05] "GET /sejong/questions_data.js?v=1781014145949 HTTP/1.1" 404 -
+127.0.0.1 - - [09/Jun/2026 23:09:05] code 404, message File not found
+127.0.0.1 - - [09/Jun/2026 23:09:05] "GET /api/sejong/settings HTTP/1.1" 404 -
+127.0.0.1 - - [09/Jun/2026 23:09:05] code 404, message File not found
+127.0.0.1 - - [09/Jun/2026 23:09:05] "GET /api/sejong/members HTTP/1.1" 404 -
+127.0.0.1 - - [09/Jun/2026 23:09:05] "GET /sw.js HTTP/1.1" 200 -
+127.0.0.1 - - [09/Jun/2026 23:09:21] "GET /phonebook.html HTTP/1.1" 200 -
+127.0.0.1 - - [09/Jun/2026 23:09:21] "GET /phonebook.js?v=1780796013_215152 HTTP/1.1" 200 -
+127.0.0.1 - - [09/Jun/2026 23:09:21] code 404, message File not found
+127.0.0.1 - - [09/Jun/2026 23:09:21] "GET /api/sejong/members?t=1781014161210 HTTP/1.1" 404 -
+127.0.0.1 - - [09/Jun/2026 23:09:22] "GET /sw.js HTTP/1.1" 200 -
+127.0.0.1 - - [09/Jun/2026 23:09:22] "GET /index.html HTTP/1.1" 200 -
+127.0.0.1 - - [09/Jun/2026 23:09:22] "GET /manifest.json HTTP/1.1" 200 -
+127.0.0.1 - - [09/Jun/2026 23:09:22] code 404, message File not found
+127.0.0.1 - - [09/Jun/2026 23:09:22] "GET /sejong/questions_data.js?v=1781014162349 HTTP/1.1" 404 -
+127.0.0.1 - - [09/Jun/2026 23:09:22] code 404, message File not found
+127.0.0.1 - - [09/Jun/2026 23:09:22] "GET /api/sejong/settings HTTP/1.1" 404 -
+127.0.0.1 - - [09/Jun/2026 23:09:22] code 404, message File not found
+127.0.0.1 - - [09/Jun/2026 23:09:22] "GET /api/sejong/members HTTP/1.1" 404 -
+127.0.0.1 - - [09/Jun/2026 23:09:23] "GET /manifest.json HTTP/1.1" 200 -
+127.0.0.1 - - [09/Jun/2026 23:09:23] code 404, message File not found
+127.0.0.1 - - [09/Jun/2026 23:09:23] "GET /sejong/questions_data.js?v=1781014163239 HTTP/1.1" 404 -
+127.0.0.1 - - [09/Jun/2026 23:09:23] code 404, message File not found
+127.0.0.1 - - [09/Jun/2026 23:09:23] "GET /api/sejong/settings HTTP/1.1" 404 -
+127.0.0.1 - - [09/Jun/2026 23:09:23] code 404, message File not found
+127.0.0.1 - - [09/Jun/2026 23:09:23] "GET /api/sejong/members HTTP/1.1" 404 -
+127.0.0.1 - - [09/Jun/2026 23:09:23] "GET /sw.js HTTP/1.1" 200 -
