@@ -1,4 +1,8 @@
-<!DOCTYPE html>
+import os
+
+path = "/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejk 4/sejongcook-next/Sejong/SejongAttendance/public/cycle_settings.html"
+
+html_content = """<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -409,3 +413,9 @@
 </script>
 </body>
 </html>
+"""
+
+with open(path, 'w', encoding='utf-8') as f:
+    f.write(html_content)
+
+print("Updated cycle_settings.html with baking box")
