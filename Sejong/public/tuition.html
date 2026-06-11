@@ -12,7 +12,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="tuition_v4.js?1780848533" defer></script>
+    <script src="shared_calc.js?v=1781103703774"></script>
+    <script src="tuition_v4.js?1781102345630" defer></script>
 </head>
 
 <body>
@@ -151,6 +152,10 @@
                         <span class="material-icons" style="font-size: 1.2rem; margin-right: 8px;">list_alt</span>
                         과목/시간 설정
                     </a>
+                    <a href="cycle_settings.html" id="navCycleSettings" class="nav-item">
+                        <span class="material-icons" style="font-size: 1.2rem; margin-right: 8px;">tune</span>
+                        결재 주기 설정
+                    </a>
                     <a href="index.html?filter=archive" id="navArchive" class="nav-item">수료생 보관함</a>
                     <a href="index.html?filter=trash" id="navTrash" class="nav-item">휴지통</a>
                     <a href="stats.html" class="nav-item">통계 및 납부</a>
@@ -195,7 +200,7 @@
 
                 <div class="content-body" style="padding-top: 20px;">
 
-                    <!-- 연간 월별 미납 현황 패널 -->
+                    <!-- 연간 수강생결재일 현황 패널 -->
                     <div id="monthlyUnpaidPanel" style="display:flex; gap:6px; flex-wrap:wrap; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:10px 14px; margin-bottom:14px; align-items:center;">
                         <span style="font-size:0.75rem; font-weight:700; color:#64748b; white-space:nowrap; margin-right:4px;">
                             <span class="material-icons" style="font-size:0.9rem; vertical-align:middle;">calendar_month</span>

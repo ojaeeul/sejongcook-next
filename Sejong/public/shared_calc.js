@@ -1,3 +1,19 @@
+
+function getCycleSettings() {
+    let defaultVal = 9;
+    let dualVal = 17;
+    let bogeoVal = 17; // Changed from 10 to 17 to match sheet.html
+    
+    if (typeof document !== 'undefined') {
+        const sd = document.getElementById('cycleStandard');
+        const dd = document.getElementById('cycleDual');
+        const bd = document.getElementById('cycleBogeo');
+        if (sd) defaultVal = parseFloat(sd.value) || 9;
+        if (dd) dualVal = parseFloat(dd.value) || 17;
+        if (bd) bogeoVal = parseFloat(bd.value) || 17;
+    }
+    return { default: defaultVal, dual: dualVal, bogeo: bogeoVal };
+}
 // AI ASSISTANT RULE: 원장님의 명시적인 허가 없이 이 파일(공통 계산 로직)을 절대 수정하지 마세요. 수정이 필요하다면 먼저 한국어로 질문하고 허가를 받아야 합니다.
 /**
  * shared_calc.js
@@ -10,7 +26,18 @@
 window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, allAttendanceLogs, courseFilter, GLOBAL_DATA_ADJUSTMENTS) {
     if (!member) return { redDays: [], hasAnyAttendance: false, isSimulated: true };
 
-    const isDualCourse = (courseFilter && String(courseFilter).replace(/\s/g, '').includes('제과제빵')) || (!courseFilter && String(member.course).replace(/\s/g, '').includes('제과제빵'));
+    // [HOTFIX] sheet.html과 완벽하게 동일한 조건식 적용
+    let cleanFilter = String(courseFilter || '').replace(/\s/g, '');
+    let isDualCourse = cleanFilter.includes('제과제빵');
+    let isBogeoCourse = cleanFilter.includes('복어') || cleanFilter.includes('산업기사');
+    
+    // 혹시라도 개별 과목(제과, 제빵) 두 개를 모두 듣는 특수 경우 (기존 로직 유지하되 안전하게)
+    const courseStr = String(member.course || '').replace(/\s/g, '');
+    const hasJeggwa = courseStr.includes('제과') && !courseStr.includes('제과제빵');
+    const hasJeppang = courseStr.includes('제빵') && !courseStr.includes('제과제빵');
+    if (hasJeggwa && hasJeppang && (cleanFilter.includes('제과기능사') || cleanFilter.includes('제빵기능사'))) {
+        isDualCourse = true;
+    }
     const attendanceIncrement = isDualCourse ? 1.0 : 1.0;
 
     let rowLogsRaw = allAttendanceLogs.filter(l => String(l.memberId) === String(member.id));
@@ -54,14 +81,17 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
         }
     }
 
-    if (uniqueLogs.length > 0) {
-        const d = new Date(uniqueLogs[0].date);
-        const firstLogYear = d.getFullYear();
-        const firstLogMonth = d.getMonth() + 1;
-        if (firstLogYear < earliestYear || (firstLogYear === earliestYear && firstLogMonth < earliestMonth)) {
-            earliestYear = firstLogYear;
-            earliestMonth = firstLogMonth;
-        }
+    // [HOTFIX] 글로벌 데이터를 기준으로 earliest 계산 (sheet.html과 완벽하게 동일하게 맞춤)
+    if (allAttendanceLogs && allAttendanceLogs.length > 0) {
+        allAttendanceLogs.forEach(l => {
+            const d = new Date(l.date);
+            const yy = d.getFullYear();
+            const mm = d.getMonth() + 1;
+            if (yy < earliestYear || (yy === earliestYear && mm < earliestMonth)) {
+                earliestYear = yy;
+                earliestMonth = mm;
+            }
+        });
     }
 
     if (Number(earliestYear) > Number(targetYear) || (Number(earliestYear) === Number(targetYear) && Number(earliestMonth) > Number(targetMonth))) {
@@ -71,6 +101,16 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
 
     let iterYear = earliestYear;
     let iterMonth = earliestMonth;
+    // [신규] 납부대장(ledger) 데이터도 결재일에 포함
+    const ledgerDays = new Set();
+    if (member.ledger && Array.isArray(member.ledger)) {
+        member.ledger.forEach(l => {
+            if (Number(l.year) === Number(targetYear) && Number(l.month) === Number(targetMonth)) {
+                ledgerDays.add(Number(l.day));
+            }
+        });
+    }
+
     let monthsToCalc = [];
     let safetyCounter = 0;
     while (safetyCounter < 300) {
@@ -87,13 +127,20 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
 
     
     const getCycle = (val) => {
+        const settings = getCycleSettings();
         let vRaw = Math.round(val * 10);
-        if (isDualCourse) {
-            if (vRaw < 170) return 0;
-            return Math.floor((vRaw - 170) / 160) + 1;
+        if (isBogeoCourse) {
+            let target = settings.bogeo * 10;
+            if (vRaw < target) return 0;
+            return Math.floor((vRaw - target) / (target - 10)) + 1;
+        } else if (isDualCourse) {
+            let target = settings.dual * 10;
+            if (vRaw < target) return 0;
+            return Math.floor((vRaw - target) / (target - 10)) + 1;
         } else {
-            if (vRaw < 90) return 0;
-            return Math.floor((vRaw - 90) / 80) + 1;
+            let target = settings.default * 10;
+            if (vRaw < target) return 0;
+            return Math.floor((vRaw - target) / (target - 10)) + 1;
         }
     };
 
@@ -130,15 +177,17 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
             
             const isRegularAttendance = isPresent || isNumericPresent || isAbsent || isEarly || isTardy || isFirstLast;
 
-            if (isMakeupMarker) manualMakeup += attendanceIncrement;
+            let currentAttendanceIncrement = attendanceIncrement;
+
+            if (isMakeupMarker) manualMakeup += currentAttendanceIncrement;
 
             if (isRegularAttendance) {
-                attendances += attendanceIncrement;
+                attendances += currentAttendanceIncrement;
             }
 
             if (isRegularAttendance || isMakeupMarker) {
                 const prevNet = globalRunningTotal;
-                globalRunningTotal += attendanceIncrement;
+                globalRunningTotal += currentAttendanceIncrement;
                 globalRunningTotal = Math.round(globalRunningTotal * 10) / 10;
                 const prevCycle = getCycle(prevNet);
                 const currCycle = getCycle(globalRunningTotal);
@@ -152,6 +201,7 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
             }
         });
 
+        // [복구] sheet.html과 완전히 동일하게 presentOverride를 적용한 값을 이월(carryOver) 계산에 사용합니다.
         if (adjustment && adjustment.presentOverride !== undefined) {
             attendances = adjustment.presentOverride;
         }
@@ -189,8 +239,10 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
             
             const isRegularAttendance = isPresentExt || isNumericPresent || isAbsent || isEarly || isTardy || isFirstLast;
 
+            let currentAttendanceIncrement = attendanceIncrement;
+
             if (isRegularAttendance || isMakeupMarker) {
-                runningTotal += attendanceIncrement;
+                runningTotal += currentAttendanceIncrement;
                 runningTotal = Math.round(runningTotal * 10) / 10;
 
                 
@@ -262,7 +314,7 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
 
             if (isValidDay && !isHoliday) {
                 const prevSimCycle = getCycle(simTotal);
-                simTotal += attendanceIncrement;
+                simTotal += attendanceIncrement; // simulation doesn't know about float overrides
                 const newSimCycle = getCycle(simTotal);
                 
                 if (newSimCycle > prevSimCycle) {
@@ -275,6 +327,15 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
             }
             simDate.setDate(simDate.getDate() + 1);
         }
+    }
+
+    // [HOTFIX] Ledger 날짜 병합
+    if (typeof ledgerDays !== 'undefined' && ledgerDays.size > 0) {
+        ledgerDays.forEach(day => {
+            const dateStr = `${targetYear}-${String(targetMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            redBoxDates.add(dateStr);
+        });
+        hasAnyAttendance = true; // Ledger가 있으면 뱃지에 표시되어야 하므로 출석이 있는 것으로 간주
     }
 
     const actualRedDays = Array.from(redBoxDates).map(d => parseInt(d.split('-')[2], 10));

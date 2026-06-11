@@ -11,8 +11,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="shared_calc.js?v=${Date.now()}?v=${Date.now()}"></script>
-    <script src="sms_v4.js?1780856113" defer></script>
+    <script src="shared_calc.js?v=1781103703774"></script>
+    <script src="sms_v4.js?1781101862809" defer></script>
     <style>
         .sms-container {
             display: flex;
@@ -679,6 +679,10 @@
                         <span class="material-icons" style="font-size: 1.2rem; margin-right: 8px;">list_alt</span>
                         과목/시간 설정
                     </a>
+                    <a href="cycle_settings.html" id="navCycleSettings" class="nav-item">
+                        <span class="material-icons" style="font-size: 1.2rem; margin-right: 8px;">tune</span>
+                        결재 주기 설정
+                    </a>
                     <a href="index.html?filter=archive" id="navArchive" class="nav-item">수료생 보관함</a>
                     <a href="index.html?filter=trash" id="navTrash" class="nav-item">휴지통</a>
                     <a href="stats.html" class="nav-item">통계 및 납부</a>
@@ -1005,39 +1009,37 @@
 
         // Setup Date Header
     </script>
-    <script src="sms_v4.js?1780856113" defer></script>
+    <script src="sms_v4.js?1781101862809" defer></script>
     <script>
         // 뱃지 계산 로직 추가
         window.updateRedBoxes = function(targetYear, targetMonth) {
             try {
-                const syncData = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
                 const monthCounts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0, 11: 0, 12: 0 };
                 
                 const now = new Date();
                 let cy = targetYear;
                 let cm = targetMonth;
                 if (!cy || !cm) {
-                    cy = localStorage.getItem('sejongSmsCalYear') !== null ? parseInt(localStorage.getItem('sejongSmsCalYear'), 10) : now.getFullYear();
-                    cm = localStorage.getItem('sejongSmsCalMonth') !== null ? parseInt(localStorage.getItem('sejongSmsCalMonth'), 10) + 1 : now.getMonth() + 1;
+                    cy = localStorage.getItem("sejongSmsCalYear") !== null ? parseInt(localStorage.getItem("sejongSmsCalYear"), 10) : now.getFullYear();
+                    cm = localStorage.getItem("sejongSmsCalMonth") !== null ? parseInt(localStorage.getItem("sejongSmsCalMonth"), 10) + 1 : now.getMonth() + 1;
                 }
 
-                if (typeof allMembers !== 'undefined') {
-                    // 월간출석부와 정확히 동일한 기준으로 '정상 수강중인' 학생만 필터링하여 계산
+                if (typeof allMembers !== "undefined") {
                     let allCourseRows = [];
                     allMembers.forEach(m => {
-                        if (m.status === 'trash' || m.status === 'delete' || m.status === 'completed' || m.status === 'hold') return;
+                        if (m.status === "trash" || m.status === "delete" || m.status === "completed" || m.status === "hold") return;
                         
-                        let courses = (m.course || '').split(',').map(c => c.trim()).filter(c => c !== '');
-                        const hasJeggwa = courses.some(c => c.includes('제과') && !c.includes('제과제빵'));
-                        const hasJeppang = courses.some(c => c.includes('제빵') && !c.includes('제과제빵'));
+                        let courses = (m.course || "").split(",").map(c => c.trim()).filter(c => c !== "");
+                        const hasJeggwa = courses.some(c => c.includes("제과") && !c.includes("제과제빵"));
+                        const hasJeppang = courses.some(c => c.includes("제빵") && !c.includes("제과제빵"));
                         if (hasJeggwa && hasJeppang) {
-                            courses = courses.filter(c => !c.includes('제과') && !c.includes('제빵'));
-                            courses.push('제과제빵기능사');
+                            courses = courses.filter(c => !c.includes("제과") && !c.includes("제빵"));
+                            courses.push("제과제빵기능사");
                         }
                         
                         if (courses.length > 0) {
                             courses.forEach(courseFull => {
-                                let courseName = courseFull.replace(/\([^)]*\)/g, '').trim();
+                                let courseName = courseFull.replace(/\([^)]*\)/g, "").trim();
                                 allCourseRows.push({ member: m, courseName: courseName });
                             });
                         }
@@ -1045,20 +1047,24 @@
 
                     allCourseRows.forEach(r => {
                         const m = r.member;
-                        const cName = r.courseName || '';
+                        const cName = r.courseName || "";
                         
                         for (let month = 1; month <= 12; month++) {
-                            const syncKey = `${m.id}_${cy}_${month}_${cName}`;
-                            let days = syncData[syncKey];
+                            let days = null;
+                            if (typeof window.calculateRedBoxesForMonth === "function") {
+                                const result = window.calculateRedBoxesForMonth(m, cy, month, window.attendanceData || [], cName, window.GLOBAL_DATA_ADJUSTMENTS || {});
+                                if (result && result.redDays && result.redDays.length > 0 && !result.isSimulated && result.hasAnyAttendance) {
+                                    days = result.redDays;
+                                }
+                            }
                             
-                            if (days && (Array.isArray(days) ? days.length > 0 : days > 0)) {
-                                monthCounts[month] += (Array.isArray(days) ? days.length : 1);
+                            if (days && Array.isArray(days) && days.length > 0) {
+                                days.forEach(d => monthDays[month].add(d));
                             }
                         }
                     });
                 }
-                
-                const selectedMonthCount = monthCounts[cm] || 0;
+                const selectedMonthCount = monthDays[cm].size || 0;
                 
                 const spanCount = document.getElementById('smsTotalRedBoxCount');
                 if (spanCount) {
@@ -1076,11 +1082,11 @@
                             </span>
                     `;
                     for (let month = 1; month <= 12; month++) {
-                        const count = monthCounts[month];
-                        const displayCount = count > 0 ? `<span style="background:#2563eb; color:white; border-radius:12px; padding:2px 7px; font-size:0.7rem; font-weight:bold; margin-left:4px;">${count}</span>` : '';
+                        const daysArr = Array.from(monthDays[month]).sort((a,b)=>a-b);
+                        const displayCount = daysArr.length > 0 ? `<span style="background:#2563eb; color:white; border-radius:12px; padding:2px 7px; font-size:0.7rem; font-weight:bold; margin-left:4px;">${daysArr.join(', ')}</span>` : '';
                         
-                        const borderStyle = count > 0 ? 'border:1px solid #93c5fd; background:#eff6ff;' : 'border:1px solid #cbd5e1; background:#fff;';
-                        const textStyle = count > 0 ? 'color:#1e3a8a;' : 'color:#475569;';
+                        const borderStyle = daysArr.length > 0 ? 'border:1px solid #93c5fd; background:#eff6ff;' : 'border:1px solid #cbd5e1; background:#fff;';
+                        const textStyle = daysArr.length > 0 ? 'color:#1e3a8a;' : 'color:#475569;';
                         
                         badgesHtml += `
                             <div style="display:flex; align-items:center; padding:3px 10px; border-radius:20px; font-size:0.8rem; font-weight:700; margin-right:2px; cursor:pointer; ${borderStyle} ${textStyle}" onclick="if(window.jumpToRangeMonth) window.jumpToRangeMonth(${cy}, ${month})">
