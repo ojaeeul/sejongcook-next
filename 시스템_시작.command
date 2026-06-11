@@ -4,6 +4,9 @@
 # Sejong Cook - System Starter (Mac Equivalent to 시스템_시작.bat)
 # ==============================================================================
 
+# 현재 실행 중인 터미널 창의 ID 저장 (나중에 스스로 닫기 위함)
+MY_WINDOW_ID=$(osascript -e 'tell application "Terminal" to id of front window' 2>/dev/null)
+
 # Get the directory of this script
 BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # sejongcook-next 기준이므로, 상위 폴더(sejk 4) 경로도 계산
@@ -86,6 +89,29 @@ if [ ! -z "$PORT_PID" ]; then
     echo "    ✅ 기존 Next.js 서버(Port 3000) 종료 완료"
 fi
 
+# 열려있는 예전 브라우저 탭 닫기 (Chrome, Safari)
+osascript -e '
+try
+    tell application "Google Chrome"
+        repeat with w in windows
+            repeat with t in tabs of w
+                if URL of t starts with "http://localhost:3000" then close t
+            end repeat
+        end repeat
+    end tell
+end try
+try
+    tell application "Safari"
+        repeat with w in windows
+            repeat with t in tabs of w
+                if URL of t starts with "http://localhost:3000" then close t
+            end repeat
+        end repeat
+    end tell
+end try
+' 2>/dev/null
+echo "    ✅ 이전 인터넷 창 정리 완료"
+
 # 열려있는 다른 터미널 창들 닫기 (현재 창은 제외, npm/node 관련 창 닫기)
 osascript -e 'tell application "Terminal"
     set windowList to windows
@@ -153,3 +179,9 @@ echo "  🌐 출석/납부 시스템:   http://localhost:3000/sejong"
 echo "  🌐 Vercel 실서버:      https://sejongcook.co.kr"
 echo "======================================================"
 echo ""
+
+# 명령어 실행 창 스스로 닫기 (이 터미널 창)
+if [ ! -z "$MY_WINDOW_ID" ]; then
+    osascript -e "tell application \"Terminal\" to close window id $MY_WINDOW_ID" &
+fi
+exit 0
