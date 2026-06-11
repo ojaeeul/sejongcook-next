@@ -239,7 +239,7 @@
                         <span class="material-icons" style="font-size: 1.2rem; margin-right: 8px;">settings</span>
                         수업 요일 설정
                     </a>
-                    <a href="course_time_admin.html" id="navCourseTimeAdmin" class="nav-item">
+                    <a href="course_time_admin.html?v=1" id="navCourseTimeAdmin" class="nav-item">
                         <span class="material-icons" style="font-size: 1.2rem; margin-right: 8px;">list_alt</span>
                         과목/시간 설정
                     </a>
@@ -559,7 +559,7 @@
         };
         
         document.querySelectorAll(".nav-item").forEach(item => {
-            if (item.getAttribute("href") === "course_time_admin.html") {
+            if (item.getAttribute("href") === "course_time_admin.html?v=1") {
                 item.classList.add("highlight");
                 let parentMenu = item.closest(".nav-sub-menu");
                 if (parentMenu) {
