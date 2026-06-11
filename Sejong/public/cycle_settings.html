@@ -278,6 +278,10 @@
             }
         });
 
+        let generalOptions = generalCourses.map(c => `<option value="${c}">${c}</option>`).join('');
+        let bakingOptions = bakingCourses.map(c => `<option value="${c}">${c}</option>`).join('');
+        let customOptions = customRules.map(r => `<option value="${r.keyword}">${r.keyword}</option>`).join('');
+
         if (generalCourses.length === 0) {
             generalHTML = '<div style="color:#94a3b8; width:100%; text-align:center;">비어있습니다.</div>';
         } else {
@@ -292,6 +296,16 @@
                 `;
             });
         }
+        generalHTML += `
+            <div style="width: 100%; margin-top: 15px; border-top: 1px dashed #cbd5e1; padding-top: 15px; display: flex; gap: 8px;">
+                <select id="pullGeneral" style="flex: 1; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1;">
+                    <option value="">다른 그룹에서 과정 가져오기...</option>
+                    ${bakingOptions ? `<optgroup label="제과제빵 과정">${bakingOptions}</optgroup>` : ''}
+                    ${customOptions ? `<optgroup label="단독 특수 과정">${customOptions}</optgroup>` : ''}
+                </select>
+                <button onclick="if(document.getElementById('pullGeneral').value) quickMove(document.getElementById('pullGeneral').value, 'general')" style="background: #10b981; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold;">가져오기</button>
+            </div>
+        `;
         
         if (bakingCourses.length === 0) {
             bakingHTML = '<div style="color:#b45309; width:100%; text-align:center; opacity:0.7;">비어있습니다.</div>';
@@ -307,6 +321,16 @@
                 `;
             });
         }
+        bakingHTML += `
+            <div style="width: 100%; margin-top: 15px; border-top: 1px dashed #fde047; padding-top: 15px; display: flex; gap: 8px;">
+                <select id="pullBaking" style="flex: 1; padding: 8px; border-radius: 6px; border: 1px solid #fde047; background: #fff;">
+                    <option value="">다른 그룹에서 과정 가져오기...</option>
+                    ${generalOptions ? `<optgroup label="일반 과정">${generalOptions}</optgroup>` : ''}
+                    ${customOptions ? `<optgroup label="단독 특수 과정">${customOptions}</optgroup>` : ''}
+                </select>
+                <button onclick="if(document.getElementById('pullBaking').value) quickMove(document.getElementById('pullBaking').value, 'baking')" style="background: #d97706; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold;">가져오기</button>
+            </div>
+        `;
         
         if (customRules.length === 0) {
             customHTML = '<div style="color:#ef4444; font-size:0.95rem; text-align:center; padding: 20px; border-radius: 8px; border: 1px dashed #fca5a5;">특수 과정이 없습니다.</div>';
@@ -332,6 +356,16 @@
                 `;
             });
         }
+        customHTML += `
+            <div style="width: 100%; margin-top: 15px; border-top: 1px dashed #fca5a5; padding-top: 15px; display: flex; gap: 8px;">
+                <select id="pullCustom" style="flex: 1; padding: 8px; border-radius: 6px; border: 1px solid #fca5a5; background: #fff;">
+                    <option value="">다른 그룹에서 과정 가져오기...</option>
+                    ${generalOptions ? `<optgroup label="일반 과정">${generalOptions}</optgroup>` : ''}
+                    ${bakingOptions ? `<optgroup label="제과제빵 과정">${bakingOptions}</optgroup>` : ''}
+                </select>
+                <button onclick="if(document.getElementById('pullCustom').value) quickMove(document.getElementById('pullCustom').value, 'custom')" style="background: #ef4444; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold;">가져오기</button>
+            </div>
+        `;
 
         generalContainer.innerHTML = generalHTML;
         bakingContainer.innerHTML = bakingHTML;
@@ -358,11 +392,18 @@
         cycleRules.custom = cycleRules.custom.filter(r => r.keyword !== courseName);
 
         if (dest === 'custom') {
-            // 현재 소속 그룹 확인 후 기본 주기 부여
             let initCycle = isBakingCourse(courseName) ? bakCycle : defCycle;
             cycleRules.custom.push({ keyword: courseName, cycle: initCycle, group: 'custom' });
+        } else if (dest === 'general') {
+            if (isBakingCourse(courseName)) {
+                cycleRules.custom.push({ keyword: courseName, cycle: defCycle, group: 'general' });
+            }
+        } else if (dest === 'baking') {
+            if (!isBakingCourse(courseName)) {
+                cycleRules.custom.push({ keyword: courseName, cycle: bakCycle, group: 'baking' });
+            }
         } else if (dest === 'auto') {
-            // 아무 룰도 없으면 isBakingCourse 매칭으로 자동 복귀됨
+            // auto
         }
 
         renderUI();
