@@ -1,4 +1,8 @@
-<!DOCTYPE html>
+import os
+
+path = "/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejk 4/sejongcook-next/Sejong/SejongAttendance/public/cycle_settings.html"
+
+html_content = """<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -13,17 +17,17 @@
         .setting-card .input-row { display: flex; align-items: center; gap: 10px; }
         .setting-card input[type="number"] { width: 80px; padding: 8px; font-size: 1.1rem; border: 1px solid #cbd5e1; border-radius: 6px; text-align: center; }
         
-        .chip-container { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; background: #ffffff; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; min-height: 80px; align-content: flex-start; }
+        .chip-container { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; background: #ffffff; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; min-height: 80px; }
         
-        .chip { display: flex; align-items: center; gap: 8px; background: #eff6ff; color: #1e40af; padding: 8px 14px; border-radius: 20px; border: 1px solid #bfdbfe; font-size: 1.05rem; font-weight: 600; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .chip:hover { transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .chip { display: flex; align-items: center; gap: 8px; background: #eff6ff; color: #1e40af; padding: 6px 12px; border-radius: 20px; border: 1px solid #bfdbfe; font-size: 1rem; font-weight: 500; transition: all 0.2s; }
         .chip.custom-chip { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+        .chip.custom-chip .cycle-input { width: 50px; padding: 4px; font-size: 0.9rem; text-align: center; border: 1px solid #fca5a5; border-radius: 4px; margin: 0 4px; }
         
-        .chip-btn { background: white; border: 1px solid #cbd5e1; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 4px; border-radius: 50%; color: #64748b; transition: all 0.2s; }
-        .chip-btn:hover { background: #ef4444; color: white; border-color: #ef4444; }
-        .chip-btn .material-icons { font-size: 16px; font-weight: bold; }
+        .chip-btn { background: none; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 2px; border-radius: 50%; color: inherit; opacity: 0.7; transition: opacity 0.2s; }
+        .chip-btn:hover { opacity: 1; background: rgba(0,0,0,0.05); }
+        .chip-btn .material-icons { font-size: 18px; }
         
-        .custom-rule-item { display: flex; justify-content: space-between; align-items: center; background: white; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .custom-rule-item { display: flex; justify-content: space-between; align-items: center; background: white; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 10px; }
     </style>
 </head>
 <body style="background-color: #f1f5f9; font-family: 'Pretendard', sans-serif;">
@@ -97,58 +101,55 @@
         <div style="background: white; width: 100%; max-width: 900px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); padding: 40px; border: 1px solid #e2e8f0;">
             
             <h1 style="display: flex; align-items: center; gap: 10px; color: #1e293b; margin-bottom: 20px;">
-                <span class="material-icons" style="color: #3b82f6; font-size: 32px;">tune</span> 과정별 결재 주기 설정
+                <span class="material-icons" style="color: #3b82f6; font-size: 32px;">tune</span> 과정별 결재 주기 관리
             </h1>
             
-            <div style="margin-bottom: 30px; padding: 15px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; color: #1e40af; line-height: 1.6;">
+            <div style="margin-bottom: 30px; padding: 15px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; color: #1e40af;">
                 <span class="material-icons" style="vertical-align: middle; margin-right: 5px;">info</span>
-                <strong>사용 안내</strong><br>
-                1. <strong>일반 과정</strong>에서 <span class="material-icons" style="font-size:16px;vertical-align:middle;">remove</span> 빼기 버튼을 누르면 특수 과정으로 분리됩니다.<br>
-                2. <strong>특수 과정</strong>에서는 과정마다 개별적인 결재 주기를 설정할 수 있습니다.<br>
-                3. 특수 과정에서 다시 <span class="material-icons" style="font-size:16px;vertical-align:middle;">add</span> 더하기 버튼을 누르면 일반 과정으로 돌아옵니다.
+                <strong>안내:</strong> 전체 과정 목록에서 <strong>빼기(-)</strong>를 누르면 일반 과정에서 제외되어 특수 주기를 지정할 수 있으며, <strong>더하기(+)</strong>를 누르면 다시 일반 과정으로 돌아옵니다.
             </div>
 
             <!-- 영역 1: 일반 과정 -->
             <div class="setting-card">
                 <div class="title"><span class="material-icons" style="color:#10b981;">restaurant</span> 일반 과정 (기본 그룹)</div>
-                <div class="desc">아래 나열된 과정들은 모두 동일한 '기본 주기'를 따릅니다. 특별한 주기가 필요한 과정은 빼기(-) 버튼을 눌러주세요.</div>
+                <div class="desc">아래 나열된 과정들은 모두 동일한 기본 주기를 따릅니다. 특별한 주기가 필요한 과정은 [-] 버튼을 눌러 빼낼 수 있습니다.</div>
                 <div class="input-row" style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #e2e8f0;">
-                    <span style="font-weight: bold; color: #334155; font-size: 1.1rem;">일반 과정 결재 주기:</span>
+                    <span style="font-weight: bold; color: #334155;">이 그룹의 결재 주기:</span>
                     <input type="number" id="defaultCycle" value="9" min="1">
-                    <span style="color: #64748b;">회 출석 시 결재 발생</span>
+                    <span style="color: #64748b;">회 마다 결재 발생</span>
                 </div>
                 <div class="chip-container" id="generalCoursesList">
-                    <!-- 일반 과정 렌더링 영역 -->
+                    <!-- 일반 과정 동적 렌더링 -->
                 </div>
             </div>
 
             <!-- 영역 2: 특수 과정 -->
             <div class="setting-card" style="background: #fef8f8; border-color: #fee2e2;">
-                <div class="title"><span class="material-icons" style="color:#ef4444;">stars</span> 빼기한 특수 과정</div>
-                <div class="desc">일반 과정에서 빼낸 과정들입니다. 각 과정마다 개별적인 결재 주기(회차)를 설정할 수 있습니다.</div>
+                <div class="title"><span class="material-icons" style="color:#ef4444;">stars</span> 특수 과정 (일반에서 뺀 과정들)</div>
+                <div class="desc">일반 과정에서 빠져나온 과정들입니다. 각 과정마다 개별적인 결재 주기(회차)를 설정할 수 있습니다. [+] 버튼을 누르면 다시 일반 과정으로 올라갑니다.</div>
                 
-                <div class="chip-container" id="customCoursesList" style="flex-direction: column; background: transparent; border: none; padding: 0; min-height: 0;">
-                    <!-- 특수 과정 렌더링 영역 -->
+                <div class="chip-container" id="customCoursesList" style="flex-direction: column; background: transparent; border: none; padding: 0;">
+                    <!-- 특수 과정 동적 렌더링 -->
                 </div>
             </div>
 
-            <!-- 영역 3: 수동 키워드 추가 -->
+            <!-- 영역 3: 아예 목록에 없는 새로운 키워드 수동 추가 -->
             <div style="margin-top: 30px; border-top: 1px dashed #cbd5e1; padding-top: 20px;">
                 <div style="color: #64748b; font-size: 0.95rem; margin-bottom: 10px;">
-                    <span class="material-icons" style="font-size: 16px; vertical-align: middle;">add_circle_outline</span> 전체 과정 목록에 없는 <strong>새로운 과정</strong>을 수동으로 추가하시려면 아래에 입력하세요.
+                    <span class="material-icons" style="font-size: 16px; vertical-align: bottom;">add_circle_outline</span> 전체 과정 목록에 없는 <strong>새로운 과정 이름(키워드)</strong>을 직접 추가하시려면 아래에 입력하세요.
                 </div>
-                <div style="display: flex; gap: 10px; align-items: center; background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0;">
-                    <input type="text" id="newKeyword" placeholder="새로운 과정 키워드" style="flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 1rem;">
-                    <input type="number" id="newCycle" placeholder="주기(회)" style="width: 100px; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 1rem; text-align: center;">
-                    <button onclick="addManualRule()" style="padding: 12px 20px; border-radius: 8px; background: #64748b; color: white; border: none; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px;">
-                        <span class="material-icons" style="font-size:18px;">add</span> 직접 추가
+                <div style="display: flex; gap: 10px; align-items: center; background: #f8fafc; padding: 10px 15px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                    <input type="text" id="newKeyword" placeholder="새로운 과정 키워드" style="flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 1rem;">
+                    <input type="number" id="newCycle" placeholder="주기(회)" style="width: 80px; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 1rem; text-align: center;">
+                    <button onclick="addManualRule()" style="padding: 10px 15px; border-radius: 6px; background: #64748b; color: white; border: none; font-weight: bold; cursor: pointer;">
+                        직접 추가
                     </button>
                 </div>
             </div>
 
             <button onclick="saveCycleSettings()" 
-                    style="background: #3b82f6; color: white; border: none; padding: 18px 24px; border-radius: 12px; cursor: pointer; font-size: 1.3rem; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 40px; width: 100%; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3); transition: all 0.2s;">
-                <span class="material-icons">save</span> 변경사항 저장 및 전체 시스템 반영
+                    style="background: #3b82f6; color: white; border: none; padding: 16px 24px; border-radius: 12px; cursor: pointer; font-size: 1.2rem; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 40px; width: 100%; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3); transition: transform 0.1s;">
+                <span class="material-icons">save</span> 변경사항 저장 및 시스템 전체 적용
             </button>
         </div>
     </main>
@@ -162,7 +163,7 @@
             { keyword: "제과제빵", cycle: 17 }
         ]
     };
-    let allKnownCourses = []; 
+    let allKnownCourses = []; // DB에서 불러온 전체 과정 목록
 
     async function loadSettings() {
         try {
@@ -172,7 +173,7 @@
                 let target = Array.isArray(globalSettings) ? (globalSettings[0] || {}) : globalSettings;
                 
                 if (target.cycleRules) {
-                    cycleRules = JSON.parse(JSON.stringify(target.cycleRules));
+                    cycleRules = JSON.parse(JSON.stringify(target.cycleRules)); // Deep copy
                 }
                 if (target.courses && Array.isArray(target.courses)) {
                     allKnownCourses = [...target.courses];
@@ -186,6 +187,7 @@
     }
 
     function renderUI() {
+        // 기본값 세팅
         document.getElementById('defaultCycle').value = cycleRules.default || 9;
         
         const generalContainer = document.getElementById('generalCoursesList');
@@ -194,13 +196,16 @@
         let generalHTML = '';
         let customHTML = '';
 
+        // DB에 있는 courses 외에도, cycleRules.custom에 있는 모든 키워드를 수집 (수동 추가된 것도 보이게)
         let customKeywords = cycleRules.custom.map(r => r.keyword);
+        
+        // 1. 일반 과정 그리기 (allKnownCourses 중 custom에 없는 것들)
         let generalCourses = allKnownCourses.filter(c => !customKeywords.includes(c));
         
         if (generalCourses.length === 0 && allKnownCourses.length > 0) {
-            generalHTML = '<div style="color:#94a3b8; width: 100%; text-align: center; padding: 10px;">일반 과정으로 지정된 과목이 없습니다.</div>';
+            generalHTML = '<div style="color:#94a3b8; font-size:0.9rem;">일반 과정으로 지정된 과목이 없습니다.</div>';
         } else if (allKnownCourses.length === 0) {
-            generalHTML = '<div style="color:#94a3b8; width: 100%; text-align: center; padding: 10px;">등록된 과정 데이터가 없습니다.</div>';
+            generalHTML = '<div style="color:#94a3b8; font-size:0.9rem;">등록된 전체 과정 목록이 없습니다. (수강료 설정에서 과정이 추가되어야 나타납니다)</div>';
         } else {
             generalCourses.forEach(c => {
                 generalHTML += `
@@ -214,23 +219,25 @@
             });
         }
         
+        // 2. 특수 과정 그리기 (cycleRules.custom 항목 전체)
         if (cycleRules.custom.length === 0) {
-            customHTML = '<div style="color:#ef4444; font-size:0.95rem; text-align:center; padding: 25px; background: white; border-radius: 8px; border: 1px dashed #fca5a5;">특수 과정이 없습니다. 일반 과정에서 빼기(-)를 눌러 추가하세요.</div>';
+            customHTML = '<div style="color:#94a3b8; font-size:0.9rem; text-align:center; padding: 20px; background: white; border-radius: 8px; border: 1px solid #e2e8f0;">특수 과정이 없습니다. 일반 과정에서 [-]를 눌러 빼내세요.</div>';
         } else {
             cycleRules.custom.forEach(rule => {
+                // UI에서 주기를 입력받아야 하므로 id를 부여
                 let inputId = 'cycle_input_' + rule.keyword.replace(/\s+/g, '_');
                 customHTML += `
                     <div class="custom-rule-item">
-                        <div style="display:flex; align-items:center; gap:15px;">
-                            <div class="chip custom-chip" style="margin:0; box-shadow:none;">
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <div class="chip custom-chip" style="margin:0;">
                                 ${rule.keyword}
                             </div>
-                            <div style="color:#475569; font-size:1.1rem; font-weight: 500;">
-                                출석 <input type="number" id="${inputId}" value="${rule.cycle}" class="cycle-input" onchange="updateCustomCycle('${rule.keyword}', this.value)" min="1" style="width: 70px; padding: 6px; text-align: center; border: 1px solid #cbd5e1; border-radius: 6px; margin: 0 8px; font-size: 1.1rem; color: #1e293b; font-weight: bold;"> 회
+                            <div style="color:#64748b; font-size:1.05rem;">
+                                출석 <input type="number" id="${inputId}" value="${rule.cycle}" class="cycle-input" onchange="updateCustomCycle('${rule.keyword}', this.value)" min="1"> 회 마다 결재
                             </div>
                         </div>
-                        <button class="delete-btn" onclick="moveToGeneral('${rule.keyword}')" title="일반 과정으로 다시 넣기" style="background:#dcfce7; color:#166534; border:1px solid #bbf7d0; padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: background 0.2s;">
-                            <span class="material-icons" style="font-size:18px;">add</span> 다시 넣기
+                        <button class="delete-btn" onclick="moveToGeneral('${rule.keyword}')" title="일반 과정으로 다시 넣기" style="background:#dcfce7; color:#166534; border:1px solid #bbf7d0;">
+                            <span class="material-icons">add</span> 다시 넣기
                         </button>
                     </div>
                 `;
@@ -241,15 +248,17 @@
         customContainer.innerHTML = customHTML;
     }
 
+    // 배열 항목 이동 로직
     function moveToCustom(courseName) {
+        // 이미 있는지 확인 (안전장치)
         if (!cycleRules.custom.find(r => r.keyword === courseName)) {
-            // 특수과정으로 빼면, 초기 주기는 보통 기본값과 다르게 17등으로 시작할 수 있지만 일단 17으로 부여. 
-            cycleRules.custom.push({ keyword: courseName, cycle: 17 }); 
+            cycleRules.custom.push({ keyword: courseName, cycle: 17 }); // 임시로 17 부여, 화면에서 수정 가능
         }
         renderUI();
     }
 
     function moveToGeneral(keyword) {
+        // custom 배열에서 삭제하면 일반 과정으로 돌아감
         cycleRules.custom = cycleRules.custom.filter(r => r.keyword !== keyword);
         renderUI();
     }
@@ -268,6 +277,7 @@
         if (!keyword) return alert('과정 이름을 입력해주세요.');
         if (!cycle || cycle <= 0) return alert('유효한 주기 횟수를 입력해주세요.');
 
+        // 전체 과정 목록에 없으면 추가해줌 (UI 표시용)
         if (!allKnownCourses.includes(keyword)) {
             allKnownCourses.push(keyword);
         }
@@ -285,8 +295,9 @@
     }
 
     async function saveCycleSettings() {
+        // 현재 열려있는 input 값들 최종 동기화
         const defCycle = parseInt(document.getElementById('defaultCycle').value);
-        if (!defCycle || defCycle <= 0) return alert('일반 과정 결재 주기를 올바르게 입력하세요.');
+        if (!defCycle || defCycle <= 0) return alert('일반 과정 결재 주기를 확인해주세요.');
         cycleRules.default = defCycle;
         
         cycleRules.custom.forEach(rule => {
@@ -300,6 +311,7 @@
 
         let target = Array.isArray(globalSettings) ? (globalSettings[0] = globalSettings[0] || {}) : globalSettings;
         target.cycleRules = cycleRules;
+        // 새로 추가된 코스가 있을 수 있으니 courses도 업데이트 (옵션)
         target.courses = allKnownCourses;
         
         if (Array.isArray(globalSettings) && globalSettings.length === 0) {
@@ -313,7 +325,7 @@
                 body: JSON.stringify(globalSettings)
             });
             if (res.ok) {
-                alert('저장이 완료되었습니다! 시스템에 정상 반영되었습니다.');
+                alert('결재 주기 설정이 성공적으로 저장되었습니다.\n\n출석부 시스템 전반에 즉시 반영됩니다.');
             } else {
                 alert('저장 중 서버 오류가 발생했습니다.');
             }

@@ -1772,7 +1772,8 @@
         async function initSheet() {
             try {
                 // Fetch all independently to reduce loading time
-                await Promise.all([
+                if(typeof window.loadCycleSettings === 'function') await window.loadCycleSettings();
+        await Promise.all([
                     fetchMembers().catch(e => console.error("Members error:", e)),
                     fetchAttendance().catch(e => console.error(e)),
                     fetchHolidays().catch(e => console.error(e)),
