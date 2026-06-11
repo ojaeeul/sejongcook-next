@@ -1,44 +1,83 @@
-function testSimulation() {
-    let inputs = [
-        { month: 'Jan', attendances: 9 }, // month 1: 9 attendances -> red box on 9th. carry = 1
-        { month: 'Feb', attendances: 8 }, // month 2: 8 attendances. start from 1 -> reaches 9 -> red box on 8th attendance. carry = 1
-        { month: 'Mar', attendances: 8 }, // month 3: 8 attendances. start from 1 -> reaches 9 -> red box. carry = 1
-    ];
-    let carryOverP = 0;
+let allKnownCourses = ["바리스타", "제과제빵", "양식기능사"];
+let cycleRules = {
+    default: 9,
+    custom: [
+        { keyword: "제과제빵", cycle: 17, group: "baking" },
+        { keyword: "바리스타", cycle: 9, group: "custom" }
+    ]
+};
 
-    inputs.forEach(input => {
-        let totalCombined = carryOverP + input.attendances;
-        let m_J = Math.min(totalCombined, 8);
-        let m_P = Math.max(totalCombined - 8, 0);
-
-        // New arithmetic: 
-        // 0 -> 0
-        // 1~8 -> 1~8
-        // 9 -> 1
-        // 10 -> 2
-        // ...
-        // 17 -> 1
-        let next_carry = totalCombined === 0 ? 0 : ((totalCombined - 1) % 8) + 1;
-
-        console.log(`${input.month}: 재고출석(m_J)=${m_J}, 출석(m_P)=${m_P}, (carry to next = ${next_carry})`);
-
-        // Let's also simulate tracking days for red box:
-        let running = 0;
-        let redBoxDays = [];
-        for (let i = 1; i <= input.attendances; i++) {
-            let prev = carryOverP + running;
-            running++;
-            let curr = carryOverP + running;
-            // A red box happens when curr crosses 9, 17, 25, etc.
-            // i.e., curr > 1 and (curr - 1) % 8 === 0
-            if (curr > 1 && (curr - 1) % 8 === 0 && prev !== curr) {
-                redBoxDays.push(`day ${i}`);
-            }
-        }
-        console.log(`${input.month} red boxes at:`, redBoxDays);
-
-        carryOverP = next_carry;
-    });
+function isBakingCourse(c) {
+    return c.includes('제과') || c.includes('제빵');
 }
-runTest = testSimulation;
-runTest();
+
+function syncGroupCycles() {
+    // mock
+}
+
+function quickMove(courseName, dest) {
+    if (!allKnownCourses.includes(courseName)) {
+        allKnownCourses.push(courseName);
+    }
+
+    syncGroupCycles();
+    const defCycle = cycleRules.default;
+    let bakingRule = cycleRules.custom.find(r => r.keyword === "제과제빵");
+    const bakCycle = bakingRule ? bakingRule.cycle : 17;
+
+    // 기존 룰 제거
+    cycleRules.custom = cycleRules.custom.filter(r => r.keyword !== courseName);
+
+    if (dest === 'custom') {
+        let initCycle = isBakingCourse(courseName) ? bakCycle : defCycle;
+        cycleRules.custom.push({ keyword: courseName, cycle: initCycle, group: 'custom' });
+    } else if (dest === 'general') {
+        if (isBakingCourse(courseName)) {
+            cycleRules.custom.push({ keyword: courseName, cycle: defCycle, group: 'general' });
+        }
+    } else if (dest === 'baking') {
+        if (!isBakingCourse(courseName)) {
+            cycleRules.custom.push({ keyword: courseName, cycle: bakCycle, group: 'baking' });
+        }
+    } else if (dest === 'auto') {
+        // auto
+    }
+}
+
+function renderUI() {
+    let generalCourses = [];
+    let bakingCourses = [];
+    let customRules = [];
+    
+    let allItems = new Set([...allKnownCourses, ...cycleRules.custom.map(r => r.keyword)]);
+    allItems.delete("제과제빵");
+
+    allItems.forEach(c => {
+        let rule = cycleRules.custom.find(r => r.keyword === c);
+        
+        if (rule) {
+            if (rule.group === 'general') generalCourses.push(c);
+            else if (rule.group === 'baking') bakingCourses.push(c);
+            else customRules.push(rule);
+        } else {
+            if (isBakingCourse(c)) bakingCourses.push(c);
+            else generalCourses.push(c);
+        }
+    });
+
+    console.log("General:", generalCourses);
+    console.log("Baking:", bakingCourses);
+    console.log("Custom:", customRules.map(r => r.keyword));
+}
+
+console.log("Initial state:");
+renderUI();
+
+console.log("\nMoving '바리스타' to general:");
+quickMove("바리스타", "general");
+renderUI();
+
+console.log("\nMoving '양식기능사' to custom:");
+quickMove("양식기능사", "custom");
+renderUI();
+
