@@ -1124,10 +1124,10 @@
                                 <div class="month-nav">
                                     <button onclick="changeMonth(-1)">&lt;</button>
                                     <div class="flex-center gap-5">
-                                        <select id="yearSelect" class="form-select transparent-select" title="연도 선택">
+                                        <select id="yearSelect" class="form-select transparent-select" title="연도 선택" style="width: 85px; text-align: center;">
                                             <!-- Populated by JS -->
                                         </select>
-                                        <select id="monthSelect" class="form-select transparent-select" title="월 선택">
+                                        <select id="monthSelect" class="form-select transparent-select" title="월 선택" style="width: 70px; text-align: center;">
                                             <option value="1">1월</option>
                                             <option value="2">2월</option>
                                             <option value="3">3월</option>
@@ -2744,7 +2744,7 @@
                 const textStyle = count > 0 ? 'color:#1e3a8a;' : 'color:#475569;';
                 
                 badgesHtml += `
-                    <div style="display:flex; align-items:center; padding:3px 10px; border-radius:20px; font-size:0.8rem; font-weight:700; margin-right:2px; ${borderStyle} ${textStyle}">
+                    <div style="display:flex; align-items:center; justify-content:center; width:65px; padding:3px 0; border-radius:20px; font-size:0.8rem; font-weight:700; margin-right:2px; ${borderStyle} ${textStyle} box-sizing:border-box;">
                         <span>${month}월</span>
                         ${displayCount}
                     </div>
