@@ -75,25 +75,47 @@ echo "    ✅ JSON 데이터 동기화 완료"
 echo ""
 
 # ==============================================================================
-# [STEP 2] Next.js 웹사이트 서버 (Port 3000) 및 브라우저 열기
+# [STEP 2] 이전 서버 종료 및 창 정리
 # ==============================================================================
-if ! lsof -i :3000 > /dev/null; then
-    echo "[2/4] Next.js 웹사이트 서버 (Port 3000) 시작 중..."
-    osascript -e 'tell app "Terminal" to do script "cd \"'"$BASE_DIR"'\" && npm run dev"'
-    echo "    ✅ Next.js 서버 시작 명령 전달"
-    echo ""
+echo "[2/4] 이전 서버 및 터미널 창 정리 중..."
 
-    echo "[3/4] 브라우저 열기 (서버 준비 대기 3초)..."
-    sleep 3
-    open "http://localhost:3000/sejong/ledger.html"
-    open "http://localhost:3000/sejong/sheet.html"
-    open "http://localhost:3000"
-else
-    echo "[2/4] Next.js 서버가 이미 실행 중입니다. (새 창을 열지 않습니다)"
-    echo "    ✅ 서버 중복 실행 방지"
-    echo ""
-    echo "[3/4] 브라우저 열기 생략 (이미 열려있음)"
+# Port 3000을 사용 중인 프로세스 종료 (기존 서버 끄기)
+PORT_PID=$(lsof -ti :3000)
+if [ ! -z "$PORT_PID" ]; then
+    kill -9 $PORT_PID
+    echo "    ✅ 기존 Next.js 서버(Port 3000) 종료 완료"
 fi
+
+# 열려있는 다른 터미널 창들 닫기 (현재 창은 제외, npm/node 관련 창 닫기)
+osascript -e 'tell application "Terminal"
+    set windowList to windows
+    repeat with w in windowList
+        if (name of w contains "npm") or (name of w contains "node") or (name of w contains "bash") then
+            try
+                close w
+            end try
+        end if
+    end repeat
+end tell' 2>/dev/null
+
+echo "    ✅ 이전 터미널 창 정리 완료"
+echo ""
+
+# ==============================================================================
+# [STEP 3] Next.js 웹사이트 서버 시작 및 브라우저 열기
+# ==============================================================================
+echo "[3/4] 새로운 터미널을 띄워 Next.js 서버를 시작합니다..."
+osascript -e 'tell app "Terminal" to do script "cd \"'"$BASE_DIR"'\" && npm run dev"'
+echo "    ✅ Next.js 서버 시작 완료"
+echo ""
+
+echo "서버 준비 대기 (5초)..."
+sleep 5
+
+echo "브라우저 새 창 열기..."
+open "http://localhost:3000/sejong/ledger.html"
+open "http://localhost:3000/sejong/sheet.html"
+open "http://localhost:3000"
 
 # ==============================================================================
 # [STEP 4] 깃허브(Git) 자동 백업 저장
