@@ -12,7 +12,10 @@ export function proxy(request: NextRequest) {
 
     // 2. Auth Protection for /admin and /sejong (except student/login)
     const isAdminRoute = path.startsWith('/admin');
-    const isSejongAdminRoute = path.startsWith('/sejong') && !path.startsWith('/sejong/student');
+    // Allow access to public static assets and the kiosk page
+    const isPublicStatic = path.includes('.') && !path.endsWith('.html');
+    const isKiosk = path.includes('monitor.html');
+    const isSejongAdminRoute = path.startsWith('/sejong') && !path.startsWith('/sejong/student') && !isPublicStatic && !isKiosk;
 
     if (isAdminRoute || isSejongAdminRoute) {
         // Handle trailingSlash: true cases

@@ -26,7 +26,8 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
             
             const cClean = String(l.course).replace(/\([^)]*\)/g, '').trim();
             const fClean = String(courseFilter).replace(/\([^)]*\)/g, '').trim();
-            return cClean === fClean;
+            const cList = cClean.split(',').map(c => c.trim());
+            return cList.includes(fClean);
         });
     }
 

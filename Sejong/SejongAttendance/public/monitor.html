@@ -430,6 +430,77 @@
                 overflow: hidden !important;
             }
         }
+        
+        /* Full Screen Video for Face Only Mode (Desktop & Mobile) */
+        #workspace.mode-face_only .kiosk-right {
+            display: none !important;
+        }
+        #workspace.mode-face_only .kiosk-left {
+            flex: 1 1 100% !important;
+            width: 100vw !important;
+            max-width: 100vw !important;
+            padding: 0 !important;
+            height: 100vh !important;
+            justify-content: center !important;
+            align-items: center !important;
+        }
+        #workspace.mode-face_only .camera-wrapper {
+            width: 100vw !important;
+            height: 100vh !important;
+            max-width: 100vw !important;
+        }
+        #workspace.mode-face_only .camera-frame {
+            border-radius: 0 !important;
+            inset: 0 !important;
+            padding: 0 !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+        #workspace.mode-face_only .camera-frame > div {
+            border-radius: 0 !important;
+        }
+        #workspace.mode-face_only #mirrorHeader {
+            z-index: 50;
+            top: 20px !important;
+            left: 20px !important;
+        }
+        #workspace.mode-face_only #scanStatus {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 50;
+            background: rgba(0,0,0,0.5);
+            padding: 10px 20px;
+            border-radius: 20px;
+            margin-top: 0 !important;
+        }
+        
+        /* Floating Back Button for Face Only Mode */
+        #floatingBackBtn {
+            display: none;
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 60;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            align-items: center;
+            gap: 8px;
+        }
+        #workspace.mode-face_only #floatingBackBtn {
+            display: flex;
+        }
+        #workspace.mode-face_only #floatingBackBtn:hover {
+            background: rgba(0,0,0,0.8);
+        }
     </style>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#ffffff">
@@ -504,7 +575,11 @@
         </div>
 
         <!-- [2] MAIN WORKSPACE (Hidden by default) -->
-        <div id="workspace" style="display: none; width: 100%; height: 100%; flex-direction: row;">
+        <div id="workspace" style="display: none; width: 100%; height: 100%; flex-direction: row; position: relative;">
+            <button id="floatingBackBtn" onclick="switchMode('home')">
+                <span class="material-icons">arrow_back</span> 처음으로
+            </button>
+            
             <!-- Left Section: Mirror/Camera -->
             <div id="mirrorSection" class="kiosk-left"
                 style="flex: 1.2; position: relative; padding: 40px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
@@ -524,6 +599,7 @@
                             style="width: 100%; height: 100%; background: #000; border-radius: 36px; overflow: hidden;">
                             <video id="video" autoplay playsinline
                                 style="width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1);"></video>
+                            <canvas id="overlayCanvas" style="position: absolute; top:0; left:0; width: 100%; height: 100%; z-index: 5; pointer-events: none; transform: scaleX(-1);"></canvas>
                             <div id="shutterEffect"
                                 style="position: absolute; inset:0; background:white; opacity:0; pointer-events:none; z-index: 10;">
                             </div>
@@ -585,11 +661,11 @@
                         <span class="material-icons"
                             style="color: #059669; font-size: 60px; animation: pulse 2s infinite;">face_retouching_natural</span>
                     </div>
-                    <button onclick="recognizeAndAttend()"
-                        style="width: 320px; height: 90px; border-radius: 45px; background: #059669; color: white; border: none; font-size: 1.8rem; font-weight: 900; cursor: pointer; box-shadow: 0 15px 30px rgba(5,150,105,0.4);">
-                        얼굴로 출석하기
-                    </button>
-                    <p style="color: #64748b; margin-top: 25px; font-size: 1.1rem;">카메라를 정면으로 바라봐 주세요</p>
+                    <div id="autoScanMessage"
+                        style="width: 320px; height: 90px; border-radius: 45px; background: rgba(5, 150, 105, 0.1); color: #059669; border: 2px solid #059669; font-size: 1.5rem; font-weight: 900; display: flex; align-items: center; justify-content: center; margin: 0 auto; box-shadow: 0 15px 30px rgba(5,150,105,0.2);">
+                        <span class="material-icons" style="margin-right: 10px; animation: spin 2s linear infinite;">radar</span> AI 자동 스캔 중...
+                    </div>
+                    <p style="color: #64748b; margin-top: 25px; font-size: 1.1rem;">버튼을 누를 필요 없이 카메라를 정면으로 바라봐 주세요</p>
                 </div>
 
                 <div id="statusMsg"
@@ -603,6 +679,11 @@
     <canvas id="canvas" width="640" height="480" style="display: none;"></canvas>
 
     <style>
+        @keyframes spin {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
         @keyframes frameGlow {
             from {
                 box-shadow: 0 0 20px rgba(5, 150, 105, 0.2);
@@ -711,7 +792,7 @@
     </style>
 
     <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
-    <script src="monitor.js?v=1780796013_215152"></script>
+    <script src="monitor.js?v=1780796013_215153"></script>
     <script>
         // Real-time Clock Implementation
         function updateKioskTime() {

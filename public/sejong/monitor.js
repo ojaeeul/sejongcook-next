@@ -41,6 +41,9 @@ function switchMode(mode) {
     clearNum();
     if (statusMsg) statusMsg.textContent = "";
 
+    // 화면 전환 시 무조건 루프 정지 (안전 장치)
+    if (typeof stopAutoDetectionLoop === 'function') stopAutoDetectionLoop();
+
     if (mode === 'home') {
         if (homeScreen) homeScreen.style.display = 'flex';
         if (workspace) workspace.style.display = 'none';
@@ -58,9 +61,11 @@ function switchMode(mode) {
             stopCamera();
         }
         else if (mode === 'face_only') {
-            setupUI("얼굴 출석", "카메라를 바라보고 아래 버튼을 누르세요", false, true, true);
+            setupUI("얼굴 출석", "버튼을 누를 필요 없이 카메라를 정면으로 바라봐 주세요", false, true, true);
             if (mirrorSection) mirrorSection.style.opacity = '1';
-            startCamera();
+            startCamera().then(() => {
+                startAutoDetectionLoop();
+            });
             loadFaceModels(); // Preload ML
         }
         else if (mode === 'register') {
@@ -80,17 +85,21 @@ let modelsLoading = false;
 async function loadFaceModels() {
     if (modelsLoaded || modelsLoading) return;
     modelsLoading = true;
-    showStatus("AI 얼굴 인식 엔진 준비 중...", "#3b82f6");
-
+    
     try {
-        const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/';
+        const MODEL_URL = 'https://cdn.jsdelivr.net/gh/vladmandic/face-api/model/';
+        showStatus("AI 엔진(고속+정밀) 불러오는 중...", "#059669");
+        if (shutter) shutter.style.opacity = '1';
+
         try { await faceapi.tf.setBackend('webgl'); } catch (e) { console.log('WebGL backend not supported, fallback to default'); }
 
         await Promise.all([
+            faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
             faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
             faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
             faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
         ]);
+        
         modelsLoaded = true;
         showStatus("AI 인식 준비 완료", "#059669");
         setTimeout(() => showStatus("", ""), 1500);
@@ -129,44 +138,139 @@ async function submitAttendance() {
     if (mainSubmitBtn) { mainSubmitBtn.disabled = false; mainSubmitBtn.textContent = "출석"; mainSubmitBtn.style.opacity = "1"; }
 }
 
-async function recognizeAndAttend() {
-    if (!modelsLoaded) {
-        showStatus("AI 엔진 모델 로딩 중입니다. 잠시 후 10초 뒤 시도해주세요.", "orange");
-        return;
+let autoDetectInterval = null;
+let isAuthenticating = false;
+
+function startAutoDetectionLoop() {
+    if (autoDetectInterval) clearInterval(autoDetectInterval);
+    isAuthenticating = false;
+    autoDetectInterval = setInterval(async () => {
+        if (!modelsLoaded || isAuthenticating || currentMode !== 'face_only' || !video || video.paused) return;
+
+        try {
+            // 빠른 추적용 (초점 UI용) - TinyFaceDetector
+            const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 });
+            const detections = await faceapi.detectAllFaces(video, options).withFaceLandmarks();
+            
+            drawMultiFocusUI(detections);
+
+            // 안정적으로 감지되면 고정밀 모델(ssdMobilenetv1) 구동하여 출석 체크
+            if (detections.length > 0 && !isAuthenticating) {
+                const box = detections[0].detection.box;
+                if (box.width > 80 && box.height > 80) { // 너무 멀리 있는 얼굴은 무시
+                    isAuthenticating = true;
+                    await processAutoAttendance();
+                }
+            }
+        } catch(e) {
+            console.error("Auto detect error:", e);
+        }
+    }, 100); // 초당 약 10프레임 속도로 십자선 업데이트
+}
+
+function stopAutoDetectionLoop() {
+    if (autoDetectInterval) {
+        clearInterval(autoDetectInterval);
+        autoDetectInterval = null;
+    }
+    const overlayCanvas = document.getElementById('overlayCanvas');
+    if (overlayCanvas) {
+        const ctx = overlayCanvas.getContext('2d');
+        ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+    }
+}
+
+function drawMultiFocusUI(detections) {
+    const overlayCanvas = document.getElementById('overlayCanvas');
+    if (!overlayCanvas || !video) return;
+
+    if (overlayCanvas.width !== video.clientWidth) {
+        overlayCanvas.width = video.clientWidth;
+        overlayCanvas.height = video.clientHeight;
     }
 
-    const btn = document.querySelector('#faceOnlyPanel button');
-    if (btn) {
-        btn.disabled = true;
-        btn.textContent = "AI 분석 대기중...";
-        btn.style.opacity = "0.7";
-    }
+    const ctx = overlayCanvas.getContext('2d');
+    ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
 
-    showStatus("얼굴 특징을 분석 중입니다. 가만히 바라봐주세요...", "#3b82f6");
-    if (shutter) shutter.style.opacity = '1';
-    setTimeout(() => { if (shutter) shutter.style.opacity = '0'; }, 150);
+    if (!detections || detections.length === 0) return;
 
-    // Give browser time to paint the UI text updates before heavy ML block
-    await new Promise(r => setTimeout(r, 10));
+    const dims = faceapi.matchDimensions(overlayCanvas, video, true);
+    const resizedDetections = faceapi.resizeResults(detections, dims);
 
+    ctx.strokeStyle = '#10b981'; // 에메랄드 그린
+    ctx.lineWidth = 2;
+    ctx.fillStyle = '#10b981';
+
+    resizedDetections.forEach(det => {
+        const box = det.detection.box;
+        const landmarks = det.landmarks;
+        
+        // 다중 십자 타겟팅 포인트들 (얼굴 윤곽, 눈, 코, 입)
+        const pointsToTrack = [
+            landmarks.getLeftEye()[0],
+            landmarks.getLeftEye()[3],
+            landmarks.getRightEye()[0],
+            landmarks.getRightEye()[3],
+            landmarks.getNose()[0],
+            landmarks.getNose()[3],
+            landmarks.getMouth()[0],
+            landmarks.getMouth()[6],
+            {x: box.x, y: box.y},
+            {x: box.x + box.width, y: box.y},
+            {x: box.x, y: box.y + box.height},
+            {x: box.x + box.width, y: box.y + box.height}
+        ];
+
+        const drawCrosshair = (x, y, size) => {
+            ctx.beginPath();
+            ctx.moveTo(x - size, y); ctx.lineTo(x + size, y);
+            ctx.moveTo(x, y - size); ctx.lineTo(x, y + size);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(x, y, 2, 0, 2*Math.PI);
+            ctx.fill();
+        };
+
+        pointsToTrack.forEach(p => {
+            if(p) drawCrosshair(p.x, p.y, 8);
+        });
+        
+        // 큰 타겟 윤곽선 박스
+        ctx.beginPath();
+        ctx.rect(box.x, box.y, box.width, box.height);
+        ctx.strokeStyle = 'rgba(16, 185, 129, 0.4)';
+        ctx.stroke();
+    });
+}
+
+async function processAutoAttendance() {
     try {
+        showStatus("AI 정밀 스캔 중...", "#3b82f6");
+        
+        if (shutter) shutter.style.opacity = '1';
+        setTimeout(() => { if (shutter) shutter.style.opacity = '0'; }, 100);
+
         const [detection, res] = await Promise.all([
             faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor(),
             fetch(getFetchUrl('members') + '&t=' + Date.now())
         ]);
 
         if (!detection) {
-            showStatus("얼굴이 감지되지 않았습니다. 밝은 곳에서 시도하세요.", "red");
+            showStatus("초점이 맞지 않았습니다. 다시 스캔합니다.", "red");
+            setTimeout(() => { isAuthenticating = false; }, 800);
             return;
         }
 
         const rawMembers = await res.json();
         const members = Array.isArray(rawMembers) ? rawMembers.filter(m => !['delete', 'trash', 'hold', 'completed'].includes(m.status)) : [];
 
-        showStatus("매칭되는 회원을 찾는 중...", "#059669");
-
         let bestMatch = null;
-        let smallestDistance = parseFloat(localStorage.getItem('kiosk_sensitivity')) || 0.65; // Dynamic confidence threshold
+        let savedSens = localStorage.getItem('kiosk_sensitivity');
+        if (savedSens === '0.65') {
+            savedSens = '0.45';
+            localStorage.setItem('kiosk_sensitivity', '0.45');
+        }
+        let smallestDistance = parseFloat(savedSens) || 0.45;
 
         const captureData = capturePrettyFrame();
 
@@ -185,14 +289,18 @@ async function recognizeAndAttend() {
             const phoneStr = bestMatch.phone.replace(/-/g, '');
             const phone8 = phoneStr.length >= 8 ? phoneStr.slice(-8) : phoneStr;
             await processAttendance(phone8, captureData);
+            // 성공 시 연속 출석 방지를 위한 3초 쿨다운
+            setTimeout(() => { isAuthenticating = false; }, 3000);
         } else {
-            showStatus("등록된 얼굴을 찾을 수 없습니다. 신규 등록을 이용해보세요.", "red");
+            showStatus("미등록 얼굴입니다.", "red");
+            // 실패 시 1.5초 후 다시 시도
+            setTimeout(() => { isAuthenticating = false; }, 1500);
         }
-    } catch (e) {
-        showStatus("인식 시스템 오류!", "red");
+
+    } catch(e) {
+        showStatus("스캔 시스템 오류", "red");
         console.error(e);
-    } finally {
-        if (btn) { btn.disabled = false; btn.textContent = "얼굴로 출석하기"; btn.style.opacity = "1"; }
+        setTimeout(() => { isAuthenticating = false; }, 2000);
     }
 }
 
@@ -288,8 +396,8 @@ async function capturePhoto() {
             body: JSON.stringify(member)
         });
 
-        showStatus("얼굴 등록 완료! 자동으로 출석 체크를 진행합니다...", "#059669");
-        await processAttendance(member, photoDataUrl);
+        showStatus("얼굴 등록 완료! 홈 화면으로 돌아갑니다. 다시 로그인 해주세요.", "#059669");
+        setTimeout(() => switchMode('home'), 2500);
     } catch (e) {
         console.error('Registration Error:', e);
         showStatus(`저장 오류! (${e.message || '통신 실패'})`, "red");
@@ -469,6 +577,9 @@ async function processAttendance(inputNumOrObj, overridePhoto = null) {
             // Play login success sound
             if (window.playLoginSound) window.playLoginSound();
 
+            // Notify other tabs (like Monthly Sheet) to sync automatically
+            localStorage.setItem('sejong_attendance_sync', Date.now().toString());
+
             // TTS Voice Feedback
             if (localStorage.getItem('kiosk_voice_enabled') !== 'false') {
                 const mode = localStorage.getItem('kiosk_tts_mode') || 'browser';
@@ -504,6 +615,9 @@ function addNum(num) {
 function clearNum() { currentInput = ""; updateDisplay(); }
 function updateDisplay() { if (inputDisplay) inputDisplay.textContent = currentInput; }
 
+let cameraHealthCheckInterval = null;
+let lastVideoTime = 0;
+
 async function startCamera() {
     try {
         const cameraId = localStorage.getItem('kiosk_camera_id');
@@ -515,6 +629,24 @@ async function startCamera() {
         
         stream = await navigator.mediaDevices.getUserMedia(constraints);
         if (video) video.srcObject = stream;
+
+        // 카메라 헬스체크 시작 (검은 화면 멈춤 복구용)
+        if (cameraHealthCheckInterval) clearInterval(cameraHealthCheckInterval);
+        lastVideoTime = 0;
+        cameraHealthCheckInterval = setInterval(async () => {
+            if (video && stream && currentMode !== 'home' && currentMode !== 'number') {
+                if (video.currentTime === lastVideoTime) {
+                    // 비디오가 멈췄거나 오류 상태
+                    console.warn("Camera frozen detected! Restarting...");
+                    stopCamera();
+                    try {
+                        stream = await navigator.mediaDevices.getUserMedia(constraints);
+                        if (video) video.srcObject = stream;
+                    } catch(e) { console.error("Camera recovery failed", e); }
+                }
+                lastVideoTime = video.currentTime;
+            }
+        }, 3000); // 3초마다 체크
     } catch (e) {
         console.error("Camera Error:", e);
         // Fallback if specific camera fails
@@ -528,6 +660,10 @@ async function startCamera() {
 }
 
 function stopCamera() {
+    if (cameraHealthCheckInterval) {
+        clearInterval(cameraHealthCheckInterval);
+        cameraHealthCheckInterval = null;
+    }
     if (stream) stream.getTracks().forEach(t => t.stop());
     if (video) video.srcObject = null;
 }
@@ -545,7 +681,17 @@ function showFaceOverlay(url, name) {
     setTimeout(() => { if (overlay) overlay.remove(); }, 2500);
 }
 
-function showStatus(msg, color) { if (statusMsg) { statusMsg.textContent = msg; statusMsg.style.color = color; } }
+function showStatus(msg, color) { 
+    if (statusMsg) { 
+        statusMsg.textContent = msg; 
+        statusMsg.style.color = color; 
+    } 
+    const scanStatusText = document.querySelector('#scanStatus span:nth-child(2)');
+    if (scanStatusText) {
+        scanStatusText.textContent = msg;
+        scanStatusText.style.color = color;
+    }
+}
 
 function updateKioskTime() {
     const now = new Date();
