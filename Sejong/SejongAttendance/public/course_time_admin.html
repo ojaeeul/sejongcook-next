@@ -314,8 +314,21 @@
                     <div style="font-size: 0.9rem; color: #64748b; margin-bottom: 15px;">
                         월간 출석부에서 재고출석의 합계(진행률)가 바뀌는 커트라인을 설정합니다.<br>기본적으로 제과제빵은 16, 나머지는 8입니다.
                     </div>
-                    <div id="cutoffListContainer" style="display: flex; flex-direction: column; gap: 0;">
+                    <div id="cutoffListContainer" style="display: flex; flex-wrap: wrap; gap: 10px;">
                         <!-- Cutoffs will be rendered here -->
+                    </div>
+                </div>
+
+                <!-- Attendance Cutoff Settings -->
+                <div style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; margin-top: 20px;">
+                    <h2 style="font-size: 1.1rem; color: #1e293b; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                        <span class="material-icons" style="color: #3b82f6;">rule</span> 과정별 출석합계 커트라인 관리
+                    </h2>
+                    <div style="font-size: 0.9rem; color: #64748b; margin-bottom: 15px;">
+                        월간 출석부에서 출석합계(출석)가 바뀌는 커트라인을 설정합니다.<br>기본적으로 제과제빵은 16, 나머지는 8입니다.
+                    </div>
+                    <div id="attendanceCutoffListContainer" style="display: flex; flex-wrap: wrap; gap: 10px;">
+                        <!-- Attendance Cutoffs will be rendered here -->
                     </div>
                 </div>
 
@@ -336,6 +349,7 @@
         let courses = [];
         let times = [];
         let makeupCutoffs = {};
+        let attendanceCutoffs = {};
 
         async function loadSettings() {
             try {
@@ -347,18 +361,22 @@
                 courses = settings.courses && settings.courses.length > 0 ? settings.courses : [...DEFAULT_COURSES];
                 times = settings.times && settings.times.length > 0 ? settings.times : [...DEFAULT_TIMES];
                 makeupCutoffs = settings.makeupCutoffs || {};
+                attendanceCutoffs = settings.attendanceCutoffs || {};
                 
                 renderCourses();
                 renderTimes();
                 renderCutoffs();
+                renderAttendanceCutoffs();
             } catch (e) {
                 console.error("Failed to load settings", e);
                 courses = [...DEFAULT_COURSES];
                 times = [...DEFAULT_TIMES];
                 makeupCutoffs = {};
+                attendanceCutoffs = {};
                 renderCourses();
                 renderTimes();
                 renderCutoffs();
+                renderAttendanceCutoffs();
             }
         }
 
@@ -385,12 +403,14 @@
             input.value = "";
             renderCourses();
             renderCutoffs();
+            renderAttendanceCutoffs();
         }
 
         function removeCourse(idx) {
             courses.splice(idx, 1);
             renderCourses();
             renderCutoffs();
+            renderAttendanceCutoffs();
         }
 
         function renderTimes() {
@@ -440,16 +460,16 @@
                 }
                 const val = makeupCutoffs[course];
                 
-                const row = document.createElement("div");
-                row.style.cssText = "display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px dashed #e2e8f0;";
-                row.innerHTML = `
-                    <span style="font-weight: 500; color: #334155; font-size: 1rem;">${course}</span>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <input type="number" value="${val}" style="width: 80px; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; text-align: center; font-size: 1rem; font-weight: bold; color: #0f172a;" onchange="updateCutoff('${course}', this.value)">
-                        <span style="color: #64748b; font-size: 0.95rem;">회</span>
+                const badge = document.createElement("div");
+                badge.style.cssText = "background: #fffbeb; border: 1px solid #fde68a; padding: 6px 12px; border-radius: 12px; display: flex; align-items: center; gap: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.02); transition: all 0.2s;";
+                badge.innerHTML = `
+                    <span style="font-weight: 600; color: #92400e; font-size: 0.9rem;">${course}</span>
+                    <div style="display: flex; align-items: center; background: white; border-radius: 6px; padding: 2px 6px; border: 1px solid #fcd34d;">
+                        <input type="number" value="${val}" style="width: 36px; border: none; outline: none; text-align: center; font-size: 0.95rem; font-weight: bold; color: #b45309; background: transparent;" onchange="updateCutoff('${course}', this.value)">
+                        <span style="color: #d97706; font-size: 0.85rem; margin-left: 2px; font-weight: 500;">회</span>
                     </div>
                 `;
-                container.appendChild(row);
+                container.appendChild(badge);
             });
         }
 

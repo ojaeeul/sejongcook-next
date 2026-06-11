@@ -7,9 +7,11 @@ function getFetchUrl(endpoint, isPost = false) {
 
 const API_BASE = '/api/sejong';
 
-let global_course_options = ['한식기능사', '양식기능사', '일식기능사', '중식기능사', '제과기능사', '제빵기능사', '제과제빵기능사', '복어기능사', '산업기사', '가정요리', '브런치'];
-let global_time_options = ['10:00', '12:00', '17:00', '19:00'];
-let global_makeup_cutoffs = {};
+// 공통으로 사용될 전역 변수들
+window.global_course_options = [];
+window.global_time_options = [];
+window.global_makeup_cutoffs = {};
+window.global_attendance_cutoffs = {};
 
 // 백엔드에서 설정값을 불러와 전역 옵션을 갱신하고 데이타리스트 재생성
 async function loadGlobalCourseTimeSettings() {
@@ -21,6 +23,7 @@ async function loadGlobalCourseTimeSettings() {
             if (settings.courses && settings.courses.length > 0) global_course_options = settings.courses;
             if (settings.times && settings.times.length > 0) global_time_options = settings.times;
             if (settings.makeupCutoffs) global_makeup_cutoffs = settings.makeupCutoffs;
+            if (settings.attendanceCutoffs) global_attendance_cutoffs = settings.attendanceCutoffs;
         }
     } catch(e) {
         console.error("Failed to load global settings", e);
