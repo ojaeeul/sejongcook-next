@@ -297,9 +297,7 @@ async function fetchAllData() {
             return res.json();
         };
 
-        const results ;
-                if(typeof window.loadCycleSettings === 'function') await window.loadCycleSettings();
-                await Promise.allSettled([
+        const results = await Promise.allSettled([
             fetchWithErrorHandling(`${API_BASE}/members${cacheBuster}`),
             fetchWithErrorHandling(`${API_BASE}/payments${cacheBuster}`),
             fetchWithErrorHandling(`${API_BASE}/attendance${cacheBuster}`),

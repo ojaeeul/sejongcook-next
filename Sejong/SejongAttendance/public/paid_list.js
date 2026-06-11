@@ -14,7 +14,6 @@ let currentMonth = savedMonth === 'all' ? 'all' : (parseInt(savedMonth) || new D
 async function loadData() {
     const container = document.getElementById('paidListContainer');
     try {
-        if(typeof window.loadCycleSettings === 'function') await window.loadCycleSettings();
         const [mRes, pRes] = await Promise.all([
             fetch(getFetchUrl('members')),
             fetch(getFetchUrl('payments'))

@@ -139,7 +139,6 @@ async function loadData(targetId) {
 
     try {
         const cacheBuster = `?t=${Date.now()}`;
-        if(typeof window.loadCycleSettings === 'function') await window.loadCycleSettings();
         const [mRes, pRes, aRes, sRes, hRes, tRes] = await Promise.all([
             fetch(getFetchUrl('members')),
             fetch(getFetchUrl('payments')),

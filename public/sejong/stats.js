@@ -15,7 +15,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     endInput.addEventListener('change', updateDashboard);
 
     try {
-        if(typeof window.loadCycleSettings === 'function') await window.loadCycleSettings();
         const [mRes, pRes, aRes] = await Promise.all([
             fetch(`${API_BASE}/members?t=${Date.now()}`),
             fetch(`${API_BASE}/payments?t=${Date.now()}`),
