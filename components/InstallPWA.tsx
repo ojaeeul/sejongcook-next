@@ -4,11 +4,11 @@ import { useEffect, useState } from 'react';
 import { Download, X, Share } from 'lucide-react';
 
 export default function InstallPWA() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isIOS, setIsIOS] = useState(false);
   const [showIOSPrompt, setShowIOSPrompt] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
-  const [isDismissed, setIsDismissed] = useState(false);
 
   useEffect(() => {
     // Register Service Worker
@@ -21,7 +21,9 @@ export default function InstallPWA() {
     }
 
     // Check if already installed
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsStandalone(true);
       return;
     }
@@ -38,7 +40,7 @@ export default function InstallPWA() {
     });
   }, []);
 
-  if (isStandalone || isDismissed) {
+  if (isStandalone) {
     return null;
   }
 
@@ -92,11 +94,11 @@ export default function InstallPWA() {
               </div>
               <div className="flex items-center gap-3">
                 <span className="bg-blue-100 text-blue-600 rounded-full w-6 h-6 flex items-center justify-center font-bold">2</span>
-                <span><strong>'홈 화면에 추가'</strong>를 선택하세요.</span>
+                <span><strong>&apos;홈 화면에 추가&apos;</strong>를 선택하세요.</span>
               </div>
               <div className="flex items-center gap-3">
                 <span className="bg-blue-100 text-blue-600 rounded-full w-6 h-6 flex items-center justify-center font-bold">3</span>
-                <span>오른쪽 위의 <strong>'추가'</strong>를 누르세요.</span>
+                <span>오른쪽 위의 <strong>&apos;추가&apos;</strong>를 누르세요.</span>
               </div>
             </div>
             <button

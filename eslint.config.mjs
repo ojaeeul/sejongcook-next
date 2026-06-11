@@ -13,6 +13,8 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
     "public/**",
+    "Sejong/**",
+    "sejongcook_final_deploy/**",
   ]),
 ]);
 
