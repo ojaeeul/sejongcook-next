@@ -15,6 +15,7 @@ async function loadData() {
     const container = document.getElementById('paidListContainer');
     try {
         const [mRes, pRes] = await Promise.all([
+                    (typeof window.loadCycleSettings === "function" ? window.loadCycleSettings() : Promise.resolve()),
             fetch(getFetchUrl('members')),
             fetch(getFetchUrl('payments'))
         ]);

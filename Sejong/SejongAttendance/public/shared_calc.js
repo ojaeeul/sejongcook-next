@@ -7,6 +7,41 @@
  * 모든 페이지에서 100% 동일하게 사용하기 위한 공통 계산 엔진입니다.
  */
 
+window.sejongCycleRules = {
+    default: 9,
+    custom: [
+        { keyword: "제과제빵", cycle: 17 }
+    ]
+};
+
+window.loadCycleSettings = async function() {
+    try {
+        const res = await fetch('/api/sejong/settings');
+        if (res.ok) {
+            const data = await res.json();
+            let target = Array.isArray(data) ? (data[0] || {}) : data;
+            if (target && target.cycleRules) {
+                window.sejongCycleRules = target.cycleRules;
+            }
+        }
+    } catch(e) {
+        console.error("Failed to load cycle settings:", e);
+    }
+};
+
+window.getCourseCycleLength = function(courseNameScope) {
+    if (!courseNameScope) return window.sejongCycleRules.default;
+    
+    if (window.sejongCycleRules && window.sejongCycleRules.custom) {
+        for (const rule of window.sejongCycleRules.custom) {
+            if (courseNameScope.includes(rule.keyword)) {
+                return rule.cycle;
+            }
+        }
+    }
+    return window.sejongCycleRules ? window.sejongCycleRules.default : 9;
+};
+
 window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, allAttendanceLogs, courseFilter, GLOBAL_DATA_ADJUSTMENTS) {
     if (!member) return { redDays: [], hasAnyAttendance: false, isSimulated: true };
 
@@ -88,13 +123,13 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
     
     const getCycle = (val) => {
         let vRaw = Math.round(val * 10);
-        if (isDualCourse) {
-            if (vRaw < 170) return 0;
-            return Math.floor((vRaw - 170) / 160) + 1;
-        } else {
-            if (vRaw < 90) return 0;
-            return Math.floor((vRaw - 90) / 80) + 1;
-        }
+        let cycleLimit = window.getCourseCycleLength(courseFilter || String(member.course));
+        let firstLimit = cycleLimit * 10;
+        let step = (cycleLimit - 1) * 10;
+        if (step <= 0) step = 10; // safety fallback
+        
+        if (vRaw < firstLimit) return 0;
+        return Math.floor((vRaw - firstLimit) / step) + 1;
     };
 
     let globalRunningTotal = 0;
@@ -284,6 +319,6 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
         hasAnyAttendance: hasAnyAttendance,
         isSimulated: isSimulated,
         allMilestones: allMilestones,
-        currentCount: { count: carryOverP, target: isDualCourse ? 17 : 9 }
+        currentCount: { count: carryOverP, target: window.getCourseCycleLength(courseFilter || String(member.course)) }
     };
 };

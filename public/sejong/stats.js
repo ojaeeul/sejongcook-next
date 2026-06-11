@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     try {
         const [mRes, pRes, aRes] = await Promise.all([
+                    (typeof window.loadCycleSettings === "function" ? window.loadCycleSettings() : Promise.resolve()),
             fetch(`${API_BASE}/members?t=${Date.now()}`),
             fetch(`${API_BASE}/payments?t=${Date.now()}`),
             fetch(`${API_BASE}/attendance?t=${Date.now()}`)

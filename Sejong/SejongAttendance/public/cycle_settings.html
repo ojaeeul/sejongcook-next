@@ -261,197 +261,160 @@
             <span class="material-icons" style="color: #3b82f6; font-size: 32px;">tune</span> 결재 주기 설정
         </h1>
         
-        <div style="margin-bottom: 20px; padding: 15px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; color: #1e40af;">
+        <div style="margin-bottom: 20px; padding: 15px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; color: #1e40af; line-height: 1.5;">
             <span class="material-icons" style="vertical-align: middle; margin-right: 5px;">info</span>
-            <strong>안내:</strong> 각 과정별로 출석 횟수에 따른 결재 주기(Red Box) 발생 기준을 설정합니다.<br>현재 이 값들은 시스템 전체 출석부 엔진(shared_calc.js)에 전역적으로 적용됩니다.
+            <strong>안내:</strong> 각 과정 이름에 특정 단어가 포함될 때 적용할 <strong>결재 주기(회차 기준)</strong>를 설정할 수 있습니다.<br>
+            위에서부터 순서대로 적용되며, 매칭되는 키워드가 없으면 최하단의 '기본 결재 주기'가 적용됩니다.
         </div>
 
-        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
-            <div style="font-size: 1.2rem; font-weight: bold; color: #334155; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
-                <span class="material-icons" style="color:#10b981;">restaurant</span> 일반 과정 (한식, 양식, 중식, 일식 등)
-            </div>
-            <div style="color: #64748b;">기본적으로 대부분의 단일 과정에 적용되는 출석 누적 주기입니다.</div>
-            <div style="display: flex; align-items: center; gap: 10px; margin-top: 15px;">
-                <span>출석 관련 데이터 누적</span>
-                <input type="number" value="9" disabled style="width: 80px; padding: 8px; font-size: 1.1rem; border: 1px solid #cbd5e1; border-radius: 6px; text-align: center;">
-                <span>회 마다 1주기(결재일) 발생</span>
+        <div style="margin-bottom: 30px; display: flex; gap: 10px; align-items: center; background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0;">
+            <input type="text" id="newKeyword" placeholder="적용할 과정 키워드 (예: 제과제빵)" style="flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 1.05rem;">
+            <input type="number" id="newCycle" placeholder="주기(회)" style="width: 100px; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 1.05rem; text-align: center;">
+            <button onclick="addCustomRule()" style="padding: 12px 20px; border-radius: 8px; background: #10b981; color: white; border: none; font-weight: bold; font-size: 1.05rem; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                <span class="material-icons" style="font-size: 1.2rem;">add_circle</span> 추가
+            </button>
+        </div>
+
+        <div id="rulesList" style="display: flex; flex-direction: column; gap: 15px;">
+            <div style="text-align:center; padding:20px; color:#94a3b8;">데이터를 불러오는 중입니다...</div>
+        </div>
+
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 2px dashed #e2e8f0;">
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px;">
+                <div style="font-size: 1.2rem; font-weight: bold; color: #334155; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+                    <span class="material-icons" style="color:#64748b;">restaurant</span> 기본 결재 주기 (일반 과정)
+                </div>
+                <div style="color: #64748b;">위의 키워드에 해당하지 않는 나머지 모든 단일 과정에 적용됩니다.</div>
+                <div style="display: flex; align-items: center; gap: 10px; margin-top: 15px;">
+                    <span>출석 관련 데이터 누적</span>
+                    <input type="number" id="defaultCycle" value="9" style="width: 80px; padding: 8px; font-size: 1.1rem; border: 1px solid #cbd5e1; border-radius: 6px; text-align: center;">
+                    <span>회 마다 1주기(결재일) 발생</span>
+                </div>
             </div>
         </div>
 
-        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
-            <div style="font-size: 1.2rem; font-weight: bold; color: #334155; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
-                <span class="material-icons" style="color:#f59e0b;">bakery_dining</span> 제과제빵 (복합 과정)
-            </div>
-            <div style="color: #64748b;">'제과제빵' 단어가 포함된 복합 과정에 적용되는 특별 출석 누적 주기입니다.</div>
-            <div style="display: flex; align-items: center; gap: 10px; margin-top: 15px;">
-                <span>출석 관련 데이터 누적</span>
-                <input type="number" value="17" disabled style="width: 80px; padding: 8px; font-size: 1.1rem; border: 1px solid #cbd5e1; border-radius: 6px; text-align: center;">
-                <span>회 마다 1주기(결재일) 발생</span>
-            </div>
-        </div>
-
-        <button onclick="alert('현재 결재 주기는 학원 핵심 로직으로 고정(하드코딩)되어 보호받고 있습니다. 임의 변경을 원하실 경우 관리자에게 문의해주세요.')" 
-                style="background: #3b82f6; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 1.1rem; font-weight: bold; display: flex; align-items: center; gap: 8px; margin-top: 30px; float: right;">
-            <span class="material-icons">lock</span> 설정 잠금 상태
+        <button onclick="saveCycleSettings()" style="background: #3b82f6; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 1.1rem; font-weight: bold; display: flex; align-items: center; gap: 8px; margin-top: 30px; float: right;">
+            <span class="material-icons">save</span> 설정 저장 및 반영
         </button>
         <div style="clear: both;"></div>
     </div>
 </div>
-        </main>
+</main>
 
-</div>
-
-<!-- Scripts -->
 <script>
-    const SHEET_API_BASE = '/api/sejong';
-    let timetableData = {};
+    let globalSettings = {};
+    let cycleRules = {
+        default: 9,
+        custom: [
+            { keyword: "제과제빵", cycle: 17 }
+        ]
+    };
 
-    async function fetchTimetable() {
+    async function loadSettings() {
         try {
-            const res = await fetch(`${SHEET_API_BASE}/timetable`);
+            const res = await fetch('/api/sejong/settings');
             if (res.ok) {
-                timetableData = await res.json();
-                renderCourseSettings();
-            }
-        } catch (e) {
-            console.error('Failed to fetch timetable:', e);
-            document.getElementById('courseSettingsList').innerHTML = '<div style="text-align:center; padding:40px; color:#ef4444;">데이터를 불러오는데 실패했습니다. 서버가 실행 중인지 확인해주세요.</div>';
-        }
-    }
-
-    function renderCourseSettings() {
-        const container = document.getElementById('courseSettingsList');
-        if (!container) return;
-        container.innerHTML = '';
-
-        const courses = Object.keys(timetableData);
-        if (courses.length === 0) {
-            container.innerHTML = '<div style="text-align:center; padding:40px; color:#94a3b8;">등록된 과정이 없습니다.</div>';
-            return;
-        }
-
-        const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
-
-        courses.forEach(course => {
-            const row = document.createElement('div');
-            row.className = 'course-row';
-
-            const nameWrap = document.createElement('div');
-            nameWrap.style.display = 'flex';
-            nameWrap.style.alignItems = 'center';
-            nameWrap.style.gap = '8px';
-            nameWrap.style.width = '250px';
-
-            const name = document.createElement('div');
-            name.className = 'course-name';
-            name.textContent = course;
-            name.style.width = 'auto'; // override default width
-
-            const delBtn = document.createElement('span');
-            delBtn.className = 'material-icons';
-            delBtn.textContent = 'remove_circle_outline';
-            delBtn.style.color = '#ef4444';
-            delBtn.style.cursor = 'pointer';
-            delBtn.style.fontSize = '1.2rem';
-            delBtn.title = '이 과정 삭제';
-            delBtn.onclick = () => deleteCourse(course);
-
-            nameWrap.appendChild(name);
-            nameWrap.appendChild(delBtn);
-            row.appendChild(nameWrap);
-
-            const toggles = document.createElement('div');
-            toggles.className = 'days-toggles';
-
-            // 월(1) ~ 토(6)
-            for (let i = 1; i <= 6; i++) {
-                const btn = document.createElement('div');
-                btn.className = 'day-toggle';
-                if (timetableData[course] && timetableData[course].includes(i)) {
-                    btn.classList.add('selected');
+                globalSettings = await res.json();
+                let target = Array.isArray(globalSettings) ? (globalSettings[0] || {}) : globalSettings;
+                if (target.cycleRules) {
+                    cycleRules = target.cycleRules;
                 }
-                btn.textContent = dayNames[i];
-                btn.onclick = () => {
-                    btn.classList.toggle('selected');
-                };
-                btn.dataset.day = i;
-                toggles.appendChild(btn);
             }
-            row.appendChild(toggles);
-            container.appendChild(row);
-        });
+            renderRules();
+        } catch (e) {
+            console.error('설정 로딩 실패:', e);
+            document.getElementById('rulesList').innerHTML = '<div style="text-align:center; padding:20px; color:#ef4444;">설정을 불러오지 못했습니다.</div>';
+        }
     }
 
-    function addNewCourse() {
-        const input = document.getElementById('newCourseName');
-        const name = input.value.trim();
-        if (!name) {
-            alert('추가할 과정명을 입력해주세요.');
+    function renderRules() {
+        document.getElementById('defaultCycle').value = cycleRules.default;
+        const list = document.getElementById('rulesList');
+        list.innerHTML = '';
+
+        if (cycleRules.custom.length === 0) {
+            list.innerHTML = '<div style="text-align:center; padding:20px; color:#94a3b8;">등록된 특별 키워드가 없습니다. 모든 과정이 기본 주기를 따릅니다.</div>';
             return;
         }
-        
-        // 현재 화면에서 선택된 요일 상태를 먼저 timetableData에 동기화
-        const rows = document.querySelectorAll('.course-row');
-        rows.forEach(row => {
-            const courseName = row.querySelector('.course-name').textContent;
-            const activeDays = [];
-            row.querySelectorAll('.day-toggle.selected').forEach(btn => {
-                activeDays.push(parseInt(btn.dataset.day));
-            });
-            timetableData[courseName] = activeDays;
-        });
 
-        if (timetableData[name]) {
-            alert('이미 존재하는 과정입니다.');
-            return;
-        }
-        
-        timetableData[name] = []; // 새 과정 빈 요일로 추가
-        input.value = '';
-        renderCourseSettings();
-    }
-
-    function deleteCourse(course) {
-        if (confirm(`'${course}' 과정을 목록에서 삭제하시겠습니까?\n(저장하기 버튼을 눌러야 최종 반영됩니다)`)) {
-            // 현재 화면에서 선택된 요일 상태를 먼저 timetableData에 동기화
-            const rows = document.querySelectorAll('.course-row');
-            rows.forEach(row => {
-                const courseName = row.querySelector('.course-name').textContent;
-                const activeDays = [];
-                row.querySelectorAll('.day-toggle.selected').forEach(btn => {
-                    activeDays.push(parseInt(btn.dataset.day));
-                });
-                timetableData[courseName] = activeDays;
-            });
+        cycleRules.custom.forEach((rule, index) => {
+            const row = document.createElement('div');
+            row.style.display = 'flex';
+            row.style.alignItems = 'center';
+            row.style.justifyContent = 'space-between';
+            row.style.background = '#fff';
+            row.style.border = '1px solid #cbd5e1';
+            row.style.padding = '15px 20px';
+            row.style.borderRadius = '10px';
             
-            delete timetableData[course];
-            renderCourseSettings();
+            row.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <span style="font-weight: bold; font-size: 1.1rem; color: #0f172a;">${rule.keyword}</span>
+                    <span style="color: #64748b;">포함 시</span>
+                    <strong style="color: #3b82f6; font-size: 1.1rem;">${rule.cycle}회</strong> 주기 적용
+                </div>
+                <span class="material-icons" style="color: #ef4444; cursor: pointer;" title="삭제" onclick="deleteRule(${index})">delete_outline</span>
+            `;
+            list.appendChild(row);
+        });
+    }
+
+    function addCustomRule() {
+        const keyword = document.getElementById('newKeyword').value.trim();
+        const cycle = parseInt(document.getElementById('newCycle').value, 10);
+
+        if (!keyword) {
+            alert('키워드를 입력해주세요.');
+            return;
+        }
+        if (isNaN(cycle) || cycle < 1) {
+            alert('올바른 주기(숫자)를 입력해주세요.');
+            return;
+        }
+
+        const exists = cycleRules.custom.find(r => r.keyword === keyword);
+        if (exists) {
+            alert('이미 존재하는 키워드입니다.');
+            return;
+        }
+
+        cycleRules.custom.push({ keyword, cycle });
+        document.getElementById('newKeyword').value = '';
+        document.getElementById('newCycle').value = '';
+        renderRules();
+    }
+
+    function deleteRule(index) {
+        if (confirm('이 키워드 규칙을 삭제하시겠습니까?')) {
+            cycleRules.custom.splice(index, 1);
+            renderRules();
         }
     }
 
-    async function saveSettings() {
-        const newTimetable = {};
-        const rows = document.querySelectorAll('.course-row');
-        rows.forEach(row => {
-            const course = row.querySelector('.course-name').textContent;
-            const activeDays = [];
-            row.querySelectorAll('.day-toggle.selected').forEach(btn => {
-                activeDays.push(parseInt(btn.dataset.day));
-            });
-            newTimetable[course] = activeDays;
-        });
-
+    async function saveCycleSettings() {
+        const defaultCycle = parseInt(document.getElementById('defaultCycle').value, 10);
+        if (isNaN(defaultCycle) || defaultCycle < 1) {
+            alert('기본 주기는 1 이상의 숫자여야 합니다.');
+            return;
+        }
+        cycleRules.default = defaultCycle;
+        
+        if (Array.isArray(globalSettings)) {
+            if (globalSettings.length === 0) globalSettings.push({});
+            globalSettings[0].cycleRules = cycleRules;
+        } else {
+            globalSettings.cycleRules = cycleRules;
+        }
+        
         try {
-            const res = await fetch(`${SHEET_API_BASE}/timetable`, {
+            const res = await fetch('/api/sejong/settings', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(newTimetable)
+                body: JSON.stringify(globalSettings)
             });
             if (res.ok) {
-                timetableData = newTimetable;
-                // [즉각 동기화] 다른 탭에 설정 변경 알림
-                localStorage.setItem('sejong_timetable_sync', Date.now());
-                alert('설정이 성공적으로 저장되었습니다.');
+                alert('결재 주기 설정이 성공적으로 저장되었습니다.
+이 변경 사항은 전체 출석부 계산 엔진에 즉시 반영됩니다.');
             } else {
                 alert('저장에 실패했습니다.');
             }
@@ -461,17 +424,14 @@
         }
     }
 
-    // Initialize
     window.addEventListener("DOMContentLoaded", () => {
-        fetchTimetable();
-    });
-
-    // Handle sync from other tabs
-    window.addEventListener('storage', (e) => {
-        if (e.key === 'sejong_timetable_sync') {
-            fetchTimetable();
-        }
+        loadSettings();
     });
 </script>
+
+</div>
+
+<!-- Scripts -->
+
 </body>
 </html>

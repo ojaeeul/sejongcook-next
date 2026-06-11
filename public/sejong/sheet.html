@@ -1773,6 +1773,7 @@
             try {
                 // Fetch all independently to reduce loading time
                 await Promise.all([
+                    (typeof window.loadCycleSettings === "function" ? window.loadCycleSettings() : Promise.resolve()),
                     fetchMembers().catch(e => console.error("Members error:", e)),
                     fetchAttendance().catch(e => console.error(e)),
                     fetchHolidays().catch(e => console.error(e)),

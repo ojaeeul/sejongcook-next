@@ -298,6 +298,7 @@ async function fetchAllData() {
         };
 
         const results = await Promise.allSettled([
+            (typeof window.loadCycleSettings === "function" ? window.loadCycleSettings() : Promise.resolve()),
             fetchWithErrorHandling(`${API_BASE}/members${cacheBuster}`),
             fetchWithErrorHandling(`${API_BASE}/payments${cacheBuster}`),
             fetchWithErrorHandling(`${API_BASE}/attendance${cacheBuster}`),

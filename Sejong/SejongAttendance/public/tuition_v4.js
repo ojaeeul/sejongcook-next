@@ -314,6 +314,7 @@ async function loadData() {
         
         
         const [mRes, pRes, sRes, aRes, hRes, tRes] = await Promise.all([
+                    (typeof window.loadCycleSettings === "function" ? window.loadCycleSettings() : Promise.resolve()),
             fetch(getFetchUrl('members')),
             fetch(getFetchUrl('payments')),
             fetch(getFetchUrl('settings')),
