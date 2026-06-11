@@ -25,6 +25,9 @@
         .chip-btn .material-icons { font-size: 16px; font-weight: bold; }
         
         .custom-rule-item { display: flex; justify-content: space-between; align-items: center; background: white; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        
+        .tool-panel { background: #f1f5f9; border: 1px dashed #94a3b8; border-radius: 12px; padding: 20px; margin-top: 30px; }
+        .tool-panel select, .tool-panel input { padding: 12px; font-size: 1rem; border: 1px solid #cbd5e1; border-radius: 8px; }
     </style>
 </head>
 <body style="background-color: #f1f5f9; font-family: 'Pretendard', sans-serif;">
@@ -103,58 +106,61 @@
             <div style="margin-bottom: 30px; padding: 15px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; color: #1e40af; line-height: 1.6;">
                 <span class="material-icons" style="vertical-align: middle; margin-right: 5px;">info</span>
                 <strong>사용 안내</strong><br>
-                1. <strong>일반 과정</strong> 또는 <strong>제과제빵 과정</strong>에서 빼기 버튼을 누르면 밑의 '단독 특수 과정'으로 빠집니다.<br>
-                2. 특수 과정에서는 과정마다 별도의 주기를 자유롭게 넣을 수 있습니다. 더하기 버튼을 누르면 다시 원래 자리로 올라갑니다.
+                과정 옆의 빼기(-)나 더하기(+) 버튼을 누르면 특수 과정으로 빠지거나 원래 그룹으로 돌아갑니다.<br>
+                완전히 새로운 과정을 추가하거나, 기존 과정을 원하는 그룹으로 강제 이동시키려면 화면 맨 아래의 <strong>[과정 이동 및 신규 추가]</strong> 도구를 사용하세요.
             </div>
 
             <!-- 영역 1: 일반 과정 -->
             <div class="setting-card">
                 <div class="title"><span class="material-icons" style="color:#10b981;">restaurant</span> 일반 과정 (기본 그룹)</div>
-                <div class="desc">한식, 양식, 중식, 일식 등 기본 주기를 따르는 과정들입니다. 단독 주기가 필요한 경우 빼기(-)를 누르세요.</div>
                 <div class="input-row" style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #e2e8f0;">
                     <span style="font-weight: bold; color: #334155; font-size: 1.1rem;">결재 주기:</span>
-                    <input type="number" id="defaultCycle" value="9" min="1">
+                    <input type="number" id="defaultCycle" value="9" min="1" onchange="syncGroupCycles()">
                     <span style="color: #64748b;">회 출석 시 결재 발생</span>
                 </div>
-                <div class="chip-container" id="generalCoursesList">
-                    <!-- 일반 과정 렌더링 영역 -->
-                </div>
+                <div class="chip-container" id="generalCoursesList"></div>
             </div>
 
             <!-- 영역 2: 제과제빵 전용 과정 -->
             <div class="setting-card" style="background: #fffdf5; border-color: #fef08a;">
                 <div class="title"><span class="material-icons" style="color:#d97706;">bakery_dining</span> 제과제빵 전용 과정</div>
-                <div class="desc">제과제빵 관련 과정들만 모인 전용 칸입니다. 이 칸에 있는 과정들은 모두 아래의 주기를 따릅니다.</div>
                 <div class="input-row" style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #fde047;">
                     <span style="font-weight: bold; color: #92400e; font-size: 1.1rem;">결재 주기:</span>
-                    <input type="number" id="bakingCycle" value="17" min="1" style="border-color: #facc15; background: #fff;">
+                    <input type="number" id="bakingCycle" value="17" min="1" style="border-color: #facc15; background: #fff;" onchange="syncGroupCycles()">
                     <span style="color: #b45309;">회 출석 시 결재 발생</span>
                 </div>
-                <div class="chip-container" id="bakingCoursesList" style="background: rgba(255,255,255,0.7); border-color: #fef08a;">
-                    <!-- 제과제빵 과정 렌더링 영역 -->
-                </div>
+                <div class="chip-container" id="bakingCoursesList" style="background: rgba(255,255,255,0.7); border-color: #fef08a;"></div>
             </div>
 
             <!-- 영역 3: 특수 과정 -->
             <div class="setting-card" style="background: #fef8f8; border-color: #fee2e2;">
-                <div class="title"><span class="material-icons" style="color:#ef4444;">stars</span> 단독 특수 과정 (목록에서 뺀 과정들)</div>
-                <div class="desc">위의 상자들에서 뺀 과정들입니다. 각 과정마다 독자적인 결재 주기를 설정할 수 있습니다.</div>
-                
-                <div class="chip-container" id="customCoursesList" style="flex-direction: column; background: transparent; border: none; padding: 0; min-height: 0;">
-                    <!-- 특수 과정 렌더링 영역 -->
-                </div>
+                <div class="title"><span class="material-icons" style="color:#ef4444;">stars</span> 단독 특수 과정</div>
+                <div class="chip-container" id="customCoursesList" style="flex-direction: column; background: transparent; border: none; padding: 0; min-height: 0;"></div>
             </div>
 
-            <!-- 영역 4: 수동 키워드 추가 -->
-            <div style="margin-top: 30px; border-top: 1px dashed #cbd5e1; padding-top: 20px;">
-                <div style="color: #64748b; font-size: 0.95rem; margin-bottom: 10px;">
-                    <span class="material-icons" style="font-size: 16px; vertical-align: middle;">add_circle_outline</span> 전체 과정 목록에 아예 없는 <strong>새로운 과정</strong>을 수동으로 등록하시려면 아래에 입력하세요.
-                </div>
-                <div style="display: flex; gap: 10px; align-items: center; background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0;">
-                    <input type="text" id="newKeyword" placeholder="새 과정 이름 (예: 바리스타)" style="flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 1rem;">
-                    <input type="number" id="newCycle" placeholder="주기(회)" style="width: 100px; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 1rem; text-align: center;">
-                    <button onclick="addManualRule()" style="padding: 12px 20px; border-radius: 8px; background: #64748b; color: white; border: none; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px;">
-                        <span class="material-icons" style="font-size:18px;">add</span> 직접 추가
+            <!-- 영역 4: 이동 및 신규 편입 도구 -->
+            <div class="tool-panel">
+                <h3 style="margin-top:0; color:#334155; display:flex; align-items:center; gap:8px;">
+                    <span class="material-icons">swap_horiz</span> 과정 이동 및 신규 과정 편입
+                </h3>
+                <p style="color:#64748b; font-size:0.95rem; margin-bottom: 15px;">
+                    기존 과정을 다른 상자로 <strong>이동</strong>시키거나, 목록에 없는 <strong>새로운 과정</strong>을 원하는 그룹에 추가할 수 있습니다.
+                </p>
+                <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                    <input type="text" id="targetCourse" placeholder="과정명 (예: 바리스타)" style="flex: 1; min-width: 200px;">
+                    
+                    <select id="targetGroup" onchange="toggleCycleInput()">
+                        <option value="general">일반 과정 (기본 그룹)에 편입</option>
+                        <option value="baking">제과제빵 전용 과정에 편입</option>
+                        <option value="custom">단독 특수 과정으로 편입</option>
+                    </select>
+                    
+                    <div id="targetCycleDiv" style="display: none; align-items: center; gap: 5px;">
+                        <input type="number" id="targetCycle" placeholder="주기(회)" style="width: 80px; text-align:center;">
+                    </div>
+                    
+                    <button onclick="applyMoveOrAdd()" style="padding: 12px 20px; border-radius: 8px; background: #10b981; color: white; border: none; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                        <span class="material-icons" style="font-size:18px;">library_add</span> 적용하기
                     </button>
                 </div>
             </div>
@@ -172,7 +178,7 @@
     let cycleRules = {
         default: 9,
         custom: [
-            { keyword: "제과제빵", cycle: 17 } // 이건 이제 제과제빵 전용 칸의 기준값이 됩니다.
+            { keyword: "제과제빵", cycle: 17 }
         ]
     };
     let allKnownCourses = []; 
@@ -196,7 +202,6 @@
                 }
             }
             
-            // "제과제빵" 키워드 룰이 없으면 기본 생성
             if (!cycleRules.custom.find(r => r.keyword === "제과제빵")) {
                 cycleRules.custom.push({ keyword: "제과제빵", cycle: 17 });
             }
@@ -208,9 +213,34 @@
         }
     }
 
+    function toggleCycleInput() {
+        const group = document.getElementById('targetGroup').value;
+        const div = document.getElementById('targetCycleDiv');
+        if (group === 'custom') {
+            div.style.display = 'flex';
+        } else {
+            div.style.display = 'none';
+        }
+    }
+
+    // 변경 시 즉시 동기화 (UI 상의 입력값들)
+    function syncGroupCycles() {
+        const def = parseInt(document.getElementById('defaultCycle').value) || 9;
+        const bak = parseInt(document.getElementById('bakingCycle').value) || 17;
+        
+        cycleRules.default = def;
+        let bRule = cycleRules.custom.find(r => r.keyword === "제과제빵");
+        if(bRule) bRule.cycle = bak;
+        
+        // 그룹에 속한 명시적 커스텀 룰들의 주기 동기화
+        cycleRules.custom.forEach(r => {
+            if (r.group === 'general') r.cycle = def;
+            if (r.group === 'baking') r.cycle = bak;
+        });
+    }
+
     function renderUI() {
         document.getElementById('defaultCycle').value = cycleRules.default || 9;
-        
         let bakingRule = cycleRules.custom.find(r => r.keyword === "제과제빵");
         if(bakingRule) {
             document.getElementById('bakingCycle').value = bakingRule.cycle || 17;
@@ -224,35 +254,37 @@
         let bakingHTML = '';
         let customHTML = '';
 
-        let customKeywords = cycleRules.custom.map(r => r.keyword);
-        
-        // 분류
         let generalCourses = [];
         let bakingCourses = [];
+        let customRules = [];
         
-        allKnownCourses.forEach(c => {
-            // "제과제빵" 이라는 단어 자체는 그룹 마스터 키워드이므로 제외
-            if (c === "제과제빵" && !allKnownCourses.includes("제과제빵기능사")) return;
+        // 유니크 통합 목록 생성
+        let allItems = new Set([...allKnownCourses, ...cycleRules.custom.map(r => r.keyword)]);
+        allItems.delete("제과제빵");
+
+        allItems.forEach(c => {
+            let rule = cycleRules.custom.find(r => r.keyword === c);
             
-            // 사용자가 개별 특수과정으로 빼놓은 것은 여기서 안그림
-            if (customKeywords.includes(c) && c !== "제과제빵") return;
-            
-            if (isBakingCourse(c)) {
-                bakingCourses.push(c);
+            if (rule) {
+                // UI 오버라이드 속성 확인
+                if (rule.group === 'general') generalCourses.push(c);
+                else if (rule.group === 'baking') bakingCourses.push(c);
+                else customRules.push(rule);
             } else {
-                generalCourses.push(c);
+                // 기본 매칭
+                if (isBakingCourse(c)) bakingCourses.push(c);
+                else generalCourses.push(c);
             }
         });
 
-        // 1. 일반 과정 그리기
         if (generalCourses.length === 0) {
-            generalHTML = '<div style="color:#94a3b8; width: 100%; text-align: center; padding: 10px;">목록이 비어있습니다.</div>';
+            generalHTML = '<div style="color:#94a3b8; width:100%; text-align:center;">비어있습니다.</div>';
         } else {
             generalCourses.forEach(c => {
                 generalHTML += `
                     <div class="chip">
                         ${c}
-                        <button class="chip-btn" onclick="moveToCustom('${c}')" title="특수 과정으로 빼기">
+                        <button class="chip-btn" onclick="quickMove('${c}', 'custom')" title="단독 특수 과정으로 빼기">
                             <span class="material-icons">remove</span>
                         </button>
                     </div>
@@ -260,15 +292,14 @@
             });
         }
         
-        // 2. 제과제빵 과정 그리기
         if (bakingCourses.length === 0) {
-            bakingHTML = '<div style="color:#b45309; width: 100%; text-align: center; padding: 10px; opacity:0.7;">목록이 비어있습니다.</div>';
+            bakingHTML = '<div style="color:#b45309; width:100%; text-align:center; opacity:0.7;">비어있습니다.</div>';
         } else {
             bakingCourses.forEach(c => {
                 bakingHTML += `
                     <div class="chip baking-chip">
                         ${c}
-                        <button class="chip-btn" onclick="moveToCustom('${c}')" title="단독 특수 과정으로 빼기">
+                        <button class="chip-btn" onclick="quickMove('${c}', 'custom')" title="단독 특수 과정으로 빼기">
                             <span class="material-icons">remove</span>
                         </button>
                     </div>
@@ -276,14 +307,13 @@
             });
         }
         
-        // 3. 특수 과정 그리기 (제과제빵 마스터 키워드 제외)
-        let actualCustomRules = cycleRules.custom.filter(r => r.keyword !== "제과제빵");
-        
-        if (actualCustomRules.length === 0) {
-            customHTML = '<div style="color:#ef4444; font-size:0.95rem; text-align:center; padding: 25px; background: white; border-radius: 8px; border: 1px dashed #fca5a5;">특수 과정으로 빠져나온 항목이 없습니다.</div>';
+        if (customRules.length === 0) {
+            customHTML = '<div style="color:#ef4444; font-size:0.95rem; text-align:center; padding: 20px; border-radius: 8px; border: 1px dashed #fca5a5;">특수 과정이 없습니다.</div>';
         } else {
-            actualCustomRules.forEach(rule => {
-                let inputId = 'cycle_input_' + rule.keyword.replace(/\s+/g, '_');
+            customRules.forEach(rule => {
+                // let inputId = 'cycle_input_' + rule.keyword.replace(/\s+/g, '_');
+                // Removed dynamic regex replacing, just passing explicitly
+                let escKeyword = rule.keyword.replace(/'/g, "\'");
                 customHTML += `
                     <div class="custom-rule-item">
                         <div style="display:flex; align-items:center; gap:15px;">
@@ -291,11 +321,11 @@
                                 ${rule.keyword}
                             </div>
                             <div style="color:#475569; font-size:1.1rem; font-weight: 500;">
-                                출석 <input type="number" id="${inputId}" value="${rule.cycle}" class="cycle-input" onchange="updateCustomCycle('${rule.keyword}', this.value)" min="1" style="width: 70px; padding: 6px; text-align: center; border: 1px solid #cbd5e1; border-radius: 6px; margin: 0 8px; font-size: 1.1rem; color: #1e293b; font-weight: bold;"> 회
+                                출석 <input type="number" value="${rule.cycle}" class="cycle-input" onchange="updateCustomCycle('${escKeyword}', this.value)" min="1" style="width: 70px; padding: 6px; text-align: center; border: 1px solid #cbd5e1; border-radius: 6px; margin: 0 8px; font-weight: bold;"> 회
                             </div>
                         </div>
-                        <button class="delete-btn" onclick="moveToGeneral('${rule.keyword}')" title="원래 그룹으로 되돌리기" style="background:#dcfce7; color:#166534; border:1px solid #bbf7d0; padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: background 0.2s;">
-                            <span class="material-icons" style="font-size:18px;">add</span> 원래 자리로
+                        <button class="delete-btn" onclick="quickMove('${escKeyword}', 'auto')" title="원래 자리로 복귀" style="background:#dcfce7; color:#166534; border:1px solid #bbf7d0; padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                            <span class="material-icons" style="font-size:18px;">add</span> 원래 그룹으로
                         </button>
                     </div>
                 `;
@@ -307,19 +337,68 @@
         customContainer.innerHTML = customHTML;
     }
 
-    function moveToCustom(courseName) {
-        if (!cycleRules.custom.find(r => r.keyword === courseName)) {
-            // 빼낼 때 기본값은 해당 항목이 속했던 곳의 값을 준다
-            let initCycle = isBakingCourse(courseName) ? 
-                parseInt(document.getElementById('bakingCycle').value) || 17 : 
-                parseInt(document.getElementById('defaultCycle').value) || 9;
-            cycleRules.custom.push({ keyword: courseName, cycle: initCycle }); 
+    function quickMove(courseName, dest) {
+        if (!allKnownCourses.includes(courseName)) {
+            allKnownCourses.push(courseName);
         }
+
+        syncGroupCycles();
+        const defCycle = cycleRules.default;
+        let bakingRule = cycleRules.custom.find(r => r.keyword === "제과제빵");
+        const bakCycle = bakingRule ? bakingRule.cycle : 17;
+
+        // 기존 룰 제거
+        cycleRules.custom = cycleRules.custom.filter(r => r.keyword !== courseName);
+
+        if (dest === 'custom') {
+            // 현재 소속 그룹 확인 후 기본 주기 부여
+            let initCycle = isBakingCourse(courseName) ? bakCycle : defCycle;
+            cycleRules.custom.push({ keyword: courseName, cycle: initCycle, group: 'custom' });
+        } else if (dest === 'auto') {
+            // 아무 룰도 없으면 isBakingCourse 매칭으로 자동 복귀됨
+        }
+
         renderUI();
     }
 
-    function moveToGeneral(keyword) {
+    function applyMoveOrAdd() {
+        const keyword = document.getElementById('targetCourse').value.trim();
+        const group = document.getElementById('targetGroup').value;
+        const customCycle = parseInt(document.getElementById('targetCycle').value);
+
+        if (!keyword) return alert('과정 이름을 입력해주세요.');
+
+        if (!allKnownCourses.includes(keyword)) {
+            allKnownCourses.push(keyword);
+        }
+
+        syncGroupCycles();
+        const defCycle = cycleRules.default;
+        let bakingRule = cycleRules.custom.find(r => r.keyword === "제과제빵");
+        const bakCycle = bakingRule ? bakingRule.cycle : 17;
+
+        // 기존 룰 제거
         cycleRules.custom = cycleRules.custom.filter(r => r.keyword !== keyword);
+
+        if (group === 'custom') {
+            if (!customCycle || customCycle <= 0) return alert('유효한 특수 주기를 입력하세요.');
+            cycleRules.custom.push({ keyword, cycle: customCycle, group: 'custom' });
+        } else if (group === 'general') {
+            if (isBakingCourse(keyword)) {
+                // 제빵 이름인데 강제로 일반으로 내림
+                cycleRules.custom.push({ keyword, cycle: defCycle, group: 'general' });
+            }
+            // 이름이 일반이면 룰을 안 만들어도 자동 일반으로 감
+        } else if (group === 'baking') {
+            if (!isBakingCourse(keyword)) {
+                // 일반 이름인데 강제로 제빵으로 올림
+                cycleRules.custom.push({ keyword, cycle: bakCycle, group: 'baking' });
+            }
+            // 이름이 제빵이면 룰을 안 만들어도 자동 제빵으로 감
+        }
+
+        document.getElementById('targetCourse').value = '';
+        document.getElementById('targetCycle').value = '';
         renderUI();
     }
     
@@ -330,55 +409,8 @@
         if (rule) rule.cycle = cycle;
     }
 
-    function addManualRule() {
-        const keyword = document.getElementById('newKeyword').value.trim();
-        const cycle = parseInt(document.getElementById('newCycle').value);
-
-        if (!keyword) return alert('과정 이름을 입력해주세요.');
-        if (!cycle || cycle <= 0) return alert('유효한 주기 횟수를 입력해주세요.');
-
-        if (!allKnownCourses.includes(keyword)) {
-            allKnownCourses.push(keyword);
-        }
-
-        const existingIdx = cycleRules.custom.findIndex(r => r.keyword === keyword);
-        if (existingIdx >= 0) {
-            cycleRules.custom[existingIdx].cycle = cycle;
-        } else {
-            cycleRules.custom.push({ keyword, cycle });
-        }
-
-        document.getElementById('newKeyword').value = '';
-        document.getElementById('newCycle').value = '';
-        renderUI();
-    }
-
     async function saveCycleSettings() {
-        // 일반 과정 동기화
-        const defCycle = parseInt(document.getElementById('defaultCycle').value);
-        if (!defCycle || defCycle <= 0) return alert('일반 과정 결재 주기를 올바르게 입력하세요.');
-        cycleRules.default = defCycle;
-        
-        // 제과제빵 전용 주기 동기화
-        const bakCycle = parseInt(document.getElementById('bakingCycle').value);
-        if (!bakCycle || bakCycle <= 0) return alert('제과제빵 과정 결재 주기를 올바르게 입력하세요.');
-        let bakingRule = cycleRules.custom.find(r => r.keyword === "제과제빵");
-        if (bakingRule) {
-            bakingRule.cycle = bakCycle;
-        } else {
-            cycleRules.custom.push({ keyword: "제과제빵", cycle: bakCycle });
-        }
-        
-        // 특수 과정 동기화
-        cycleRules.custom.forEach(rule => {
-            if(rule.keyword === "제과제빵") return;
-            let inputId = 'cycle_input_' + rule.keyword.replace(/\s+/g, '_');
-            let el = document.getElementById(inputId);
-            if (el) {
-                let c = parseInt(el.value);
-                if (c > 0) rule.cycle = c;
-            }
-        });
+        syncGroupCycles();
 
         let target = Array.isArray(globalSettings) ? (globalSettings[0] = globalSettings[0] || {}) : globalSettings;
         target.cycleRules = cycleRules;
@@ -395,7 +427,7 @@
                 body: JSON.stringify(globalSettings)
             });
             if (res.ok) {
-                alert('저장이 완료되었습니다! 시스템 전체에 반영되었습니다.');
+                alert('저장이 완료되었습니다! 모든 시스템에 즉각 반영되었습니다.');
             } else {
                 alert('저장 중 서버 오류가 발생했습니다.');
             }

@@ -1,4 +1,8 @@
-<!DOCTYPE html>
+import os
+
+path = "/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejk 4/sejongcook-next/Sejong/SejongAttendance/public/cycle_settings.html"
+
+html_content = """<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -313,7 +317,7 @@
             customRules.forEach(rule => {
                 // let inputId = 'cycle_input_' + rule.keyword.replace(/\s+/g, '_');
                 // Removed dynamic regex replacing, just passing explicitly
-                let escKeyword = rule.keyword.replace(/'/g, "\'");
+                let escKeyword = rule.keyword.replace(/'/g, "\\'");
                 customHTML += `
                     <div class="custom-rule-item">
                         <div style="display:flex; align-items:center; gap:15px;">
@@ -441,3 +445,9 @@
 </script>
 </body>
 </html>
+"""
+
+with open(path, 'w', encoding='utf-8') as f:
+    f.write(html_content)
+
+print("Updated move tool in cycle_settings.html")
