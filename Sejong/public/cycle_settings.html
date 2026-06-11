@@ -3,303 +3,151 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>결재 주기 설정</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="tuition_v4.js" defer></script>
+    <title>결재 주기 설정 - 세종요리제과기술학원</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
     <style>
-        .settings-admin-container {
-            width: 100%;
-            max-width: 900px;
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-            padding: 40px;
-            margin-top: 40px;
-            margin-bottom: 40px;
-        }
-        h1 {
-            margin-top: 0;
-            color: #0f172a;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            border-bottom: 2px solid #e2e8f0;
-            padding-bottom: 20px;
-            margin-bottom: 30px;
-        }
-        .course-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 15px 0;
-            border-bottom: 1px dashed #eee;
-        }
-        .course-row:last-child {
-            border-bottom: none;
-        }
-        .course-name {
-            font-weight: 700;
-            font-size: 1.1rem;
-            width: 250px;
-            color: #334155;
-        }
-        .days-toggles {
-            display: flex;
-            gap: 10px;
-        }
-        .day-toggle {
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 600;
-            user-select: none;
-            transition: all 0.2s;
-            color: #64748b;
-            background: white;
-        }
-        .day-toggle.selected {
-            background: #3b82f6;
-            color: white;
-            border-color: #3b82f6;
-            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
-        }
-        .day-toggle:hover {
-            border-color: #94a3b8;
-        }
-        .btn-save {
-            background: #3b82f6;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1.1rem;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 30px;
-            float: right;
-        }
-        .btn-save:hover {
-            background: #2563eb;
-        }
-        .settings-notice {
-            margin-bottom: 20px; 
-            padding: 15px; 
-            background: #eff6ff; 
-            border: 1px solid #bfdbfe; 
-            border-radius: 10px; 
-            color: #1e40af;
-        }
+        .setting-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+        .setting-card .title { font-size: 1.2rem; font-weight: bold; color: #334155; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .setting-card .desc { color: #64748b; margin-bottom: 15px; }
+        .setting-card .input-row { display: flex; align-items: center; gap: 10px; }
+        .setting-card input { width: 80px; padding: 8px; font-size: 1.1rem; border: 1px solid #cbd5e1; border-radius: 6px; text-align: center; }
+        
+        .custom-rule-item { display: flex; justify-content: space-between; align-items: center; background: white; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 10px; }
+        .delete-btn { color: #ef4444; background: none; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 8px; border-radius: 6px; }
+        .delete-btn:hover { background: #fee2e2; }
     </style>
 </head>
-<body>
-<div class="app-container">
-        <!-- Mobile Sidebar Overlay -->
-        <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="brand-logo">
-                <span class="logo-text">세종요리</span>
+<body style="background-color: #f1f5f9; font-family: 'Pretendard', sans-serif;">
+
+<div class="layout-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="logo-area">
+            <span class="material-icons" style="font-size: 28px; color: #3b82f6;">school</span>
+            <h2>세종학원 시스템</h2>
+        </div>
+        <nav class="nav-menu">
+            <a href="sheet.html" class="nav-item">
+                <span class="material-icons">calendar_month</span> 월간 출석부
+            </a>
+            <a href="attendance_daily.html" class="nav-item">
+                <span class="material-icons">fact_check</span> 일일 출석 체크
+            </a>
+            <a href="register.html" class="nav-item">
+                <span class="material-icons">person_add</span> 수강생 등록
+            </a>
+            <a href="members.html" class="nav-item">
+                <span class="material-icons">people</span> 수강생 대장
+            </a>
+            <a href="tuition.html" class="nav-item">
+                <span class="material-icons">payments</span> 수강료 관리
+            </a>
+            <a href="ledger.html" class="nav-item">
+                <span class="material-icons">receipt_long</span> 수강료 납부대장
+            </a>
+            <a href="paid_list.html" class="nav-item">
+                <span class="material-icons">how_to_reg</span> 납부완료 명단
+            </a>
+            <a href="stats.html" class="nav-item">
+                <span class="material-icons">bar_chart</span> 통계 및 납부
+            </a>
+            <a href="sms_v4.html" class="nav-item">
+                <span class="material-icons">sms</span> 문자 발송
+            </a>
+            <a href="kiosk_admin.html" class="nav-item">
+                <span class="material-icons">touch_app</span> 출석 키오스크
+            </a>
+            <a href="photo_edit.html" class="nav-item">
+                <span class="material-icons">photo_camera</span> 사진 촬영/편집
+            </a>
+            <a href="monitor.html" class="nav-item">
+                <span class="material-icons">desktop_windows</span> 듀얼 모니터
+            </a>
+
+            <div class="nav-divider"></div>
+            
+            <a href="board.html" class="nav-item">
+                <span class="material-icons">campaign</span> 학원 공지
+            </a>
+            <a href="timetable.html" class="nav-item">
+                <span class="material-icons">schedule</span> 수업 요일 설정
+            </a>
+            <a href="cycle_settings.html" class="nav-item active">
+                <span class="material-icons">tune</span> 결재 주기 설정
+            </a>
+            <a href="archive.html" class="nav-item">
+                <span class="material-icons">inventory_2</span> 수료생 보관함
+            </a>
+            <a href="trash.html" class="nav-item">
+                <span class="material-icons">delete</span> 휴지통
+            </a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <div style="background: white; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); padding: 30px; max-width: 800px; margin: 0 auto;">
+            
+            <h1 style="display: flex; align-items: center; gap: 10px; color: #1e293b; margin-bottom: 20px;">
+                <span class="material-icons" style="color: #3b82f6; font-size: 32px;">tune</span> 결재 주기 설정
+            </h1>
+            
+            <div style="margin-bottom: 20px; padding: 15px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; color: #1e40af;">
+                <span class="material-icons" style="vertical-align: middle; margin-right: 5px;">info</span>
+                <strong>안내:</strong> 각 과정별로 출석 횟수에 따른 결재 주기(Red Box) 발생 기준을 설정합니다.<br>추가된 설정값들은 시스템 전체 출석부 엔진에 전역적으로 적용됩니다.
             </div>
-            <nav class="sidebar-nav">
-                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">수강 관리</div>
-                <div class="nav-sub-menu show">
-                    <a href="register.html" id="navRegister" class="nav-item">수강생 등록</a>
-                    <a href="index.html" id="navIndex" class="nav-item">수강생 대장</a>
-                    <a href="phonebook.html" id="navPhoneBook" class="nav-item">전화번호부</a>
-                    <a href="sheet.html" id="navSheet" class="nav-item">월간 출석부</a>
-                </div>
-                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">수강료</div>
-                <div class="nav-sub-menu show">
-                    <a href="tuition.html?v=1780849479" class="nav-item active">수강료 관리</a>
-                    <a href="ledger.html" class="nav-item">수강료 납부대장</a>
-                    <a href="paid_list.html" class="nav-item">납부완료 명단</a>
-                </div>
-                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">소통</div>
-                <div class="nav-sub-menu show">
-                    <a href="notice.html" class="nav-item">학원 공지</a>
-                    <a href="feed.html" class="nav-item">피드 관리</a>
-                    <a href="wagashi.html" class="nav-item">학원 홍보</a>
-                </div>
-                <div class="nav-category toggle-category" onclick="toggleNavSub(this)">시험지</div>
-                <div class="nav-sub-menu">
-                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">한식기능사</div>
-                    <div class="nav-sub-menu">
-                        <a href="javascript:void(0)" onclick="loadExamView('한식_2021')" class="nav-item">2021년 한식</a>
-                        <a href="javascript:void(0)" onclick="loadExamView('한식_2022')" class="nav-item">2022년 한식</a>
-                        <a href="javascript:void(0)" onclick="loadExamView('한식_2023')" class="nav-item">2023년 한식</a>
-                        <a href="javascript:void(0)" onclick="loadExamView('한식_2024')" class="nav-item">2024년 한식</a>
-                        <a href="javascript:void(0)" onclick="loadExamView('한식_2025')" class="nav-item">2025년 한식</a>
-                        <a href="javascript:void(0)" onclick="loadExamView('한식_2026')" class="nav-item">2026년 한식</a>
-                    </div>
 
-                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">양식기능사</div>
-                    <div class="nav-sub-menu">
-                        <a href="javascript:void(0)" onclick="loadExamView('양식_2021')" class="nav-item">2021년 양식</a>
-                        <a href="javascript:void(0)" onclick="loadExamView('양식_2022')" class="nav-item">2022년 양식</a>
-                        <a href="javascript:void(0)" onclick="loadExamView('양식_2023')" class="nav-item">2023년 양식</a>
-                        <a href="javascript:void(0)" onclick="loadExamView('양식_2024')" class="nav-item">2024년 양식</a>
-                        <a href="javascript:void(0)" onclick="loadExamView('양식_2025')" class="nav-item">2025년 양식</a>
-                        <a href="javascript:void(0)" onclick="loadExamView('양식_2026')" class="nav-item">2026년 양식</a>
-                    </div>
-
-                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">일식기능사</div>
-                    <div class="nav-sub-menu">
-                        <a href="javascript:void(0)" onclick="loadExamView('일식_2021')" class="nav-item">2021년 일식</a>
-                        <a href="javascript:void(0)" onclick="loadExamView('일식_2022')" class="nav-item">2022년 일식</a>
-                        <a href="javascript:void(0)" onclick="loadExamView('일식_2023')" class="nav-item">2023년 일식</a>
-                        <a href="javascript:void(0)" onclick="loadExamView('일식_2024')" class="nav-item">2024년 일식</a>
-                        <a href="javascript:void(0)" onclick="loadExamView('일식_2025')" class="nav-item">2025년 일식</a>
-                        <a href="javascript:void(0)" onclick="loadExamView('일식_2026')" class="nav-item">2026년 일식</a>
-                    </div>
-
-                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">중식기능사</div>
-                    <div class="nav-sub-menu">
-                        <a href="javascript:void(0)" onclick="loadExamView('중식_2021')" class="nav-item">2021년 중식</a>
-                        <a href="javascript:void(0)" onclick="loadExamView('중식_2022')" class="nav-item">2022년 중식</a>
-                        <a href="javascript:void(0)" onclick="loadExamView('중식_2023')" class="nav-item">2023년 중식</a>
-                        <a href="javascript:void(0)" onclick="loadExamView('중식_2024')" class="nav-item">2024년 중식</a>
-                        <a href="javascript:void(0)" onclick="loadExamView('중식_2025')" class="nav-item">2025년 중식</a>
-                        <a href="javascript:void(0)" onclick="loadExamView('중식_2026')" class="nav-item">2026년 중식</a>
-                    </div>
-
-                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">제과기능사</div>
-                    <div class="nav-sub-menu">
-                        <a href="javascript:void(0)" onclick="loadExamView('제과_2021')" class="nav-item">2021년 제과</a>
-                        <a href="javascript:void(0)" onclick="loadExamView('제과_2022')" class="nav-item">2022년 제과</a>
-                        <a href="javascript:void(0)" onclick="loadExamView('제과_2023')" class="nav-item">2023년 제과</a>
-                        <a href="javascript:void(0)" onclick="loadExamView('제과_2024')" class="nav-item">2024년 제과</a>
-                        <a href="javascript:void(0)" onclick="loadExamView('제과_2025')" class="nav-item">2025년 제과</a>
-                        <a href="javascript:void(0)" onclick="loadExamView('제과_2026')" class="nav-item">2026년 제과</a>
-                    </div>
-
-                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">제빵기능사</div>
-                    <div class="nav-sub-menu">
-                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2021')" class="nav-item">2021년 제빵</a>
-                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2022')" class="nav-item">2022년 제빵</a>
-                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2023')" class="nav-item">2023년 제빵</a>
-                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2024')" class="nav-item">2024년 제빵</a>
-                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2025')" class="nav-item">2025년 제빵</a>
-                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2026')" class="nav-item">2026년 제빵</a>
-                    </div>
-
-                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">제과제빵기능사</div>
-                    <div class="nav-sub-menu">
-                        <a href="javascript:void(0)" onclick="loadExamView('제과제빵_2021')" class="nav-item">2021년 제과제빵</a>
-                        <a href="javascript:void(0)" onclick="loadExamView('제과제빵_2022')" class="nav-item">2022년 제과제빵</a>
-                        <a href="javascript:void(0)" onclick="loadExamView('제과제빵_2023')" class="nav-item">2023년 제과제빵</a>
-                        <a href="javascript:void(0)" onclick="loadExamView('제과제빵_2024')" class="nav-item">2024년 제과제빵</a>
-                        <a href="javascript:void(0)" onclick="loadExamView('제과제빵_2025')" class="nav-item">2025년 제과제빵</a>
-                        <a href="javascript:void(0)" onclick="loadExamView('제과제빵_2026')" class="nav-item">2026년 제과제빵</a>
-                    </div>
-
-                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">복어기능사</div>
-                    <div class="nav-sub-menu">
-                        <a href="javascript:void(0)" onclick="loadExamView('복어_2021')" class="nav-item">2021년 복어</a>
-                        <a href="javascript:void(0)" onclick="loadExamView('복어_2022')" class="nav-item">2022년 복어</a>
-                        <a href="javascript:void(0)" onclick="loadExamView('복어_2023')" class="nav-item">2023년 복어</a>
-                        <a href="javascript:void(0)" onclick="loadExamView('복어_2024')" class="nav-item">2024년 복어</a>
-                        <a href="javascript:void(0)" onclick="loadExamView('복어_2025')" class="nav-item">2025년 복어</a>
-                        <a href="javascript:void(0)" onclick="loadExamView('복어_2026')" class="nav-item">2026년 복어</a>
-                    </div>
-
-                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">산업기사</div>
-                    <div class="nav-sub-menu">
-                        <a href="javascript:void(0)" class="nav-item">준비중입니다</a>
-                    </div>
-
-                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">가정요리</div>
-                    <div class="nav-sub-menu">
-                        <a href="javascript:void(0)" class="nav-item">준비중입니다</a>
-                    </div>
-
-                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">브런치</div>
-                    <div class="nav-sub-menu">
-                        <a href="javascript:void(0)" class="nav-item">준비중입니다</a>
-                    </div>
-                </div>
-                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">기타</div>
-                <div class="nav-sub-menu show">
-                    <a href="class_days_admin.html" id="navClassDaysAdmin" class="nav-item">
-                        <span class="material-icons" style="font-size: 1.2rem; margin-right: 8px;">settings</span>
-                        수업 요일 설정
-                    </a>
-                                        <a href="cycle_settings.html" id="navCycleSettings" class="nav-item active">
-                        <span class="material-icons" style="font-size: 1.2rem; margin-right: 8px;">tune</span>
-                        결재 주기 설정
-                    </a>
-                    <a href="index.html?filter=archive" id="navArchive" class="nav-item">수료생 보관함</a>
-                    <a href="index.html?filter=trash" id="navTrash" class="nav-item">휴지통</a>
-                    <a href="stats.html" class="nav-item">통계 및 납부</a>
-                </div>
-                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">학원문자</div>
-                <div class="nav-sub-menu show">
-                    <a href="attendance_daily.html" id="navDailyAttendance" class="nav-item">일일 출석부</a>
-                    <a href="sms.html?v=1780849502" id="navSms" class="nav-item">문자 발송</a>
-                </div>
-                <a href="monitor.html?v=1780796013_211823" target="_blank" class="nav-item highlight">키오스크 모니터</a>
-                <a href="kiosk_admin.html" id="navKioskAdmin" class="nav-item">키오스크 설정</a>
-
-                <a href="app.html" id="navMobileApp" class="nav-item" target="_blank">📱 모바일 앱</a>
-            </nav>
-        </aside>
-
-        <!-- Main Content -->
-                <main class="main-content">
-<div style="padding: 20px; background: #f1f5f9; min-height: 100vh; display: flex; justify-content: center; align-items: flex-start;">
-    <div class="settings-admin-container" style="width: 100%; max-width: 900px; background: white; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); padding: 40px; margin-top: 40px;">
-        <h1 style="margin-top: 0; display: flex; align-items: center; gap: 12px; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; margin-bottom: 30px;">
-            <span class="material-icons" style="color: #3b82f6; font-size: 32px;">tune</span> 결재 주기 설정
-        </h1>
-        
-        <div style="margin-bottom: 20px; padding: 15px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; color: #1e40af; line-height: 1.5;">
-            <span class="material-icons" style="vertical-align: middle; margin-right: 5px;">info</span>
-            <strong>안내:</strong> 각 과정 이름에 특정 단어가 포함될 때 적용할 <strong>결재 주기(회차 기준)</strong>를 설정할 수 있습니다.<br>
-            위에서부터 순서대로 적용되며, 매칭되는 키워드가 없으면 최하단의 '기본 결재 주기'가 적용됩니다.
-        </div>
-
-        <div style="margin-bottom: 30px; display: flex; gap: 10px; align-items: center; background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0;">
-            <input type="text" id="newKeyword" placeholder="적용할 과정 키워드 (예: 제과제빵)" style="flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 1.05rem;">
-            <input type="number" id="newCycle" placeholder="주기(회)" style="width: 100px; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 1.05rem; text-align: center;">
-            <button onclick="addCustomRule()" style="padding: 12px 20px; border-radius: 8px; background: #10b981; color: white; border: none; font-weight: bold; font-size: 1.05rem; cursor: pointer; display: flex; align-items: center; gap: 6px;">
-                <span class="material-icons" style="font-size: 1.2rem;">add_circle</span> 추가
-            </button>
-        </div>
-
-        <div id="rulesList" style="display: flex; flex-direction: column; gap: 15px;">
-            <div style="text-align:center; padding:20px; color:#94a3b8;">데이터를 불러오는 중입니다...</div>
-        </div>
-
-        <div style="margin-top: 30px; padding-top: 20px; border-top: 2px dashed #e2e8f0;">
-            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px;">
-                <div style="font-size: 1.2rem; font-weight: bold; color: #334155; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
-                    <span class="material-icons" style="color:#64748b;">restaurant</span> 기본 결재 주기 (일반 과정)
-                </div>
-                <div style="color: #64748b;">위의 키워드에 해당하지 않는 나머지 모든 단일 과정에 적용됩니다.</div>
-                <div style="display: flex; align-items: center; gap: 10px; margin-top: 15px;">
-                    <span>출석 관련 데이터 누적</span>
-                    <input type="number" id="defaultCycle" value="9" style="width: 80px; padding: 8px; font-size: 1.1rem; border: 1px solid #cbd5e1; border-radius: 6px; text-align: center;">
+            <!-- 기존 기본 설정: 일반 과정 -->
+            <div class="setting-card">
+                <div class="title"><span class="material-icons" style="color:#10b981;">restaurant</span> 일반 과정 (한식, 양식, 중식, 일식 등)</div>
+                <div class="desc">특정 예외 키워드가 없는 모든 단일 과정에 기본 적용되는 출석 누적 주기입니다.</div>
+                <div class="input-row">
+                    <span>출석 데이터</span>
+                    <input type="number" id="defaultCycle" value="9">
                     <span>회 마다 1주기(결재일) 발생</span>
                 </div>
             </div>
-        </div>
 
-        <button onclick="saveCycleSettings()" style="background: #3b82f6; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 1.1rem; font-weight: bold; display: flex; align-items: center; gap: 8px; margin-top: 30px; float: right;">
-            <span class="material-icons">save</span> 설정 저장 및 반영
-        </button>
-        <div style="clear: both;"></div>
-    </div>
+            <!-- 기존 기본 설정: 제과제빵 -->
+            <div class="setting-card">
+                <div class="title"><span class="material-icons" style="color:#f59e0b;">bakery_dining</span> 제과제빵 (복합 과정)</div>
+                <div class="desc">'제과제빵' 단어가 포함된 복합 과정에 적용되는 특별 출석 누적 주기입니다.</div>
+                <div class="input-row">
+                    <span>출석 데이터</span>
+                    <input type="number" id="bakingCycle" value="17">
+                    <span>회 마다 1주기(결재일) 발생</span>
+                </div>
+            </div>
+
+            <hr style="border: 0; border-top: 1px dashed #cbd5e1; margin: 30px 0;">
+
+            <!-- 추가 결재 주기 영역 -->
+            <h2 style="font-size: 1.3rem; color: #334155; margin-bottom: 15px; display:flex; align-items:center; gap:8px;">
+                <span class="material-icons" style="color:#8b5cf6;">add_circle</span> 추가 과정 결재 주기
+            </h2>
+            <div class="desc" style="color: #64748b; margin-bottom: 15px;">
+                위의 기본 과정들 외에 추가로 특별한 결재 주기를 적용할 과정(키워드)을 마음껏 추가하세요.
+            </div>
+
+            <div style="display: flex; gap: 10px; align-items: center; background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 20px;">
+                <input type="text" id="newKeyword" placeholder="적용할 과정 키워드 (예: 가정요리)" style="flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 1.05rem;">
+                <input type="number" id="newCycle" placeholder="주기(회)" style="width: 100px; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 1.05rem; text-align: center;">
+                <button onclick="addCustomRule()" style="padding: 12px 20px; border-radius: 8px; background: #8b5cf6; color: white; border: none; font-weight: bold; font-size: 1.05rem; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                    <span class="material-icons">add</span> 추가
+                </button>
+            </div>
+
+            <div id="additionalRulesList">
+                <!-- 동적 렌더링 -->
+            </div>
+
+            <button onclick="saveCycleSettings()" 
+                    style="background: #3b82f6; color: white; border: none; padding: 14px 28px; border-radius: 8px; cursor: pointer; font-size: 1.15rem; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 40px; width: 100%;">
+                <span class="material-icons">save</span> 변경사항 저장 및 시스템 적용
+            </button>
+        </div>
+    </main>
 </div>
-</main>
 
 <script>
     let globalSettings = {};
@@ -317,87 +165,91 @@
                 globalSettings = await res.json();
                 let target = Array.isArray(globalSettings) ? (globalSettings[0] || {}) : globalSettings;
                 if (target.cycleRules) {
-                    cycleRules = target.cycleRules;
+                    cycleRules = JSON.parse(JSON.stringify(target.cycleRules)); // Deep copy
                 }
             }
-            renderRules();
+            renderUI();
         } catch (e) {
             console.error('설정 로딩 실패:', e);
-            document.getElementById('rulesList').innerHTML = '<div style="text-align:center; padding:20px; color:#ef4444;">설정을 불러오지 못했습니다.</div>';
         }
     }
 
-    function renderRules() {
-        document.getElementById('defaultCycle').value = cycleRules.default;
-        const list = document.getElementById('rulesList');
-        list.innerHTML = '';
+    function renderUI() {
+        // 1. 기본 과정 세팅
+        document.getElementById('defaultCycle').value = cycleRules.default || 9;
+        
+        // 2. 제과제빵 (항상 존재하게 보장)
+        let bakingRule = cycleRules.custom.find(r => r.keyword === '제과제빵');
+        if (!bakingRule) {
+            bakingRule = { keyword: "제과제빵", cycle: 17 };
+            cycleRules.custom.push(bakingRule);
+        }
+        document.getElementById('bakingCycle').value = bakingRule.cycle;
 
-        if (cycleRules.custom.length === 0) {
-            list.innerHTML = '<div style="text-align:center; padding:20px; color:#94a3b8;">등록된 특별 키워드가 없습니다. 모든 과정이 기본 주기를 따릅니다.</div>';
+        // 3. 추가 과정 (제과제빵 제외)
+        const additionalRules = cycleRules.custom.filter(r => r.keyword !== '제과제빵');
+        const listDiv = document.getElementById('additionalRulesList');
+        
+        if (additionalRules.length === 0) {
+            listDiv.innerHTML = '<div style="text-align:center; color:#94a3b8; padding:20px;">추가된 특별 과정이 없습니다.</div>';
             return;
         }
 
-        cycleRules.custom.forEach((rule, index) => {
-            const row = document.createElement('div');
-            row.style.display = 'flex';
-            row.style.alignItems = 'center';
-            row.style.justifyContent = 'space-between';
-            row.style.background = '#fff';
-            row.style.border = '1px solid #cbd5e1';
-            row.style.padding = '15px 20px';
-            row.style.borderRadius = '10px';
-            
-            row.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 15px;">
-                    <span style="font-weight: bold; font-size: 1.1rem; color: #0f172a;">${rule.keyword}</span>
-                    <span style="color: #64748b;">포함 시</span>
-                    <strong style="color: #3b82f6; font-size: 1.1rem;">${rule.cycle}회</strong> 주기 적용
+        listDiv.innerHTML = additionalRules.map((rule, idx) => `
+            <div class="custom-rule-item">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <div style="background:#f1f5f9; padding:8px 12px; border-radius:6px; font-weight:bold; color:#334155;">${rule.keyword}</div>
+                    <div style="color:#64748b;">출석 <strong style="color:#3b82f6;">${rule.cycle}</strong>회 마다 1주기 결재</div>
                 </div>
-                <span class="material-icons" style="color: #ef4444; cursor: pointer;" title="삭제" onclick="deleteRule(${index})">delete_outline</span>
-            `;
-            list.appendChild(row);
-        });
+                <button class="delete-btn" onclick="deleteRule('${rule.keyword}')" title="삭제">
+                    <span class="material-icons">delete</span>
+                </button>
+            </div>
+        `).join('');
     }
 
     function addCustomRule() {
         const keyword = document.getElementById('newKeyword').value.trim();
-        const cycle = parseInt(document.getElementById('newCycle').value, 10);
+        const cycle = parseInt(document.getElementById('newCycle').value);
 
-        if (!keyword) {
-            alert('키워드를 입력해주세요.');
-            return;
-        }
-        if (isNaN(cycle) || cycle < 1) {
-            alert('올바른 주기(숫자)를 입력해주세요.');
-            return;
-        }
+        if (!keyword) return alert('과정 키워드를 입력해주세요.');
+        if (!cycle || cycle <= 0) return alert('유효한 주기 횟수를 입력해주세요.');
+        if (keyword === '제과제빵') return alert('제과제빵 과정은 위의 전용 설정창에서 변경해주세요.');
 
-        const exists = cycleRules.custom.find(r => r.keyword === keyword);
-        if (exists) {
-            alert('이미 존재하는 키워드입니다.');
-            return;
+        const existingIdx = cycleRules.custom.findIndex(r => r.keyword === keyword);
+        if (existingIdx >= 0) {
+            cycleRules.custom[existingIdx].cycle = cycle;
+        } else {
+            cycleRules.custom.push({ keyword, cycle });
         }
 
-        cycleRules.custom.push({ keyword, cycle });
         document.getElementById('newKeyword').value = '';
         document.getElementById('newCycle').value = '';
-        renderRules();
+        renderUI();
     }
 
-    function deleteRule(index) {
-        if (confirm('이 키워드 규칙을 삭제하시겠습니까?')) {
-            cycleRules.custom.splice(index, 1);
-            renderRules();
-        }
+    function deleteRule(keyword) {
+        cycleRules.custom = cycleRules.custom.filter(r => r.keyword !== keyword);
+        renderUI();
     }
 
     async function saveCycleSettings() {
-        const defaultCycle = parseInt(document.getElementById('defaultCycle').value, 10);
-        if (isNaN(defaultCycle) || defaultCycle < 1) {
-            alert('기본 주기는 1 이상의 숫자여야 합니다.');
-            return;
+        // UI에서 기본값 읽어오기
+        const defCycle = parseInt(document.getElementById('defaultCycle').value);
+        const bakeCycle = parseInt(document.getElementById('bakingCycle').value);
+        
+        if (!defCycle || defCycle <= 0) return alert('기본 결재 주기를 정확히 입력해주세요.');
+        if (!bakeCycle || bakeCycle <= 0) return alert('제과제빵 결재 주기를 정확히 입력해주세요.');
+
+        cycleRules.default = defCycle;
+        
+        // 제과제빵 값 업데이트
+        const bakeIdx = cycleRules.custom.findIndex(r => r.keyword === '제과제빵');
+        if (bakeIdx >= 0) {
+            cycleRules.custom[bakeIdx].cycle = bakeCycle;
+        } else {
+            cycleRules.custom.push({ keyword: '제과제빵', cycle: bakeCycle });
         }
-        cycleRules.default = defaultCycle;
         
         if (Array.isArray(globalSettings)) {
             if (globalSettings.length === 0) globalSettings.push({});
@@ -413,25 +265,18 @@
                 body: JSON.stringify(globalSettings)
             });
             if (res.ok) {
-                alert('결재 주기 설정이 성공적으로 저장되었습니다.
-이 변경 사항은 전체 출석부 계산 엔진에 즉시 반영됩니다.');
+                alert('결재 주기 및 추가 설정이 성공적으로 저장되었습니다.\n\n출석부 및 납부대장에 즉시 적용됩니다.');
             } else {
-                alert('저장에 실패했습니다.');
+                alert('저장 중 오류가 발생했습니다.');
             }
         } catch (e) {
             console.error(e);
-            alert('오류가 발생했습니다.');
+            alert('저장 중 통신 오류가 발생했습니다.');
         }
     }
 
-    window.addEventListener("DOMContentLoaded", () => {
-        loadSettings();
-    });
+    // 초기 로딩
+    loadSettings();
 </script>
-
-</div>
-
-<!-- Scripts -->
-
 </body>
 </html>
