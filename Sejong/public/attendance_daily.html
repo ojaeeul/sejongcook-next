@@ -226,14 +226,6 @@
         }
 
         /* 조퇴: 청록 */
-        .stat-outing {
-            color: #ea580c;
-        }
-        /* 외출: 주황 */
-        .stat-return {
-            color: #9333ea;
-        }
-        /* 복귀: 보라 */
         .stat-makeup {
             color: #d946ef;
         }
@@ -342,18 +334,6 @@
             background: #06b6d4;
             color: white;
             border-color: #06b6d4;
-        }
-
-        .status-btn.active[data-type="outing"] {
-            background: #ea580c;
-            color: white;
-            border-color: #ea580c;
-        }
-
-        .status-btn.active[data-type="return"] {
-            background: #9333ea;
-            color: white;
-            border-color: #9333ea;
         }
 
         .status-btn.active[data-type="makeup"] {
@@ -480,8 +460,6 @@
             .status-btn.active[data-type="absent"]::after { content: " (결석)"; }
             .status-btn.active[data-type="late"]::after { content: " (지각)"; }
             .status-btn.active[data-type="early"]::after { content: " (조퇴)"; }
-            .status-btn.active[data-type="outing"]::after { content: " (외출)"; }
-            .status-btn.active[data-type="return"]::after { content: " (복귀)"; }
             .status-btn.active[data-type="makeup"]::after { content: " (보강)"; }
             .status-btn.active[data-type="extension"]::after { content: " (연장)"; }
         }
@@ -711,14 +689,6 @@
                         <div class="stat-item stat-early">
                             <div class="stat-label">조퇴</div>
                             <div class="stat-value" id="statEarly">0</div>
-                        </div>
-                        <div class="stat-item stat-outing">
-                            <div class="stat-label">외출</div>
-                            <div class="stat-value" id="statOuting">0</div>
-                        </div>
-                        <div class="stat-item stat-return">
-                            <div class="stat-label">복귀</div>
-                            <div class="stat-value" id="statReturn">0</div>
                         </div>
                         <div class="stat-item stat-extension">
                             <div class="stat-label">연장</div>
