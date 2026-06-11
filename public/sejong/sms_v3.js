@@ -1707,7 +1707,7 @@ function syncCalendarSelection() {
 
 // [신규 - 즉각 동기화] 다른 탭에서 예정일 및 출석부가 변경되면 즉시 반영
 window.addEventListener('storage', (e) => {
-    if (e.key === 'sejong_attendance_sync' || e.key === 'sejong_timetable_sync' || e.key === 'sejong_payment_sync') {
+    if (e.key === 'sejong_ledger_sync' || e.key === 'sejong_attendance_sync' || e.key === 'sejong_timetable_sync' || e.key === 'sejong_payment_sync') {
         fetchAllData(); // Fetches new data and calls renderTargetList()
     }
 });

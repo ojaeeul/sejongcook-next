@@ -536,7 +536,7 @@ window.faceReading = function(memberId) {
 // ---------------------------------------------------------
 function loadSettings() {
     const isVoiceEnabled = localStorage.getItem('kiosk_voice_enabled') !== 'false'; // default true
-    const sensitivity = localStorage.getItem('kiosk_sensitivity') || '0.45';
+    const sensitivity = localStorage.getItem('kiosk_sensitivity') || '0.65';
     
     const ttsMode = localStorage.getItem('kiosk_tts_mode') || 'browser';
     

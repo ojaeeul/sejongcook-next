@@ -1,1466 +1,5 @@
 [
   {
-    "id": 1,
-    "memberId": "1770517016128",
-    "year": 2026,
-    "month": 2,
-    "status": "unpaid",
-    "amount": 270000,
-    "updatedAt": "2026-02-20T15:19:45.639Z",
-    "course": null
-  },
-  {
-    "id": 2,
-    "memberId": "1770517017002",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-02-11T06:06:14.918Z",
-    "course": null
-  },
-  {
-    "id": 3,
-    "memberId": "1770529179643",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-02-11T09:55:28.254Z",
-    "course": ""
-  },
-  {
-    "id": 4,
-    "memberId": "1770551037066",
-    "year": 2026,
-    "month": 2,
-    "status": "unpaid",
-    "amount": 200000,
-    "updatedAt": "2026-02-08T15:22:37.225Z",
-    "course": null
-  },
-  {
-    "id": 5,
-    "memberId": "1770551100795",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 2400000,
-    "updatedAt": "2026-02-20T15:10:57.463Z",
-    "course": null
-  },
-  {
-    "id": 6,
-    "memberId": "1770556890568",
-    "year": 2026,
-    "month": 2,
-    "status": "unpaid",
-    "amount": 500000,
-    "updatedAt": "2026-02-08T16:32:50.824Z",
-    "course": null
-  },
-  {
-    "id": 9,
-    "memberId": "1770517693101",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-02-21T14:32:44.779Z",
-    "course": "양식기능사"
-  },
-  {
-    "id": 75,
-    "memberId": "1770551037066",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 300000,
-    "updatedAt": "2026-02-20T16:00:50.290Z",
-    "course": "가정요리"
-  },
-  {
-    "id": 76,
-    "memberId": "1770551037066",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 500000,
-    "updatedAt": "2026-02-20T16:00:25.410Z",
-    "course": "브런치"
-  },
-  {
-    "id": 77,
-    "memberId": "1770551100795",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 700000,
-    "updatedAt": "2026-02-20T16:00:52.930Z",
-    "course": "복어기능사"
-  },
-  {
-    "id": 78,
-    "memberId": "1770551100795",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 1200000,
-    "updatedAt": "2026-02-20T16:00:55.356Z",
-    "course": "산업기사"
-  },
-  {
-    "id": 79,
-    "memberId": "1770551100795",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 250000,
-    "updatedAt": "2026-02-20T16:00:57.850Z",
-    "course": "제과기능사"
-  },
-  {
-    "id": 149,
-    "memberId": "1770517693101",
-    "year": 2026,
-    "month": 2,
-    "status": "unpaid",
-    "amount": 350000,
-    "updatedAt": "2026-05-24T14:54:20.870Z",
-    "course": "제과제빵기능사"
-  },
-  {
-    "id": 150,
-    "memberId": "1770517693101",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 350000,
-    "updatedAt": "2026-02-21T14:32:39.883Z",
-    "course": "제과제빵기능사"
-  },
-  {
-    "id": 151,
-    "memberId": "1770551214556",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 300000,
-    "updatedAt": "2026-02-21T06:59:13.564Z",
-    "course": "중식기능사"
-  },
-  {
-    "id": 152,
-    "memberId": "1770517017920",
-    "year": 2026,
-    "month": 2,
-    "status": "unpaid",
-    "amount": 270000,
-    "updatedAt": "2026-02-20T15:19:53.039Z",
-    "course": null
-  },
-  {
-    "id": 153,
-    "memberId": "1770517693101",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 620000,
-    "updatedAt": "2026-02-20T15:19:56.399Z",
-    "course": null
-  },
-  {
-    "id": 154,
-    "memberId": "1770551214556",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 3550000,
-    "updatedAt": "2026-02-20T15:11:53.069Z",
-    "course": null
-  },
-  {
-    "id": 155,
-    "memberId": "1770517014506",
-    "year": 2026,
-    "month": 2,
-    "status": "unpaid",
-    "amount": 270000,
-    "updatedAt": "2026-02-20T15:19:42.191Z",
-    "course": null
-  },
-  {
-    "id": 156,
-    "memberId": "1770517014506",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-02-20T16:00:41.034Z",
-    "course": "양식기능사"
-  },
-  {
-    "id": 157,
-    "memberId": "1770517017002",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-02-20T15:24:39.467Z",
-    "course": "양식기능사"
-  },
-  {
-    "id": 158,
-    "memberId": "1770517016128",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-02-20T16:00:19.674Z",
-    "course": "양식기능사"
-  },
-  {
-    "id": 159,
-    "memberId": "1770551037066",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 300000,
-    "updatedAt": "2026-02-20T16:00:50.290Z",
-    "course": "가정요리"
-  },
-  {
-    "id": 160,
-    "memberId": "1770551037066",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 500000,
-    "updatedAt": "2026-02-20T16:00:25.410Z",
-    "course": "브런치"
-  },
-  {
-    "id": 161,
-    "memberId": "1770551100795",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 700000,
-    "updatedAt": "2026-02-20T16:00:52.930Z",
-    "course": "복어기능사"
-  },
-  {
-    "id": 162,
-    "memberId": "1770551100795",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 1200000,
-    "updatedAt": "2026-02-20T16:00:55.356Z",
-    "course": "산업기사"
-  },
-  {
-    "id": 163,
-    "memberId": "1770551100795",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 250000,
-    "updatedAt": "2026-02-20T16:00:57.850Z",
-    "course": "제과기능사"
-  },
-  {
-    "id": 164,
-    "memberId": "1770551214556",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 700000,
-    "updatedAt": "2026-02-20T16:00:30.642Z",
-    "course": "복어기능사"
-  },
-  {
-    "id": 10,
-    "memberId": "1770517693101",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 350000,
-    "updatedAt": "2026-02-21T14:32:39.883Z",
-    "course": "제과제빵기능사"
-  },
-  {
-    "id": 11,
-    "memberId": "1770551214556",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 300000,
-    "updatedAt": "2026-02-21T06:59:13.564Z",
-    "course": "중식기능사"
-  },
-  {
-    "id": 12,
-    "memberId": "1770517017920",
-    "year": 2026,
-    "month": 2,
-    "status": "unpaid",
-    "amount": 270000,
-    "updatedAt": "2026-02-20T15:19:53.039Z",
-    "course": null
-  },
-  {
-    "id": 13,
-    "memberId": "1770517693101",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 620000,
-    "updatedAt": "2026-02-20T15:19:56.399Z",
-    "course": null
-  },
-  {
-    "id": 14,
-    "memberId": "1770551214556",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 3550000,
-    "updatedAt": "2026-02-20T15:11:53.069Z",
-    "course": null
-  },
-  {
-    "id": 15,
-    "memberId": "1770517014506",
-    "year": 2026,
-    "month": 2,
-    "status": "unpaid",
-    "amount": 270000,
-    "updatedAt": "2026-02-20T15:19:42.191Z",
-    "course": null
-  },
-  {
-    "id": 16,
-    "memberId": "1770517014506",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-02-20T16:00:41.034Z",
-    "course": "양식기능사"
-  },
-  {
-    "id": 17,
-    "memberId": "1770517017002",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-02-20T15:24:39.467Z",
-    "course": "양식기능사"
-  },
-  {
-    "id": 18,
-    "memberId": "1770517016128",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-02-20T16:00:19.674Z",
-    "course": "양식기능사"
-  },
-  {
-    "id": 19,
-    "memberId": "1770551037066",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 300000,
-    "updatedAt": "2026-02-20T16:00:50.290Z",
-    "course": "가정요리"
-  },
-  {
-    "id": 20,
-    "memberId": "1770551037066",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 500000,
-    "updatedAt": "2026-02-20T16:00:25.410Z",
-    "course": "브런치"
-  },
-  {
-    "id": 21,
-    "memberId": "1770551100795",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 700000,
-    "updatedAt": "2026-02-20T16:00:52.930Z",
-    "course": "복어기능사"
-  },
-  {
-    "id": 22,
-    "memberId": "1770551100795",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 1200000,
-    "updatedAt": "2026-02-20T16:00:55.356Z",
-    "course": "산업기사"
-  },
-  {
-    "id": 23,
-    "memberId": "1770551100795",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 250000,
-    "updatedAt": "2026-02-20T16:00:57.850Z",
-    "course": "제과기능사"
-  },
-  {
-    "id": 24,
-    "memberId": "1770551214556",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 700000,
-    "updatedAt": "2026-02-20T16:00:30.642Z",
-    "course": "복어기능사"
-  },
-  {
-    "id": 25,
-    "memberId": "1770551214556",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 250000,
-    "updatedAt": "2026-02-20T16:01:02.507Z",
-    "course": "제빵기능사"
-  },
-  {
-    "id": 26,
-    "memberId": "1770551214556",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 300000,
-    "updatedAt": "2026-02-20T16:00:59.946Z",
-    "course": "일식기능사"
-  },
-  {
-    "id": 27,
-    "memberId": "1770517014506",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 200000,
-    "updatedAt": "2026-02-20T16:13:37.649Z",
-    "course": "한식기능사"
-  },
-  {
-    "id": 28,
-    "memberId": "1770551214556",
-    "year": 2026,
-    "month": 1,
-    "status": "enrolled",
-    "amount": 1200000,
-    "updatedAt": "2026-02-21T14:32:49.679Z",
-    "course": "산업기사"
-  },
-  {
-    "id": 29,
-    "memberId": "1770517016128",
-    "year": 2026,
-    "month": 2,
-    "status": "unpaid",
-    "amount": 270000,
-    "updatedAt": "2026-02-20T15:19:45.639Z",
-    "course": null
-  },
-  {
-    "id": 30,
-    "memberId": "1770517017002",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-02-11T06:06:14.918Z",
-    "course": null
-  },
-  {
-    "id": 31,
-    "memberId": "1770529179643",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-02-11T09:55:28.254Z",
-    "course": ""
-  },
-  {
-    "id": 32,
-    "memberId": "1770551037066",
-    "year": 2026,
-    "month": 2,
-    "status": "unpaid",
-    "amount": 200000,
-    "updatedAt": "2026-02-08T15:22:37.225Z",
-    "course": null
-  },
-  {
-    "id": 33,
-    "memberId": "1770551100795",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 2400000,
-    "updatedAt": "2026-02-20T15:10:57.463Z",
-    "course": null
-  },
-  {
-    "id": 34,
-    "memberId": "1770556890568",
-    "year": 2026,
-    "month": 2,
-    "status": "unpaid",
-    "amount": 500000,
-    "updatedAt": "2026-02-08T16:32:50.824Z",
-    "course": null
-  },
-  {
-    "id": 37,
-    "memberId": "1770517693101",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-02-21T14:32:44.779Z",
-    "course": "양식기능사"
-  },
-  {
-    "id": 38,
-    "memberId": "1770517693101",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 350000,
-    "updatedAt": "2026-02-21T14:32:39.883Z",
-    "course": "제과제빵기능사"
-  },
-  {
-    "id": 39,
-    "memberId": "1770551214556",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 300000,
-    "updatedAt": "2026-02-21T06:59:13.564Z",
-    "course": "중식기능사"
-  },
-  {
-    "id": 40,
-    "memberId": "1770517017920",
-    "year": 2026,
-    "month": 2,
-    "status": "unpaid",
-    "amount": 270000,
-    "updatedAt": "2026-02-20T15:19:53.039Z",
-    "course": null
-  },
-  {
-    "id": 41,
-    "memberId": "1770517693101",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 620000,
-    "updatedAt": "2026-02-20T15:19:56.399Z",
-    "course": null
-  },
-  {
-    "id": 42,
-    "memberId": "1770551214556",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 3550000,
-    "updatedAt": "2026-02-20T15:11:53.069Z",
-    "course": null
-  },
-  {
-    "id": 43,
-    "memberId": "1770517014506",
-    "year": 2026,
-    "month": 2,
-    "status": "unpaid",
-    "amount": 270000,
-    "updatedAt": "2026-02-20T15:19:42.191Z",
-    "course": null
-  },
-  {
-    "id": 44,
-    "memberId": "1770517014506",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-02-20T16:00:41.034Z",
-    "course": "양식기능사"
-  },
-  {
-    "id": 45,
-    "memberId": "1770517017002",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-02-20T15:24:39.467Z",
-    "course": "양식기능사"
-  },
-  {
-    "id": 46,
-    "memberId": "1770517016128",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-02-20T16:00:19.674Z",
-    "course": "양식기능사"
-  },
-  {
-    "id": 47,
-    "memberId": "1770551037066",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 300000,
-    "updatedAt": "2026-02-20T16:00:50.290Z",
-    "course": "가정요리"
-  },
-  {
-    "id": 48,
-    "memberId": "1770551037066",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 500000,
-    "updatedAt": "2026-02-20T16:00:25.410Z",
-    "course": "브런치"
-  },
-  {
-    "id": 49,
-    "memberId": "1770551100795",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 700000,
-    "updatedAt": "2026-02-20T16:00:52.930Z",
-    "course": "복어기능사"
-  },
-  {
-    "id": 50,
-    "memberId": "1770551100795",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 1200000,
-    "updatedAt": "2026-02-20T16:00:55.356Z",
-    "course": "산업기사"
-  },
-  {
-    "id": 51,
-    "memberId": "1770551100795",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 250000,
-    "updatedAt": "2026-02-20T16:00:57.850Z",
-    "course": "제과기능사"
-  },
-  {
-    "id": 52,
-    "memberId": "1770551214556",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 700000,
-    "updatedAt": "2026-02-20T16:00:30.642Z",
-    "course": "복어기능사"
-  },
-  {
-    "id": 53,
-    "memberId": "1770551214556",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 250000,
-    "updatedAt": "2026-02-20T16:01:02.507Z",
-    "course": "제빵기능사"
-  },
-  {
-    "id": 54,
-    "memberId": "1770551214556",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 300000,
-    "updatedAt": "2026-02-20T16:00:59.946Z",
-    "course": "일식기능사"
-  },
-  {
-    "id": 55,
-    "memberId": "1770517014506",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 200000,
-    "updatedAt": "2026-02-20T16:13:37.649Z",
-    "course": "한식기능사"
-  },
-  {
-    "id": 56,
-    "memberId": "1770551214556",
-    "year": 2026,
-    "month": 1,
-    "status": "enrolled",
-    "amount": 1200000,
-    "updatedAt": "2026-02-21T14:32:49.679Z",
-    "course": "산업기사"
-  },
-  {
-    "id": 57,
-    "memberId": "1770517016128",
-    "year": 2026,
-    "month": 2,
-    "status": "unpaid",
-    "amount": 270000,
-    "updatedAt": "2026-02-20T15:19:45.639Z",
-    "course": null
-  },
-  {
-    "id": 58,
-    "memberId": "1770517017002",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-02-11T06:06:14.918Z",
-    "course": null
-  },
-  {
-    "id": 59,
-    "memberId": "1770529179643",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-02-11T09:55:28.254Z",
-    "course": ""
-  },
-  {
-    "id": 60,
-    "memberId": "1770551037066",
-    "year": 2026,
-    "month": 2,
-    "status": "unpaid",
-    "amount": 200000,
-    "updatedAt": "2026-02-08T15:22:37.225Z",
-    "course": null
-  },
-  {
-    "id": 61,
-    "memberId": "1770551100795",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 2400000,
-    "updatedAt": "2026-02-20T15:10:57.463Z",
-    "course": null
-  },
-  {
-    "id": 62,
-    "memberId": "1770556890568",
-    "year": 2026,
-    "month": 2,
-    "status": "unpaid",
-    "amount": 500000,
-    "updatedAt": "2026-02-08T16:32:50.824Z",
-    "course": null
-  },
-  {
-    "id": 65,
-    "memberId": "1770517693101",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-02-21T14:32:44.779Z",
-    "course": "양식기능사"
-  },
-  {
-    "id": 66,
-    "memberId": "1770517693101",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 350000,
-    "updatedAt": "2026-02-21T14:32:39.883Z",
-    "course": "제과제빵기능사"
-  },
-  {
-    "id": 67,
-    "memberId": "1770551214556",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 300000,
-    "updatedAt": "2026-02-21T06:59:13.564Z",
-    "course": "중식기능사"
-  },
-  {
-    "id": 68,
-    "memberId": "1770517017920",
-    "year": 2026,
-    "month": 2,
-    "status": "unpaid",
-    "amount": 270000,
-    "updatedAt": "2026-02-20T15:19:53.039Z",
-    "course": null
-  },
-  {
-    "id": 69,
-    "memberId": "1770517693101",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 620000,
-    "updatedAt": "2026-02-20T15:19:56.399Z",
-    "course": null
-  },
-  {
-    "id": 70,
-    "memberId": "1770551214556",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 3550000,
-    "updatedAt": "2026-02-20T15:11:53.069Z",
-    "course": null
-  },
-  {
-    "id": 71,
-    "memberId": "1770517014506",
-    "year": 2026,
-    "month": 2,
-    "status": "unpaid",
-    "amount": 270000,
-    "updatedAt": "2026-02-20T15:19:42.191Z",
-    "course": null
-  },
-  {
-    "id": 72,
-    "memberId": "1770517014506",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-02-20T16:00:41.034Z",
-    "course": "양식기능사"
-  },
-  {
-    "id": 73,
-    "memberId": "1770517017002",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-02-20T15:24:39.467Z",
-    "course": "양식기능사"
-  },
-  {
-    "id": 74,
-    "memberId": "1770517016128",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-02-20T16:00:19.674Z",
-    "course": "양식기능사"
-  },
-  {
-    "id": 80,
-    "memberId": "1770551214556",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 700000,
-    "updatedAt": "2026-02-20T16:00:30.642Z",
-    "course": "복어기능사"
-  },
-  {
-    "id": 81,
-    "memberId": "1770551214556",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 250000,
-    "updatedAt": "2026-02-20T16:01:02.507Z",
-    "course": "제빵기능사"
-  },
-  {
-    "id": 82,
-    "memberId": "1770551214556",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 300000,
-    "updatedAt": "2026-02-20T16:00:59.946Z",
-    "course": "일식기능사"
-  },
-  {
-    "id": 83,
-    "memberId": "1770517014506",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 200000,
-    "updatedAt": "2026-02-20T16:13:37.649Z",
-    "course": "한식기능사"
-  },
-  {
-    "id": 84,
-    "memberId": "1770551214556",
-    "year": 2026,
-    "month": 1,
-    "status": "enrolled",
-    "amount": 1200000,
-    "updatedAt": "2026-02-21T14:32:49.679Z",
-    "course": "산업기사"
-  },
-  {
-    "id": 85,
-    "memberId": "1770517016128",
-    "year": 2026,
-    "month": 2,
-    "status": "unpaid",
-    "amount": 270000,
-    "updatedAt": "2026-02-20T15:19:45.639Z",
-    "course": null
-  },
-  {
-    "id": 86,
-    "memberId": "1770517017002",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-02-11T06:06:14.918Z",
-    "course": null
-  },
-  {
-    "id": 87,
-    "memberId": "1770529179643",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-02-11T09:55:28.254Z",
-    "course": ""
-  },
-  {
-    "id": 88,
-    "memberId": "1770551037066",
-    "year": 2026,
-    "month": 2,
-    "status": "unpaid",
-    "amount": 200000,
-    "updatedAt": "2026-02-08T15:22:37.225Z",
-    "course": null
-  },
-  {
-    "id": 89,
-    "memberId": "1770551100795",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 2400000,
-    "updatedAt": "2026-02-20T15:10:57.463Z",
-    "course": null
-  },
-  {
-    "id": 90,
-    "memberId": "1770556890568",
-    "year": 2026,
-    "month": 2,
-    "status": "unpaid",
-    "amount": 500000,
-    "updatedAt": "2026-02-08T16:32:50.824Z",
-    "course": null
-  },
-  {
-    "id": 93,
-    "memberId": "1770517693101",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-02-21T14:32:44.779Z",
-    "course": "양식기능사"
-  },
-  {
-    "id": 94,
-    "memberId": "1770517693101",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 350000,
-    "updatedAt": "2026-02-21T14:32:39.883Z",
-    "course": "제과제빵기능사"
-  },
-  {
-    "id": 95,
-    "memberId": "1770551214556",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 300000,
-    "updatedAt": "2026-02-21T06:59:13.564Z",
-    "course": "중식기능사"
-  },
-  {
-    "id": 96,
-    "memberId": "1770517017920",
-    "year": 2026,
-    "month": 2,
-    "status": "unpaid",
-    "amount": 270000,
-    "updatedAt": "2026-02-20T15:19:53.039Z",
-    "course": null
-  },
-  {
-    "id": 97,
-    "memberId": "1770517693101",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 620000,
-    "updatedAt": "2026-02-20T15:19:56.399Z",
-    "course": null
-  },
-  {
-    "id": 98,
-    "memberId": "1770551214556",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 3550000,
-    "updatedAt": "2026-02-20T15:11:53.069Z",
-    "course": null
-  },
-  {
-    "id": 99,
-    "memberId": "1770517014506",
-    "year": 2026,
-    "month": 2,
-    "status": "unpaid",
-    "amount": 270000,
-    "updatedAt": "2026-02-20T15:19:42.191Z",
-    "course": null
-  },
-  {
-    "id": 100,
-    "memberId": "1770517014506",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-02-20T16:00:41.034Z",
-    "course": "양식기능사"
-  },
-  {
-    "id": 101,
-    "memberId": "1770517017002",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-02-20T15:24:39.467Z",
-    "course": "양식기능사"
-  },
-  {
-    "id": 102,
-    "memberId": "1770517016128",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-02-20T16:00:19.674Z",
-    "course": "양식기능사"
-  },
-  {
-    "id": 103,
-    "memberId": "1770551037066",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 300000,
-    "updatedAt": "2026-02-20T16:00:50.290Z",
-    "course": "가정요리"
-  },
-  {
-    "id": 104,
-    "memberId": "1770551037066",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 500000,
-    "updatedAt": "2026-02-20T16:00:25.410Z",
-    "course": "브런치"
-  },
-  {
-    "id": 105,
-    "memberId": "1770551100795",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 700000,
-    "updatedAt": "2026-02-20T16:00:52.930Z",
-    "course": "복어기능사"
-  },
-  {
-    "id": 106,
-    "memberId": "1770551100795",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 1200000,
-    "updatedAt": "2026-02-20T16:00:55.356Z",
-    "course": "산업기사"
-  },
-  {
-    "id": 107,
-    "memberId": "1770551100795",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 250000,
-    "updatedAt": "2026-02-20T16:00:57.850Z",
-    "course": "제과기능사"
-  },
-  {
-    "id": 108,
-    "memberId": "1770551214556",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 700000,
-    "updatedAt": "2026-02-20T16:00:30.642Z",
-    "course": "복어기능사"
-  },
-  {
-    "id": 109,
-    "memberId": "1770551214556",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 250000,
-    "updatedAt": "2026-02-20T16:01:02.507Z",
-    "course": "제빵기능사"
-  },
-  {
-    "id": 110,
-    "memberId": "1770551214556",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 300000,
-    "updatedAt": "2026-02-20T16:00:59.946Z",
-    "course": "일식기능사"
-  },
-  {
-    "id": 111,
-    "memberId": "1770517014506",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 200000,
-    "updatedAt": "2026-02-20T16:13:37.649Z",
-    "course": "한식기능사"
-  },
-  {
-    "id": 112,
-    "memberId": "1770551214556",
-    "year": 2026,
-    "month": 1,
-    "status": "enrolled",
-    "amount": 1200000,
-    "updatedAt": "2026-02-21T14:32:49.679Z",
-    "course": "산업기사"
-  },
-  {
-    "id": 113,
-    "memberId": "1770517016128",
-    "year": 2026,
-    "month": 2,
-    "status": "unpaid",
-    "amount": 270000,
-    "updatedAt": "2026-02-20T15:19:45.639Z",
-    "course": null
-  },
-  {
-    "id": 114,
-    "memberId": "1770517017002",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-02-11T06:06:14.918Z",
-    "course": null
-  },
-  {
-    "id": 115,
-    "memberId": "1770529179643",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-02-11T09:55:28.254Z",
-    "course": ""
-  },
-  {
-    "id": 116,
-    "memberId": "1770551037066",
-    "year": 2026,
-    "month": 2,
-    "status": "unpaid",
-    "amount": 200000,
-    "updatedAt": "2026-02-08T15:22:37.225Z",
-    "course": null
-  },
-  {
-    "id": 117,
-    "memberId": "1770551100795",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 2400000,
-    "updatedAt": "2026-02-20T15:10:57.463Z",
-    "course": null
-  },
-  {
-    "id": 118,
-    "memberId": "1770556890568",
-    "year": 2026,
-    "month": 2,
-    "status": "unpaid",
-    "amount": 500000,
-    "updatedAt": "2026-02-08T16:32:50.824Z",
-    "course": null
-  },
-  {
-    "id": 121,
-    "memberId": "1770517693101",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-02-21T14:32:44.779Z",
-    "course": "양식기능사"
-  },
-  {
-    "id": 122,
-    "memberId": "1770517693101",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 350000,
-    "updatedAt": "2026-02-21T14:32:39.883Z",
-    "course": "제과제빵기능사"
-  },
-  {
-    "id": 123,
-    "memberId": "1770551214556",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 300000,
-    "updatedAt": "2026-02-21T06:59:13.564Z",
-    "course": "중식기능사"
-  },
-  {
-    "id": 124,
-    "memberId": "1770517017920",
-    "year": 2026,
-    "month": 2,
-    "status": "unpaid",
-    "amount": 270000,
-    "updatedAt": "2026-02-20T15:19:53.039Z",
-    "course": null
-  },
-  {
-    "id": 125,
-    "memberId": "1770517693101",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 620000,
-    "updatedAt": "2026-02-20T15:19:56.399Z",
-    "course": null
-  },
-  {
-    "id": 126,
-    "memberId": "1770551214556",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 3550000,
-    "updatedAt": "2026-02-20T15:11:53.069Z",
-    "course": null
-  },
-  {
-    "id": 127,
-    "memberId": "1770517014506",
-    "year": 2026,
-    "month": 2,
-    "status": "unpaid",
-    "amount": 270000,
-    "updatedAt": "2026-02-20T15:19:42.191Z",
-    "course": null
-  },
-  {
-    "id": 128,
-    "memberId": "1770517014506",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-02-20T16:00:41.034Z",
-    "course": "양식기능사"
-  },
-  {
-    "id": 129,
-    "memberId": "1770517017002",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-02-20T15:24:39.467Z",
-    "course": "양식기능사"
-  },
-  {
-    "id": 130,
-    "memberId": "1770517016128",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-02-20T16:00:19.674Z",
-    "course": "양식기능사"
-  },
-  {
-    "id": 131,
-    "memberId": "1770551037066",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 300000,
-    "updatedAt": "2026-02-20T16:00:50.290Z",
-    "course": "가정요리"
-  },
-  {
-    "id": 132,
-    "memberId": "1770551037066",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 500000,
-    "updatedAt": "2026-02-20T16:00:25.410Z",
-    "course": "브런치"
-  },
-  {
-    "id": 133,
-    "memberId": "1770551100795",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 700000,
-    "updatedAt": "2026-02-20T16:00:52.930Z",
-    "course": "복어기능사"
-  },
-  {
-    "id": 134,
-    "memberId": "1770551100795",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 1200000,
-    "updatedAt": "2026-02-20T16:00:55.356Z",
-    "course": "산업기사"
-  },
-  {
-    "id": 135,
-    "memberId": "1770551100795",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 250000,
-    "updatedAt": "2026-02-20T16:00:57.850Z",
-    "course": "제과기능사"
-  },
-  {
-    "id": 136,
-    "memberId": "1770551214556",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 700000,
-    "updatedAt": "2026-02-20T16:00:30.642Z",
-    "course": "복어기능사"
-  },
-  {
-    "id": 137,
-    "memberId": "1770551214556",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 250000,
-    "updatedAt": "2026-02-20T16:01:02.507Z",
-    "course": "제빵기능사"
-  },
-  {
-    "id": 138,
-    "memberId": "1770551214556",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 300000,
-    "updatedAt": "2026-02-20T16:00:59.946Z",
-    "course": "일식기능사"
-  },
-  {
-    "id": 139,
-    "memberId": "1770517014506",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 200000,
-    "updatedAt": "2026-02-20T16:13:37.649Z",
-    "course": "한식기능사"
-  },
-  {
-    "id": 140,
-    "memberId": "1770551214556",
-    "year": 2026,
-    "month": 1,
-    "status": "enrolled",
-    "amount": 1200000,
-    "updatedAt": "2026-02-21T14:32:49.679Z",
-    "course": "산업기사"
-  },
-  {
-    "id": 141,
     "memberId": "1770517016128",
     "year": 2026,
     "month": 2,
@@ -1470,17 +9,14 @@
     "course": "양식기능사"
   },
   {
-    "id": 142,
     "memberId": "1770517017002",
     "year": 2026,
     "month": 2,
     "status": "enrolled",
     "amount": 270000,
-    "updatedAt": "2026-02-11T06:06:14.918Z",
-    "course": null
+    "updatedAt": "2026-02-11T06:06:14.918Z"
   },
   {
-    "id": 143,
     "memberId": "1770529179643",
     "year": 2026,
     "month": 2,
@@ -1490,17 +26,14 @@
     "course": ""
   },
   {
-    "id": 144,
     "memberId": "1770551037066",
     "year": 2026,
     "month": 2,
     "status": "unpaid",
     "amount": 200000,
-    "updatedAt": "2026-02-08T15:22:37.225Z",
-    "course": null
+    "updatedAt": "2026-02-08T15:22:37.225Z"
   },
   {
-    "id": 145,
     "memberId": "1770551100795",
     "year": 2026,
     "month": 2,
@@ -1510,7 +43,6 @@
     "course": null
   },
   {
-    "id": 146,
     "memberId": "1770556890568",
     "year": 2026,
     "month": 2,
@@ -1520,993 +52,291 @@
     "course": "제과제빵기능사"
   },
   {
-    "id": 165,
-    "memberId": "1770551214556",
+    "memberId": "1770517017920",
     "year": 2026,
     "month": 2,
+    "course": "양식기능사",
     "status": "enrolled",
-    "amount": 250000,
-    "updatedAt": "2026-02-20T16:01:02.507Z",
-    "course": "제빵기능사"
+    "amount": 270000,
+    "updatedAt": "2026-02-20T16:00:22.906Z"
   },
   {
-    "id": 166,
+    "memberId": "1770517017920",
+    "year": 2026,
+    "month": 1,
+    "course": "양식기능사",
+    "status": "enrolled",
+    "amount": 270000,
+    "updatedAt": "2026-05-24T17:16:56.303Z"
+  },
+  {
+    "memberId": "1770517693101",
+    "year": 2026,
+    "month": 2,
+    "course": "제과제빵기능사",
+    "status": "unpaid",
+    "amount": 350000,
+    "updatedAt": "2026-05-24T14:54:20.870Z"
+  },
+  {
+    "memberId": "1770517693101",
+    "year": 2026,
+    "month": 2,
+    "course": "제과제빵기능사",
+    "status": "enrolled",
+    "amount": 350000,
+    "updatedAt": "2026-02-21T14:32:39.883Z"
+  },
+  {
     "memberId": "1770551214556",
     "year": 2026,
     "month": 2,
+    "course": "중식기능사",
     "status": "enrolled",
     "amount": 300000,
-    "updatedAt": "2026-02-20T16:00:59.946Z",
-    "course": "일식기능사"
+    "updatedAt": "2026-02-21T06:59:13.564Z"
   },
   {
-    "id": 167,
-    "memberId": "1770517014506",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 200000,
-    "updatedAt": "2026-02-20T16:13:37.649Z",
-    "course": "한식기능사"
-  },
-  {
-    "id": 168,
-    "memberId": "1770551214556",
-    "year": 2026,
-    "month": 1,
-    "status": "enrolled",
-    "amount": 500000,
-    "updatedAt": "2026-05-24T17:17:02.676Z",
-    "course": "브런치"
-  },
-  {
-    "id": 169,
-    "memberId": "1770556890568",
-    "year": 2026,
-    "month": 3,
-    "status": "enrolled",
-    "amount": 350000,
-    "updatedAt": "2026-05-24T12:53:07.278Z",
-    "course": "제과제빵기능사"
-  },
-  {
-    "id": 170,
-    "memberId": "1770556890568",
-    "year": 2026,
-    "month": 4,
-    "status": "enrolled",
-    "amount": 350000,
-    "updatedAt": "2026-05-24T14:22:12.760Z",
-    "course": "제과제빵기능사"
-  },
-  {
-    "id": 171,
-    "memberId": "1770517016128",
-    "year": 2026,
-    "month": 5,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-05-24T12:36:54.150Z",
-    "course": null
-  },
-  {
-    "id": 172,
-    "memberId": "1770551100795",
-    "year": 2026,
-    "month": 1,
-    "status": "enrolled",
-    "amount": 250000,
-    "updatedAt": "2026-05-24T17:17:10.772Z",
-    "course": "제과기능사"
-  },
-  {
-    "id": 173,
-    "memberId": "1770517016128",
-    "year": 2026,
-    "month": 3,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-05-24T13:01:21.377Z",
-    "course": "양식기능사"
-  },
-  {
-    "id": 174,
-    "memberId": "1770517017002",
-    "year": 2026,
-    "month": 3,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-05-24T12:50:12.849Z",
-    "course": "양식기능사"
-  },
-  {
-    "id": 176,
-    "memberId": "1770517017002",
-    "year": 2026,
-    "month": 1,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-05-24T17:16:52.540Z",
-    "course": "양식기능사"
-  },
-  {
-    "id": 177,
-    "memberId": "1770556890568",
-    "year": 2026,
-    "month": 1,
-    "status": "unpaid",
-    "amount": 350000,
-    "updatedAt": "2026-05-24T17:20:01.502Z",
-    "course": "제과제빵기능사"
-  },
-  {
-    "id": 181,
-    "memberId": "1771767617263",
-    "year": 2026,
-    "month": 2,
-    "status": "unpaid",
-    "amount": 270000,
-    "updatedAt": "2026-06-07T02:09:34.101Z",
-    "course": "한식기능사"
-  },
-  {
-    "id": 183,
     "memberId": "1770517017920",
     "year": 2026,
     "month": 2,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-06-07T04:36:13.102Z",
-    "course": "양식기능사"
-  },
-  {
-    "id": 186,
-    "memberId": "1770517017920",
-    "year": 2026,
-    "month": 1,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-06-07T04:48:10.655Z",
-    "course": "양식기능사"
-  },
-  {
-    "id": 193,
-    "memberId": "1770517693101",
-    "year": 2026,
-    "month": 1,
-    "status": "unpaid",
-    "amount": 350000,
-    "updatedAt": "2026-06-07T05:06:42.464Z",
-    "course": "제과제빵기능사"
-  },
-  {
-    "id": 194,
-    "memberId": "1770551100795",
-    "year": 2026,
-    "month": 1,
-    "status": "unpaid",
-    "amount": 1200000,
-    "updatedAt": "2026-06-07T06:33:00.404Z",
-    "course": "산업기사"
-  },
-  {
-    "id": 195,
-    "memberId": "1770551100795",
-    "year": 2026,
-    "month": 1,
-    "status": "unpaid",
-    "amount": 350000,
-    "updatedAt": "2026-06-07T06:33:03.197Z",
-    "course": "제과제빵기능사"
-  },
-  {
-    "id": 196,
-    "memberId": "1772060160506",
-    "year": 2026,
-    "month": 1,
-    "status": "unpaid",
-    "amount": 350000,
-    "updatedAt": "2026-06-07T06:33:07.064Z",
-    "course": "제과제빵기능사"
-  },
-  {
-    "id": 197,
-    "memberId": "1770517016128",
-    "year": 2026,
-    "month": 1,
+    "course": null,
     "status": "unpaid",
     "amount": 270000,
-    "updatedAt": "2026-06-07T06:33:09.680Z",
-    "course": "양식기능사"
+    "updatedAt": "2026-02-20T15:19:53.039Z"
   },
   {
-    "id": 198,
-    "memberId": "1770556890568",
-    "year": 2026,
-    "month": 1,
-    "status": "unpaid",
-    "amount": 250000,
-    "updatedAt": "2026-06-07T06:33:13.014Z",
-    "course": "제과기능사"
-  },
-  {
-    "id": 200,
-    "memberId": "1771767630872",
-    "year": 2026,
-    "month": 2,
-    "status": "unpaid",
-    "amount": 270000,
-    "updatedAt": "2026-06-07T14:52:08.398Z",
-    "course": "양식기능사"
-  },
-  {
-    "id": 202,
-    "memberId": "1771767630872",
-    "year": 2026,
-    "month": 3,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-06-08T05:12:26.389Z",
-    "course": "양식기능사"
-  },
-  {
-    "id": 203,
-    "memberId": "1770517016128",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-05-24T13:01:46.456Z",
-    "course": "양식기능사"
-  },
-  {
-    "id": 204,
-    "memberId": "1770517017002",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-02-11T06:06:14.918Z",
-    "course": null
-  },
-  {
-    "id": 205,
-    "memberId": "1770529179643",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-02-11T09:55:28.254Z",
-    "course": ""
-  },
-  {
-    "id": 206,
-    "memberId": "1770551037066",
-    "year": 2026,
-    "month": 2,
-    "status": "unpaid",
-    "amount": 200000,
-    "updatedAt": "2026-02-08T15:22:37.225Z",
-    "course": null
-  },
-  {
-    "id": 207,
-    "memberId": "1770551100795",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 2400000,
-    "updatedAt": "2026-02-20T15:10:57.463Z",
-    "course": null
-  },
-  {
-    "id": 208,
-    "memberId": "1770556890568",
-    "year": 2026,
-    "month": 2,
-    "status": "unpaid",
-    "amount": 350000,
-    "updatedAt": "2026-05-24T17:19:40.023Z",
-    "course": "제과제빵기능사"
-  },
-  {
-    "id": 209,
-    "memberId": "1770517017920",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-02-20T16:00:22.906Z",
-    "course": "양식기능사"
-  },
-  {
-    "id": 210,
-    "memberId": "1770517017920",
-    "year": 2026,
-    "month": 1,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-05-24T17:16:56.303Z",
-    "course": "양식기능사"
-  },
-  {
-    "id": 211,
     "memberId": "1770517693101",
     "year": 2026,
     "month": 2,
-    "status": "unpaid",
-    "amount": 350000,
-    "updatedAt": "2026-05-24T14:54:20.870Z",
-    "course": "제과제빵기능사"
-  },
-  {
-    "id": 212,
-    "memberId": "1770517693101",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 350000,
-    "updatedAt": "2026-02-21T14:32:39.883Z",
-    "course": "제과제빵기능사"
-  },
-  {
-    "id": 213,
-    "memberId": "1770551214556",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 300000,
-    "updatedAt": "2026-02-21T06:59:13.564Z",
-    "course": "중식기능사"
-  },
-  {
-    "id": 214,
-    "memberId": "1770517017920",
-    "year": 2026,
-    "month": 2,
-    "status": "unpaid",
-    "amount": 270000,
-    "updatedAt": "2026-02-20T15:19:53.039Z",
-    "course": null
-  },
-  {
-    "id": 215,
-    "memberId": "1770517693101",
-    "year": 2026,
-    "month": 2,
+    "course": null,
     "status": "enrolled",
     "amount": 620000,
-    "updatedAt": "2026-02-20T15:19:56.399Z",
-    "course": null
+    "updatedAt": "2026-02-20T15:19:56.399Z"
   },
   {
-    "id": 216,
     "memberId": "1770551214556",
     "year": 2026,
     "month": 2,
+    "course": null,
     "status": "enrolled",
     "amount": 3550000,
-    "updatedAt": "2026-02-20T15:11:53.069Z",
-    "course": null
+    "updatedAt": "2026-02-20T15:11:53.069Z"
   },
   {
-    "id": 217,
     "memberId": "1770517014506",
     "year": 2026,
     "month": 2,
+    "course": null,
     "status": "unpaid",
     "amount": 270000,
-    "updatedAt": "2026-02-20T15:19:42.191Z",
-    "course": null
+    "updatedAt": "2026-02-20T15:19:42.191Z"
   },
   {
-    "id": 218,
     "memberId": "1770517014506",
     "year": 2026,
     "month": 2,
+    "course": "양식기능사",
     "status": "enrolled",
     "amount": 270000,
-    "updatedAt": "2026-02-20T16:00:41.034Z",
-    "course": "양식기능사"
+    "updatedAt": "2026-02-20T16:00:41.034Z"
   },
   {
-    "id": 219,
     "memberId": "1770517017002",
     "year": 2026,
     "month": 2,
+    "course": "양식기능사",
     "status": "enrolled",
     "amount": 270000,
-    "updatedAt": "2026-02-20T15:24:39.467Z",
-    "course": "양식기능사"
+    "updatedAt": "2026-02-20T15:24:39.467Z"
   },
   {
-    "id": 220,
     "memberId": "1770517016128",
     "year": 2026,
     "month": 2,
+    "course": "양식기능사",
     "status": "enrolled",
     "amount": 270000,
-    "updatedAt": "2026-02-20T16:00:19.674Z",
-    "course": "양식기능사"
+    "updatedAt": "2026-02-20T16:00:19.674Z"
   },
   {
-    "id": 221,
     "memberId": "1770551037066",
     "year": 2026,
     "month": 2,
+    "course": "가정요리",
     "status": "enrolled",
     "amount": 300000,
-    "updatedAt": "2026-02-20T16:00:50.290Z",
-    "course": "가정요리"
+    "updatedAt": "2026-02-20T16:00:50.290Z"
   },
   {
-    "id": 222,
     "memberId": "1770551037066",
     "year": 2026,
     "month": 2,
+    "course": "브런치",
     "status": "enrolled",
     "amount": 500000,
-    "updatedAt": "2026-02-20T16:00:25.410Z",
-    "course": "브런치"
+    "updatedAt": "2026-02-20T16:00:25.410Z"
   },
   {
-    "id": 223,
     "memberId": "1770551100795",
     "year": 2026,
     "month": 2,
+    "course": "복어기능사",
     "status": "enrolled",
     "amount": 700000,
-    "updatedAt": "2026-02-20T16:00:52.930Z",
-    "course": "복어기능사"
+    "updatedAt": "2026-02-20T16:00:52.930Z"
   },
   {
-    "id": 224,
     "memberId": "1770551100795",
     "year": 2026,
     "month": 2,
+    "course": "산업기사",
     "status": "enrolled",
     "amount": 1200000,
-    "updatedAt": "2026-02-20T16:00:55.356Z",
-    "course": "산업기사"
+    "updatedAt": "2026-02-20T16:00:55.356Z"
   },
   {
-    "id": 225,
     "memberId": "1770551100795",
     "year": 2026,
     "month": 2,
+    "course": "제과기능사",
     "status": "enrolled",
     "amount": 250000,
-    "updatedAt": "2026-02-20T16:00:57.850Z",
-    "course": "제과기능사"
+    "updatedAt": "2026-02-20T16:00:57.850Z"
   },
   {
-    "id": 226,
     "memberId": "1770551214556",
     "year": 2026,
     "month": 2,
+    "course": "복어기능사",
     "status": "enrolled",
     "amount": 700000,
-    "updatedAt": "2026-02-20T16:00:30.642Z",
-    "course": "복어기능사"
+    "updatedAt": "2026-02-20T16:00:30.642Z"
   },
   {
-    "id": 227,
     "memberId": "1770551214556",
     "year": 2026,
     "month": 2,
+    "course": "제빵기능사",
     "status": "enrolled",
     "amount": 250000,
-    "updatedAt": "2026-02-20T16:01:02.507Z",
-    "course": "제빵기능사"
+    "updatedAt": "2026-02-20T16:01:02.507Z"
   },
   {
-    "id": 228,
     "memberId": "1770551214556",
     "year": 2026,
     "month": 2,
+    "course": "일식기능사",
     "status": "enrolled",
     "amount": 300000,
-    "updatedAt": "2026-02-20T16:00:59.946Z",
-    "course": "일식기능사"
+    "updatedAt": "2026-02-20T16:00:59.946Z"
   },
   {
-    "id": 229,
     "memberId": "1770517014506",
     "year": 2026,
     "month": 2,
+    "course": "한식기능사",
     "status": "enrolled",
     "amount": 200000,
-    "updatedAt": "2026-02-20T16:13:37.649Z",
-    "course": "한식기능사"
+    "updatedAt": "2026-02-20T16:13:37.649Z"
   },
   {
-    "id": 230,
     "memberId": "1770551214556",
     "year": 2026,
     "month": 1,
+    "course": "브런치",
     "status": "enrolled",
     "amount": 500000,
-    "updatedAt": "2026-05-24T17:17:02.676Z",
-    "course": "브런치"
+    "updatedAt": "2026-05-24T17:17:02.676Z"
   },
   {
-    "id": 231,
     "memberId": "1770556890568",
     "year": 2026,
     "month": 3,
+    "course": "제과제빵기능사",
     "status": "enrolled",
     "amount": 350000,
-    "updatedAt": "2026-05-24T12:53:07.278Z",
-    "course": "제과제빵기능사"
+    "updatedAt": "2026-05-24T12:53:07.278Z"
   },
   {
-    "id": 232,
     "memberId": "1770556890568",
     "year": 2026,
     "month": 4,
+    "course": "제과제빵기능사",
     "status": "enrolled",
     "amount": 350000,
-    "updatedAt": "2026-05-24T14:22:12.760Z",
-    "course": "제과제빵기능사"
+    "updatedAt": "2026-05-24T14:22:12.760Z"
   },
   {
-    "id": 233,
     "memberId": "1770517016128",
     "year": 2026,
     "month": 5,
+    "course": null,
     "status": "enrolled",
     "amount": 270000,
-    "updatedAt": "2026-05-24T12:36:54.150Z",
-    "course": null
+    "updatedAt": "2026-05-24T12:36:54.150Z"
   },
   {
-    "id": 234,
     "memberId": "1770551100795",
     "year": 2026,
     "month": 1,
+    "course": "제과기능사",
     "status": "enrolled",
     "amount": 250000,
-    "updatedAt": "2026-05-24T17:17:10.772Z",
-    "course": "제과기능사"
+    "updatedAt": "2026-05-24T17:17:10.772Z"
   },
   {
-    "id": 235,
     "memberId": "1770517016128",
     "year": 2026,
     "month": 3,
+    "course": "양식기능사",
     "status": "enrolled",
     "amount": 270000,
-    "updatedAt": "2026-05-24T13:01:21.377Z",
-    "course": "양식기능사"
+    "updatedAt": "2026-05-24T13:01:21.377Z"
   },
   {
-    "id": 236,
     "memberId": "1770517017002",
     "year": 2026,
     "month": 3,
+    "course": "양식기능사",
     "status": "enrolled",
     "amount": 270000,
-    "updatedAt": "2026-05-24T12:50:12.849Z",
-    "course": "양식기능사"
+    "updatedAt": "2026-05-24T12:50:12.849Z"
   },
   {
-    "id": 237,
     "memberId": "1770517016128",
     "year": 2026,
     "month": 1,
+    "course": "양식기능사",
     "status": "enrolled",
     "amount": 270000,
-    "updatedAt": "2026-05-24T17:16:49.301Z",
-    "course": "양식기능사"
+    "updatedAt": "2026-05-24T17:16:49.301Z"
   },
   {
-    "id": 238,
     "memberId": "1770517017002",
     "year": 2026,
     "month": 1,
+    "course": "양식기능사",
     "status": "enrolled",
     "amount": 270000,
-    "updatedAt": "2026-05-24T17:16:52.540Z",
-    "course": "양식기능사"
+    "updatedAt": "2026-05-24T17:16:52.540Z"
   },
   {
-    "id": 239,
     "memberId": "1770556890568",
     "year": 2026,
     "month": 1,
+    "course": "제과제빵기능사",
     "status": "unpaid",
     "amount": 350000,
-    "updatedAt": "2026-05-24T17:20:01.502Z",
-    "course": "제과제빵기능사"
+    "updatedAt": "2026-05-24T17:20:01.502Z"
   },
   {
-    "id": 240,
     "memberId": "1770517693101",
     "year": 2026,
     "month": 1,
+    "course": "제과제빵기능사",
     "status": "unpaid",
     "amount": 350000,
-    "updatedAt": "2026-05-24T16:32:10.161Z",
-    "course": "제과제빵기능사"
-  },
-  {
-    "id": 241,
-    "memberId": "1770517016128",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-05-24T13:01:46.456Z",
-    "course": "양식기능사"
-  },
-  {
-    "id": 242,
-    "memberId": "1770517017002",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-02-11T06:06:14.918Z",
-    "course": null
-  },
-  {
-    "id": 243,
-    "memberId": "1770529179643",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-02-11T09:55:28.254Z",
-    "course": ""
-  },
-  {
-    "id": 244,
-    "memberId": "1770551037066",
-    "year": 2026,
-    "month": 2,
-    "status": "unpaid",
-    "amount": 200000,
-    "updatedAt": "2026-02-08T15:22:37.225Z",
-    "course": null
-  },
-  {
-    "id": 245,
-    "memberId": "1770551100795",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 2400000,
-    "updatedAt": "2026-02-20T15:10:57.463Z",
-    "course": null
-  },
-  {
-    "id": 246,
-    "memberId": "1770556890568",
-    "year": 2026,
-    "month": 2,
-    "status": "unpaid",
-    "amount": 350000,
-    "updatedAt": "2026-05-24T17:19:40.023Z",
-    "course": "제과제빵기능사"
-  },
-  {
-    "id": 247,
-    "memberId": "1770517017920",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-02-20T16:00:22.906Z",
-    "course": "양식기능사"
-  },
-  {
-    "id": 248,
-    "memberId": "1770517017920",
-    "year": 2026,
-    "month": 1,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-05-24T17:16:56.303Z",
-    "course": "양식기능사"
-  },
-  {
-    "id": 249,
-    "memberId": "1770517693101",
-    "year": 2026,
-    "month": 2,
-    "status": "unpaid",
-    "amount": 350000,
-    "updatedAt": "2026-05-24T14:54:20.870Z",
-    "course": "제과제빵기능사"
-  },
-  {
-    "id": 250,
-    "memberId": "1770517693101",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 350000,
-    "updatedAt": "2026-02-21T14:32:39.883Z",
-    "course": "제과제빵기능사"
-  },
-  {
-    "id": 251,
-    "memberId": "1770551214556",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 300000,
-    "updatedAt": "2026-02-21T06:59:13.564Z",
-    "course": "중식기능사"
-  },
-  {
-    "id": 252,
-    "memberId": "1770517017920",
-    "year": 2026,
-    "month": 2,
-    "status": "unpaid",
-    "amount": 270000,
-    "updatedAt": "2026-02-20T15:19:53.039Z",
-    "course": null
-  },
-  {
-    "id": 253,
-    "memberId": "1770517693101",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 620000,
-    "updatedAt": "2026-02-20T15:19:56.399Z",
-    "course": null
-  },
-  {
-    "id": 254,
-    "memberId": "1770551214556",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 3550000,
-    "updatedAt": "2026-02-20T15:11:53.069Z",
-    "course": null
-  },
-  {
-    "id": 255,
-    "memberId": "1770517014506",
-    "year": 2026,
-    "month": 2,
-    "status": "unpaid",
-    "amount": 270000,
-    "updatedAt": "2026-02-20T15:19:42.191Z",
-    "course": null
-  },
-  {
-    "id": 256,
-    "memberId": "1770517014506",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-02-20T16:00:41.034Z",
-    "course": "양식기능사"
-  },
-  {
-    "id": 257,
-    "memberId": "1770517017002",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-02-20T15:24:39.467Z",
-    "course": "양식기능사"
-  },
-  {
-    "id": 258,
-    "memberId": "1770517016128",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-02-20T16:00:19.674Z",
-    "course": "양식기능사"
-  },
-  {
-    "id": 259,
-    "memberId": "1770551037066",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 300000,
-    "updatedAt": "2026-02-20T16:00:50.290Z",
-    "course": "가정요리"
-  },
-  {
-    "id": 260,
-    "memberId": "1770551037066",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 500000,
-    "updatedAt": "2026-02-20T16:00:25.410Z",
-    "course": "브런치"
-  },
-  {
-    "id": 261,
-    "memberId": "1770551100795",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 700000,
-    "updatedAt": "2026-02-20T16:00:52.930Z",
-    "course": "복어기능사"
-  },
-  {
-    "id": 262,
-    "memberId": "1770551100795",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 1200000,
-    "updatedAt": "2026-02-20T16:00:55.356Z",
-    "course": "산업기사"
-  },
-  {
-    "id": 263,
-    "memberId": "1770551100795",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 250000,
-    "updatedAt": "2026-02-20T16:00:57.850Z",
-    "course": "제과기능사"
-  },
-  {
-    "id": 264,
-    "memberId": "1770551214556",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 700000,
-    "updatedAt": "2026-02-20T16:00:30.642Z",
-    "course": "복어기능사"
-  },
-  {
-    "id": 265,
-    "memberId": "1770551214556",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 250000,
-    "updatedAt": "2026-02-20T16:01:02.507Z",
-    "course": "제빵기능사"
-  },
-  {
-    "id": 266,
-    "memberId": "1770551214556",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 300000,
-    "updatedAt": "2026-02-20T16:00:59.946Z",
-    "course": "일식기능사"
-  },
-  {
-    "id": 267,
-    "memberId": "1770517014506",
-    "year": 2026,
-    "month": 2,
-    "status": "enrolled",
-    "amount": 200000,
-    "updatedAt": "2026-02-20T16:13:37.649Z",
-    "course": "한식기능사"
-  },
-  {
-    "id": 268,
-    "memberId": "1770551214556",
-    "year": 2026,
-    "month": 1,
-    "status": "enrolled",
-    "amount": 500000,
-    "updatedAt": "2026-05-24T17:17:02.676Z",
-    "course": "브런치"
-  },
-  {
-    "id": 269,
-    "memberId": "1770556890568",
-    "year": 2026,
-    "month": 3,
-    "status": "enrolled",
-    "amount": 350000,
-    "updatedAt": "2026-05-24T12:53:07.278Z",
-    "course": "제과제빵기능사"
-  },
-  {
-    "id": 270,
-    "memberId": "1770556890568",
-    "year": 2026,
-    "month": 4,
-    "status": "enrolled",
-    "amount": 350000,
-    "updatedAt": "2026-05-24T14:22:12.760Z",
-    "course": "제과제빵기능사"
-  },
-  {
-    "id": 271,
-    "memberId": "1770517016128",
-    "year": 2026,
-    "month": 5,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-05-24T12:36:54.150Z",
-    "course": null
-  },
-  {
-    "id": 272,
-    "memberId": "1770551100795",
-    "year": 2026,
-    "month": 1,
-    "status": "enrolled",
-    "amount": 250000,
-    "updatedAt": "2026-05-24T17:17:10.772Z",
-    "course": "제과기능사"
-  },
-  {
-    "id": 273,
-    "memberId": "1770517016128",
-    "year": 2026,
-    "month": 3,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-05-24T13:01:21.377Z",
-    "course": "양식기능사"
-  },
-  {
-    "id": 274,
-    "memberId": "1770517017002",
-    "year": 2026,
-    "month": 3,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-05-24T12:50:12.849Z",
-    "course": "양식기능사"
-  },
-  {
-    "id": 275,
-    "memberId": "1770517016128",
-    "year": 2026,
-    "month": 1,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-05-24T17:16:49.301Z",
-    "course": "양식기능사"
-  },
-  {
-    "id": 276,
-    "memberId": "1770517017002",
-    "year": 2026,
-    "month": 1,
-    "status": "enrolled",
-    "amount": 270000,
-    "updatedAt": "2026-05-24T17:16:52.540Z",
-    "course": "양식기능사"
-  },
-  {
-    "id": 277,
-    "memberId": "1770556890568",
-    "year": 2026,
-    "month": 1,
-    "status": "unpaid",
-    "amount": 350000,
-    "updatedAt": "2026-05-24T17:20:01.502Z",
-    "course": "제과제빵기능사"
-  },
-  {
-    "id": 278,
-    "memberId": "1770517693101",
-    "year": 2026,
-    "month": 1,
-    "status": "unpaid",
-    "amount": 350000,
-    "updatedAt": "2026-05-24T16:32:10.161Z",
-    "course": "제과제빵기능사"
+    "updatedAt": "2026-05-24T16:32:10.161Z"
   }
 ]

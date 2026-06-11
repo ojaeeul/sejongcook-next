@@ -1,19 +1,10 @@
 const fs = require('fs');
-let sheetContent = fs.readFileSync('Sejong/SejongAttendance/public/sheet.html', 'utf8');
-let sharedContent = fs.readFileSync('Sejong/SejongAttendance/public/shared_calc.js', 'utf8');
 
-// Extract sheet.html drawing logic
-const sheetLogicStart = sheetContent.indexOf('const isMakeupMarker = [\\'[\\', \\']\\'].includes(l.status);');
-const sheetLogicEnd = sheetContent.indexOf('if (adjustment && adjustment.forceRedBoxDates', sheetLogicStart);
-let sheetLogic = sheetContent.substring(sheetLogicStart, sheetLogicEnd);
+const sheet = fs.readFileSync('Sejong/SejongAttendance/public/sheet.html', 'utf-8');
+const tuition = fs.readFileSync('Sejong/SejongAttendance/public/tuition_v3.js', 'utf-8');
 
-// Extract shared_calc.js logic
-const sharedLogicStart = sharedContent.indexOf('const isMakeupMarker = [\\'[\\', \\']\\'].includes(l.status);');
-const sharedLogicEnd = sharedContent.indexOf('const isForced = adjustment', sharedLogicStart);
-let sharedLogic = sharedContent.substring(sharedLogicStart, sharedLogicEnd);
+const sheetFunc = sheet.substring(sheet.indexOf('const getSheetSimulatedScheduledDate'), sheet.indexOf('return {', sheet.indexOf('const getSheetSimulatedScheduledDate')) + 100);
+const tuitionFunc = tuition.substring(tuition.indexOf('const getMemberEighthDayInMonth'), tuition.indexOf('return {', tuition.indexOf('const getMemberEighthDayInMonth')) + 100);
 
-console.log("=== SHEET LOGIC ===");
-console.log(sheetLogic);
-console.log("\\n=== SHARED LOGIC ===");
-console.log(sharedLogic);
-
+fs.writeFileSync('sheet_func.txt', sheetFunc);
+fs.writeFileSync('tuition_func.txt', tuitionFunc);

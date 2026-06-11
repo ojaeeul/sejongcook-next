@@ -1,25 +1,23 @@
 const puppeteer = require('puppeteer');
 
 (async () => {
-    const browser = await puppeteer.launch();
-    const page = await browser.newPage();
-    
-    page.on('console', msg => {
-        if (msg.type() === 'error') {
-            console.log('PAGE ERROR:', msg.text());
-        }
-    });
-    
-    page.on('pageerror', err => {
-        console.log('PAGE EXCEPTION:', err.toString());
-    });
+  const browser = await puppeteer.launch();
+  const page = await browser.newPage();
+  
+  page.on('response', response => {
+      if (!response.ok()) {
+          console.log(`HTTP ${response.status()}: ${response.url()}`);
+      }
+  });
 
-    try {
-        await page.goto('file://' + __dirname + '/Sejong/SejongAttendance/public/tuition.html');
-        await new Promise(r => setTimeout(r, 2000));
-    } catch (e) {
-        console.log("Error loading page", e);
-    }
-
-    await browser.close();
+  await page.goto('http://localhost:3000/sejong/sms.html', {waitUntil: 'networkidle2'});
+  
+  try {
+      await page.evaluate(() => toggleRangeCalendar());
+      console.log("toggleRangeCalendar executed successfully");
+  } catch(e) {
+      console.log("Failed to execute toggleRangeCalendar:", e.message);
+  }
+  
+  await browser.close();
 })();

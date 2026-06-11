@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>키오스크 얼굴 출석 데이터 관리</title>
     <link rel="stylesheet" href="style.css">
-    <script src="shared_calc.js?v=1781103703774"></script>
     <script src="tuition_v4.js" defer></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
@@ -286,10 +285,6 @@
                         <span class="material-icons" style="font-size: 1.2rem; margin-right: 8px;">list_alt</span>
                         과목/시간 설정
                     </a>
-                    <a href="cycle_settings.html" id="navCycleSettings" class="nav-item">
-                        <span class="material-icons" style="font-size: 1.2rem; margin-right: 8px;">tune</span>
-                        결재 주기 설정
-                    </a>
                     <a href="index.html?filter=archive" id="navArchive" class="nav-item">수료생 보관함</a>
                     <a href="index.html?filter=trash" id="navTrash" class="nav-item">휴지통</a>
                     <a href="stats.html" class="nav-item">통계 및 납부</a>
@@ -301,8 +296,6 @@
                 </div>
                 <a href="monitor.html?v=1780796013_211823" target="_blank" class="nav-item highlight">키오스크 모니터</a>
                 <a href="kiosk_admin.html" id="navKioskAdmin" class="nav-item active">키오스크 설정</a>
-
-                <a href="app.html" id="navMobileApp" class="nav-item" target="_blank">📱 모바일 앱</a>
             </nav>
         </aside>
 
@@ -455,9 +448,9 @@
                 <h3>AI 얼굴 인식 민감도 조절</h3>
                 <p style="font-size: 0.95rem; color: #475569; margin-top: 0; margin-bottom: 12px;">오인식이 잦으면 엄격하게, 잘 인식되지 않으면 느슨하게 설정하세요.</p>
                 <select id="sensitivitySelect" onchange="saveSettings()">
-                    <option value="0.35">매우 엄격하게 (오인식 방지, 0.35)</option>
-                    <option value="0.45" selected>보통 (권장 기본값, 0.45)</option>
-                    <option value="0.55">느슨하게 (인식 속도 우선, 0.55)</option>
+                    <option value="0.5">매우 엄격하게 (정확도 우선)</option>
+                    <option value="0.65" selected>보통 (권장 기본값)</option>
+                    <option value="0.75">느슨하게 (인식 속도 우선)</option>
                 </select>
             </div>
         </div>
@@ -482,7 +475,7 @@
     <canvas id="hiddenCanvas" style="display: none;"></canvas>
 
     <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
-    <script src="/sejong/kiosk_admin.js?v=1781101862809"></script>
+    <script src="/sejong/kiosk_admin.js?v=1"></script>
 
 </div>
 </main>
