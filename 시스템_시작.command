@@ -75,21 +75,25 @@ echo "    ✅ JSON 데이터 동기화 완료"
 echo ""
 
 # ==============================================================================
-# [STEP 2] Next.js 웹사이트 서버 (Port 3000)
+# [STEP 2] Next.js 웹사이트 서버 (Port 3000) 및 브라우저 열기
 # ==============================================================================
-echo "[2/4] Next.js 웹사이트 서버 (Port 3000) 시작 중..."
-osascript -e 'tell app "Terminal" to do script "cd \"'"$BASE_DIR"'\" && npm run dev"'
-echo "    ✅ Next.js 서버 시작 명령 전달"
-echo ""
+if ! lsof -i :3000 > /dev/null; then
+    echo "[2/4] Next.js 웹사이트 서버 (Port 3000) 시작 중..."
+    osascript -e 'tell app "Terminal" to do script "cd \"'"$BASE_DIR"'\" && npm run dev"'
+    echo "    ✅ Next.js 서버 시작 명령 전달"
+    echo ""
 
-# ==============================================================================
-# [STEP 3] 브라우저 열기
-# ==============================================================================
-echo "[3/4] 브라우저 열기 (서버 준비 대기 3초)..."
-sleep 3
-open "http://localhost:3000/sejong/ledger.html"
-open "http://localhost:3000/sejong/sheet.html"
-open "http://localhost:3000"
+    echo "[3/4] 브라우저 열기 (서버 준비 대기 3초)..."
+    sleep 3
+    open "http://localhost:3000/sejong/ledger.html"
+    open "http://localhost:3000/sejong/sheet.html"
+    open "http://localhost:3000"
+else
+    echo "[2/4] Next.js 서버가 이미 실행 중입니다. (새 창을 열지 않습니다)"
+    echo "    ✅ 서버 중복 실행 방지"
+    echo ""
+    echo "[3/4] 브라우저 열기 생략 (이미 열려있음)"
+fi
 
 # ==============================================================================
 # [STEP 4] 깃허브(Git) 자동 백업 저장
@@ -107,8 +111,8 @@ echo ""
 # ==============================================================================
 echo ""
 echo "[5/5] Vercel 실서버 자동 업로드(배포)를 백그라운드에서 진행합니다..."
-osascript -e 'tell app "Terminal" to do script "cd \"'"$BASE_DIR"'\" && npx vercel --prod --yes"'
-echo "    ✅ 실서버 배포 명령 전달 (터미널 창에서 배포가 진행됩니다)"
+nohup npx vercel --prod --yes > vercel_deploy.log 2>&1 &
+echo "    ✅ 실서버 배포 명령 전달 (백그라운드에서 조용히 진행됩니다)"
 echo ""
 
 echo "======================================================"

@@ -2421,8 +2421,14 @@
 
                             // 2. 재고출석 (진행률) 계산 (수강생 규칙 적용)
                             let vRaw = Math.round(runningTotal * 10);
-                            let limit = isDualCourse ? 16.0 : 8.0;
-                            let trigger = isDualCourse ? 17.0 : 9.0;
+                            
+                            let safeCourseKey = rowCourseNameScope ? rowCourseNameScope.replace(/\s/g, '') : '';
+                            let baseLimit = (window.global_makeup_cutoffs && window.global_makeup_cutoffs[safeCourseKey] !== undefined)
+                                ? window.global_makeup_cutoffs[safeCourseKey]
+                                : (isDualCourse ? 16.0 : 8.0);
+                                
+                            let limit = baseLimit;
+                            let trigger = baseLimit + 1.0;
                             let limitRaw = Math.round(limit * 10);
                             let triggerRaw = Math.round(trigger * 10);
                             
@@ -2641,7 +2647,11 @@
                         if (m && displayVal !== '') {
                             let formattedVal = (displayVal % 1 === 0 ? displayVal : displayVal.toFixed(1));
 
-                            const maxJ = isDualCourse ? 16.0 : 8.0;
+                            let safeCourseKey = rowCourseNameScope ? rowCourseNameScope.replace(/\s/g, '') : '';
+                            let maxJ = (window.global_makeup_cutoffs && window.global_makeup_cutoffs[safeCourseKey] !== undefined)
+                                ? window.global_makeup_cutoffs[safeCourseKey]
+                                : (isDualCourse ? 16.0 : 8.0);
+                                
                             if (idx === 0 && displayVal >= maxJ && (displayVal % maxJ) === 0) {
                                 const multiple = Math.round(displayVal / maxJ);
                                 if (multiple > 1) {

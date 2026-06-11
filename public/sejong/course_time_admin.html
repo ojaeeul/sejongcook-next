@@ -302,6 +302,19 @@
                     </div>
                 </div>
 
+                <!-- Makeup Cutoff Settings -->
+                <div style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e2e8f0;">
+                    <h2 style="font-size: 1.1rem; color: #1e293b; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                        <span class="material-icons" style="color: #f59e0b;">rule</span> 과정별 재고출석 커트라인 관리
+                    </h2>
+                    <div style="font-size: 0.9rem; color: #64748b; margin-bottom: 15px;">
+                        월간 출석부에서 재고출석의 합계(진행률)가 바뀌는 커트라인을 설정합니다.<br>기본적으로 제과제빵은 16, 나머지는 8입니다.
+                    </div>
+                    <div id="cutoffListContainer" style="display: flex; flex-direction: column; gap: 0;">
+                        <!-- Cutoffs will be rendered here -->
+                    </div>
+                </div>
+
                 <!-- Save Action -->
                 <div style="text-align: right;">
                     <button onclick="saveSettings()" style="background: #1e3a8a; color: white; border: none; padding: 12px 30px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1.1rem; display: inline-flex; align-items: center; gap: 8px;">
@@ -318,6 +331,7 @@
         
         let courses = [];
         let times = [];
+        let makeupCutoffs = {};
 
         async function loadSettings() {
             try {
@@ -328,15 +342,19 @@
                 
                 courses = settings.courses && settings.courses.length > 0 ? settings.courses : [...DEFAULT_COURSES];
                 times = settings.times && settings.times.length > 0 ? settings.times : [...DEFAULT_TIMES];
+                makeupCutoffs = settings.makeupCutoffs || {};
                 
                 renderCourses();
                 renderTimes();
+                renderCutoffs();
             } catch (e) {
                 console.error("Failed to load settings", e);
                 courses = [...DEFAULT_COURSES];
                 times = [...DEFAULT_TIMES];
+                makeupCutoffs = {};
                 renderCourses();
                 renderTimes();
+                renderCutoffs();
             }
         }
 
@@ -362,11 +380,13 @@
             courses.push(val);
             input.value = "";
             renderCourses();
+            renderCutoffs();
         }
 
         function removeCourse(idx) {
             courses.splice(idx, 1);
             renderCourses();
+            renderCutoffs();
         }
 
         function renderTimes() {
@@ -405,6 +425,37 @@
             renderTimes();
         }
 
+        function renderCutoffs() {
+            const container = document.getElementById("cutoffListContainer");
+            container.innerHTML = "";
+            courses.forEach(course => {
+                const isDual = course.includes("제과제빵");
+                let defaultVal = isDual ? 16 : 8;
+                if (makeupCutoffs[course] === undefined) {
+                    makeupCutoffs[course] = defaultVal;
+                }
+                const val = makeupCutoffs[course];
+                
+                const row = document.createElement("div");
+                row.style.cssText = "display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px dashed #e2e8f0;";
+                row.innerHTML = `
+                    <span style="font-weight: 500; color: #334155; font-size: 1rem;">${course}</span>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <input type="number" value="${val}" style="width: 80px; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; text-align: center; font-size: 1rem; font-weight: bold; color: #0f172a;" onchange="updateCutoff('${course}', this.value)">
+                        <span style="color: #64748b; font-size: 0.95rem;">회</span>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        window.updateCutoff = function(course, val) {
+            const num = Number(val);
+            if (!isNaN(num) && num > 0) {
+                makeupCutoffs[course] = num;
+            }
+        };
+
         async function saveSettings() {
             try {
                 const res = await fetch("/api/sejong/settings");
@@ -415,6 +466,7 @@
                 
                 settingsObj.courses = courses;
                 settingsObj.times = times;
+                settingsObj.makeupCutoffs = makeupCutoffs;
                 settingsObj.courseFees = settingsObj.courseFees || {};
                 
                 courses.forEach(course => {
