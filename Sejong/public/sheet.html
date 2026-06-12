@@ -2761,7 +2761,7 @@
                     let days = null;
                     if (typeof window.calculateRedBoxesForMonth === 'function') {
                         const result = window.calculateRedBoxesForMonth(m, targetYear, month, window.attendanceData || [], cName, window.GLOBAL_DATA_ADJUSTMENTS || {});
-                        if (result && result.redDays && result.redDays.length > 0 && !result.isSimulated && result.hasAnyAttendance) {
+                        if (result && result.redDays && result.redDays.length > 0 && !result.isSimulated) {
                             days = result.redDays;
                         }
                     }
