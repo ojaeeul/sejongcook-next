@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const puppeteer = require('puppeteer');
 
 (async () => {
@@ -29,6 +30,7 @@ const puppeteer = require('puppeteer');
     
     // Evaluate DOM elements across different states/tabs
     const results = await page.evaluate(async () => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const getTabResults = () => {
         const tbody = document.getElementById('tuitionListBody');
         const rows = tbody ? tbody.querySelectorAll('tr') : [];

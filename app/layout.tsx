@@ -98,7 +98,6 @@ import { getSettings } from "@/lib/settings";
 
 import { AuthProvider } from "@/context/AuthContext";
 
-import InstallPWA from "@/components/InstallPWA";
 
 export default async function RootLayout({
   children,
