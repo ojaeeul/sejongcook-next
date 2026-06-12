@@ -2652,6 +2652,10 @@
                                 ? window.global_makeup_cutoffs[safeCourseKey]
                                 : (isDualCourse ? 16.0 : 8.0);
                                 
+                            let maxP = (window.global_attendance_cutoffs && window.global_attendance_cutoffs[safeCourseKey] !== undefined)
+                                ? window.global_attendance_cutoffs[safeCourseKey]
+                                : (isDualCourse ? 16.0 : 8.0);
+
                             if (idx === 0 && displayVal >= maxJ && (displayVal % maxJ) === 0) {
                                 const multiple = Math.round(displayVal / maxJ);
                                 if (multiple > 1) {
@@ -2659,6 +2663,8 @@
                                 } else {
                                     td.textContent = formattedVal;
                                 }
+                            } else if (idx === 1 && displayVal >= maxP) {
+                                td.innerHTML = `<span style="background: #16a34a; color: white; padding: 2px 6px; border-radius: 10px; font-weight: bold; display: inline-block; line-height: 1;">${formattedVal}</span>`;
                             } else {
                                 td.textContent = formattedVal;
                             }
