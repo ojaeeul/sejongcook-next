@@ -16,11 +16,18 @@ window.sejongCycleRules = {
 
 window.loadCycleSettings = async function() {
     try {
-        const res = await fetch('/api/sejong/settings');
+        const res = await fetch(`/api/sejong/settings?t=${Date.now()}`);
         if (res.ok) {
-            const data = await res.json();
+            const dataArr = await res.json();
+            const data = Array.isArray(dataArr) && dataArr.length > 0 ? dataArr[0] : (dataArr.key === "settings" ? dataArr.value : dataArr);
             if (data && data.cycleRules) {
                 window.sejongCycleRules = data.cycleRules;
+            }
+            if (data && data.makeupCutoffs) {
+                window.global_makeup_cutoffs = data.makeupCutoffs;
+            }
+            if (data && data.attendanceCutoffs) {
+                window.global_attendance_cutoffs = data.attendanceCutoffs;
             }
         }
     } catch(e) {
@@ -122,9 +129,16 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
     
     const getCycle = (val) => {
         let vRaw = Math.round(val * 10);
-        let cycleLimit = window.getCourseCycleLength(courseFilter || String(member.course));
-        let firstLimit = cycleLimit * 10;
-        let step = (cycleLimit - 1) * 10;
+        
+        let safeCourseKey = (courseFilter || String(member.course) || '').replace(/\s/g, '');
+        let isDual = safeCourseKey.includes('제과제빵');
+        
+        let limit = (window.global_makeup_cutoffs && window.global_makeup_cutoffs[safeCourseKey] !== undefined)
+            ? window.global_makeup_cutoffs[safeCourseKey]
+            : (isDual ? 16.0 : 8.0);
+            
+        let firstLimit = (limit + 1) * 10;
+        let step = limit * 10;
         if (step <= 0) step = 10; // safety fallback
         
         if (vRaw < firstLimit) return 0;
