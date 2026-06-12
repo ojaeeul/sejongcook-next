@@ -353,7 +353,7 @@
 
         async function loadSettings() {
             try {
-                const res = await fetch("/api/sejong/settings");
+                const res = await fetch(`/api/sejong/settings?t=${Date.now()}`);
                 const data = await res.json();
                 
                 let settings = Array.isArray(data) && data.length > 0 ? data[0] : (data.key === "settings" ? data.value : data);
@@ -515,7 +515,7 @@
 
         async function saveSettings() {
             try {
-                const res = await fetch("/api/sejong/settings");
+                const res = await fetch(`/api/sejong/settings?t=${Date.now()}`);
                 const data = await res.json();
                 
                 let settingsArr = Array.isArray(data) && data.length > 0 ? data : [data.key === "settings" ? data.value : data];

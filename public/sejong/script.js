@@ -16,7 +16,7 @@ window.global_attendance_cutoffs = {};
 // 백엔드에서 설정값을 불러와 전역 옵션을 갱신하고 데이타리스트 재생성
 async function loadGlobalCourseTimeSettings() {
     try {
-        const res = await fetch("/api/sejong/settings");
+        const res = await fetch(`/api/sejong/settings?t=${Date.now()}`);
         const data = await res.json();
         let settings = Array.isArray(data) && data.length > 0 ? data[0] : (data.key === "settings" ? data.value : data);
         if (settings) {
