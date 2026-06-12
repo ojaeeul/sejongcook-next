@@ -230,7 +230,7 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
 
     const currentMC = monthsToCalc[monthsToCalc.length - 1];
     let redBoxDates = new Set();
-    
+    let pureRedBoxDates = new Set();
     let runningTotal = currentMC ? currentMC.carryFromPrev : 0;
     let currentCycleForMonth = currentMC ? getCycle(currentMC.carryFromPrev) : 0;
     if (isNaN(currentCycleForMonth)) currentCycleForMonth = 0;
@@ -271,6 +271,7 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
 
                 if (shouldShowRedBox) {
                     redBoxDates.add(l.date);
+                    pureRedBoxDates.add(l.date);
                 }
 
                 if (adjustment && adjustment.forceRedBoxDates && adjustment.forceRedBoxDates.includes(l.date)) {
@@ -344,9 +345,11 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
     }
 
     const actualRedDays = Array.from(redBoxDates).map(d => parseInt(d.split('-')[2], 10));
+    const pureRedDaysList = Array.from(pureRedBoxDates).map(d => parseInt(d.split('-')[2], 10));
     
     return {
         redDays: actualRedDays,
+        pureRedDays: pureRedDaysList,
         hasAnyAttendance: hasAnyAttendance,
         isSimulated: isSimulated,
         allMilestones: allMilestones,
