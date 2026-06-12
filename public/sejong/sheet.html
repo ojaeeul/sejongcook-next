@@ -1046,7 +1046,6 @@
                         <h1 id="pageTitle" style="margin:0;">월간 출석부</h1>
                         <span id="currentHeadcount" style="font-size: 1rem; font-weight: 700; color: #475569; display: flex; align-items: center; margin-top: 2px;"></span>
                     </div>
-                    <div id="monthlyRedBoxPanel" style="display: flex; align-items: center;"></div>
                 </div>
             </header>
 
@@ -2739,8 +2738,7 @@
                     hcSpan2.innerHTML = `(총 ${uniqueHeadcount}명) <span style="margin-left: 15px; color: #dc2626; font-weight: 900; background: #fee2e2; padding: 4px 12px; border-radius: 20px; border: 2px solid #ef4444; font-size: 0.95rem; display: inline-flex; align-items: center; box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2);"><span class="material-icons" style="font-size: 1.1rem; margin-right: 4px;">event_available</span> 결재일 건수: ${redBoxOccurrences}건</span>`;
                 }
 
-                // [신규] 상단 수강생결재일(1~12월) 뱃지 렌더링
-                renderMonthlyRedBoxPanel(filteredRows, currentYear);
+                // 상단 수강생결재일(1~12월) 뱃지 렌더링 삭제 (원장님 요청: 당월 수기 출석 결재일 건수만 표시)
 
                 // [삭제] 위에서 루프 돌기전에 한 번에 저장함.
             } catch (e) {
@@ -2749,56 +2747,6 @@
             }
         }
 
-        function renderMonthlyRedBoxPanel(filteredRows, targetYear) {
-            const monthCounts = {1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 11:0, 12:0};
-            
-            filteredRows.forEach(r => {
-                const m = r.member;
-                if (!m) return;
-                const cName = r.courseName || '';
-                
-                for (let month = 1; month <= 12; month++) {
-                    let days = null;
-                    if (typeof window.calculateRedBoxesForMonth === 'function') {
-                        const result = window.calculateRedBoxesForMonth(m, targetYear, month, window.attendanceData || [], cName, window.GLOBAL_DATA_ADJUSTMENTS || {});
-                        if (result && result.redDays && result.redDays.length > 0 && !result.isSimulated && result.hasAnyAttendance) {
-                            days = result.redDays;
-                        }
-                    }
-                    
-                    if (days && (Array.isArray(days) ? days.length > 0 : days > 0)) {
-                        monthCounts[month] += (Array.isArray(days) ? days.length : 1);
-                    }
-                }
-            });
-
-            const panel = document.getElementById('monthlyRedBoxPanel');
-            if (!panel) return;
-
-            let badgesHtml = `
-                <div style="display:flex; gap:6px; flex-wrap:wrap; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:6px 14px; align-items:center;">
-                    <span style="font-size:0.75rem; font-weight:700; color:#64748b; white-space:nowrap; margin-right:8px;">
-                        <span class="material-icons" style="font-size:0.9rem; vertical-align:middle; margin-right:2px;">calendar_month</span>
-                        수강생결재일
-                    </span>
-            `;
-
-            for (let month = 1; month <= 12; month++) {
-                const count = monthCounts[month];
-                const displayCount = count > 0 ? `<span style="background:#2563eb; color:white; border-radius:12px; padding:2px 7px; font-size:0.7rem; font-weight:bold; margin-left:4px;">${count}</span>` : '';
-                const borderStyle = count > 0 ? 'border:1px solid #93c5fd; background:#eff6ff;' : 'border:1px solid #cbd5e1; background:#fff;';
-                const textStyle = count > 0 ? 'color:#1e3a8a;' : 'color:#475569;';
-                
-                badgesHtml += `
-                    <div style="display:flex; align-items:center; justify-content:center; width:65px; padding:3px 0; border-radius:20px; font-size:0.8rem; font-weight:700; margin-right:2px; ${borderStyle} ${textStyle} box-sizing:border-box;">
-                        <span>${month}월</span>
-                        ${displayCount}
-                    </div>
-                `;
-            }
-            badgesHtml += `</div>`;
-            panel.innerHTML = badgesHtml;
-        }
 
         async function toggleHoliday(dateStr) {
             const isHoliday = !!holidaysData.find(h => h.date === dateStr);
