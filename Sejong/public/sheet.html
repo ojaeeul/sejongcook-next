@@ -3278,7 +3278,11 @@
             if (!container) return;
             container.innerHTML = '';
 
-            const courses = Object.keys(timetableData);
+            const courseSet = new Set(Object.keys(timetableData));
+            if (window.global_course_options && Array.isArray(window.global_course_options)) {
+                window.global_course_options.forEach(c => courseSet.add(c));
+            }
+            const courses = Array.from(courseSet);
             const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
 
             courses.forEach(course => {
