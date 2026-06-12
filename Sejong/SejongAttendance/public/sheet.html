@@ -1682,13 +1682,9 @@
 
             const getCycle = (val) => {
                 let vRaw = Math.round(val * 10);
-                let safeCourseKey = (rowCourseNameScope || '').replace(/\s/g, '');
-                let limit = (window.global_makeup_cutoffs && window.global_makeup_cutoffs[safeCourseKey] !== undefined)
-                    ? window.global_makeup_cutoffs[safeCourseKey]
-                    : (isDualBakery ? 16.0 : 8.0);
-                
-                let triggerRaw = Math.round((limit + 1.0) * 10);
-                let limitRaw = Math.round(limit * 10);
+                let limits = window.getCourseLimits(rowCourseNameScope);
+                let triggerRaw = Math.round(limits.trigger * 10);
+                let limitRaw = Math.round(limits.limit * 10);
 
                 if (vRaw < triggerRaw) return 0;
                 return Math.floor((vRaw - triggerRaw) / limitRaw) + 1;
@@ -2343,13 +2339,9 @@
                             // [수정] 월 시작 시점의 Net 주기를 먼저 계산하여 문턱값(threshold)을 정확히 판정
                             const getCycle = (val) => {
                                 let vRaw = Math.round(val * 10);
-                                let safeCourseKey = (rowCourseNameScope || '').replace(/\s/g, '');
-                                let limit = (window.global_makeup_cutoffs && window.global_makeup_cutoffs[safeCourseKey] !== undefined)
-                                    ? window.global_makeup_cutoffs[safeCourseKey]
-                                    : (isDualCourse ? 16.0 : 8.0);
-                                
-                                let triggerRaw = Math.round((limit + 1.0) * 10);
-                                let limitRaw = Math.round(limit * 10);
+                                let limits = window.getCourseLimits(rowCourseNameScope);
+                                let triggerRaw = Math.round(limits.trigger * 10);
+                                let limitRaw = Math.round(limits.limit * 10);
 
                                 if (vRaw < triggerRaw) return 0;
                                 return Math.floor((vRaw - triggerRaw) / limitRaw) + 1;
@@ -2428,13 +2420,9 @@
                             // 2. 재고출석 (진행률) 계산 (수강생 규칙 적용)
                             let vRaw = Math.round(runningTotal * 10);
                             
-                            let safeCourseKey = rowCourseNameScope ? rowCourseNameScope.replace(/\s/g, '') : '';
-                            let baseLimit = (window.global_makeup_cutoffs && window.global_makeup_cutoffs[safeCourseKey] !== undefined)
-                                ? window.global_makeup_cutoffs[safeCourseKey]
-                                : (isDualCourse ? 16.0 : 8.0);
-                                
-                            let limit = baseLimit;
-                            let trigger = baseLimit + 1.0;
+                            let limits = window.getCourseLimits(rowCourseNameScope);
+                            let limit = limits.limit;
+                            let trigger = limits.trigger;
                             let limitRaw = Math.round(limit * 10);
                             let triggerRaw = Math.round(trigger * 10);
                             

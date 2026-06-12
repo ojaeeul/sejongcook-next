@@ -36,16 +36,40 @@ window.loadCycleSettings = async function() {
 };
 
 window.getCourseCycleLength = function(courseNameScope) {
-    if (!courseNameScope) return window.sejongCycleRules.default;
+    let limits = window.getCourseLimits(courseNameScope);
+    return limits.trigger; // Backward compatibility
+};
+
+window.getCourseLimits = function(courseNameScope) {
+    let safeCourseKey = (courseNameScope || '').replace(/\s/g, '');
+    
+    // 1. 재고출석 커트라인 관리 (Limit 직접 설정, 우선순위 1)
+    if (window.global_makeup_cutoffs && window.global_makeup_cutoffs[safeCourseKey] !== undefined) {
+        let limit = parseFloat(window.global_makeup_cutoffs[safeCourseKey]);
+        return { limit: limit, trigger: limit + 1.0 };
+    }
+    
+    // 2. 과정별 결재 주기 설정 (Trigger 직접 설정, 우선순위 2)
+    let trigger = window.sejongCycleRules ? window.sejongCycleRules.default : 9;
     
     if (window.sejongCycleRules && window.sejongCycleRules.custom) {
+        let matched = false;
         for (const rule of window.sejongCycleRules.custom) {
-            if (courseNameScope.includes(rule.keyword)) {
-                return rule.cycle;
+            if (courseNameScope && courseNameScope.includes(rule.keyword)) {
+                trigger = rule.cycle;
+                matched = true;
+                break;
             }
         }
+        
+        // 제과제빵 키워드 폴백
+        if (!matched && (safeCourseKey.includes('제과') || safeCourseKey.includes('제빵'))) {
+            let bakingRule = window.sejongCycleRules.custom.find(r => r.keyword === "제과제빵");
+            if (bakingRule) trigger = bakingRule.cycle;
+        }
     }
-    return window.sejongCycleRules ? window.sejongCycleRules.default : 9;
+    
+    return { limit: trigger - 1.0, trigger: trigger };
 };
 
 window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, allAttendanceLogs, courseFilter, GLOBAL_DATA_ADJUSTMENTS) {
@@ -129,16 +153,10 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
     
     const getCycle = (val) => {
         let vRaw = Math.round(val * 10);
+        let limits = window.getCourseLimits(courseFilter || String(member.course));
         
-        let safeCourseKey = (courseFilter || String(member.course) || '').replace(/\s/g, '');
-        let isDual = safeCourseKey.includes('제과제빵');
-        
-        let limit = (window.global_makeup_cutoffs && window.global_makeup_cutoffs[safeCourseKey] !== undefined)
-            ? window.global_makeup_cutoffs[safeCourseKey]
-            : (isDual ? 16.0 : 8.0);
-            
-        let firstLimit = (limit + 1) * 10;
-        let step = limit * 10;
+        let firstLimit = Math.round(limits.trigger * 10);
+        let step = Math.round(limits.limit * 10);
         if (step <= 0) step = 10; // safety fallback
         
         if (vRaw < firstLimit) return 0;
