@@ -1667,7 +1667,7 @@
 
             const getCycle = (val) => {
                 let vRaw = Math.round(val * 10);
-                let limits = window.getCourseLimits(rowCourseNameScope);
+                let limits = window.getCourseLimits(courseFilter || "");
                 let triggerRaw = Math.round(limits.trigger * 10);
                 let limitRaw = Math.round(limits.limit * 10);
 
@@ -2362,7 +2362,7 @@
                             // [수정] 월 시작 시점의 Net 주기를 먼저 계산하여 문턱값(threshold)을 정확히 판정
                             const getCycle = (val) => {
                                 let vRaw = Math.round(val * 10);
-                                let limits = window.getCourseLimits(rowCourseNameScope);
+                                let limits = window.getCourseLimits(effectiveCourseName);
                                 let triggerRaw = Math.round(limits.trigger * 10);
                                 let limitRaw = Math.round(limits.limit * 10);
 
@@ -2443,7 +2443,7 @@
                             // 2. 재고출석 (진행률) 계산 (수강생 규칙 적용)
                             let vRaw = Math.round(runningTotal * 10);
                             
-                            let limits = window.getCourseLimits(rowCourseNameScope);
+                            let limits = window.getCourseLimits(effectiveCourseName);
                             let limit = limits.limit;
                             let trigger = limits.trigger;
                             let limitRaw = Math.round(limit * 10);
