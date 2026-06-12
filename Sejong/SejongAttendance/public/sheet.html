@@ -1220,19 +1220,8 @@
                         </div>
 
                         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
-                            <div class="course-tabs mb-0" style="margin-bottom: 0;">
+                            <div class="course-tabs mb-0" id="sheetCourseTabs" style="margin-bottom: 0;">
                                 <button class="tab-btn active" onclick="filterCourse('all')">전체</button>
-                                <button class="tab-btn" onclick="filterCourse('한식기능사')">한식기능사</button>
-                                <button class="tab-btn" onclick="filterCourse('양식기능사')">양식기능사</button>
-                                <button class="tab-btn" onclick="filterCourse('일식기능사')">일식기능사</button>
-                                <button class="tab-btn" onclick="filterCourse('중식기능사')">중식기능사</button>
-                                <button class="tab-btn" onclick="filterCourse('제과기능사')">제과기능사</button>
-                                <button class="tab-btn" onclick="filterCourse('제빵기능사')">제빵기능사</button>
-                                <button class="tab-btn" onclick="filterCourse('제과제빵기능사')">제과제빵기능사</button>
-                                <button class="tab-btn" onclick="filterCourse('복어기능사')">복어기능사</button>
-                                <button class="tab-btn" onclick="filterCourse('산업기사')">산업기사</button>
-                                <button class="tab-btn" onclick="filterCourse('가정요리')">가정요리</button>
-                                <button class="tab-btn" onclick="filterCourse('브런치')">브런치</button>
                             </div>
                             
                             <label style="display:flex; align-items:center; gap:5px; font-weight:bold; color:#ef4444; cursor:pointer; background: #fee2e2; padding: 6px 12px; border-radius: 6px; border: 1px solid #fca5a5;">
@@ -1242,13 +1231,9 @@
                         </div>
 
                         <!-- Time Tabs -->
-                        <div class="course-tabs time-tabs mb-15">
+                        <div class="course-tabs time-tabs mb-15" id="sheetTimeTabs">
                             <span class="bold mr-10">시간:</span>
                             <button class="tab-btn active" onclick="filterTime('all')" data-time="all">전체</button>
-                            <button class="tab-btn" onclick="filterTime('10:00')" data-time="10:00">오전 10:00</button>
-                            <button class="tab-btn" onclick="filterTime('12:00')" data-time="12:00">오전 12:00</button>
-                            <button class="tab-btn" onclick="filterTime('17:00')" data-time="17:00">오후 05:00</button>
-                            <button class="tab-btn" onclick="filterTime('19:00')" data-time="19:00">오후 07:00</button>
                         </div>
 
                         <div class="table-responsive" style="width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch;">
@@ -1769,10 +1754,48 @@
             return { scheduledDays: scheduledDays, isSimulated: isSimulated, hasAnyAttendance: hasAnyAttendance, foundSimulatedDay: foundSimulatedDay };
         }
 
+        function renderDynamicTabs() {
+            const courseTabsContainer = document.getElementById('sheetCourseTabs');
+            if (courseTabsContainer && window.global_course_options && window.global_course_options.length > 0) {
+                let html = `<button class="tab-btn active" onclick="filterCourse('all')">전체</button>`;
+                window.global_course_options.forEach(course => {
+                    html += `<button class="tab-btn" onclick="filterCourse('${course}')">${course}</button>`;
+                });
+                courseTabsContainer.innerHTML = html;
+            }
+
+            const timeTabsContainer = document.getElementById('sheetTimeTabs');
+            if (timeTabsContainer && window.global_time_options && window.global_time_options.length > 0) {
+                let html = `<span class="bold mr-10">시간:</span><button class="tab-btn active" onclick="filterTime('all')" data-time="all">전체</button>`;
+                window.global_time_options.forEach(time => {
+                    let label = time;
+                    if (time === '10:00') label = '오전 10:00';
+                    else if (time === '12:00') label = '오전 12:00';
+                    else if (time === '17:00') label = '오후 05:00';
+                    else if (time === '19:00') label = '오후 07:00';
+                    else {
+                        const parts = time.split(':');
+                        if (parts.length === 2) {
+                            let h = parseInt(parts[0], 10);
+                            let ampm = h < 12 ? '오전' : '오후';
+                            if (h > 12) h -= 12;
+                            label = `${ampm} ${String(h).padStart(2, '0')}:${parts[1]}`;
+                        }
+                    }
+                    html += `<button class="tab-btn" onclick="filterTime('${time}')" data-time="${time}">${label}</button>`;
+                });
+                timeTabsContainer.innerHTML = html;
+            }
+        }
+
         async function initSheet() {
             try {
                 // Fetch all independently to reduce loading time
                 if(typeof window.loadCycleSettings === 'function') await window.loadCycleSettings();
+                if(typeof window.loadGlobalCourseTimeSettings === 'function') await window.loadGlobalCourseTimeSettings();
+                
+                renderDynamicTabs();
+
                 await Promise.all([
                     fetchMembers().catch(e => console.error("Members error:", e)),
                     fetchAttendance().catch(e => console.error(e)),
@@ -2690,6 +2713,15 @@
                         else if (cTime === '12:00') cTimeDisplay = '오전 12:00';
                         else if (cTime === '17:00') cTimeDisplay = '오후 05:00';
                         else if (cTime === '19:00') cTimeDisplay = '오후 07:00';
+                        else if (cTime) {
+                            const parts = cTime.split(':');
+                            if (parts.length === 2) {
+                                let h = parseInt(parts[0], 10);
+                                let ampm = h < 12 ? '오전' : '오후';
+                                if (h > 12) h -= 12;
+                                cTimeDisplay = `${ampm} ${String(h).padStart(2, '0')}:${parts[1]}`;
+                            }
+                        }
 
                         // Formatting
                         let finalHtml = `<div>${cName}<br><span class="primary-hover-bold">${cTimeDisplay}</span></div>`;
