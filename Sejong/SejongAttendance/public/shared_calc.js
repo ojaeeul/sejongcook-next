@@ -110,10 +110,11 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
     let earliestYear = Number(targetYear);
     let earliestMonth = Number(targetMonth);
 
-    // [중요 수정] 출석 로그의 첫 날짜뿐만 아니라 학생의 '등록일'도 확인하여 가장 이른 시점을 시작점으로 잡아야 합니다.
+    // [중요 수정] 출석 로그의 첫 날짜뿐만 아니라 학생의 '등록일/시작일'도 확인하여 가장 이른 시점을 시작점으로 잡아야 합니다.
     // 그래야 등록월에 걸려 있는 '이월 조정(carryOverride)' 값을 놓치지 않고 적용할 수 있습니다.
-    if (member && member.registrationDate) {
-        const p = member.registrationDate.split('-');
+    const displayStartDate = member ? (member.start_date || member.registeredDate) : null;
+    if (displayStartDate) {
+        const p = displayStartDate.split('-');
         if (p.length >= 2) {
             const regYear = parseInt(p[0], 10);
             const regMonth = parseInt(p[1], 10);
