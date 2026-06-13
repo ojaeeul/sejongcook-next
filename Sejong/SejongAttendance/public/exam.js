@@ -128,13 +128,26 @@ function updateExam(index, field, value) {
     
     exams[index][field] = value;
     
-    // Auto-generate ID and PW if name is entered
+    // Auto-generate ID, PW, and Subject if name is entered
     if (field === 'name') {
         const member = examMembers.find(m => m.name === value);
         if (member) {
             const genId = generateId(member.name, member.resident_num);
             exams[index].genId = genId;
             exams[index].genPw = genId ? genId + '@' : '';
+            
+            // Auto-fill subject if it's currently empty or name changed
+            if (member.course) {
+                const courses = member.course.split(',').map(c => c.trim()).filter(c => c);
+                if (courses.length === 1) {
+                    exams[index].subject = courses[0].split('(')[0].trim();
+                    saveExams();
+                    renderExamTable();
+                } else if (courses.length > 1) {
+                    // Open course selection modal
+                    openCourseSelectModal(index, courses);
+                }
+            }
         } else {
             // Generate basic ID if member not found
             const genId = generateId(value, '');
@@ -270,4 +283,35 @@ function addExamForStudent(member, selectedCourse) {
     saveExams();
     renderExamTable();
     closeStudentModal();
+}
+
+// Course selection for manual name entry
+function openCourseSelectModal(index, courses) {
+    document.getElementById('courseSelectModal').classList.add('active');
+    const list = document.getElementById('courseSelectList');
+    list.innerHTML = '';
+    
+    courses.forEach(course => {
+        const div = document.createElement('div');
+        div.className = 'student-item';
+        div.innerHTML = `
+            <div>
+                <div class="student-course" style="font-size: 1rem; color: #1e293b;">${course}</div>
+            </div>
+            <span class="material-icons" style="color: #cbd5e1;">check_circle</span>
+        `;
+        div.onclick = () => selectCourseForExam(index, course);
+        list.appendChild(div);
+    });
+}
+
+function closeCourseSelectModal() {
+    document.getElementById('courseSelectModal').classList.remove('active');
+}
+
+function selectCourseForExam(index, course) {
+    exams[index].subject = course.split('(')[0].trim();
+    saveExams();
+    renderExamTable();
+    closeCourseSelectModal();
 }

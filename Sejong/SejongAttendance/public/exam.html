@@ -505,8 +505,22 @@
         </div>
     </div>
 
+    <!-- Course Selection Modal (for manual name entry) -->
+    <div class="modal-overlay" id="courseSelectModal">
+        <div class="modal-content" style="max-width: 300px;">
+            <div class="modal-header">
+                <h3>과정 선택</h3>
+                <button class="close-btn" onclick="closeCourseSelectModal()">&times;</button>
+            </div>
+            <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 10px;">이 수강생은 여러 과정을 수강 중입니다. 추가할 과정을 선택해 주세요.</p>
+            <div class="student-list" id="courseSelectList">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+    </div>
+
     <script src="script.js"></script>
-    <script src="exam.js?v=20260613-27" defer></script>
+    <script src="exam.js?v=20260613-28" defer></script>
 </body>
 
 </html>
