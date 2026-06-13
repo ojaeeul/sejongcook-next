@@ -190,14 +190,14 @@ function animatePageTurn(dir) {
     const container = document.getElementById('notebookContainer');
     if (!container) return renderExamTable();
     
-    // Create 3D flip effect
-    container.style.transition = 'transform 0.4s ease-in, opacity 0.4s ease-in';
-    container.style.transformOrigin = 'left center'; // Book spine on left
+    // Create 3D center fold effect
+    container.style.transition = 'transform 0.3s ease-in, opacity 0.3s ease-in';
+    container.style.transformOrigin = 'center center'; // Spin from center to simulate half fold
     
     if (dir === 'next') {
-        container.style.transform = 'perspective(1500px) rotateY(-90deg)';
+        container.style.transform = 'perspective(1500px) scale(0.95) rotateY(-90deg)';
     } else {
-        container.style.transform = 'perspective(1500px) rotateY(90deg)';
+        container.style.transform = 'perspective(1500px) scale(0.95) rotateY(90deg)';
     }
     container.style.opacity = '0';
     
@@ -206,18 +206,18 @@ function animatePageTurn(dir) {
         
         container.style.transition = 'none';
         if (dir === 'next') {
-            container.style.transform = 'perspective(1500px) rotateY(90deg)';
+            container.style.transform = 'perspective(1500px) scale(0.95) rotateY(90deg)';
         } else {
-            container.style.transform = 'perspective(1500px) rotateY(-90deg)';
+            container.style.transform = 'perspective(1500px) scale(0.95) rotateY(-90deg)';
         }
         
         // Force reflow
         void container.offsetWidth;
         
         container.style.transition = 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease-out';
-        container.style.transform = 'perspective(1500px) rotateY(0deg)';
+        container.style.transform = 'perspective(1500px) scale(1) rotateY(0deg)';
         container.style.opacity = '1';
-    }, 400);
+    }, 300);
 }
 
 function getScoreClass(score) {
