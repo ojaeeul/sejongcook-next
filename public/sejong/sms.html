@@ -1053,11 +1053,39 @@
                         const cName = r.courseName || '';
                         
                         for (let month = 1; month <= 12; month++) {
+                            let days = [];
+                            let hasAtt = false;
+                            let isSim = false;
+
                             const syncKey = `${m.id}_${cy}_${month}_${cName}`;
-                            let days = syncData[syncKey];
-                            
-                            if (days && (Array.isArray(days) ? days.length > 0 : days > 0)) {
-                                monthCounts[month] += (Array.isArray(days) ? days.length : 1);
+                            if (syncData && syncData[syncKey]) {
+                                const rawSync = syncData[syncKey];
+                                days = Array.isArray(rawSync) ? rawSync : (typeof rawSync === 'number' ? [rawSync] : []);
+                                if (days.length > 0) hasAtt = true;
+                            } else if (typeof window.calculateRedBoxesForMonth === 'function') {
+                                const result = window.calculateRedBoxesForMonth(m, cy, month, typeof attendanceData !== 'undefined' ? attendanceData : [], cName, typeof window.GLOBAL_DATA_ADJUSTMENTS !== 'undefined' ? window.GLOBAL_DATA_ADJUSTMENTS : {});
+                                if (result && result.redDays && result.redDays.length > 0) {
+                                    days = result.redDays;
+                                    isSim = result.isSimulated;
+                                    hasAtt = result.hasAnyAttendance;
+                                }
+                            }
+
+                            if (days.length > 0 && hasAtt && !isSim) {
+                                days.forEach(d => {
+                                    if (!isNaN(parseInt(d)) && Number(d) > 0) {
+                                        const isPaid = (typeof paymentsData !== 'undefined' ? paymentsData : []).some(p =>
+                                            String(p.memberId) === String(m.id) &&
+                                            String(p.year) === String(cy) &&
+                                            String(p.month) === String(month) &&
+                                            p.status === 'paid' &&
+                                            (p.course && cName && (p.course.includes(cName) || cName.includes(p.course)))
+                                        );
+                                        if (!isPaid) {
+                                            monthCounts[month]++;
+                                        }
+                                    }
+                                });
                             }
                         }
                     });
