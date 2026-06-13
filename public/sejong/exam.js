@@ -126,8 +126,8 @@ function renderExamTable() {
     for (let i = currentRows; i < minRows; i++) {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td></td><td></td><td></td><td></td><td></td>
-            <td></td><td></td><td></td><td></td><td></td>
+            <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
+            <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
         `;
         tbody.appendChild(tr);
     }
