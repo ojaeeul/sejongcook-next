@@ -143,12 +143,13 @@ function renderExamTable() {
         
         // Update table header years
         const thExamYear = document.getElementById('tableHeaderExamYear');
+        const defaultYear = new Date().getFullYear() + '년';
         if (thExamYear) {
-            thExamYear.textContent = examYearStr ? examYearStr + '년' : '';
+            thExamYear.textContent = examYearStr ? examYearStr + '년' : defaultYear;
         }
         const thResultYear = document.getElementById('tableHeaderResultYear');
         if (thResultYear) {
-            thResultYear.textContent = resultYearStr ? resultYearStr + '년' : '';
+            thResultYear.textContent = resultYearStr ? resultYearStr + '년' : defaultYear;
         }
         
         const startIdx = (currentPage - 1) * rowsPerPage;
