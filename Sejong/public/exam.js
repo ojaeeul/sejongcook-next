@@ -110,16 +110,16 @@ function renderExamTable() {
         for (let i = currentRows; i < minRows; i++) {
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td class="col-date" style="border: 1px solid #000;">&nbsp;</td>
-                <td class="col-res-date" style="border: 1px solid #000;">&nbsp;</td>
-                <td class="col-subject" style="border: 1px solid #000;">&nbsp;</td>
-                <td class="col-name" style="border: 1px solid #000;">&nbsp;</td>
-                <td class="col-time" style="border: 1px solid #000;">&nbsp;</td>
-                <td class="col-exam-num" style="border: 1px solid #000;">&nbsp;</td>
-                <td class="col-id-pass" style="border: 1px solid #000;">&nbsp;</td>
-                <td class="col-score" style="border: 1px solid #000;">&nbsp;</td>
-                <td class="col-note" style="border: 1px solid #000;">&nbsp;</td>
-                <td class="col-action" style="border: 1px solid #000;">&nbsp;</td>
+                <td class="col-date"><input type="text" disabled style="background: transparent; border: none;"></td>
+                <td class="col-res-date"><input type="text" disabled style="background: transparent; border: none;"></td>
+                <td class="col-subject"><input type="text" disabled style="background: transparent; border: none;"></td>
+                <td class="col-name"><input type="text" disabled style="background: transparent; border: none;"></td>
+                <td class="col-time"><input type="time" disabled style="background: transparent; border: none;"></td>
+                <td class="col-exam-num"><input type="text" disabled style="background: transparent; border: none;"></td>
+                <td class="col-id-pass"></td>
+                <td class="col-score"><input type="text" disabled style="background: transparent; border: none;"></td>
+                <td class="col-note"><input type="text" disabled style="background: transparent; border: none;"></td>
+                <td class="col-action"></td>
             `;
             tbody.appendChild(tr);
         }
