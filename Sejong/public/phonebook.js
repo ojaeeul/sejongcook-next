@@ -254,7 +254,7 @@ function renderPage() {
                 <!-- Left Column: Name & Reg Date -->
                 <div style="width: 140px; display: flex; flex-direction: column; justify-content: center; border-right: 1px solid #e2e8f0; padding: 0 15px; flex-shrink: 0;">
                     <span class="member-name" style="font-weight: 600; font-size: 1.1rem;">${m.name}</span>
-                    <span class="member-reg-date" style="font-size: 0.65rem; color: #94a3b8; margin-top: 4px;">${regDateText}</span>
+                    <span class="member-reg-date" style="font-size: 0.55rem; color: #94a3b8; margin-top: 4px;">${regDateText}</span>
                 </div>
                 
                 <!-- Middle Column: Contact Info -->
