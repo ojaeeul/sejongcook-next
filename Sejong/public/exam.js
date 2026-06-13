@@ -141,6 +141,16 @@ function renderExamTable() {
         const oldIndicator = document.getElementById('pageIndicator');
         if (oldIndicator) oldIndicator.textContent = `${currentPage} / ${totalPages} 페이지`;
         
+        // Update table header years
+        const thExamYear = document.getElementById('tableHeaderExamYear');
+        if (thExamYear) {
+            thExamYear.textContent = examYearStr ? examYearStr + '년' : '';
+        }
+        const thResultYear = document.getElementById('tableHeaderResultYear');
+        if (thResultYear) {
+            thResultYear.textContent = resultYearStr ? resultYearStr + '년' : '';
+        }
+        
         const startIdx = (currentPage - 1) * rowsPerPage;
         const pageExams = realData.slice(startIdx, startIdx + rowsPerPage);
 
