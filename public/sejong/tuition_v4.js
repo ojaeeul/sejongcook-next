@@ -665,6 +665,30 @@ function renderTable() {
             const normalizeCourse = (c) => (!c || c === 'null') ? null : String(c).trim();
             const payment = paymentsData.find(p => p.memberId == m.id && p.year == window.currentState.year && p.month == window.currentState.month && normalizeCourse(p.course) === normalizeCourse(courseNameOnly) && p.status !== 'delete');
             const isPaidRecord = payment && payment.status === 'paid';
+
+            // [추가] "미납" 상태(isDueThisMonth)를 수강료 납부대장 뱃지 로직과 100% 동일하게 강제
+            const statsBadge = getLedgerMonthStatsForBadge(m.id, window.currentState.year, window.currentState.month, courseNameOnly);
+            const isPaidBadge = (typeof window.paymentsData !== 'undefined' ? window.paymentsData : []).some(p =>
+                String(p.memberId) === String(m.id) &&
+                String(p.year) === String(window.currentState.year) &&
+                String(p.month) === String(window.currentState.month) &&
+                p.status === 'paid' &&
+                (p.course && courseNameOnly && (p.course.includes(courseNameOnly) || courseNameOnly.includes(p.course)))
+            );
+            
+            let forcedUnpaidCount = 0;
+            if (statsBadge && statsBadge.eighthDays && statsBadge.eighthDays.length > 0 && statsBadge.hasAnyAttendance && !statsBadge.isSimulated && !isPaidBadge) {
+                statsBadge.eighthDays.forEach(d => {
+                    if (!isNaN(parseInt(d)) && Number(d) > 0) forcedUnpaidCount++;
+                });
+            }
+
+            if (forcedUnpaidCount > 0) {
+                isDueThisMonth = true;
+            } else {
+                isDueThisMonth = false;
+            }
+
             let rowStatus = 'enrolled';
             let hasOverdue = imminentCourses.some(c => c.isOverdue);
 
@@ -707,7 +731,7 @@ function renderTable() {
                 countEnrolled++; // 납부완료자도 '수강중' 탭에서 동시에 보이도록 포함
             } else if (rowStatus === 'unpaid') {
                 if (isDueThisMonth) {
-                    countUnpaid++;
+                    countUnpaid += forcedUnpaidCount; // 뱃지 건수와 완벽히 맞추기 위해 실제 미납 건수를 모두 더함
                 }
                 countEnrolled++; // 미납자도 '수강중' 탭에서 동시에 보이도록 포함
             } else {
