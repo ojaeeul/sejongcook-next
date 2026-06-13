@@ -209,16 +209,9 @@ let activeMethodCol = null;
 function handleClick(e) {
     const target = e.target;
     
-    // method-col (결제수단칸) 또는 amount-col (기존 호환성) 클릭 시 팝업창
-    if (target.classList.contains('method-col') || target.classList.contains('amount-col')) {
-        let methodCol = target.classList.contains('method-col') ? target : target.nextElementSibling;
-        
-        // amount-col을 눌렀는데 다음 요소가 method-col이 아닐 경우
-        if (!methodCol || !methodCol.classList.contains('method-col')) {
-            methodCol = target;
-        }
-        
-        showCardPopup(methodCol);
+    // method-col (결제수단칸) 클릭 시 팝업창
+    if (target.classList.contains('method-col')) {
+        showCardPopup(target);
     } else {
         hideCardPopup();
     }
