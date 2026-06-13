@@ -39,7 +39,7 @@ function generateId(name, resident_num) {
 document.addEventListener('DOMContentLoaded', async () => {
     // 1. Load members and exams data
     try {
-        const mRes = await fetch(typeof getFetchUrl === 'function' ? getFetchUrl('members') : 'test_members.json');
+        const mRes = await fetch('test_members.json');
         if (mRes.ok) {
             members = await mRes.json();
         }
@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     try {
-        const eRes = await fetch(typeof getFetchUrl === 'function' ? getFetchUrl('exams') : 'exam_data.json');
+        const eRes = await fetch('exam_data.json');
         if (eRes.ok) {
             exams = await eRes.json();
         }
@@ -75,9 +75,14 @@ function renderExamTable() {
         const monthStr = document.getElementById('examMonthFilter') ? document.getElementById('examMonthFilter').value : '';
 
         const validExams = Array.isArray(exams) ? exams : [];
-        const sortedExams = validExams; // Disable auto-sorting to perfectly match the physical notebook order
+        const displayExams = [...validExams];
+        
+        // Pad up to 25 rows to maintain the notebook look
+        while (displayExams.length < 25) {
+            displayExams.push({ examDate: '', resultDate: '', subject: '', name: '', time: '', examNum: '', genId: '', genPw: '', score: '', note: '' });
+        }
 
-        sortedExams.forEach((exam, index) => {
+        displayExams.forEach((exam, index) => {
             if (searchStr && (!exam.name || !exam.name.toLowerCase().includes(searchStr))) return;
             if (monthStr && (!exam.examDate || !exam.examDate.startsWith(monthStr))) return;
 
@@ -88,8 +93,8 @@ function renderExamTable() {
                 <td class="col-date"><input type="text" value="${exam.examDate || ''}" onchange="updateExam(${index}, 'examDate', this.value)" placeholder="MM/DD"></td>
                 <td class="col-res-date"><input type="text" value="${exam.resultDate || ''}" onchange="updateExam(${index}, 'resultDate', this.value)" placeholder="MM/DD"></td>
                 <td class="col-subject"><input type="text" value="${exam.subject || ''}" onchange="updateExam(${index}, 'subject', this.value)"></td>
-                <td class="col-name" style="font-weight: 500;">${exam.name || ''}</td>
-                <td class="col-time"><input type="time" value="${exam.time || ''}" onchange="updateExam(${index}, 'time', this.value)"></td>
+                <td class="col-name"><input type="text" value="${exam.name || ''}" onchange="updateExam(${index}, 'name', this.value)" style="font-weight: 500;"></td>
+                <td class="col-time"><input type="text" value="${exam.time || ''}" onchange="updateExam(${index}, 'time', this.value)"></td>
                 <td class="col-exam-num"><input type="text" value="${exam.examNum || ''}" onchange="updateExam(${index}, 'examNum', this.value)"></td>
                 <td class="col-id-pass">
                     <div class="id-pass-col">
@@ -104,25 +109,6 @@ function renderExamTable() {
         });
     } catch (e) {
         console.error("renderExamTable error:", e);
-    } finally {
-        // Add empty rows if too few, to maintain notebook look
-        const minRows = 25;
-        const currentRows = tbody.children.length;
-        for (let i = currentRows; i < minRows; i++) {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td class="col-date"><input type="text" disabled style="background: transparent; border: none;"></td>
-                <td class="col-res-date"><input type="text" disabled style="background: transparent; border: none;"></td>
-                <td class="col-subject"><input type="text" disabled style="background: transparent; border: none;"></td>
-                <td class="col-name"><input type="text" disabled style="background: transparent; border: none;"></td>
-                <td class="col-time"><input type="time" disabled style="background: transparent; border: none;"></td>
-                <td class="col-exam-num"><input type="text" disabled style="background: transparent; border: none;"></td>
-                <td class="col-id-pass"></td>
-                <td class="col-score"><input type="text" disabled style="background: transparent; border: none;"></td>
-                <td class="col-note"><input type="text" disabled style="background: transparent; border: none;"></td>
-            `;
-            tbody.appendChild(tr);
-        }
     }
 }
 
@@ -135,9 +121,30 @@ function getScoreClass(score) {
 }
 
 function updateExam(index, field, value) {
+    // Ensure array has enough elements if editing a padded row
+    while (exams.length <= index) {
+        exams.push({ examDate: '', resultDate: '', subject: '', name: '', time: '', examNum: '', genId: '', genPw: '', score: '', note: '' });
+    }
+    
     exams[index][field] = value;
+    
+    // Auto-generate ID and PW if name is entered
+    if (field === 'name') {
+        const member = members.find(m => m.name === value);
+        if (member) {
+            const genId = generateId(member.name, member.resident_num);
+            exams[index].genId = genId;
+            exams[index].genPw = genId ? genId + '@' : '';
+        } else {
+            // Generate basic ID if member not found
+            const genId = generateId(value, '');
+            exams[index].genId = genId;
+            exams[index].genPw = genId ? genId + '@' : '';
+        }
+    }
+    
     saveExams();
-    if (field === 'score') renderExamTable(); // Re-render for color change
+    if (field === 'score' || field === 'name') renderExamTable();
 }
 
 async function saveExams() {
