@@ -7,7 +7,7 @@
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>지출내역 및 날짜별 매출</title>
-    <link rel="stylesheet" href="style.css?v=20260613-67">
+    <link rel="stylesheet" href="style.css?v=20260613-68">
     <!-- 손글씨 느낌을 위한 폰트 -->
     <link href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&display=swap" rel="stylesheet">
     <style>
@@ -140,7 +140,7 @@
         /* 오른쪽 페이지 다단 레이아웃 */
         .right-page-columns {
             display: flex;
-            gap: 20px;
+            gap: 10px; /* 간격을 줄여 오른쪽 단을 검정 선에 더 붙임 */
             position: relative;
             z-index: 2;
         }
@@ -149,7 +149,7 @@
             flex: none;
         }
         .right-col-half:last-child {
-            width: 250px;
+            width: 260px; /* gap이 10px 줄어든 만큼 width를 늘려 오른쪽 끝선 유지 */
             flex: none;
         }
         /* Custom scrollbar for pages */
