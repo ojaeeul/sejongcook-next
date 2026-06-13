@@ -150,7 +150,12 @@ function renderExamTable() {
         }
         
         if (typeof currentPage === 'undefined') window.currentPage = 1;
-        if (currentPage > totalPages) currentPage = totalPages;
+        
+        // Ensure totalPages is at least currentPage so forced blank pages aren't destroyed
+        if (currentPage > totalPages) {
+            totalPages = currentPage;
+        }
+        
         if (currentPage < 1) currentPage = 1;
         
         // Update pagination indicator
@@ -225,21 +230,8 @@ function prevPage() {
 
 function nextPage() {
     if (typeof currentPage === 'undefined') window.currentPage = 1;
-    const rowsPerPage = 15;
-    let totalPages = Math.ceil(exams.length / rowsPerPage);
-    
-    if (currentPage < totalPages) {
-        currentPage++;
-        animatePageTurn('next');
-    } else {
-        // Force add a new blank page
-        for (let i = 0; i < rowsPerPage; i++) {
-            exams.push({ examDate: '', resultDate: '', subject: '', name: '', time: '', examNum: '', genId: '', genPw: '', score: '', note: '' });
-        }
-        currentPage++;
-        animatePageTurn('next');
-        if (typeof saveExams === 'function') saveExams();
-    }
+    currentPage++;
+    animatePageTurn('next');
 }
 
 function animatePageTurn(dir) {
