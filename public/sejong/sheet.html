@@ -2768,16 +2768,41 @@
                 const cName = r.courseName || '';
                 
                 for (let month = 1; month <= 12; month++) {
-                    let days = null;
+                    let days = [];
                     if (typeof window.calculateRedBoxesForMonth === 'function') {
                         const result = window.calculateRedBoxesForMonth(m, targetYear, month, window.attendanceData || [], cName, window.GLOBAL_DATA_ADJUSTMENTS || {});
                         if (result && result.redDays && result.redDays.length > 0 && !result.isSimulated) {
-                            days = result.redDays;
+                            days = [...result.redDays];
                         }
                     }
                     
-                    if (days && (Array.isArray(days) ? days.length > 0 : days > 0)) {
-                        monthCounts[month] += (Array.isArray(days) ? days.length : 1);
+                    // 동기화 데이터 (sejong_ledger_sync) 병합
+                    try {
+                        const syncData = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
+                        const cleanFilter = cName ? cName.replace(/\([^)]*\)/g, '').trim() : 'all';
+                        
+                        Object.keys(syncData).forEach(k => {
+                            const parts = k.split('_');
+                            if (parts.length >= 4 && parts[0] === String(m.id) && parseInt(parts[1]) === targetYear && parseInt(parts[2]) === month) {
+                                const courseFull = parts.slice(3).join('_');
+                                const cleanSyncCourse = courseFull === 'all' ? 'all' : courseFull.replace(/\([^)]*\)/g, '').trim();
+                                
+                                if (cleanFilter === 'all' || cleanFilter === '' || cleanSyncCourse === cleanFilter || (cleanFilter === '미지정' && courseFull === 'all')) {
+                                    const val = syncData[k];
+                                    const syncDays = Array.isArray(val) ? val : [val];
+                                    syncDays.forEach(dStr => {
+                                        const d = parseInt(dStr, 10);
+                                        if (!isNaN(d) && !days.includes(d)) {
+                                            days.push(d);
+                                        }
+                                    });
+                                }
+                            }
+                        });
+                    } catch(e) {}
+                    
+                    if (days && days.length > 0) {
+                        monthCounts[month] += days.length;
                     }
                 }
             });

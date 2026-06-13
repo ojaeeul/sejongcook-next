@@ -424,10 +424,7 @@ function getMemberEighthDayInMonth(memberId, year, month, courseFilter = null) {
         days = [...new Set(days)];
         let isArtificial1st = false;
         
-        if (days.length === 0 && result.hasAnyAttendance) {
-            days = [1];
-            isArtificial1st = true;
-        }
+        // Removed artificial 1st day injection to keep badges completely in sync with Monthly Attendance Book
 
         return { 
             eighthDays: days, 
