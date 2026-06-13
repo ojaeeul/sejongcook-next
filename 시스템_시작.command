@@ -148,8 +148,23 @@ open "http://localhost:3000"
 # ==============================================================================
 echo ""
 echo "[4/5] 전체 소스코드 변경사항을 깃허브(Git)에 자동 저장합니다..."
+TODAY=$(date '+%Y%m%d')
+VERSION_FILE="$BASE_DIR/.backup_version"
+VERSION_NUM=0
+
+if [ -f "$VERSION_FILE" ]; then
+    LAST_DATE=$(cut -d'-' -f1 "$VERSION_FILE")
+    LAST_NUM=$(cut -d'-' -f2 "$VERSION_FILE")
+    
+    if [ "$LAST_DATE" == "$TODAY" ]; then
+        VERSION_NUM=$((LAST_NUM + 1))
+    fi
+fi
+
+echo "${TODAY}-${VERSION_NUM}" > "$VERSION_FILE"
+
 git add .
-git commit -m "Auto backup: $(date '+%Y-%m-%d %H:%M:%S')"
+git commit -m "Auto backup: ${TODAY}-${VERSION_NUM}"
 git push
 echo "    ✅ Git 백업 완료"
 echo ""
