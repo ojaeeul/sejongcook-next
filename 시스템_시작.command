@@ -31,6 +31,29 @@ echo "   (시스템 시작 시 자동으로 모든 서비스 폴더에 복사됩
 echo ""
 
 # ==============================================================================
+# ==============================================================================
+# [STEP 0-A] 버전 번호 계산 및 HTML 파일 자동 업데이트
+# ==============================================================================
+TODAY=$(date '+%Y%m%d')
+VERSION_FILE="$BASE_DIR/.backup_version"
+VERSION_NUM=0
+
+if [ -f "$VERSION_FILE" ]; then
+    LAST_DATE=$(cut -d'-' -f1 "$VERSION_FILE")
+    LAST_NUM=$(cut -d'-' -f2 "$VERSION_FILE")
+    
+    if [ "$LAST_DATE" == "$TODAY" ]; then
+        VERSION_NUM=$((LAST_NUM + 1))
+    fi
+fi
+NEW_VERSION="${TODAY}-${VERSION_NUM}"
+echo "$NEW_VERSION" > "$VERSION_FILE"
+
+echo "[*] 새로운 버전($NEW_VERSION)을 HTML 파일들에 자동으로 일괄 적용합니다..."
+find "$SRC_DIR" -name "*.html" -type f -exec sed -i '' -E "s/(\.js|\.css)\?v=[a-zA-Z0-9_-]+/\1?v=$NEW_VERSION/g" {} +
+echo "    ✅ HTML 버전 자동 업데이트 완료"
+echo ""
+# ==============================================================================
 # [STEP 0] 정본 보호 동기화 (data/ 폴더 제외 - JSON은 별도 동기화)
 # 정본 → Sejong/public (Python 서버용)
 # 정본 → sejongcook_final_deploy/sejong (배포용)
@@ -148,23 +171,11 @@ open "http://localhost:3000"
 # ==============================================================================
 echo ""
 echo "[4/5] 전체 소스코드 변경사항을 깃허브(Git)에 자동 저장합니다..."
-TODAY=$(date '+%Y%m%d')
 VERSION_FILE="$BASE_DIR/.backup_version"
-VERSION_NUM=0
-
-if [ -f "$VERSION_FILE" ]; then
-    LAST_DATE=$(cut -d'-' -f1 "$VERSION_FILE")
-    LAST_NUM=$(cut -d'-' -f2 "$VERSION_FILE")
-    
-    if [ "$LAST_DATE" == "$TODAY" ]; then
-        VERSION_NUM=$((LAST_NUM + 1))
-    fi
-fi
-
-echo "${TODAY}-${VERSION_NUM}" > "$VERSION_FILE"
+NEW_VERSION=$(cat "$VERSION_FILE")
 
 git add .
-git commit -m "Auto backup: ${TODAY}-${VERSION_NUM}"
+git commit -m "Auto backup: $NEW_VERSION"
 git push
 echo "    ✅ Git 백업 완료"
 echo ""
