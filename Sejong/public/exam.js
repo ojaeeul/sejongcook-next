@@ -98,8 +98,8 @@ function renderExamTable() {
                 <td class="col-exam-num"><input type="text" value="${exam.examNum || ''}" onchange="updateExam(${index}, 'examNum', this.value)"></td>
                 <td class="col-id-pass">
                     <div class="id-pass-col">
-                        <span>${exam.genId || ''}</span>
-                        <span style="color: #64748b;">${exam.genPw || ''}</span>
+                        <input type="text" value="${exam.genId || ''}" onchange="updateExam(${index}, 'genId', this.value)">
+                        <input type="text" value="${exam.genPw || ''}" onchange="updateExam(${index}, 'genPw', this.value)" style="color: #64748b;">
                     </div>
                 </td>
                 <td class="col-score"><input type="text" value="${exam.score || ''}" onchange="updateExam(${index}, 'score', this.value)" class="${getScoreClass(exam.score)}"></td>
