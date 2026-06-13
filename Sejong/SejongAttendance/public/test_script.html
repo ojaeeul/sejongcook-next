@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<body>
+<table class="exam-table">
+    <tbody id="examTbody"></tbody>
+</table>
+<script>
+    const members = [];
+    const exams = [];
+    let searchStr = '';
+    let choMap = ["g","kk","n","d","tt","r","m","b","pp","s","ss","","j","jj","ch","k","t","p","h"];
+    let jungMap = ["a","ae","ya","yae","eo","e","yeo","ye","o","wa","wae","oe","yo","u","wo","we","wi","yu","eu","ui","i"];
+    function getHangulInitial(char) { return "a"; }
+    function generateId(name, resident_num) { return "id"; }
+    function getScoreClass(score) { return ""; }
+    function updateExam() {}
+    function deleteExam() {}
+    function saveExams() {}
+    
+    function renderExamTable() {
+        const tbody = document.getElementById('examTbody');
+        tbody.innerHTML = '';
+        const monthStr = '';
+        const validExams = Array.isArray(exams) ? exams : [];
+        const displayExams = [...validExams];
+        while (displayExams.length < 25) {
+            displayExams.push({ examDate: '', resultDate: '', subject: '', name: '', time: '', examNum: '', genId: '', genPw: '', score: '', note: '' });
+        }
+        displayExams.forEach((exam, index) => {
+            const tr = document.createElement('tr');
+            tr.setAttribute('title', '더블클릭하여 삭제');
+            tr.setAttribute('ondblclick', `deleteExam(${index})`);
+            tr.innerHTML = `
+                <td class="col-date"><input type="text" value="${exam.examDate || ''}" onchange="updateExam(${index}, 'examDate', this.value)" placeholder="MM/DD"></td>
+                <td class="col-res-date"><input type="text" value="${exam.resultDate || ''}" onchange="updateExam(${index}, 'resultDate', this.value)" placeholder="MM/DD"></td>
+                <td class="col-subject"><input type="text" value="${exam.subject || ''}" onchange="updateExam(${index}, 'subject', this.value)"></td>
+                <td class="col-name"><input type="text" value="${exam.name || ''}" onchange="updateExam(${index}, 'name', this.value)" style="font-weight: 500;" placeholder="이름 입력"></td>
+                <td class="col-time"><input type="text" value="${exam.time || ''}" onchange="updateExam(${index}, 'time', this.value)"></td>
+                <td class="col-exam-num"><input type="text" value="${exam.examNum || ''}" onchange="updateExam(${index}, 'examNum', this.value)"></td>
+                <td class="col-id-pass">
+                    <div class="id-pass-col">
+                        <span>${exam.genId || ''}</span>
+                        <span style="color: #64748b;">${exam.genPw || ''}</span>
+                    </div>
+                </td>
+                <td class="col-score"><input type="text" value="${exam.score || ''}" onchange="updateExam(${index}, 'score', this.value)" class="${getScoreClass(exam.score)}"></td>
+                <td class="col-note"><input type="text" value="${exam.note || ''}" onchange="updateExam(${index}, 'note', this.value)"></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+    renderExamTable();
+    console.log("ROWS:", document.getElementById('examTbody').children.length);
+</script>
+</body>
+</html>

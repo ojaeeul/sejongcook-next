@@ -124,6 +124,20 @@
             border-radius: 4px;
         }
 
+        /* Make empty inputs slightly visible so users know they can type */
+        .exam-table input:not([value]), .exam-table input[value=""] {
+            background-color: #f8fafc;
+        }
+        
+        .exam-table .col-name input {
+            cursor: text;
+        }
+        
+        .exam-table .col-name input::placeholder {
+            color: #94a3b8;
+            font-size: 0.8rem;
+        }
+
         .exam-table .id-pass-col {
             font-size: 0.75rem;
             display: flex;
@@ -478,7 +492,7 @@
     </div>
 
     <script src="script.js"></script>
-    <script src="exam.js?v=20260613-20" defer></script>
+    <script src="exam.js?v=20260613-21" defer></script>
 </body>
 
 </html>
