@@ -1628,21 +1628,11 @@ function renderRangeCalendar() {
                             const d = String(dVal).includes('-') ? parseInt(String(dVal).split('-')[2], 10) : parseInt(dVal, 10);
                             if (isNaN(d) || d <= 0) return;
                             
-                            const isPaid = (typeof paymentsData !== 'undefined' ? paymentsData : []).some(p =>
-                                String(p.memberId) === String(m.id) &&
-                                String(p.year) === String(calendarYear) &&
-                                String(p.month) === String(calendarMonth + 1) &&
-                                p.status === 'paid' &&
-                                (p.course && cName && (p.course.includes(cName) || cName.includes(p.course)))
-                            );
-
-                            if (!isPaid) {
-                                if (!paymentNamesByDay[d]) paymentNamesByDay[d] = [];
-                                const cClean = c.trim().replace('기능사', '');
-                                const label = `${m.name}(${cClean})`;
-                                if (!paymentNamesByDay[d].includes(label)) {
-                                    paymentNamesByDay[d].push(label);
-                                }
+                            if (!paymentNamesByDay[d]) paymentNamesByDay[d] = [];
+                            const cClean = c.trim().replace('기능사', '');
+                            const label = `${m.name}(${cClean})`;
+                            if (!paymentNamesByDay[d].includes(label)) {
+                                paymentNamesByDay[d].push(label);
                             }
                         });
                     }
