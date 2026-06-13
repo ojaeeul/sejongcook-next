@@ -7,7 +7,7 @@
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>지출내역 및 날짜별 매출</title>
-    <link rel="stylesheet" href="style.css?v=20260614-4">
+    <link rel="stylesheet" href="style.css?v=20260614-5">
     <!-- Material Icons for sidebar -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <!-- 손글씨 느낌을 위한 폰트 -->
@@ -332,11 +332,12 @@
                     <div class="page page-left">
                         <div class="page-title">지출내역</div>
                         
-                        <!-- 윗부분 빈줄 2줄 추가 -->
-                        <div class="entry-line"></div>
-                        <div class="entry-line"></div>
+                        <div id="expense-container">
+                            <!-- 윗부분 빈줄 2줄 추가 -->
+                            <div class="entry-line"></div>
+                            <div class="entry-line"></div>
 
-                        <div class="entry-line">
+                            <div class="entry-line">
                             <div class="date-col">7/25(화)</div>
                             <div class="desc-col">야채 25.- , 멸치장.- , 연회비 50.- , 두루마리 4P</div>
                             <div class="amount-col">590 (카)</div>
@@ -391,7 +392,7 @@
                             <div class="desc-col"></div>
                             <div class="amount-col">20,000 (카)</div>
                         </div>
-                    </div>
+                        </div>
 
                     <!-- 중앙 스프링 -->
                     <div class="binding"></div>
@@ -406,7 +407,7 @@
 
                         <div class="right-page-columns">
                             <!-- 매출 첫 번째 단 -->
-                            <div class="right-col-half">
+                            <div class="right-col-half" id="sales-cooking-container">
                                 <div class="entry-line">
                                     <div class="date-col">7/25(화)</div>
                                     <div class="desc-col">김나영 식비 환불</div>
@@ -449,7 +450,7 @@
                             </div>
                             
                             <!-- 매출 두 번째 단 -->
-                            <div class="right-col-half">
+                            <div class="right-col-half" id="sales-baking-container">
                                 <div class="entry-line">
                                     <div class="desc-col">이민지(제빵+케잌)보류</div>
                                     <div class="amount-col">320.- (카)</div>
@@ -490,12 +491,9 @@
         </main>
     </div>
 
+    <script src="expense_logic.js?v=20260614-5"></script>
     <script>
-        // 모든 글자 영역을 클릭해서 수정할 수 있도록 활성화
-        document.querySelectorAll('.date-col, .desc-col, .amount-col').forEach(el => {
-            el.setAttribute('contenteditable', 'true');
-            el.setAttribute('spellcheck', 'false'); // 빨간 밑줄 방지
-        });
+        // 기존 하드코딩된 contenteditable 부분은 expense_logic.js로 통합됨
     </script>
     <style>
         /* 수정 모드일 때 테두리 없애기 및 살짝 배경색 표시 */

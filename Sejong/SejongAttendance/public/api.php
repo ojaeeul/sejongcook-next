@@ -71,7 +71,8 @@ $boardFiles = [
     'sejong_payments' => 'data/sejong/payments.json',
     'sejong_settings' => 'data/sejong/settings.json',
     'sejong_timetable' => 'data/sejong/timetable_data.json',
-    'sejong_sms_history' => 'data/sejong/sms_history.json'
+    'sejong_sms_history' => 'data/sejong/sms_history.json',
+    'sejong_expense' => 'data/sejong/expense.json'
 ];
 
 if (!isset($boardFiles[$board])) {
@@ -242,7 +243,7 @@ if ($board === 'visitors') {
 }
 
 // Boards that store a list of items vs single objects
-$singleObjectBoards = ['hero', 'footer', 'settings', 'site-settings', 'schedule', 'timetable', 'sejong_settings'];
+$singleObjectBoards = ['hero', 'footer', 'settings', 'site-settings', 'schedule', 'timetable', 'sejong_settings', 'sejong_expense'];
 $isListBoard = !in_array($board, $singleObjectBoards);
 
 switch ($method) {
