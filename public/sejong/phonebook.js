@@ -258,13 +258,13 @@ function renderPage() {
                 </div>
                 
                 <!-- Middle Column: Contact Info -->
-                <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; border-right: 1px solid #e2e8f0; min-width: 250px;">
-                    <div class="contact-box" style="display: flex; align-items: center; height: 40px; padding: 0 15px;">
+                <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 8px; border-right: 1px solid #e2e8f0; min-width: 250px; padding: 0 15px;">
+                    <div class="contact-box" style="display: flex; align-items: center; height: auto;">
                         <span class="contact-label" style="width: 50px; flex-shrink: 0;">본인</span>
                         <span class="phone-number" style="font-weight: 500; width: 130px; flex-shrink: 0;">${m.phone || '-'}</span>
                         ${getPhoneButtons(m.phone, coursesStr)}
                     </div>
-                    <div class="contact-box" style="display: flex; align-items: center; height: 40px; padding: 0 15px;">
+                    <div class="contact-box" style="display: flex; align-items: center; height: auto;">
                         <span class="contact-label guardian" style="width: 50px; flex-shrink: 0;">부모</span>
                         <span class="phone-number" style="font-weight: 500; width: 130px; flex-shrink: 0;">${m.phone_guardian || '-'}</span>
                         ${getPhoneButtons(m.phone_guardian, coursesStr)}
