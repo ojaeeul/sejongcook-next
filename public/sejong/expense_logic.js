@@ -218,7 +218,7 @@ function handleClick(e) {
             methodCol = target;
         }
         
-        showCardPopup(methodCol, e.clientX, e.clientY);
+        showCardPopup(methodCol);
     } else {
         hideCardPopup();
     }
@@ -241,42 +241,47 @@ function initCardPopup() {
     const style = document.createElement('style');
     style.textContent = `
         #card-selector-popup {
-            position: fixed;
+            position: absolute;
             background: white;
             border: 1px solid #ccc;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            border-radius: 8px;
-            padding: 8px;
+            border-radius: 4px;
+            padding: 4px;
             display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
-            width: 200px;
+            flex-direction: column;
+            gap: 2px;
+            width: 80px;
             z-index: 10000;
         }
         #card-selector-popup.hidden {
             display: none;
         }
         #card-selector-popup button {
-            background: #f1f5f9;
-            border: 1px solid #cbd5e1;
-            padding: 5px 10px;
+            background: transparent;
+            border: none;
+            padding: 8px 10px;
             border-radius: 4px;
             cursor: pointer;
             font-size: 14px;
+            text-align: left;
+            width: 100%;
         }
         #card-selector-popup button:hover {
-            background: #e2e8f0;
+            background: #f1f5f9;
         }
     `;
     document.head.appendChild(style);
 }
 
-function showCardPopup(methodColEl, x, y) {
+function showCardPopup(methodColEl) {
     activeMethodCol = methodColEl;
     const popup = document.getElementById('card-selector-popup');
     popup.classList.remove('hidden');
-    popup.style.left = x + 'px';
-    popup.style.top = y + 'px';
+    
+    // 요소의 위치 계산하여 바로 아래에 고정 (드롭다운)
+    const rect = methodColEl.getBoundingClientRect();
+    popup.style.left = (rect.left + window.scrollX - 20) + 'px';
+    popup.style.top = (rect.bottom + window.scrollY + 5) + 'px';
 }
 
 function hideCardPopup() {
