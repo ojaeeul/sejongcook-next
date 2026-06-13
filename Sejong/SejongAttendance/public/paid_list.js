@@ -145,10 +145,10 @@ function renderPaidList() {
             if(monthCounts[i] > 0) {
                 badge.textContent = monthCounts[i];
                 badge.style.display = 'inline-block';
-                btn.style.borderColor = currentMonth === i ? '#059669' : '#cbd5e1';
+                btn.classList.add('has-paid');
             } else {
                 badge.style.display = 'none';
-                btn.style.borderColor = currentMonth === i ? '#059669' : '#e2e8f0';
+                btn.classList.remove('has-paid');
             }
         }
     }

@@ -3411,70 +3411,74 @@ label {
 .month-unpaid-btn {
     display: flex;
     align-items: center;
-    gap: 4px;
-    cursor: pointer;
-    padding: 4px 9px;
-    border-radius: 8px;
-    border: 1px solid #e2e8f0;
-    background: #fff;
-    transition: all 0.15s;
-    font-size: 0.78rem;
-    font-weight: 600;
-    color: #334155;
-    min-width: 48px;
     justify-content: center;
+    width: 65px;
+    padding: 3px 0;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin-right: 2px;
+    border: 1px solid #cbd5e1;
+    background: #fff;
+    color: #475569;
+    box-sizing: border-box;
+    cursor: pointer;
+    transition: all 0.15s;
     user-select: none;
 }
 
-.month-unpaid-btn.is-current {
-    border-color: #2563eb;
+.month-unpaid-btn.has-unpaid {
+    border: 1px solid #93c5fd;
     background: #eff6ff;
-    color: #1d4ed8;
+    color: #1e3a8a;
 }
 
 .month-unpaid-badge {
-    background: #ef4444;
-    color: #fff;
-    border-radius: 10px;
-    font-size: 0.65rem;
-    padding: 1px 5px;
-    font-weight: 700;
-    line-height: 1.4;
+    background: #2563eb;
+    color: white;
+    border-radius: 12px;
+    padding: 2px 7px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    margin-left: 4px;
+    line-height: normal;
 }
 
 /* 월별 납부 패널 버튼 */
 .month-paid-btn {
     display: flex;
     align-items: center;
-    gap: 4px;
-    cursor: pointer;
-    padding: 4px 9px;
-    border-radius: 8px;
-    border: 1px solid #e2e8f0;
-    background: #fff;
-    transition: all 0.15s;
-    font-size: 0.78rem;
-    font-weight: 600;
-    color: #334155;
-    min-width: 48px;
     justify-content: center;
+    width: 65px;
+    padding: 3px 0;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin-right: 2px;
+    border: 1px solid #cbd5e1;
+    background: #fff;
+    color: #475569;
+    box-sizing: border-box;
+    cursor: pointer;
+    transition: all 0.15s;
     user-select: none;
 }
 
-.month-paid-btn.is-current {
-    border-color: #059669;
+.month-paid-btn.has-paid {
+    border: 1px solid #86efac;
     background: #f0fdf4;
-    color: #047857;
+    color: #065f46;
 }
 
 .month-paid-badge {
-    background: #059669;
-    color: #fff;
-    border-radius: 10px;
-    font-size: 0.65rem;
-    padding: 1px 5px;
-    font-weight: 700;
-    line-height: 1.4;
+    background: #10b981;
+    color: white;
+    border-radius: 12px;
+    padding: 2px 7px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    margin-left: 4px;
+    line-height: normal;
 }
 
 @media print {

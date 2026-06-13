@@ -1515,8 +1515,10 @@ function updateMonthlyUnpaidPanel() {
         if (unpaidCount > 0) {
             badge.textContent = unpaidCount;
             badge.style.display = 'inline-block';
+            btn.classList.add('has-unpaid');
         } else {
             badge.style.display = 'none';
+            btn.classList.remove('has-unpaid');
         }
     }
 }

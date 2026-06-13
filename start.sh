@@ -48,10 +48,8 @@ sleep 2
 # macOS (open) or Linux (xdg-open)
 if command -v open > /dev/null; then
     open http://localhost:3000/sejong/ledger.html
-    open http://localhost:3000/sejong/sheet.html
 elif command -v xdg-open > /dev/null; then
     xdg-open http://localhost:3000/sejong/ledger.html
-    xdg-open http://localhost:3000/sejong/sheet.html
 fi
 
 echo "------------------------------------------------------"
