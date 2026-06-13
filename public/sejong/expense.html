@@ -7,7 +7,7 @@
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>지출내역 및 날짜별 매출</title>
-    <link rel="stylesheet" href="style.css?v=20260613-62">
+    <link rel="stylesheet" href="style.css?v=20260613-63">
     <!-- 손글씨 느낌을 위한 폰트 -->
     <link href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&display=swap" rel="stylesheet">
     <style>
@@ -21,8 +21,8 @@
         }
         .notebook {
             display: flex;
-            width: 1400px;
-            height: 900px;
+            width: 1200px;
+            height: 850px;
             background: #fcf9f2;
             border-radius: 12px;
             box-shadow: 20px 20px 40px rgba(0,0,0,0.2), -5px 5px 15px rgba(0,0,0,0.05);
@@ -31,14 +31,14 @@
         .page {
             flex: 1;
             position: relative;
-            /* 노트 줄무늬 (줄 간격 25px, 정확히 32칸) */
-            background-image: repeating-linear-gradient(transparent, transparent 24px, #cbd5e1 24px, #cbd5e1 25px);
-            background-position: 0 50px;
-            background-size: 100% 800px; /* 25px * 32칸 = 800px */
+            /* 노트 줄무늬 (줄 간격 24px, 정확히 32칸) */
+            background-image: repeating-linear-gradient(transparent, transparent 23px, #cbd5e1 23px, #cbd5e1 24px);
+            background-position: 0 40px;
+            background-size: 100% 768px; /* 24px * 32칸 = 768px */
             background-repeat: no-repeat;
-            padding: 50px 40px 50px 20px;
+            padding: 40px 15px 40px 5px;
             font-family: 'Nanum Pen Script', cursive;
-            font-size: 20px; /* 글씨 작게 */
+            font-size: 19px; /* 글씨 작게 */
             color: #334155;
             overflow-y: auto;
         }
@@ -54,9 +54,9 @@
         .page::before {
             content: '';
             position: absolute;
-            top: 50px; /* 맨 위 마진 영역에는 빨간 선이 없도록 50px부터 시작 */
-            height: 800px; /* 정확히 32칸 높이에 맞춤 */
-            left: 110px;
+            top: 40px; /* 맨 위 마진 영역에는 빨간 선이 없도록 40px부터 시작 */
+            height: 768px; /* 정확히 32칸 높이에 맞춤 */
+            left: 65px; /* 최대한 왼쪽으로 밀착 */
             width: 2px;
             background-color: #fca5a5;
             z-index: 1;
@@ -91,19 +91,19 @@
         }
         .page-title {
             font-family: 'Noto Sans KR', sans-serif;
-            font-size: 24px;
+            font-size: 22px;
             font-weight: 700;
             position: absolute;
-            top: 10px; /* 맨 위 줄 위로 올림 */
-            left: 130px; /* 빨간 선 오른쪽으로 위치 */
+            top: 8px; /* 맨 위 줄 위로 올림 */
+            left: 80px; /* 빨간 선 오른쪽으로 밀착 위치 */
             margin: 0;
             background: transparent;
             z-index: 2;
             color: #475569;
         }
         .entry-line {
-            line-height: 25px;
-            height: 25px;
+            line-height: 24px;
+            height: 24px;
             position: relative;
             z-index: 2;
             display: flex;
@@ -111,11 +111,11 @@
             white-space: nowrap; /* 줄바꿈 방지 */
         }
         .date-col {
-            width: 80px;
+            width: 55px; /* 날짜폭 최소화 */
             font-weight: bold;
             color: #475569;
             text-align: center;
-            margin-right: 20px;
+            margin-right: 10px; /* 빨간 선이 들어갈 공간 */
         }
         .desc-col {
             flex: 1;
