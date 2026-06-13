@@ -533,26 +533,91 @@ function renderTable(container, title, members, id) {
     const blueCounts = {1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 11:0, 12:0};
     
     members.forEach(m => {
+        const allMonthsSchedules = [];
+        const courseLatestRealMonth = {};
         for (let month = 1; month <= 12; month++) {
             const schedules = getAllLedgerMonthStats(m.id, currentYear, month);
+            allMonthsSchedules.push(schedules);
+            
             schedules.forEach(s => {
                 if (!s.isSimulated && s.eighthDay && !isNaN(parseInt(s.eighthDay)) && Number(s.eighthDay) > 0) {
-                    const isPaid = (typeof paymentsData !== 'undefined' ? paymentsData : window.paymentsData || []).some(p =>
-                        String(p.memberId) === String(m.id) &&
-                        String(p.year) === String(currentYear) &&
-                        String(p.month) === String(month) &&
-                        p.status === 'paid' &&
-                        (!p.course || p.course === 'null' || p.course === 'undefined' || p.course === '' || !s.course || p.course.includes(s.course) || s.course.includes(p.course))
-                    );
-
-                    if (isPaid) {
-                        blueCounts[month]++;
-                    } else {
-                        monthCounts[month]++;
+                    if (!courseLatestRealMonth[s.course] || courseLatestRealMonth[s.course] < month) {
+                        courseLatestRealMonth[s.course] = month;
                     }
                 }
             });
         }
+
+        const coursesFoundSimulated = new Set();
+        
+        allMonthsSchedules.forEach((schedules, idx) => {
+            const month = idx + 1;
+            
+            // Apply currentFilterDate logic for badge counting
+            let filteredSchedules = schedules;
+            if (currentFilterDate) {
+                let startM, startD, endM, endD;
+                if (currentFilterDate.includes('~')) {
+                    const parts = currentFilterDate.split('~').map(s => s.trim());
+                    startM = parseInt(parts[0].split('-')[1], 10);
+                    startD = parseInt(parts[0].split('-')[2], 10);
+                    endM = parseInt(parts[1].split('-')[1], 10);
+                    endD = parseInt(parts[1].split('-')[2], 10);
+                } else {
+                    startM = parseInt(currentFilterDate.split('-')[1], 10);
+                    startD = parseInt(currentFilterDate.split('-')[2], 10);
+                    endM = startM;
+                    endD = startD;
+                }
+
+                filteredSchedules = schedules.filter(s => {
+                    const sMonth = s.eighthMonth || month;
+                    let isMatch = false;
+
+                    if (currentFilterDate.includes('~')) {
+                        const sVal = sMonth * 100 + s.eighthDay;
+                        const startVal = startM * 100 + startD;
+                        const endVal = endM * 100 + endD;
+                        if (sVal >= startVal && sVal <= endVal) isMatch = true;
+                    } else {
+                        if (sMonth === startM && s.eighthDay === startD) isMatch = true;
+                    }
+                    return isMatch;
+                });
+            }
+
+            const validSchedules = filteredSchedules.filter(s => {
+                if (!s.eighthDay || isNaN(parseInt(s.eighthDay)) || Number(s.eighthDay) <= 0) return false;
+                if (s.isSimulated) {
+                    if (courseLatestRealMonth[s.course] && month <= courseLatestRealMonth[s.course]) {
+                        return false;
+                    }
+                    if (coursesFoundSimulated.has(s.course)) return false;
+                    coursesFoundSimulated.add(s.course);
+                }
+                return true;
+            });
+            monthCounts[month] += validSchedules.length;
+
+            let paid = (typeof paymentsData !== 'undefined' ? paymentsData : window.paymentsData || []).filter(p => String(p.memberId) === String(m.id) && String(p.year) === String(currentYear) && String(p.month) === String(month) && p.status === 'paid');
+            let uniquePaid = [];
+            paid.forEach(p => {
+                const c = (!p.course || p.course === 'null' || p.course === 'undefined') ? 'all' : p.course;
+                const existing = uniquePaid.find(up => {
+                    const upC = (!up.course || up.course === 'null' || up.course === 'undefined') ? 'all' : up.course;
+                    return upC === c || upC.includes(c) || c.includes(upC);
+                });
+                if (!existing) {
+                    uniquePaid.push(p);
+                } else if (new Date(p.updatedAt) > new Date(existing.updatedAt)) {
+                    uniquePaid[uniquePaid.indexOf(existing)] = p;
+                }
+            });
+            if (uniquePaid.length > 1 && uniquePaid.some(up => !up.course || up.course === 'null' || up.course === 'undefined' || up.course === '')) {
+                uniquePaid = uniquePaid.filter(up => up.course && up.course !== 'null' && up.course !== 'undefined' && up.course !== '');
+            }
+            blueCounts[month] += uniquePaid.length;
+        });
     });
 
     let html = `
