@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>세종요리제과학원 - 국가시험 관리</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            background-color: #f8fafc;
+            /* matches UI background */
+            margin: 0;
+        }
+
+        .notebook-wrapper {
+            display: flex;
+            align-items: flex-start;
+            gap: 0;
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .notebook-container {
+            background: #ffffff;
+            border-radius: 4px 12px 12px 4px;
+            box-shadow: 2px 4px 15px rgba(0, 0, 0, 0.08),
+                inset 2px 0 5px rgba(0, 0, 0, 0.05);
+            /* spine shadow */
+            position: relative;
+            flex: 1;
+            min-height: 800px;
+            overflow: hidden;
+            display: flex;
+            border-left: 8px solid #cbd5e1;
+            /* notebook spine */
+        }
+
+        /* Spring binder effect */
+        .notebook-container::before {
+            content: '';
+            position: absolute;
+            left: 12px;
+            top: 20px;
+            bottom: 20px;
+            width: 16px;
+            background-image: radial-gradient(circle at center, #64748b 4px, transparent 5px);
+            background-size: 100% 40px;
+            z-index: 10;
+        }
+
+        .notebook-page {
+            flex: 1;
+            position: relative;
+            padding: 40px 30px 40px 50px;
+            /* padding-left accommodates springs */
+            background-color: #ffffff;
+            /* Notebook horizontal lines */
+            background-image: repeating-linear-gradient(transparent, transparent 39px, #e2e8f0 39px, #e2e8f0 40px);
+            background-position: 0 40px;
+            background-attachment: local;
+        }
+
+        /* Red vertical margin line typical in notebooks */
+        .notebook-page::before {
+            content: '';
+            position: absolute;
+            left: 60px;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background-color: rgba(239, 68, 68, 0.3);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .exam-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            position: relative;
+            z-index: 2;
+        }
+
+        .exam-table th,
+        .exam-table td {
+            height: 40px; /* Exact match to notebook line */
+            border: 1px solid #cbd5e1;
+            text-align: center;
+            font-size: 0.85rem;
+            padding: 0 4px;
+            vertical-align: middle;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .exam-table th {
+            background-color: rgba(241, 245, 249, 0.8);
+            font-weight: 600;
+            color: #334155;
+            border-bottom: 2px solid #94a3b8;
+        }
+
+        .exam-table td {
+            background: transparent;
+        }
+
+        .exam-table input, .exam-table select {
+            width: 100%;
+            height: 32px;
+            border: 1px solid transparent;
+            background: transparent;
+            text-align: center;
+            font-size: 0.85rem;
+            font-family: inherit;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .exam-table input:focus, .exam-table select:focus {
+            border: 1px solid #3b82f6;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 4px;
+        }
+
+        .exam-table .id-pass-col {
+            font-size: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            height: 100%;
+            gap: 2px;
+        }
+
+        .exam-table .id-pass-col span {
+            line-height: 1.2;
+        }
+
+        .exam-table .score-col {
+            font-weight: bold;
+        }
+        
+        .exam-table .score-col.pass { color: #059669; }
+        .exam-table .score-col.fail { color: #dc2626; }
+        .exam-table .score-col.cancel { color: #64748b; text-decoration: line-through; }
+
+        /* Column widths matching the notebook */
+        .col-date { width: 6%; }
+        .col-res-date { width: 6%; }
+        .col-subject { width: 10%; }
+        .col-name { width: 8%; }
+        .col-time { width: 6%; }
+        .col-exam-num { width: 12%; }
+        .col-id-pass { width: 16%; }
+        .col-score { width: 8%; }
+        .col-note { width: 20%; }
+        .col-action { width: 8%; }
+
+        .btn-add-row {
+            margin-top: 20px;
+            padding: 8px 16px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.9rem;
+            margin-left: auto;
+            transition: background 0.2s;
+        }
+        .btn-add-row:hover { background: #2563eb; }
+
+        .action-icon {
+            cursor: pointer;
+            color: #94a3b8;
+            transition: color 0.2s;
+            font-size: 1.1rem;
+        }
+        .action-icon:hover { color: #ef4444; }
+        .action-icon.save { color: #059669; }
+        .action-icon.save:hover { color: #047857; }
+
+        /* Student Selection Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-content {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            width: 400px;
+            max-width: 90%;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .modal-header h3 { margin: 0; font-size: 1.2rem; }
+        .close-btn { background: none; border: none; cursor: pointer; font-size: 1.5rem; color: #64748b; }
+        .student-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+        }
+        .student-item {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e2e8f0;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .student-item:hover { background: #f1f5f9; }
+        .student-item:last-child { border-bottom: none; }
+        .student-name { font-weight: 500; }
+        .student-course { font-size: 0.8rem; color: #64748b; }
+        .search-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            box-sizing: border-box;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div class="app-layout">
+        <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>세종요리제과학원</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">수강 관리</div>
+                <div class="nav-sub-menu show">
+                    <a href="register.html" id="navRegister" class="nav-item">수강생 등록</a>
+                    <a href="index.html" id="navIndex" class="nav-item">수강생 대장</a>
+                    <a href="phonebook.html" id="navPhoneBook" class="nav-item">전화번호부</a>
+                    <a href="sheet.html" id="navSheet" class="nav-item">월간 출석부</a>
+                    <a href="exam.html" id="navExam" class="nav-item active">국가시험</a>
+                </div>
+                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">수강료</div>
+                <div class="nav-sub-menu show">
+                    <a href="tuition.html?v=1780849479" class="nav-item">수강료 관리</a>
+                    <a href="ledger.html" class="nav-item">수강료 납부대장</a>
+                </div>
+                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">기타 메뉴</div>
+                <div class="nav-sub-menu show">
+                    <a href="sms.html" class="nav-item">문자 발송</a>
+                    <a href="photo_edit.html" class="nav-item">사진 편집</a>
+                    <a href="notice.html" class="nav-item">공지사항 관리</a>
+                    <a href="stats.html" class="nav-item">통계 및 보고서</a>
+                </div>
+                <a href="app.html" id="navMobileApp" class="nav-item" target="_blank">📱 모바일 앱</a>
+            </nav>
+        </aside>
+
+        <main class="main-wrapper">
+            <header class="top-header">
+                <button class="hamburger-btn" onclick="toggleSidebar()">
+                    <span class="material-icons">menu</span>
+                </button>
+                <div class="page-title-container">
+                    <h1 class="page-title-text">국 가 시 험</h1>
+                </div>
+            </header>
+
+            <div class="content-scroll">
+                <div class="search-bar-container" style="margin-bottom: 20px;">
+                    <div class="search-filters-wrapper"
+                        style="display: flex; gap: 10px; max-width: 900px; margin: 0 auto; background: white; padding: 12px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
+                        <!-- Date Filter -->
+                        <div style="flex: 1; position: relative;">
+                            <span class="material-icons"
+                                style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 1.1rem;">calendar_month</span>
+                            <input type="month" id="examMonthFilter"
+                                style="width: 100%; padding: 8px 10px 8px 34px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.85rem; outline: none; box-sizing: border-box;">
+                        </div>
+
+                        <!-- Name Search -->
+                        <div style="flex: 2; position: relative;">
+                            <span class="material-icons"
+                                style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 1.1rem;">search</span>
+                            <input type="text" id="examSearchInput" placeholder="수강생 이름 검색..."
+                                style="width: 100%; padding: 8px 10px 8px 34px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.85rem; outline: none; box-sizing: border-box;">
+                        </div>
+                        
+                        <button id="btnAddNew" style="padding: 0 16px; background: #1e293b; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 500;">
+                            + 신규 시험 등록
+                        </button>
+                    </div>
+                </div>
+
+                <div class="notebook-wrapper">
+                    <div class="notebook-container">
+                        <div class="notebook-page">
+                            <table class="exam-table" id="examTable">
+                                <thead>
+                                    <tr>
+                                        <th class="col-date">시험일</th>
+                                        <th class="col-res-date">발표일</th>
+                                        <th class="col-subject">종목</th>
+                                        <th class="col-name">성명</th>
+                                        <th class="col-time">시간</th>
+                                        <th class="col-exam-num">수험번호</th>
+                                        <th class="col-id-pass">I.D / Pass</th>
+                                        <th class="col-score">점수</th>
+                                        <th class="col-note">비고</th>
+                                        <th class="col-action">관리</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="examTbody">
+                                    <!-- Rows will be populated by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Student Selection Modal -->
+    <div class="modal-overlay" id="studentModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>수강생 선택</h3>
+                <button class="close-btn" onclick="closeStudentModal()">&times;</button>
+            </div>
+            <input type="text" class="search-input" id="modalSearchInput" placeholder="이름 검색..." onkeyup="filterModalStudents()">
+            <div class="student-list" id="modalStudentList">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="exam.js"></script>
+</body>
+
+</html>

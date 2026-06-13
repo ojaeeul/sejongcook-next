@@ -68,6 +68,9 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         elif parsed.path == '/api/sms_history':
             self.handle_get_sms_history()
             return
+        elif parsed.path == '/api/exams':
+            self.handle_get_exams()
+            return
             
         self._map_static_path()
         super().do_GET()
@@ -104,6 +107,9 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             return
         if path == '/api/sms_history':
             self.handle_save_sms_history()
+            return
+        if path == '/api/exams':
+            self.handle_save_exams()
             return
             
         self.send_error(404, "API Endpoint not found")
@@ -443,6 +449,26 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             data = json.loads(body) # Expecting a dict of course schedules
             
             self._write_json('timetable_data.json', data)
+            
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({'success': True}).encode('utf-8'))
+        except Exception as e:
+            self.send_error(500, str(e))
+
+    def handle_get_exams(self):
+        exams = self._read_json('exam_data.json')
+        self.send_response(200)
+        self.send_header('Content-Type', 'application/json')
+        self.end_headers()
+        self.wfile.write(json.dumps(exams).encode('utf-8'))
+
+    def handle_save_exams(self):
+        try:
+            body = self.get_body()
+            data = json.loads(body) # Can be list of exams
+            self._write_json('exam_data.json', data)
             
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
