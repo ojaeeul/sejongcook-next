@@ -203,6 +203,28 @@ function processNewPayments() {
         hasChanges = true;
     });
     
+    // 취소된 항목(unpaid로 변경된 항목) 제거 로직
+    const existingAutoItems = Array.from(document.querySelectorAll('[data-payment-id]'));
+    existingAutoItems.forEach(el => {
+        const pId = el.getAttribute('data-payment-id');
+        const stillPaid = paidPayments.some(p => `${p.memberId}_${p.year}_${p.month}` === pId);
+        
+        if (!stillPaid) {
+            const container = el.closest('.right-col-half');
+            if (container) {
+                const index = Array.from(container.children).indexOf(el);
+                const otherContainerId = container.id === 'sales-cooking-container' ? 'sales-baking-container' : 'sales-cooking-container';
+                const otherContainer = document.getElementById(otherContainerId);
+                
+                if (otherContainer && otherContainer.children[index]) {
+                    otherContainer.removeChild(otherContainer.children[index]);
+                }
+                container.removeChild(el);
+                hasChanges = true;
+            }
+        }
+    });
+    
     if (hasChanges) {
         ensureMinimumLines();
         saveNotebookData();
