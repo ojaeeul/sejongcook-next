@@ -240,9 +240,6 @@ function renderTable() {
             }
         }
 
-        // '예' 날짜(8회차)가 이 달에 없는 사람은 목록에서 제외 (수강중 필터 제외)
-        if (currentState.statusFilter !== 'enrolled' && !isDueThisMonth) return;
-
         // Find payment record
         const normalizeCourse = (c) => (!c || c === 'null') ? null : String(c).trim();
         const payment = paymentsData.find(p =>
@@ -256,8 +253,13 @@ function renderTable() {
         const amount = DEFAULT_PRICE;
 
         // Dropdown Filter (Status)
-        if (currentState.statusFilter === 'unpaid' && isPaid) return;
-        if (currentState.statusFilter === 'paid' && !isPaid) return;
+        if (currentState.statusFilter === 'unpaid') {
+            // 미납 탭: 이번 달에 8회차가 있고, 결제하지 않은 사람만
+            if (isPaid || !isDueThisMonth) return;
+        } else if (currentState.statusFilter === 'paid') {
+            // 납부완료 탭: 이번 달(현재 선택된 달) 결제 내역이 'paid'인 사람만
+            if (!isPaid) return;
+        }
 
         rows.push({ member: m, payment, isPaid, amount, scheduledDay });
     });
