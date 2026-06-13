@@ -7,7 +7,7 @@
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>지출내역 및 날짜별 매출</title>
-    <link rel="stylesheet" href="style.css?v=20260613-58">
+    <link rel="stylesheet" href="style.css?v=20260613-59">
     <!-- 손글씨 느낌을 위한 폰트 -->
     <link href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&display=swap" rel="stylesheet">
     <style>
@@ -34,7 +34,7 @@
             /* 노트 줄무늬 (줄 간격 40px) */
             background-image: repeating-linear-gradient(transparent, transparent 39px, #cbd5e1 39px, #cbd5e1 40px);
             background-position: 0 50px;
-            padding: 50px 40px 40px 70px;
+            padding: 50px 40px 40px 20px;
             font-family: 'Nanum Pen Script', cursive;
             font-size: 26px;
             color: #334155;
@@ -54,7 +54,7 @@
             position: absolute;
             top: 0;
             bottom: 0;
-            left: 60px;
+            left: 110px;
             width: 2px;
             background-color: #fca5a5;
             z-index: 1;
@@ -95,6 +95,7 @@
             background: #fcf9f2;
             display: inline-block;
             padding-right: 15px;
+            margin-left: 90px;
             position: relative;
             z-index: 2;
             color: #475569;
@@ -107,9 +108,11 @@
             align-items: baseline;
         }
         .date-col {
-            width: 90px;
+            width: 80px;
             font-weight: bold;
             color: #475569;
+            text-align: center;
+            margin-right: 20px;
         }
         .desc-col {
             flex: 1;
