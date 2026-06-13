@@ -181,7 +181,7 @@ function updateExam(index, field, value) {
             // Auto-fill subject if it's currently empty or name changed
             const memberCourse = member.course || member.course_select;
             if (memberCourse) {
-                const courses = memberCourse.split(',').map(c => c.trim()).filter(c => c);
+                const courses = parseCourses(memberCourse);
                 if (courses.length === 1) {
                     exams[index].subject = courses[0].split('(')[0].replace('기능사', '').trim();
                     saveExams();
@@ -272,7 +272,8 @@ function renderModalStudents(filterStr = '', filterCourse = '') {
     sorted.forEach(m => {
         if (filterStr && !m.name.includes(filterStr) && !(m.phone && m.phone.includes(filterStr))) return;
         
-        const courses = m.course ? m.course.split(',').map(c => c.trim()).filter(c => c) : ['과정 없음'];
+        const memberCourse = m.course || m.course_select;
+        const courses = memberCourse ? parseCourses(memberCourse) : ['과정 없음'];
         
         courses.forEach(course => {
             if (filterCourse && course !== filterCourse) return;
@@ -357,4 +358,20 @@ function selectCourseForExam(index, course) {
     saveExams();
     renderExamTable();
     closeCourseSelectModal();
+}
+
+function parseCourses(courseStr) {
+    if (!courseStr) return [];
+    let courses = courseStr.split(',').map(c => c.trim()).filter(c => c);
+    
+    // Expand "제과제빵" into two separate courses
+    return courses.reduce((acc, c) => {
+        if (c.includes('제과제빵')) {
+            acc.push(c.replace('제과제빵', '제과'));
+            acc.push(c.replace('제과제빵', '제빵'));
+        } else {
+            acc.push(c);
+        }
+        return acc;
+    }, []);
 }

@@ -50,7 +50,7 @@
     {
         "examDate": "10/31",
         "resultDate": "11/13",
-        "subject": "제과제빵",
+        "subject": "제빵",
         "name": "을",
         "time": "10:00",
         "examNum": "05900008",
@@ -86,12 +86,12 @@
     {
         "examDate": "11/13",
         "resultDate": "10/07",
-        "subject": "양식기능사",
-        "name": "오재을6",
+        "subject": "피자",
+        "name": "멀똥이",
         "time": "10:00",
         "examNum": "0830",
-        "genId": "oje123456",
-        "genPw": "oje123456@",
+        "genId": "mtti232234",
+        "genPw": "mtti232234@",
         "score": "실격",
         "note": "미나리강회 무생채"
     },
