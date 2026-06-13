@@ -41,10 +41,32 @@ async function loadNotebookData() {
         console.error("Failed to load notebook data:", e);
     }
     
+    migrateMethodCol();
+    
     // 강제 contenteditable 적용
-    document.querySelectorAll('.date-col, .desc-col, .amount-col').forEach(el => {
+    document.querySelectorAll('.date-col, .desc-col, .amount-col, .method-col').forEach(el => {
         el.setAttribute('contenteditable', 'true');
         el.setAttribute('spellcheck', 'false');
+    });
+}
+
+function migrateMethodCol() {
+    document.querySelectorAll('.amount-col').forEach(col => {
+        if (!col.nextElementSibling || !col.nextElementSibling.classList.contains('method-col')) {
+            const methodCol = document.createElement('div');
+            methodCol.className = 'method-col';
+            methodCol.setAttribute('contenteditable', 'true');
+            methodCol.setAttribute('spellcheck', 'false');
+            
+            let text = col.textContent;
+            // (카) 등 패턴 추출하여 분리
+            const match = text.match(/\s*(\([^)]+\))\s*$/);
+            if (match) {
+                methodCol.textContent = match[1];
+                col.textContent = text.replace(match[0], '');
+            }
+            col.parentNode.insertBefore(methodCol, col.nextSibling);
+        }
     });
 }
 
@@ -114,7 +136,7 @@ function processNewPayments() {
         const memberName = member ? member.name : '알수없음';
         const courseName = p.course || (member ? member.course : '');
         
-        const amountStr = Number(p.amount || 0).toLocaleString() + ' (카)';
+        const amountStr = Number(p.amount || 0).toLocaleString();
         const dateObj = p.updatedAt ? new Date(p.updatedAt) : new Date();
         const dateStr = `${dateObj.getMonth() + 1}/${dateObj.getDate()}(${['일','월','화','수','목','금','토'][dateObj.getDay()]})`;
         
@@ -132,8 +154,8 @@ function processNewPayments() {
         
         // 첫 데이터면 2줄 띄우기
         if (isFirstOfDay && container.children.length > 0) {
-            container.insertAdjacentHTML('beforeend', `<div class="entry-line"><div class="date-col"></div><div class="desc-col"></div><div class="amount-col"></div></div>`);
-            container.insertAdjacentHTML('beforeend', `<div class="entry-line"><div class="date-col"></div><div class="desc-col"></div><div class="amount-col"></div></div>`);
+            container.insertAdjacentHTML('beforeend', `<div class="entry-line"><div class="date-col"></div><div class="desc-col"></div><div class="amount-col"></div><div class="method-col"></div></div>`);
+            container.insertAdjacentHTML('beforeend', `<div class="entry-line"><div class="date-col"></div><div class="desc-col"></div><div class="amount-col"></div><div class="method-col"></div></div>`);
         }
         
         // 항목 추가
@@ -148,6 +170,7 @@ function processNewPayments() {
             <div class="date-col" contenteditable="true">${isFirstOfDay ? dateStr : ''}</div>
             <div class="desc-col" contenteditable="true">${memberName} ${shortCourse ? '('+shortCourse+')' : ''}</div>
             <div class="amount-col" contenteditable="true">${amountStr}</div>
+            <div class="method-col" contenteditable="true">(카)</div>
         `;
         
         container.appendChild(newLine);
@@ -181,17 +204,21 @@ function handleInput(e) {
 }
 
 // 카드 팝업 상태
-let activeAmountCol = null;
+let activeMethodCol = null;
 
 function handleClick(e) {
     const target = e.target;
     
-    // (카) 글자 또는 amount-col 클릭 시
-    if (target.classList.contains('amount-col') || (target.textContent && target.textContent.includes('(카)'))) {
-        const amountCol = target.classList.contains('amount-col') ? target : target.closest('.amount-col');
-        if (amountCol) {
-            showCardPopup(amountCol, e.clientX, e.clientY);
+    // method-col (결제수단칸) 또는 amount-col (기존 호환성) 클릭 시 팝업창
+    if (target.classList.contains('method-col') || target.classList.contains('amount-col')) {
+        let methodCol = target.classList.contains('method-col') ? target : target.nextElementSibling;
+        
+        // amount-col을 눌렀는데 다음 요소가 method-col이 아닐 경우
+        if (!methodCol || !methodCol.classList.contains('method-col')) {
+            methodCol = target;
         }
+        
+        showCardPopup(methodCol, e.clientX, e.clientY);
     } else {
         hideCardPopup();
     }
@@ -244,8 +271,8 @@ function initCardPopup() {
     document.head.appendChild(style);
 }
 
-function showCardPopup(amountColEl, x, y) {
-    activeAmountCol = amountColEl;
+function showCardPopup(methodColEl, x, y) {
+    activeMethodCol = methodColEl;
     const popup = document.getElementById('card-selector-popup');
     popup.classList.remove('hidden');
     popup.style.left = x + 'px';
@@ -258,15 +285,9 @@ function hideCardPopup() {
 }
 
 window.selectCardOption = function(optionText) {
-    if (activeAmountCol) {
-        let text = activeAmountCol.textContent;
-        // 기존 괄호 내용(예: (카), (NC) 등)을 찾아서 대체, 없으면 뒤에 추가
-        if (text.match(/\\([^)]+\\)/)) {
-            text = text.replace(/\\([^)]+\\)$/, optionText);
-        } else {
-            text = text + ' ' + optionText;
-        }
-        activeAmountCol.textContent = text;
+    if (activeMethodCol) {
+        // 기존 텍스트를 아예 날리고 새 값으로 덮어씀 (append 방지)
+        activeMethodCol.textContent = optionText;
         hideCardPopup();
         triggerAutoSave();
     }
@@ -290,6 +311,7 @@ function ensureMinimumLines() {
                         <div class="date-col" contenteditable="true"></div>
                         <div class="desc-col" contenteditable="true"></div>
                         <div class="amount-col" contenteditable="true"></div>
+                        <div class="method-col" contenteditable="true"></div>
                     </div>
                 `);
             }
