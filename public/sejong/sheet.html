@@ -2187,9 +2187,11 @@
                     const redBoxDates = new Set();
                     let uniqueLogs = [];
 
+                    var effectiveCourseName = "";
                     var isDualCourse = false; // Use var for broader function scope visibility
                     if (m) {
-                        isDualCourse = rowCourseNameScope && rowCourseNameScope.replace(/\s/g, '').includes('제과제빵');
+                        effectiveCourseName = rowCourseNameScope || String(m.course || '');
+                        isDualCourse = effectiveCourseName.replace(/\s/g, '').includes('제과제빵');
                         const attendanceIncrement = isDualCourse ? 1.0 : 1;
 
                         const rowLogsRaw = attendanceData.filter(l => {
