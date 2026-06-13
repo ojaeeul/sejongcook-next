@@ -75,7 +75,7 @@ function renderExamTable() {
         const monthStr = document.getElementById('examMonthFilter') ? document.getElementById('examMonthFilter').value : '';
 
         const validExams = Array.isArray(exams) ? exams : [];
-        const sortedExams = [...validExams].sort((a, b) => (a.examDate || '').localeCompare(b.examDate || ''));
+        const sortedExams = validExams; // Disable auto-sorting to perfectly match the physical notebook order
 
         sortedExams.forEach((exam, index) => {
             if (searchStr && (!exam.name || !exam.name.toLowerCase().includes(searchStr))) return;
