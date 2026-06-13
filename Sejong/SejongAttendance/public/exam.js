@@ -103,7 +103,6 @@ function renderExamTable() {
         const realDataWithIndex = displayExams.slice(0, lastRealIndex + 1).map((e, i) => ({ ...e, originalIndex: i }));
         
         // APPLY FILTERS BEFORE PAGINATION
-        const searchStr = document.getElementById('examSearchInput') ? document.getElementById('examSearchInput').value.toLowerCase() : '';
         const filteredData = realDataWithIndex.filter(exam => {
             if (searchStr && (!exam.name || !exam.name.toLowerCase().includes(searchStr))) return false;
             
