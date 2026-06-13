@@ -65,6 +65,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('btnAddNew').addEventListener('click', openStudentModal);
     document.getElementById('examSearchInput').addEventListener('input', renderExamTable);
     document.getElementById('examMonthFilter').addEventListener('change', renderExamTable);
+    document.getElementById('resultMonthFilter').addEventListener('change', renderExamTable);
 });
 
 function renderExamTable() {
@@ -74,7 +75,11 @@ function renderExamTable() {
     try {
         tbody.innerHTML = '';
         const searchStr = document.getElementById('examSearchInput') ? document.getElementById('examSearchInput').value.toLowerCase() : '';
-        const monthStr = document.getElementById('examMonthFilter') ? document.getElementById('examMonthFilter').value : '';
+        const examMonthRaw = document.getElementById('examMonthFilter') ? document.getElementById('examMonthFilter').value : '';
+        const resultMonthRaw = document.getElementById('resultMonthFilter') ? document.getElementById('resultMonthFilter').value : '';
+
+        const examMonthStr = examMonthRaw ? examMonthRaw.split('-')[1] : '';
+        const resultMonthStr = resultMonthRaw ? resultMonthRaw.split('-')[1] : '';
 
         const validExams = Array.isArray(exams) ? exams : [];
         const displayExams = [...validExams];
@@ -137,7 +142,8 @@ function renderExamTable() {
         pageExams.forEach((exam, localIdx) => {
             const index = startIdx + localIdx;
             if (searchStr && (!exam.name || !exam.name.toLowerCase().includes(searchStr))) return;
-            if (monthStr && (!exam.examDate || !exam.examDate.startsWith(monthStr))) return;
+            if (examMonthStr && (!exam.examDate || !exam.examDate.startsWith(examMonthStr + "/"))) return;
+            if (resultMonthStr && (!exam.resultDate || !exam.resultDate.startsWith(resultMonthStr + "/"))) return;
 
             const tr = document.createElement('tr');
             tr.setAttribute('title', '더블클릭하여 삭제');
