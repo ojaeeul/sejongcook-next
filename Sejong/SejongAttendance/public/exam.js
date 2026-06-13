@@ -121,7 +121,7 @@ function renderExamTable() {
     });
 
     // Add empty rows if too few, to maintain notebook look
-    const minRows = 15;
+    const minRows = 25;
     const currentRows = tbody.children.length;
     for (let i = currentRows; i < minRows; i++) {
         const tr = document.createElement('tr');
