@@ -392,7 +392,7 @@ function getMemberEighthDayInMonth(memberId, year, month, courseFilter = null) {
     if (!m) return { eighthDays: [], eighthMonth: month, isSimulated: false, isArtificial1st: false, hasAnyAttendance: false };
 
     if (typeof window.calculateRedBoxesForMonth === 'function') {
-        const result = window.calculateRedBoxesForMonth(m, year, month, window.attendanceData || [], courseFilter, window.GLOBAL_DATA_ADJUSTMENTS || {});
+        const result = window.calculateRedBoxesForMonth(m, year, month, typeof attendanceData !== 'undefined' ? attendanceData : [], courseFilter, typeof GLOBAL_DATA_ADJUSTMENTS !== 'undefined' ? GLOBAL_DATA_ADJUSTMENTS : {});
         
         let days = [...(result.redDays || [])];
         
