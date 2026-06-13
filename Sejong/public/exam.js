@@ -99,35 +99,41 @@ function renderExamTable() {
             lastRealIndex--;
         }
         
-        // Keep only real data
-        const realData = displayExams.slice(0, lastRealIndex + 1);
+        // Keep only real data and attach original index
+        const realDataWithIndex = displayExams.slice(0, lastRealIndex + 1).map((e, i) => ({ ...e, originalIndex: i }));
+        
+        // APPLY FILTERS BEFORE PAGINATION
+        const searchStr = document.getElementById('examSearchInput') ? document.getElementById('examSearchInput').value.toLowerCase() : '';
+        const filteredData = realDataWithIndex.filter(exam => {
+            if (searchStr && (!exam.name || !exam.name.toLowerCase().includes(searchStr))) return false;
+            
+            // Exam Date Filtering
+            if (examMonthStr) {
+                if (!exam.examDate) return false;
+                const filterStr = examMonthStr + "/" + (examDayStr || "");
+                if (!exam.examDate.startsWith(filterStr)) return false;
+            }
+            
+            // Result Date Filtering
+            if (resultMonthStr) {
+                if (!exam.resultDate) return false;
+                const filterStr = resultMonthStr + "/" + (resultDayStr || "");
+                if (!exam.resultDate.startsWith(filterStr)) return false;
+            }
+            return true;
+        });
         
         const rowsPerPage = 15;
-        let totalPages = Math.ceil(realData.length / rowsPerPage);
+        let totalPages = Math.ceil(filteredData.length / rowsPerPage);
         if (totalPages === 0) totalPages = 1;
         
-        // Auto-add new page if the last real row is filled
-        if (realData.length > 0 && realData.length % rowsPerPage === 0) {
+        // Auto-add new page if the last filtered row is filled, but only if no search filter is active
+        // If searching, we just show matches. If not searching, we give a blank row at the end
+        if (searchStr === '' && !examMonthStr && !resultMonthStr && filteredData.length > 0 && filteredData.length % rowsPerPage === 0) {
             totalPages++;
         }
         
         if (typeof currentPage === 'undefined') window.currentPage = 1;
-        
-        // Ensure totalPages is at least currentPage so forced blank pages aren't destroyed
-        if (currentPage > totalPages) {
-            totalPages = currentPage;
-        }
-        
-        // Pad the realData up to totalPages * rowsPerPage
-        while (realData.length < totalPages * rowsPerPage) {
-            realData.push({ examDate: '', resultDate: '', subject: '', name: '', time: '', examNum: '', genId: '', genPw: '', score: '', note: '' });
-        }
-        
-        // Make sure the main `exams` array matches the padded length so that updateExam works correctly
-        if (exams.length !== realData.length) {
-            exams.splice(0, exams.length, ...realData);
-        }
-
         if (currentPage > totalPages) currentPage = totalPages;
         if (currentPage < 1) currentPage = 1;
         
@@ -136,8 +142,6 @@ function renderExamTable() {
         indicators.forEach(indicator => {
             indicator.textContent = `${currentPage} / ${totalPages} 페이지`;
         });
-        
-        // Also support old ID if it exists anywhere else
         const oldIndicator = document.getElementById('pageIndicator');
         if (oldIndicator) oldIndicator.textContent = `${currentPage} / ${totalPages} 페이지`;
         
@@ -153,25 +157,21 @@ function renderExamTable() {
         }
         
         const startIdx = (currentPage - 1) * rowsPerPage;
-        const pageExams = realData.slice(startIdx, startIdx + rowsPerPage);
+        const pageExams = filteredData.slice(startIdx, startIdx + rowsPerPage);
+        
+        // Pad the page with empty rows if needed
+        const currentDataLength = validExams.length;
+        let padCounter = 0;
+        while (pageExams.length < rowsPerPage) {
+            pageExams.push({
+                originalIndex: currentDataLength + padCounter,
+                examDate: '', resultDate: '', subject: '', name: '', time: '', examNum: '', genId: '', genPw: '', score: '', note: ''
+            });
+            padCounter++;
+        }
 
-        pageExams.forEach((exam, localIdx) => {
-            const index = startIdx + localIdx;
-            if (searchStr && (!exam.name || !exam.name.toLowerCase().includes(searchStr))) return;
-            
-            // Exam Date Filtering
-            if (examMonthStr) {
-                if (!exam.examDate) return;
-                const filterStr = examMonthStr + "/" + (examDayStr || "");
-                if (!exam.examDate.startsWith(filterStr)) return;
-            }
-            
-            // Result Date Filtering
-            if (resultMonthStr) {
-                if (!exam.resultDate) return;
-                const filterStr = resultMonthStr + "/" + (resultDayStr || "");
-                if (!exam.resultDate.startsWith(filterStr)) return;
-            }
+        pageExams.forEach((exam) => {
+            const index = exam.originalIndex;
 
             const tr = document.createElement('tr');
             tr.setAttribute('title', '더블클릭하여 삭제');
