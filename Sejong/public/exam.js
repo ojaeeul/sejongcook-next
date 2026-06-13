@@ -156,20 +156,22 @@ function renderExamTable() {
             totalPages++;
         }
         
-        if (typeof currentPage === 'undefined') {
+        let cPage = window.currentPage;
+        if (typeof cPage === 'undefined' || isNaN(cPage) || cPage === null) {
             const saved = localStorage.getItem('examCurrentPage');
-            window.currentPage = saved ? parseInt(saved, 10) : 1;
+            cPage = saved && !isNaN(parseInt(saved, 10)) ? parseInt(saved, 10) : 1;
         }
         
         // Ensure totalPages is at least currentPage so forced blank pages aren't destroyed
-        if (currentPage > totalPages) {
-            totalPages = currentPage;
+        if (cPage > totalPages) {
+            totalPages = cPage;
         }
         
-        if (currentPage < 1) window.currentPage = 1;
+        if (cPage < 1) cPage = 1;
+        window.currentPage = cPage;
         
         // Save current page to localStorage so it persists across refreshes
-        localStorage.setItem('examCurrentPage', currentPage);
+        localStorage.setItem('examCurrentPage', cPage);
         
         // Update pagination indicator
         const indicators = document.querySelectorAll('.pageIndicator');
