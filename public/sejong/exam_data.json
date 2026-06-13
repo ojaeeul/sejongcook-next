@@ -1,12 +1,12 @@
 [
     {
-        "examDate": "10/21",
-        "resultDate": "10/30",
+        "examDate": "10/25",
+        "resultDate": "10/10",
         "subject": "제과기능사",
         "name": "오재을666",
         "time": "12:30",
-        "examNum": "05900414",
-        "genId": "oje",
+        "examNum": "05400414",
+        "genId": "oje66",
         "genPw": "oje@",
         "score": "",
         "note": "어니언스프, 해산물샐러드"
@@ -85,13 +85,13 @@
     },
     {
         "examDate": "11/13",
-        "resultDate": "11/27",
-        "subject": "한식",
-        "name": "배유향",
+        "resultDate": "10/07",
+        "subject": "양식기능사",
+        "name": "오재을6",
         "time": "10:00",
         "examNum": "0830",
-        "genId": "byh",
-        "genPw": "byh@",
+        "genId": "oje123456",
+        "genPw": "oje123456@",
         "score": "실격",
         "note": "미나리강회 무생채"
     },

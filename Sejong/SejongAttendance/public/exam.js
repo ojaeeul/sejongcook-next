@@ -163,6 +163,12 @@ function updateExam(index, field, value) {
         }
     }
     
+    // Auto-remove "기능사" if manually typed in subject
+    if (field === 'subject' && value.includes('기능사')) {
+        exams[index][field] = value.replace('기능사', '').trim();
+        renderExamTable();
+    }
+    
     // Auto-generate ID, PW, and Subject if name is entered
     if (field === 'name') {
         const member = examMembers.find(m => m.name && m.name.trim() === value.trim());
@@ -175,7 +181,7 @@ function updateExam(index, field, value) {
             if (member.course) {
                 const courses = member.course.split(',').map(c => c.trim()).filter(c => c);
                 if (courses.length === 1) {
-                    exams[index].subject = courses[0].split('(')[0].trim();
+                    exams[index].subject = courses[0].split('(')[0].replace('기능사', '').trim();
                     saveExams();
                     renderExamTable();
                 } else if (courses.length > 1) {
@@ -294,10 +300,10 @@ function addExamForStudent(member, selectedCourse) {
     const genId = generateId(member.name, member.resident_num);
     const genPw = genId ? genId + '@' : '';
     
-    // Extract subject from course string (e.g. "일식기능사(19:00)" -> "일식기능사")
+    // Extract subject from course string and remove '기능사' (e.g. "일식기능사(19:00)" -> "일식")
     let subject = '';
     if (selectedCourse && selectedCourse !== '과정 없음') {
-        subject = selectedCourse.split('(')[0].trim();
+        subject = selectedCourse.split('(')[0].replace('기능사', '').trim();
     }
     
     const newExam = {
@@ -345,7 +351,7 @@ function closeCourseSelectModal() {
 }
 
 function selectCourseForExam(index, course) {
-    exams[index].subject = course.split('(')[0].trim();
+    exams[index].subject = course.split('(')[0].replace('기능사', '').trim();
     saveExams();
     renderExamTable();
     closeCourseSelectModal();
