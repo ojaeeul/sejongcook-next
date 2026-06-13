@@ -240,6 +240,9 @@ function renderTable() {
             }
         }
 
+        // '예' 날짜(8회차)가 이 달에 없는 사람은 목록에서 제외 (수강중 필터 제외)
+        if (currentState.statusFilter !== 'enrolled' && !isDueThisMonth) return;
+
         // Find payment record
         const normalizeCourse = (c) => (!c || c === 'null') ? null : String(c).trim();
         const payment = paymentsData.find(p =>
@@ -253,13 +256,8 @@ function renderTable() {
         const amount = DEFAULT_PRICE;
 
         // Dropdown Filter (Status)
-        if (currentState.statusFilter === 'unpaid') {
-            // 미납 탭: 이번 달에 8회차가 있고, 결제하지 않은 사람만
-            if (isPaid || !isDueThisMonth) return;
-        } else if (currentState.statusFilter === 'paid') {
-            // 납부완료 탭: 이번 달(현재 선택된 달) 결제 내역이 'paid'인 사람만
-            if (!isPaid) return;
-        }
+        if (currentState.statusFilter === 'unpaid' && isPaid) return;
+        if (currentState.statusFilter === 'paid' && !isPaid) return;
 
         rows.push({ member: m, payment, isPaid, amount, scheduledDay });
     });
@@ -319,38 +317,18 @@ function renderTable() {
     // -> 여기서는 주석 처리하거나 필요시 제거. 일단 유지해도 무방.
 }
 
-let isToggling = false;
 async function togglePayment(memberId) {
-    if (isToggling) return;
-    
     // Determine current status to toggle
     const normalizeCourse = (c) => (!c || c === 'null') ? null : String(c).trim();
-    
-    // If course is 'all', try to use the member's first course as default to avoid creating 'null' course duplicates
-    let targetCourse = currentState.course === 'all' ? null : currentState.course;
-    if (!targetCourse) {
-        const m = membersData.find(md => md.id == memberId);
-        if (m && m.course) {
-            targetCourse = m.course.split(',')[0].trim().split('(')[0];
-        }
-    }
-
     const payment = paymentsData.find(p =>
         p.memberId == memberId &&
         p.year == currentState.year &&
         p.month == currentState.month &&
-        (normalizeCourse(p.course) === normalizeCourse(targetCourse) || (!p.course && !targetCourse) || currentState.course === 'all')
+        normalizeCourse(p.course) === normalizeCourse(currentState.course === 'all' ? null : currentState.course)
     );
-    
-    // If we found an existing payment while in 'all' view, reuse its exact course name
-    if (payment && currentState.course === 'all') {
-        targetCourse = payment.course;
-    }
-
     const isPaid = payment && payment.status === 'paid';
     const newStatus = isPaid ? 'unpaid' : 'paid';
 
-    isToggling = true;
     try {
         await fetch(getFetchUrl('payments'), {
             method: 'POST',
@@ -360,7 +338,7 @@ async function togglePayment(memberId) {
                 year: currentState.year,
                 month: currentState.month,
                 status: newStatus,
-                course: normalizeCourse(targetCourse),
+                course: normalizeCourse(currentState.course === 'all' ? null : currentState.course),
                 amount: DEFAULT_PRICE, // should be dynamic, but fixed for now
                 updatedAt: new Date().toISOString()
             })
@@ -370,7 +348,5 @@ async function togglePayment(memberId) {
     } catch (e) {
         console.error("Update failed", e);
         alert('납부 상태 업데이트에 실패했습니다.');
-    } finally {
-        isToggling = false;
     }
 }
