@@ -143,8 +143,10 @@ function updateExam(index, field, value) {
         }
     }
     
-    saveExams();
     if (field === 'score' || field === 'name') renderExamTable();
+    
+    // Save to server
+    saveExams();
 }
 
 async function saveExams() {
