@@ -617,7 +617,7 @@ function renderTable() {
                 let remainingForLoop = currentProgressObj.count;
 
                 stats.allMilestones.forEach(ms => {
-                    const msPayment = paymentsData.find(p => p.memberId == m.id && p.year == ms.year && p.month == ms.month && normalizeCourse(p.course) === normalizeCourse(courseNameOnly) && p.status !== 'delete');
+                    const msPayment = paymentsData.find(p => p.memberId == m.id && p.year == ms.year && p.month == ms.month && p.status !== 'delete' && (!p.course || p.course === 'null' || p.course === 'undefined' || p.course === '' || !courseNameOnly || p.course.includes(courseNameOnly) || courseNameOnly.includes(p.course)));
                     
                     if (msPayment && msPayment.status === 'paid') {
                         paidMilestonesCount++;
@@ -663,7 +663,13 @@ function renderTable() {
 
             // 개별 과정에 해당하는 리뷰 중인 달의 명시적 결제 기록 찾기 (휴지통 상태는 무시)
             const normalizeCourse = (c) => (!c || c === 'null') ? null : String(c).trim();
-            const payment = paymentsData.find(p => p.memberId == m.id && p.year == window.currentState.year && p.month == window.currentState.month && normalizeCourse(p.course) === normalizeCourse(courseNameOnly) && p.status !== 'delete');
+            const payment = paymentsData.find(p => 
+                p.memberId == m.id && 
+                p.year == window.currentState.year && 
+                p.month == window.currentState.month && 
+                p.status !== 'delete' &&
+                (!p.course || p.course === 'null' || p.course === 'undefined' || p.course === '' || !courseNameOnly || p.course.includes(courseNameOnly) || courseNameOnly.includes(p.course))
+            );
             const isPaidRecord = payment && payment.status === 'paid';
 
             // [추가] "미납" 상태(isDueThisMonth)를 수강료 납부대장 뱃지 로직과 100% 동일하게 강제
@@ -673,7 +679,7 @@ function renderTable() {
                 String(p.year) === String(window.currentState.year) &&
                 String(p.month) === String(window.currentState.month) &&
                 p.status === 'paid' &&
-                (p.course && courseNameOnly && (p.course.includes(courseNameOnly) || courseNameOnly.includes(p.course)))
+                (!p.course || p.course === 'null' || p.course === 'undefined' || p.course === '' || !courseNameOnly || p.course.includes(courseNameOnly) || courseNameOnly.includes(p.course))
             );
             
             let forcedUnpaidCount = 0;
@@ -1184,8 +1190,8 @@ function exportToCSV() {
                 p.memberId == m.id &&
                 p.year == window.currentState.year &&
                 p.month == window.currentState.month &&
-                normalizeCourse(p.course) === normalizeCourse(courseNameOnly) &&
-                p.status !== 'delete'
+                p.status !== 'delete' &&
+                (!p.course || p.course === 'null' || p.course === 'undefined' || p.course === '' || !courseNameOnly || p.course.includes(courseNameOnly) || courseNameOnly.includes(p.course))
             );
             const isPaid = payment && payment.status === 'paid';
             const amount = calculateTotalFee(courseNameOnly || m.course);
@@ -1489,7 +1495,7 @@ function getUnpaidCountForMonth(year, month) {
                             String(p.year) === String(year) &&
                             String(p.month) === String(month) &&
                             p.status === 'paid' &&
-                            (p.course && courseNameOnly && (p.course.includes(courseNameOnly) || courseNameOnly.includes(p.course)))
+                            (!p.course || p.course === 'null' || p.course === 'undefined' || p.course === '' || !courseNameOnly || p.course.includes(courseNameOnly) || courseNameOnly.includes(p.course))
                         );
                         if (!isPaid) {
                             unpaidCount++;
