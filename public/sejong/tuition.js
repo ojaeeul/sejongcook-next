@@ -319,18 +319,38 @@ function renderTable() {
     // -> 여기서는 주석 처리하거나 필요시 제거. 일단 유지해도 무방.
 }
 
+let isToggling = false;
 async function togglePayment(memberId) {
+    if (isToggling) return;
+    
     // Determine current status to toggle
     const normalizeCourse = (c) => (!c || c === 'null') ? null : String(c).trim();
+    
+    // If course is 'all', try to use the member's first course as default to avoid creating 'null' course duplicates
+    let targetCourse = currentState.course === 'all' ? null : currentState.course;
+    if (!targetCourse) {
+        const m = membersData.find(md => md.id == memberId);
+        if (m && m.course) {
+            targetCourse = m.course.split(',')[0].trim().split('(')[0];
+        }
+    }
+
     const payment = paymentsData.find(p =>
         p.memberId == memberId &&
         p.year == currentState.year &&
         p.month == currentState.month &&
-        normalizeCourse(p.course) === normalizeCourse(currentState.course === 'all' ? null : currentState.course)
+        (normalizeCourse(p.course) === normalizeCourse(targetCourse) || (!p.course && !targetCourse) || currentState.course === 'all')
     );
+    
+    // If we found an existing payment while in 'all' view, reuse its exact course name
+    if (payment && currentState.course === 'all') {
+        targetCourse = payment.course;
+    }
+
     const isPaid = payment && payment.status === 'paid';
     const newStatus = isPaid ? 'unpaid' : 'paid';
 
+    isToggling = true;
     try {
         await fetch(getFetchUrl('payments'), {
             method: 'POST',
@@ -340,7 +360,7 @@ async function togglePayment(memberId) {
                 year: currentState.year,
                 month: currentState.month,
                 status: newStatus,
-                course: normalizeCourse(currentState.course === 'all' ? null : currentState.course),
+                course: normalizeCourse(targetCourse),
                 amount: DEFAULT_PRICE, // should be dynamic, but fixed for now
                 updatedAt: new Date().toISOString()
             })
@@ -350,5 +370,7 @@ async function togglePayment(memberId) {
     } catch (e) {
         console.error("Update failed", e);
         alert('납부 상태 업데이트에 실패했습니다.');
+    } finally {
+        isToggling = false;
     }
 }
