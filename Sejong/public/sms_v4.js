@@ -1605,32 +1605,47 @@ function renderRangeCalendar() {
                 }
                 myCourses.forEach(c => {
                     const cName = c.replace(/\([^)]*\)/g, '').trim();
-                    Object.keys(ledgerSync).forEach(k => {
-                        const parts = k.split('_');
-                        if (parts.length >= 4 && parts[0] === String(m.id) && parseInt(parts[1]) === calendarYear && parseInt(parts[2]) === calendarMonth + 1) {
-                            const courseFull = parts.slice(3).join('_');
-                            const cleanSyncCourse = courseFull === 'all' ? '미지정' : courseFull.replace(/\([^)]*\)/g, '').trim();
-                            if (cleanSyncCourse === cName || (cName === '미지정' && courseFull === 'all')) {
-                                const days = ledgerSync[k];
-                                let daysArr = [];
-                                if (Array.isArray(days)) {
-                                    daysArr = days;
-                                } else if (days > 0) {
-                                    daysArr = [days];
-                                }
-                                daysArr.forEach(dVal => {
-                                    const d = String(dVal).includes('-') ? parseInt(String(dVal).split('-')[2], 10) : parseInt(dVal, 10);
-                                    if (isNaN(d)) return;
-                                    if (!paymentNamesByDay[d]) paymentNamesByDay[d] = [];
-                                    const cClean = c.trim().replace('기능사', '');
-                                    const label = `${m.name}(${cClean})`;
-                                    if (!paymentNamesByDay[d].includes(label)) {
-                                        paymentNamesByDay[d].push(label);
-                                    }
-                                });
-                            }
+                    let daysArr = [];
+                    let hasAtt = false;
+                    let isSim = false;
+
+                    const syncKey = `${m.id}_${calendarYear}_${calendarMonth + 1}_${cName}`;
+                    if (ledgerSync && ledgerSync[syncKey]) {
+                        const rawSync = ledgerSync[syncKey];
+                        daysArr = Array.isArray(rawSync) ? rawSync : (typeof rawSync === 'number' ? [rawSync] : []);
+                        if (daysArr.length > 0) hasAtt = true;
+                    } else if (typeof window.calculateRedBoxesForMonth === 'function') {
+                        const result = window.calculateRedBoxesForMonth(m, calendarYear, calendarMonth + 1, typeof attendanceData !== 'undefined' ? attendanceData : [], cName, typeof window.GLOBAL_DATA_ADJUSTMENTS !== 'undefined' ? window.GLOBAL_DATA_ADJUSTMENTS : {});
+                        if (result && result.redDays && result.redDays.length > 0) {
+                            daysArr = result.redDays;
+                            isSim = result.isSimulated;
+                            hasAtt = result.hasAnyAttendance;
                         }
-                    });
+                    }
+
+                    if (daysArr.length > 0 && hasAtt && !isSim) {
+                        daysArr.forEach(dVal => {
+                            const d = String(dVal).includes('-') ? parseInt(String(dVal).split('-')[2], 10) : parseInt(dVal, 10);
+                            if (isNaN(d) || d <= 0) return;
+                            
+                            const isPaid = (typeof paymentsData !== 'undefined' ? paymentsData : []).some(p =>
+                                String(p.memberId) === String(m.id) &&
+                                String(p.year) === String(calendarYear) &&
+                                String(p.month) === String(calendarMonth + 1) &&
+                                p.status === 'paid' &&
+                                (p.course && cName && (p.course.includes(cName) || cName.includes(p.course)))
+                            );
+
+                            if (!isPaid) {
+                                if (!paymentNamesByDay[d]) paymentNamesByDay[d] = [];
+                                const cClean = c.trim().replace('기능사', '');
+                                const label = `${m.name}(${cClean})`;
+                                if (!paymentNamesByDay[d].includes(label)) {
+                                    paymentNamesByDay[d].push(label);
+                                }
+                            }
+                        });
+                    }
                 });
             });
         }
