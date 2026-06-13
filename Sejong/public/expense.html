@@ -1,4 +1,4 @@
-<!DOCTYPE html
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -6,64 +6,282 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>지출내역</title>
-    <link rel="stylesheet" href="style.css?v=20260613-57">
+    <title>지출내역 및 날짜별 매출</title>
+    <link rel="stylesheet" href="style.css?v=20260613-58">
+    <!-- 손글씨 느낌을 위한 폰트 -->
+    <link href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&display=swap" rel="stylesheet">
     <style>
-        .expense-page {
+        .notebook-wrapper {
             display: flex;
-            flex-direction: column;
+            justify-content: center;
             align-items: center;
             padding: 40px;
+            min-height: calc(100vh - 80px);
+            background-color: #d1d5db;
         }
-        .icons-container {
+        .notebook {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 30px;
-            margin-top: 40px;
+            width: 1400px;
+            height: 850px;
+            background: #fcf9f2;
+            border-radius: 12px;
+            box-shadow: 20px 20px 40px rgba(0,0,0,0.2), -5px 5px 15px rgba(0,0,0,0.05);
+            position: relative;
         }
-        .icons-container img {
-            width: 180px;
-            height: 180px;
-            object-fit: contain;
+        .page {
+            flex: 1;
+            position: relative;
+            /* 노트 줄무늬 (줄 간격 40px) */
+            background-image: repeating-linear-gradient(transparent, transparent 39px, #cbd5e1 39px, #cbd5e1 40px);
+            background-position: 0 50px;
+            padding: 50px 40px 40px 70px;
+            font-family: 'Nanum Pen Script', cursive;
+            font-size: 26px;
+            color: #334155;
+            overflow-y: auto;
         }
-        .spring {
-            width: 4px;
-            height: 200px;
-            background: repeating-linear-gradient(
-                45deg,
-                #ff8c00,
-                #ff8c00 10px,
-                #ffa500 10px,
-                #ffa500 20px
+        .page-left {
+            border-top-left-radius: 12px;
+            border-bottom-left-radius: 12px;
+        }
+        .page-right {
+            border-top-right-radius: 12px;
+            border-bottom-right-radius: 12px;
+        }
+        /* 세로 빨간색 마진 선 */
+        .page::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 60px;
+            width: 2px;
+            background-color: #fca5a5;
+            z-index: 1;
+        }
+        /* 중앙 스프링 바인딩 */
+        .binding {
+            width: 40px;
+            background: linear-gradient(to right, #e2e8f0 0%, #fcf9f2 20%, #e2e8f0 50%, #fcf9f2 80%, #e2e8f0 100%);
+            position: relative;
+            z-index: 10;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.1);
+        }
+        .binding::before {
+            content: '';
+            position: absolute;
+            top: 40px;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            /* 스프링 링 묘사 */
+            background-image: repeating-linear-gradient(
+                transparent, 
+                transparent 16px, 
+                #475569 16px, 
+                #94a3b8 18px, 
+                #334155 20px, 
+                #1e293b 24px, 
+                transparent 24px, 
+                transparent 40px
             );
-            border-radius: 2px;
         }
         .page-title {
-            font-size: 2.2rem;
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 22px;
             font-weight: 700;
-            color: #222;
-            text-align: center;
+            margin-bottom: 20px;
+            background: #fcf9f2;
+            display: inline-block;
+            padding-right: 15px;
+            position: relative;
+            z-index: 2;
+            color: #475569;
+        }
+        .entry-line {
+            line-height: 40px;
+            position: relative;
+            z-index: 2;
+            display: flex;
+            align-items: baseline;
+        }
+        .date-col {
+            width: 90px;
+            font-weight: bold;
+            color: #475569;
+        }
+        .desc-col {
+            flex: 1;
+            letter-spacing: 1px;
+        }
+        .amount-col {
+            text-align: right;
+            padding-right: 10px;
+        }
+        /* 오른쪽 페이지 다단 레이아웃 */
+        .right-page-columns {
+            display: flex;
+            gap: 30px;
+            position: relative;
+            z-index: 2;
+        }
+        .right-col-half {
+            flex: 1;
+        }
+        /* Custom scrollbar for pages */
+        .page::-webkit-scrollbar {
+            width: 8px;
+        }
+        .page::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 4px;
         }
     </style>
 </head>
 <body>
     <div class="app-container">
         <aside class="sidebar">
-            <!-- Existing sidebar is included via server-side include; for simplicity we reuse the same navigation as other pages -->
             <script src="shared_sidebar.js" defer></script>
         </aside>
-        <main class="main-content">
-            <div class="expense-page">
-                <h1 class="page-title">지출내역</h1>
-                <div class="icons-container">
-                    <img src="expense_icon_1781358903545.png" alt="지출 아이콘">
-                    <div class="spring"></div>
-                    <img src="sales_by_date_icon_1781358927277.png" alt="날짜별 매출 아이콘">
+        <main class="main-content" style="padding:0;">
+            <div class="notebook-wrapper">
+                <div class="notebook">
+                    <!-- 왼쪽 페이지: 지출내역 -->
+                    <div class="page page-left">
+                        <div class="page-title">지출내역</div>
+                        
+                        <div class="entry-line">
+                            <div class="date-col">7/25(화)</div>
+                            <div class="desc-col">야채 25.- , 멸치장.- , 연회비 50.- , 두루마리 4P 590</div>
+                        </div>
+                        <div class="entry-line">
+                            <div class="date-col"></div>
+                            <div class="desc-col">샐러리 2,750 , 솎기야채 28,800</div>
+                        </div>
+                        <div class="entry-line">
+                            <div class="date-col">7/26(수)</div>
+                            <div class="desc-col">관리비 1,457,200 + 152,210 = 1,609,410 (8/14)</div>
+                        </div>
+                        <div class="entry-line">
+                            <div class="date-col">7/27(목)</div>
+                            <div class="desc-col">재료대 김포 500,820(NC) 가락몰 185.- + 200.-(NC)</div>
+                        </div>
+                        <div class="entry-line">
+                            <div class="date-col"></div>
+                            <div class="desc-col">제빵재료 620.- (NC) , 가자미블럭 28,620 (NC)</div>
+                        </div>
+                        <div class="entry-line">
+                            <div class="date-col">7/29(토)</div>
+                            <div class="desc-col">쓰레기봉투사 37,380</div>
+                        </div>
+                        <div class="entry-line">
+                            <div class="date-col">7/31(월)</div>
+                            <div class="desc-col">뽀로로음료 22.- (원영) 분필 26.- , 죄.홍차 30.-</div>
+                        </div>
+                        <div class="entry-line">
+                            <div class="date-col"></div>
+                            <div class="desc-col">소고기사 73,320(NC)</div>
+                        </div>
+                        <div class="entry-line">
+                            <div class="date-col">8/2(수)</div>
+                            <div class="desc-col">야채 28,800 , 계란 65.- , 토마토홀외 18,420</div>
+                        </div>
+                        <div class="entry-line">
+                            <div class="date-col"></div>
+                            <div class="desc-col">조기사 138,312</div>
+                        </div>
+                    </div>
+
+                    <!-- 중앙 스프링 -->
+                    <div class="binding"></div>
+
+                    <!-- 오른쪽 페이지: 날짜별 매출 -->
+                    <div class="page page-right">
+                        <div class="page-title">날짜별 매출</div>
+                        
+                        <div class="right-page-columns">
+                            <!-- 매출 첫 번째 단 -->
+                            <div class="right-col-half">
+                                <div class="entry-line">
+                                    <div class="date-col">7/25(화)</div>
+                                    <div class="desc-col">김나영 식비 환불</div>
+                                    <div class="amount-col">(-) 47.-</div>
+                                </div>
+                                <div class="entry-line">
+                                    <div class="date-col"></div>
+                                    <div class="desc-col" style="font-size:22px;">(농)김말순 135-02-368289</div>
+                                </div>
+                                <div class="entry-line">
+                                    <div class="date-col">7/26(수)</div>
+                                    <div class="desc-col"></div>
+                                    <div class="amount-col">2,000 (카)</div>
+                                </div>
+                                <div class="entry-line">
+                                    <div class="date-col">7/28(금)</div>
+                                    <div class="desc-col">김포가족센터</div>
+                                    <div class="amount-col">750.- (카)</div>
+                                </div>
+                                <div class="entry-line">
+                                    <div class="date-col"></div>
+                                    <div class="desc-col">황유연(신규)</div>
+                                    <div class="amount-col">250.- (카)</div>
+                                </div>
+                                <div class="entry-line">
+                                    <div class="date-col">7/31(월)</div>
+                                    <div class="desc-col">원현숙</div>
+                                    <div class="amount-col">250.- (카)</div>
+                                </div>
+                                <div class="entry-line">
+                                    <div class="date-col">8/2(수)</div>
+                                    <div class="desc-col">이동현</div>
+                                    <div class="amount-col">250.- (카)</div>
+                                </div>
+                                <div class="entry-line">
+                                    <div class="date-col">8/7(월)</div>
+                                    <div class="desc-col">장서현</div>
+                                    <div class="amount-col">240.- (선)</div>
+                                </div>
+                            </div>
+                            
+                            <!-- 매출 두 번째 단 -->
+                            <div class="right-col-half">
+                                <div class="entry-line">
+                                    <div class="desc-col">이민지(제빵+케잌)보류</div>
+                                    <div class="amount-col">320.- (카)</div>
+                                </div>
+                                <div class="entry-line">
+                                    <div class="desc-col">안세은(신규)</div>
+                                    <div class="amount-col">250.- (카)</div>
+                                </div>
+                                <div class="entry-line">
+                                    <div class="desc-col">신현진</div>
+                                    <div class="amount-col">270.- (카)</div>
+                                </div>
+                                <div class="entry-line">
+                                    <div class="desc-col">정태일</div>
+                                    <div class="amount-col">200.- (카)</div>
+                                </div>
+                                <div class="entry-line">
+                                    <div class="desc-col">김포교육청</div>
+                                    <div class="amount-col">4,050.- </div>
+                                </div>
+                                <div class="entry-line">
+                                    <div class="desc-col">노인현(신규)</div>
+                                    <div class="amount-col">1,125.- (카)</div>
+                                </div>
+                                <div class="entry-line">
+                                    <div class="desc-col">백소은</div>
+                                    <div class="amount-col">200.- (카)</div>
+                                </div>
+                                <div class="entry-line">
+                                    <div class="desc-col">이은서</div>
+                                    <div class="amount-col">270.- (카)</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <p style="margin-top:30px; font-size:1.2rem; color:#555; text-align:center;">
-                    좌측은 지출을, 우측은 날짜별 매출을 나타냅니다.
-                </p>
             </div>
         </main>
     </div>
