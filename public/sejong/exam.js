@@ -68,6 +68,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('resultMonthFilter').addEventListener('change', renderExamTable);
 });
 
+window.isViewAllPages = false;
+
+function toggleViewAllPages() {
+    window.isViewAllPages = !window.isViewAllPages;
+    const btn = document.getElementById('viewAllPagesBtn');
+    if (btn) {
+        if (window.isViewAllPages) {
+            btn.style.background = '#e2e8f0';
+            btn.textContent = '페이징 보기';
+        } else {
+            btn.style.background = 'white';
+            btn.textContent = '페이지 전체보기';
+        }
+    }
+    renderExamTable();
+}
+
 function renderExamTable() {
     const tbody = document.getElementById('examTbody');
     if (!tbody) return;
@@ -122,7 +139,7 @@ function renderExamTable() {
             return true;
         });
         
-        const rowsPerPage = 15;
+        const rowsPerPage = window.isViewAllPages ? Math.max(filteredData.length, 15) : 15;
         let totalPages = Math.ceil(filteredData.length / rowsPerPage);
         if (totalPages === 0) totalPages = 1;
         
