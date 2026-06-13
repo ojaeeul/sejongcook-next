@@ -147,51 +147,11 @@ function processNewPayments() {
         
         const isBaking = BAKING_COURSES.some(bc => courseName.includes(bc));
         
-        // Find the date block for dateStr to try packing items
-        const cookLines = cookingContainer.children;
-        const bakeLines = bakingContainer.children;
-        let dateBlockStartIndex = -1;
-        let dateBlockEndIndex = -1;
-
-        for (let i = cookLines.length - 1; i >= 0; i--) {
-            let dCol = cookLines[i].querySelector('.date-col');
-            if (dCol && dCol.textContent.trim() !== '') {
-                if (dCol.textContent.trim() === dateStr) {
-                    dateBlockStartIndex = i;
-                    dateBlockEndIndex = i;
-                    for(let j = i + 1; j < cookLines.length; j++) {
-                        let innerDCol = cookLines[j].querySelector('.date-col');
-                        if (innerDCol && innerDCol.textContent.trim() !== '') {
-                            break;
-                        }
-                        dateBlockEndIndex = j;
-                    }
-                    break; // Only break when we FOUND the date we're looking for
-                }
-                // If it's a DIFFERENT date, do NOT break. Keep searching upwards.
-            }
-        }
-
-        let targetIndex = -1;
-        if (dateBlockStartIndex !== -1) {
-            // Find an empty slot in the target column within the date block
-            for (let i = dateBlockStartIndex; i <= dateBlockEndIndex; i++) {
-                const targetLine = isBaking ? bakeLines[i] : cookLines[i];
-                if (!targetLine) continue;
-                const descCol = targetLine.querySelector('.desc-col');
-                const hasPayment = targetLine.hasAttribute('data-payment-id');
-                const hasText = descCol && descCol.textContent.trim() !== '';
-                
-                if (!hasPayment && !hasText) {
-                    targetIndex = i;
-                    break;
-                }
-            }
-        }
-
-        const isFirstOfDay = (dateBlockStartIndex === -1);
+        // 날짜 기준은 무조건 요리(왼쪽) 쪽
+        const existingDates = Array.from(cookingContainer.querySelectorAll('.date-col')).map(el => el.textContent.trim());
+        const isFirstOfDay = !existingDates.includes(dateStr);
         
-        // 첫 데이터면 둘 다 2줄 띄우기 (맨 첫 줄 제외)
+        // 첫 데이터면 둘 다 2줄 띄우기
         if (isFirstOfDay && Math.max(cookingContainer.children.length, bakingContainer.children.length) > 0) {
             for(let i=0; i<2; i++) {
                 cookingContainer.insertAdjacentHTML('beforeend', `<div class="entry-line"><div class="date-col" contenteditable="true"></div><div class="desc-col" contenteditable="true"></div><div class="amount-col" contenteditable="true"></div><div class="method-col" contenteditable="true"></div></div>`);
@@ -202,74 +162,43 @@ function processNewPayments() {
         const shortCourse = courseName ? courseName.split('(')[0] : '';
         const descHtml = `${memberName} ${shortCourse ? '('+shortCourse+')' : ''}`;
         
-        if (targetIndex !== -1) {
-            // Reuse existing empty row
-            const targetLine = isBaking ? bakeLines[targetIndex] : cookLines[targetIndex];
-            targetLine.className += ' tuition-auto';
-            targetLine.setAttribute('data-payment-id', `${p.memberId}_${p.year}_${p.month}`);
-            targetLine.innerHTML = isBaking ? `
-                <div class="desc-col" contenteditable="true">${descHtml}</div>
-                <div class="amount-col" contenteditable="true">${amountStr}</div>
-                <div class="method-col" contenteditable="true">(카)</div>
-            ` : `
-                <div class="date-col" contenteditable="true">${targetIndex === dateBlockStartIndex ? dateStr : ''}</div>
+        const cookLine = document.createElement('div');
+        cookLine.className = 'entry-line';
+        const bakeLine = document.createElement('div');
+        bakeLine.className = 'entry-line';
+        
+        if (isBaking) {
+            bakeLine.className += ' tuition-auto';
+            bakeLine.setAttribute('data-payment-id', `${p.memberId}_${p.year}_${p.month}`);
+            cookLine.innerHTML = `
+                <div class="date-col" contenteditable="true">${isFirstOfDay ? dateStr : ''}</div>
+                <div class="desc-col" contenteditable="true"></div>
+                <div class="amount-col" contenteditable="true"></div>
+                <div class="method-col" contenteditable="true"></div>
+            `;
+            bakeLine.innerHTML = `
                 <div class="desc-col" contenteditable="true">${descHtml}</div>
                 <div class="amount-col" contenteditable="true">${amountStr}</div>
                 <div class="method-col" contenteditable="true">(카)</div>
             `;
         } else {
-            // Create new row
-            const cookLine = document.createElement('div');
-            cookLine.className = 'entry-line';
-            const bakeLine = document.createElement('div');
-            bakeLine.className = 'entry-line';
-            
-            if (isBaking) {
-                bakeLine.className += ' tuition-auto';
-                bakeLine.setAttribute('data-payment-id', `${p.memberId}_${p.year}_${p.month}`);
-                cookLine.innerHTML = `
-                    <div class="date-col" contenteditable="true">${isFirstOfDay ? dateStr : ''}</div>
-                    <div class="desc-col" contenteditable="true"></div>
-                    <div class="amount-col" contenteditable="true"></div>
-                    <div class="method-col" contenteditable="true"></div>
-                `;
-                bakeLine.innerHTML = `
-                    <div class="desc-col" contenteditable="true">${descHtml}</div>
-                    <div class="amount-col" contenteditable="true">${amountStr}</div>
-                    <div class="method-col" contenteditable="true">(카)</div>
-                `;
-            } else {
-                cookLine.className += ' tuition-auto';
-                cookLine.setAttribute('data-payment-id', `${p.memberId}_${p.year}_${p.month}`);
-                cookLine.innerHTML = `
-                    <div class="date-col" contenteditable="true">${isFirstOfDay ? dateStr : ''}</div>
-                    <div class="desc-col" contenteditable="true">${descHtml}</div>
-                    <div class="amount-col" contenteditable="true">${amountStr}</div>
-                    <div class="method-col" contenteditable="true">(카)</div>
-                `;
-                bakeLine.innerHTML = `
-                    <div class="desc-col" contenteditable="true"></div>
-                    <div class="amount-col" contenteditable="true"></div>
-                    <div class="method-col" contenteditable="true"></div>
-                `;
-            }
-            
-            if (dateBlockEndIndex !== -1) {
-                // Insert after dateBlockEndIndex
-                const nextCook = cookingContainer.children[dateBlockEndIndex + 1];
-                const nextBake = bakingContainer.children[dateBlockEndIndex + 1];
-                if (nextCook && nextBake) {
-                    cookingContainer.insertBefore(cookLine, nextCook);
-                    bakingContainer.insertBefore(bakeLine, nextBake);
-                } else {
-                    cookingContainer.appendChild(cookLine);
-                    bakingContainer.appendChild(bakeLine);
-                }
-            } else {
-                cookingContainer.appendChild(cookLine);
-                bakingContainer.appendChild(bakeLine);
-            }
+            cookLine.className += ' tuition-auto';
+            cookLine.setAttribute('data-payment-id', `${p.memberId}_${p.year}_${p.month}`);
+            cookLine.innerHTML = `
+                <div class="date-col" contenteditable="true">${isFirstOfDay ? dateStr : ''}</div>
+                <div class="desc-col" contenteditable="true">${descHtml}</div>
+                <div class="amount-col" contenteditable="true">${amountStr}</div>
+                <div class="method-col" contenteditable="true">(카)</div>
+            `;
+            bakeLine.innerHTML = `
+                <div class="desc-col" contenteditable="true"></div>
+                <div class="amount-col" contenteditable="true"></div>
+                <div class="method-col" contenteditable="true"></div>
+            `;
         }
+        
+        cookingContainer.appendChild(cookLine);
+        bakingContainer.appendChild(bakeLine);
         
         hasChanges = true;
     });

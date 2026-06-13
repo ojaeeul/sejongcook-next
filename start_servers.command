@@ -38,7 +38,9 @@ echo "Web Server starting in background."
 # 4. Open Browser
 echo "[4/4] Opening browser pages..."
 sleep 2
-open "http://localhost:3000/sejong/ledger.html"
+open "http://localhost:8000/ledger.html"
+open "http://localhost:8000/index.html"
+open "http://localhost:3000"
 
 echo "--------------------------------------------------"
 echo "All servers are launching!"
