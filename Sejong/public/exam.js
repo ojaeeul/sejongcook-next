@@ -1,5 +1,6 @@
 let examMembers = [];
 let exams = [];
+let currentPage = 1;
 
 // Convert Hangul to initial English letters
 function getHangulInitial(char) {
@@ -78,12 +79,57 @@ function renderExamTable() {
         const validExams = Array.isArray(exams) ? exams : [];
         const displayExams = [...validExams];
         
-        // Pad up to 25 rows to maintain the notebook look
-        while (displayExams.length < 25) {
-            displayExams.push({ examDate: '', resultDate: '', subject: '', name: '', time: '', examNum: '', genId: '', genPw: '', score: '', note: '' });
+        // Remove empty rows from the end of the data array to determine real length
+        let lastRealIndex = displayExams.length - 1;
+        while (lastRealIndex >= 0) {
+            const e = displayExams[lastRealIndex];
+            if (e.name || e.subject || e.examDate || e.resultDate || e.score) {
+                break;
+            }
+            lastRealIndex--;
+        }
+        
+        // Keep only real data
+        const realData = displayExams.slice(0, lastRealIndex + 1);
+        
+        const rowsPerPage = 15;
+        let totalPages = Math.ceil(realData.length / rowsPerPage);
+        if (totalPages === 0) totalPages = 1;
+        
+        // Auto-add new page if the last real row is filled
+        if (realData.length > 0 && realData.length % rowsPerPage === 0) {
+            totalPages++;
+        }
+        
+        if (typeof currentPage === 'undefined') window.currentPage = 1;
+        
+        // Ensure totalPages is at least currentPage so forced blank pages aren't destroyed
+        if (currentPage > totalPages) {
+            totalPages = currentPage;
+        }
+        
+        // Pad the realData up to totalPages * rowsPerPage
+        while (realData.length < totalPages * rowsPerPage) {
+            realData.push({ examDate: '', resultDate: '', subject: '', name: '', time: '', examNum: '', genId: '', genPw: '', score: '', note: '' });
+        }
+        
+        // Make sure the main `exams` array matches the padded length so that updateExam works correctly
+        if (exams.length !== realData.length) {
+            exams.splice(0, exams.length, ...realData);
         }
 
-        displayExams.forEach((exam, index) => {
+        if (currentPage > totalPages) currentPage = totalPages;
+        if (currentPage < 1) currentPage = 1;
+        
+        // Update pagination indicator
+        const indicator = document.getElementById('pageIndicator');
+        if (indicator) indicator.textContent = `${currentPage} / ${totalPages} 페이지`;
+        
+        const startIdx = (currentPage - 1) * rowsPerPage;
+        const pageExams = realData.slice(startIdx, startIdx + rowsPerPage);
+
+        pageExams.forEach((exam, localIdx) => {
+            const index = startIdx + localIdx;
             if (searchStr && (!exam.name || !exam.name.toLowerCase().includes(searchStr))) return;
             if (monthStr && (!exam.examDate || !exam.examDate.startsWith(monthStr))) return;
 
@@ -111,6 +157,67 @@ function renderExamTable() {
     } catch (e) {
         console.error("renderExamTable error:", e);
     }
+}
+
+function prevPage() {
+    if (typeof currentPage === 'undefined') window.currentPage = 1;
+    if (currentPage > 1) {
+        currentPage--;
+        animatePageTurn('prev');
+    }
+}
+
+function nextPage() {
+    if (typeof currentPage === 'undefined') window.currentPage = 1;
+    const rowsPerPage = 15;
+    let totalPages = Math.ceil(exams.length / rowsPerPage);
+    
+    if (currentPage < totalPages) {
+        currentPage++;
+        animatePageTurn('next');
+    } else {
+        // Force add a new blank page
+        for (let i = 0; i < rowsPerPage; i++) {
+            exams.push({ examDate: '', resultDate: '', subject: '', name: '', time: '', examNum: '', genId: '', genPw: '', score: '', note: '' });
+        }
+        currentPage++;
+        animatePageTurn('next');
+        if (typeof saveExams === 'function') saveExams();
+    }
+}
+
+function animatePageTurn(dir) {
+    const container = document.getElementById('notebookContainer');
+    if (!container) return renderExamTable();
+    
+    // Create 3D flip effect
+    container.style.transition = 'transform 0.4s ease-in, opacity 0.4s ease-in';
+    container.style.transformOrigin = 'left center'; // Book spine on left
+    
+    if (dir === 'next') {
+        container.style.transform = 'perspective(1500px) rotateY(-90deg)';
+    } else {
+        container.style.transform = 'perspective(1500px) rotateY(90deg)';
+    }
+    container.style.opacity = '0';
+    
+    setTimeout(() => {
+        renderExamTable();
+        
+        container.style.transition = 'none';
+        if (dir === 'next') {
+            container.style.transform = 'perspective(1500px) rotateY(90deg)';
+        } else {
+            container.style.transform = 'perspective(1500px) rotateY(-90deg)';
+        }
+        
+        // Force reflow
+        void container.offsetWidth;
+        
+        container.style.transition = 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease-out';
+        container.style.transform = 'perspective(1500px) rotateY(0deg)';
+        container.style.opacity = '1';
+    }, 400);
 }
 
 function getScoreClass(score) {
