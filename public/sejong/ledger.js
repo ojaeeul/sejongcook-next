@@ -533,24 +533,41 @@ function renderTable(container, title, members, id) {
     
     members.forEach(m => {
         for (let month = 1; month <= 12; month++) {
-            const schedules = getAllLedgerMonthStats(m.id, currentYear, month);
+            let schedules = getAllLedgerMonthStats(m.id, currentYear, month);
+            
+            // Expected counts (Red Badge)
+            // Filter exactly as they are filtered in the rendering logic below
+            const courseLatestRealMonth = {};
             schedules.forEach(s => {
                 if (!s.isSimulated && s.eighthDay && !isNaN(parseInt(s.eighthDay)) && Number(s.eighthDay) > 0) {
-                    const isPaid = (typeof paymentsData !== 'undefined' ? paymentsData : window.paymentsData || []).some(p =>
-                        String(p.memberId) === String(m.id) &&
-                        String(p.year) === String(currentYear) &&
-                        String(p.month) === String(month) &&
-                        p.status === 'paid' &&
-                        (p.course && s.course && (p.course.includes(s.course) || s.course.includes(p.course)))
-                    );
-
-                    if (isPaid) {
-                        blueCounts[month]++;
-                    } else {
-                        monthCounts[month]++;
+                    if (!courseLatestRealMonth[s.course] || courseLatestRealMonth[s.course] < month) {
+                        courseLatestRealMonth[s.course] = month;
                     }
                 }
             });
+
+            const coursesFoundSimulated = new Set();
+            const validExpected = schedules.filter(s => {
+                if (!s.eighthDay || isNaN(parseInt(s.eighthDay)) || Number(s.eighthDay) <= 0) return false;
+                if (s.isSimulated) {
+                    if (courseLatestRealMonth[s.course] && month <= courseLatestRealMonth[s.course]) return false;
+                    if (coursesFoundSimulated.has(s.course)) return false;
+                    coursesFoundSimulated.add(s.course);
+                }
+                return true;
+            });
+            
+            monthCounts[month] += validExpected.length;
+            
+            // Actual counts (Blue Badge)
+            const paid = (typeof paymentsData !== 'undefined' ? paymentsData : window.paymentsData || []).filter(p => 
+                String(p.memberId) === String(m.id) && 
+                String(p.year) === String(currentYear) && 
+                String(p.month) === String(month) && 
+                p.status === 'paid'
+            );
+            
+            blueCounts[month] += paid.length;
         }
     });
 
