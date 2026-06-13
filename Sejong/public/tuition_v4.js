@@ -1403,15 +1403,57 @@ window.addEventListener('storage', (e) => {
 // 월별 미납 패널: 각 달의 미납 결제일 수 계산 및 뱃지 업데이트
 // ============================================================
 
+// 수강료 납부대장(ledger.js)의 내부 로직을 그대로 복사하여 뱃지 건수 계산 오차 원천 차단
+function getLedgerMonthStatsForBadge(memberId, targetYear, targetMonth, courseFilter = null) {
+    const syncKey = `${memberId}_${targetYear}_${targetMonth}_${courseFilter || 'all'}`;
+    let syncData = {};
+    try {
+        const parsed = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
+        syncData = window.ledgerSyncData || parsed || {};
+    } catch(e) {
+        syncData = {};
+    }
+    
+    // 1. Check real milestone
+    if (syncData && syncData[syncKey]) {
+        const rawSync = syncData[syncKey];
+        const days = Array.isArray(rawSync) ? rawSync : (typeof rawSync === 'number' ? [rawSync] : []);
+        if (days.length > 0) {
+            return { eighthDays: days, eighthMonth: targetMonth, isSimulated: false, hasAnyAttendance: true };
+        }
+    }
+
+    if (typeof window.calculateRedBoxesForMonth === 'function') {
+        const memberObj = membersData.find(m => String(m.id) === String(memberId));
+        if (memberObj) {
+            const result = window.calculateRedBoxesForMonth(memberObj, targetYear, targetMonth, typeof attendanceData !== 'undefined' ? attendanceData : [], courseFilter, typeof window.GLOBAL_DATA_ADJUSTMENTS !== 'undefined' ? window.GLOBAL_DATA_ADJUSTMENTS : {});
+            if (result && result.redDays && result.redDays.length > 0) {
+                return { eighthDays: result.redDays, eighthMonth: targetMonth, isSimulated: result.isSimulated, hasAnyAttendance: result.hasAnyAttendance };
+            }
+        }
+    }
+    return { eighthDays: [], eighthMonth: targetMonth, isSimulated: false, hasAnyAttendance: false };
+}
+
 /** 특정 연도·월의 미납 건수를 계산하여 반환 (수강료 납부대장과 동일한 방식) */
 function getUnpaidCountForMonth(year, month) {
     let unpaidCount = 0;
     membersData.forEach(m => {
-        const courses = (m.course || "").split(",").map(c => c.trim()).filter(c => c && !c.includes("[삭제]"));
-        courses.forEach(fullCourse => {
-            const courseNameOnly = fullCourse.replace(/\([^)]*\)/g, "").trim();
-            const stats = getMemberEighthDayInMonth(m.id, year, month, courseNameOnly);
-            if (stats && stats.eighthDays && stats.eighthDays.length > 0 && !stats.isSimulated) {
+        let courses = (m.course || "").split(",").map(c => c.trim()).filter(c => c && !c.includes("[삭제]")).map(c => c.split('(')[0].trim());
+        
+        // ledger.js와 동일한 제과/제빵 병합 로직 추가
+        const hasJeggwa = courses.some(c => c.includes('제과') && !c.includes('제과제빵'));
+        const hasJeppang = courses.some(c => c.includes('제빵') && !c.includes('제과제빵'));
+        if (hasJeggwa && hasJeppang) {
+            courses = courses.filter(c => !c.includes('제과') && !c.includes('제빵'));
+            courses.push('제과제빵기능사');
+        }
+
+        courses.forEach(courseNameOnly => {
+            const stats = getLedgerMonthStatsForBadge(m.id, year, month, courseNameOnly);
+            
+            // 수강료 납부대장(ledger.js)의 뱃지 계산 로직과 완벽히 일치시키기 위해 stats.hasAnyAttendance 필터
+            if (stats && stats.eighthDays && stats.eighthDays.length > 0 && stats.hasAnyAttendance && !stats.isSimulated) {
                 stats.eighthDays.forEach(d => {
                     if (!isNaN(parseInt(d)) && Number(d) > 0) {
                         const isPaid = (typeof window.paymentsData !== 'undefined' ? window.paymentsData : []).some(p =>
