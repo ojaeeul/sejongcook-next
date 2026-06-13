@@ -242,11 +242,17 @@ function renderTable() {
 
         // Find payment record
         const normalizeCourse = (c) => (!c || c === 'null') ? null : String(c).trim();
+        
+        let targetCourse = currentState.course === 'all' ? null : currentState.course;
+        if (!targetCourse && m.course) {
+            targetCourse = m.course.split(',')[0].trim().split('(')[0];
+        }
+
         const payment = paymentsData.find(p =>
             p.memberId == m.id &&
             p.year == currentState.year &&
             p.month == currentState.month &&
-            normalizeCourse(p.course) === normalizeCourse(currentState.course === 'all' ? null : currentState.course)
+            (normalizeCourse(p.course) === normalizeCourse(targetCourse) || (!p.course && !targetCourse) || currentState.course === 'all')
         );
 
         const isPaid = payment && payment.status === 'paid';
