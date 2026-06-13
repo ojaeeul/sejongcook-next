@@ -1,4 +1,4 @@
-let members = [];
+let examMembers = [];
 let exams = [];
 
 // Convert Hangul to initial English letters
@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         const mRes = await fetch('test_members.json');
         if (mRes.ok) {
-            members = await mRes.json();
+            examMembers = await mRes.json();
         }
     } catch (e) {
         console.error("Failed to load members", e);
@@ -130,7 +130,7 @@ function updateExam(index, field, value) {
     
     // Auto-generate ID and PW if name is entered
     if (field === 'name') {
-        const member = members.find(m => m.name === value);
+        const member = examMembers.find(m => m.name === value);
         if (member) {
             const genId = generateId(member.name, member.resident_num);
             exams[index].genId = genId;
