@@ -264,7 +264,8 @@ function initCardPopup() {
             <button onclick="selectCardOption('(국)')">(국)</button>
             <button onclick="selectCardOption('(신)')">(신)</button>
             <button onclick="selectCardOption('(농)')">(농)</button>
-            <button onclick="selectCardOption('(현)')">(현)</button>
+            <button onclick="selectCardOption('(선)')">(선)</button>
+            <button onclick="selectCardOption('(환불)')">(환불)</button>
         </div>
     `;
     document.body.insertAdjacentHTML('beforeend', html);
