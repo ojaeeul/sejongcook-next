@@ -130,7 +130,7 @@ function updateExam(index, field, value) {
     
     // Auto-generate ID, PW, and Subject if name is entered
     if (field === 'name') {
-        const member = examMembers.find(m => m.name === value);
+        const member = examMembers.find(m => m.name && m.name.trim() === value.trim());
         if (member) {
             const genId = generateId(member.name, member.resident_num);
             exams[index].genId = genId;
