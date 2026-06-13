@@ -389,20 +389,58 @@ function processAttendanceData() {
 
 function getMemberEighthDayInMonth(memberId, year, month, courseFilter = null) {
     const m = membersData.find(m => String(m.id) === String(memberId));
-    if (!m) return { eighthDays: [], eighthMonth: month, isSimulated: false, hasAnyAttendance: false };
+    if (!m) return { eighthDays: [], eighthMonth: month, isSimulated: false, isArtificial1st: false, hasAnyAttendance: false };
 
-    // Use shared engine exactly like sheet.html
-    const result = window.calculateRedBoxesForMonth(m, year, month, attendanceData, courseFilter, GLOBAL_DATA_ADJUSTMENTS);
+    if (typeof window.calculateRedBoxesForMonth === 'function') {
+        const result = window.calculateRedBoxesForMonth(m, year, month, window.attendanceData || [], courseFilter, window.GLOBAL_DATA_ADJUSTMENTS || {});
+        
+        let days = [...(result.redDays || [])];
+        
+        // 동기화 데이터 (sejong_ledger_sync) 병합
+        try {
+            const syncData = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
+            const cleanFilter = courseFilter ? courseFilter.replace(/\([^)]*\)/g, '').trim() : 'all';
+            
+            Object.keys(syncData).forEach(k => {
+                const parts = k.split('_');
+                if (parts.length >= 4 && parts[0] === String(memberId) && parseInt(parts[1]) === year && parseInt(parts[2]) === month) {
+                    const courseFull = parts.slice(3).join('_');
+                    const cleanSyncCourse = courseFull === 'all' ? 'all' : courseFull.replace(/\([^)]*\)/g, '').trim();
+                    
+                    if (cleanFilter === 'all' || cleanSyncCourse === cleanFilter || (cleanFilter === '미지정' && courseFull === 'all')) {
+                        const val = syncData[k];
+                        const syncDays = Array.isArray(val) ? val : [val];
+                        syncDays.forEach(dStr => {
+                            const d = parseInt(dStr, 10);
+                            if (!isNaN(d) && !days.includes(d)) {
+                                days.push(d);
+                            }
+                        });
+                    }
+                }
+            });
+        } catch(e) {}
+        
+        days = [...new Set(days)];
+        let isArtificial1st = false;
+        
+        if (days.length === 0 && result.hasAnyAttendance) {
+            days = [1];
+            isArtificial1st = true;
+        }
+
+        return { 
+            eighthDays: days, 
+            eighthMonth: month, 
+            isSimulated: result.isSimulated, 
+            isArtificial1st: isArtificial1st,
+            hasAnyAttendance: result.hasAnyAttendance,
+            allMilestones: result.allMilestones,
+            currentCount: result.currentCount
+        };
+    }
     
-    // Convert redDays to eighthDays array matching expected output format
-    return { 
-        eighthDays: result.redDays, 
-        eighthMonth: month, 
-        isSimulated: result.isSimulated, 
-        hasAnyAttendance: result.hasAnyAttendance,
-        allMilestones: result.allMilestones,
-        currentCount: result.currentCount
-    };
+    return { eighthDays: [], eighthMonth: month, isSimulated: false, isArtificial1st: false, hasAnyAttendance: false };
 }
 
 
@@ -1375,11 +1413,9 @@ function getUnpaidMilestoneDaysForMonth(year, month) {
         const courses = (m.course || "").split(",").map(c => c.trim()).filter(c => c && !c.includes("[삭제]"));
         courses.forEach(fullCourse => {
             const courseNameOnly = fullCourse.replace(/\([^)]*\)/g, "").trim();
-            if (typeof window.calculateRedBoxesForMonth === "function") {
-                const result = window.calculateRedBoxesForMonth(m, year, month, attendanceData, courseNameOnly, GLOBAL_DATA_ADJUSTMENTS);
-                if (result && result.redDays && result.redDays.length > 0 && !result.isSimulated && result.hasAnyAttendance) {
-                    result.redDays.forEach(d => daysSet.add(d));
-                }
+            const stats = getMemberEighthDayInMonth(m.id, year, month, courseNameOnly);
+            if (stats && stats.eighthDays && stats.eighthDays.length > 0 && !stats.isSimulated) {
+                stats.eighthDays.forEach(d => daysSet.add(d));
             }
         });
     });
