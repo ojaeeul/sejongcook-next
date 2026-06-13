@@ -126,8 +126,16 @@ function renderExamTable() {
     for (let i = currentRows; i < minRows; i++) {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
-            <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
+            <td style="border: 1px solid #cbd5e1;">&nbsp;</td>
+            <td style="border: 1px solid #cbd5e1;">&nbsp;</td>
+            <td style="border: 1px solid #cbd5e1;">&nbsp;</td>
+            <td style="border: 1px solid #cbd5e1;">&nbsp;</td>
+            <td style="border: 1px solid #cbd5e1;">&nbsp;</td>
+            <td style="border: 1px solid #cbd5e1;">&nbsp;</td>
+            <td style="border: 1px solid #cbd5e1;">&nbsp;</td>
+            <td style="border: 1px solid #cbd5e1;">&nbsp;</td>
+            <td style="border: 1px solid #cbd5e1;">&nbsp;</td>
+            <td style="border: 1px solid #cbd5e1;">&nbsp;</td>
         `;
         tbody.appendChild(tr);
     }
