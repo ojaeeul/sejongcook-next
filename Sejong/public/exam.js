@@ -122,8 +122,14 @@ function renderExamTable() {
         if (currentPage < 1) currentPage = 1;
         
         // Update pagination indicator
-        const indicator = document.getElementById('pageIndicator');
-        if (indicator) indicator.textContent = `${currentPage} / ${totalPages} 페이지`;
+        const indicators = document.querySelectorAll('.pageIndicator');
+        indicators.forEach(indicator => {
+            indicator.textContent = `${currentPage} / ${totalPages} 페이지`;
+        });
+        
+        // Also support old ID if it exists anywhere else
+        const oldIndicator = document.getElementById('pageIndicator');
+        if (oldIndicator) oldIndicator.textContent = `${currentPage} / ${totalPages} 페이지`;
         
         const startIdx = (currentPage - 1) * rowsPerPage;
         const pageExams = realData.slice(startIdx, startIdx + rowsPerPage);
