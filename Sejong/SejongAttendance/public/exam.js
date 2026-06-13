@@ -107,11 +107,12 @@ function renderExamTable() {
         
         const resultYearStr = resultMonthRaw ? resultMonthRaw.split('-')[0] : '';
         const resultMonthStr = resultMonthRaw ? resultMonthRaw.split('-')[1] : '';
-        const resultDayStr = resultMonthRaw ? resultMonthRaw.split('-')[2] : '';
+
         
         const currentFilterState = searchStr + '|' + examMonthRaw + '|' + resultMonthRaw;
         if (window.lastFilterState !== undefined && window.lastFilterState !== currentFilterState) {
-            window.currentPage = 1;
+            currentPage = 1;
+            localStorage.setItem('examCurrentPage', currentPage);
         }
         window.lastFilterState = currentFilterState;
 
