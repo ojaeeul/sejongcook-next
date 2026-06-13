@@ -67,77 +67,62 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 function renderExamTable() {
     const tbody = document.getElementById('examTbody');
-    tbody.innerHTML = '';
+    if (!tbody) return;
+    
+    try {
+        tbody.innerHTML = '';
+        const searchStr = document.getElementById('examSearchInput') ? document.getElementById('examSearchInput').value.toLowerCase() : '';
+        const monthStr = document.getElementById('examMonthFilter') ? document.getElementById('examMonthFilter').value : '';
 
-    const searchStr = document.getElementById('examSearchInput').value.toLowerCase();
-    const monthStr = document.getElementById('examMonthFilter').value; // format: "YYYY-MM"
+        const validExams = Array.isArray(exams) ? exams : [];
+        const sortedExams = [...validExams].sort((a, b) => (a.examDate || '').localeCompare(b.examDate || ''));
 
-    // Sort exams by date ascending
-    const sortedExams = [...exams].sort((a, b) => (a.examDate || '').localeCompare(b.examDate || ''));
+        sortedExams.forEach((exam, index) => {
+            if (searchStr && (!exam.name || !exam.name.toLowerCase().includes(searchStr))) return;
+            if (monthStr && (!exam.examDate || !exam.examDate.startsWith(monthStr))) return;
 
-    sortedExams.forEach((exam, index) => {
-        // Filters
-        if (searchStr && (!exam.name || !exam.name.toLowerCase().includes(searchStr))) return;
-        if (monthStr && (!exam.examDate || !exam.examDate.startsWith(monthStr))) return;
-
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td class="col-date">
-                <input type="text" value="${exam.examDate || ''}" onchange="updateExam(${index}, 'examDate', this.value)" placeholder="MM/DD">
-            </td>
-            <td class="col-res-date">
-                <input type="text" value="${exam.resultDate || ''}" onchange="updateExam(${index}, 'resultDate', this.value)" placeholder="MM/DD">
-            </td>
-            <td class="col-subject">
-                <input type="text" value="${exam.subject || ''}" onchange="updateExam(${index}, 'subject', this.value)">
-            </td>
-            <td class="col-name" style="font-weight: 500;">
-                ${exam.name || ''}
-            </td>
-            <td class="col-time">
-                <input type="time" value="${exam.time || ''}" onchange="updateExam(${index}, 'time', this.value)">
-            </td>
-            <td class="col-exam-num">
-                <input type="text" value="${exam.examNum || ''}" onchange="updateExam(${index}, 'examNum', this.value)">
-            </td>
-            <td class="col-id-pass">
-                <div class="id-pass-col">
-                    <span>${exam.genId || ''}</span>
-                    <span style="color: #64748b;">${exam.genPw || ''}</span>
-                </div>
-            </td>
-            <td class="col-score">
-                <input type="text" value="${exam.score || ''}" onchange="updateExam(${index}, 'score', this.value)" 
-                    class="${getScoreClass(exam.score)}">
-            </td>
-            <td class="col-note">
-                <input type="text" value="${exam.note || ''}" onchange="updateExam(${index}, 'note', this.value)">
-            </td>
-            <td class="col-action">
-                <span class="material-icons action-icon" onclick="deleteExam(${index})" title="삭제">delete</span>
-            </td>
-        `;
-        tbody.appendChild(tr);
-    });
-
-    // Add empty rows if too few, to maintain notebook look
-    const minRows = 25;
-    const currentRows = tbody.children.length;
-    for (let i = currentRows; i < minRows; i++) {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td style="border: 1px solid #cbd5e1;">&nbsp;</td>
-            <td style="border: 1px solid #cbd5e1;">&nbsp;</td>
-            <td style="border: 1px solid #cbd5e1;">&nbsp;</td>
-            <td style="border: 1px solid #cbd5e1;">&nbsp;</td>
-            <td style="border: 1px solid #cbd5e1;">&nbsp;</td>
-            <td style="border: 1px solid #cbd5e1;">&nbsp;</td>
-            <td style="border: 1px solid #cbd5e1;">&nbsp;</td>
-            <td style="border: 1px solid #cbd5e1;">&nbsp;</td>
-            <td style="border: 1px solid #cbd5e1;">&nbsp;</td>
-            <td style="border: 1px solid #cbd5e1;">&nbsp;</td>
-        `;
-        tbody.appendChild(tr);
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="col-date"><input type="text" value="${exam.examDate || ''}" onchange="updateExam(${index}, 'examDate', this.value)" placeholder="MM/DD"></td>
+                <td class="col-res-date"><input type="text" value="${exam.resultDate || ''}" onchange="updateExam(${index}, 'resultDate', this.value)" placeholder="MM/DD"></td>
+                <td class="col-subject"><input type="text" value="${exam.subject || ''}" onchange="updateExam(${index}, 'subject', this.value)"></td>
+                <td class="col-name" style="font-weight: 500;">${exam.name || ''}</td>
+                <td class="col-time"><input type="time" value="${exam.time || ''}" onchange="updateExam(${index}, 'time', this.value)"></td>
+                <td class="col-exam-num"><input type="text" value="${exam.examNum || ''}" onchange="updateExam(${index}, 'examNum', this.value)"></td>
+                <td class="col-id-pass">
+                    <div class="id-pass-col">
+                        <span>${exam.genId || ''}</span>
+                        <span style="color: #64748b;">${exam.genPw || ''}</span>
+                    </div>
+                </td>
+                <td class="col-score"><input type="text" value="${exam.score || ''}" onchange="updateExam(${index}, 'score', this.value)" class="${getScoreClass(exam.score)}"></td>
+                <td class="col-note"><input type="text" value="${exam.note || ''}" onchange="updateExam(${index}, 'note', this.value)"></td>
+                <td class="col-action"><span class="material-icons action-icon" onclick="deleteExam(${index})" title="삭제">delete</span></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    } catch (e) {
+        console.error("renderExamTable error:", e);
+    } finally {
+        // Add empty rows if too few, to maintain notebook look
+        const minRows = 25;
+        const currentRows = tbody.children.length;
+        for (let i = currentRows; i < minRows; i++) {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="col-date" style="border: 1px solid #cbd5e1;">&nbsp;</td>
+                <td class="col-res-date" style="border: 1px solid #cbd5e1;">&nbsp;</td>
+                <td class="col-subject" style="border: 1px solid #cbd5e1;">&nbsp;</td>
+                <td class="col-name" style="border: 1px solid #cbd5e1;">&nbsp;</td>
+                <td class="col-time" style="border: 1px solid #cbd5e1;">&nbsp;</td>
+                <td class="col-exam-num" style="border: 1px solid #cbd5e1;">&nbsp;</td>
+                <td class="col-id-pass" style="border: 1px solid #cbd5e1;">&nbsp;</td>
+                <td class="col-score" style="border: 1px solid #cbd5e1;">&nbsp;</td>
+                <td class="col-note" style="border: 1px solid #cbd5e1;">&nbsp;</td>
+                <td class="col-action" style="border: 1px solid #cbd5e1;">&nbsp;</td>
+            `;
+            tbody.appendChild(tr);
+        }
     }
 }
 
