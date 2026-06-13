@@ -1403,21 +1403,33 @@ window.addEventListener('storage', (e) => {
 // 월별 미납 패널: 각 달의 미납 결제일 수 계산 및 뱃지 업데이트
 // ============================================================
 
-/** 특정 연도·월의 미납 결제일(미납 milestone) 총 개수를 반환 */
-function getUnpaidMilestoneDaysForMonth(year, month) {
-    let daysSet = new Set();
+/** 특정 연도·월의 미납 건수를 계산하여 반환 (수강료 납부대장과 동일한 방식) */
+function getUnpaidCountForMonth(year, month) {
+    let unpaidCount = 0;
     membersData.forEach(m => {
         const courses = (m.course || "").split(",").map(c => c.trim()).filter(c => c && !c.includes("[삭제]"));
         courses.forEach(fullCourse => {
             const courseNameOnly = fullCourse.replace(/\([^)]*\)/g, "").trim();
             const stats = getMemberEighthDayInMonth(m.id, year, month, courseNameOnly);
             if (stats && stats.eighthDays && stats.eighthDays.length > 0 && !stats.isSimulated) {
-                stats.eighthDays.forEach(d => daysSet.add(d));
+                stats.eighthDays.forEach(d => {
+                    if (!isNaN(parseInt(d)) && Number(d) > 0) {
+                        const isPaid = (typeof window.paymentsData !== 'undefined' ? window.paymentsData : []).some(p =>
+                            String(p.memberId) === String(m.id) &&
+                            String(p.year) === String(year) &&
+                            String(p.month) === String(month) &&
+                            p.status === 'paid' &&
+                            (p.course && courseNameOnly && (p.course.includes(courseNameOnly) || courseNameOnly.includes(p.course)))
+                        );
+                        if (!isPaid) {
+                            unpaidCount++;
+                        }
+                    }
+                });
             }
         });
     });
-    let daysArray = Array.from(daysSet).sort((a,b) => a-b);
-    return daysArray;
+    return unpaidCount;
 }
 
 /** 모든 달(1~12)의 미납 수를 계산하고 패널 뱃지를 업데이트 */
@@ -1433,9 +1445,9 @@ function updateMonthlyUnpaidPanel() {
         // 현재 선택된 월 강조
         btn.classList.toggle('is-current', m === currentMonth);
 
-        const days = getUnpaidMilestoneDaysForMonth(year, m);
-        if (days && days.length > 0) {
-            badge.textContent = days.join(', ');
+        const unpaidCount = getUnpaidCountForMonth(year, m);
+        if (unpaidCount > 0) {
+            badge.textContent = unpaidCount;
             badge.style.display = 'inline-block';
         } else {
             badge.style.display = 'none';
