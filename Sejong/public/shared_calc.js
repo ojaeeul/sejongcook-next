@@ -83,12 +83,6 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
         rowLogsRaw = rowLogsRaw.filter(l => {
             if (!l.course) return true; // global log
             
-            if (isDualCourse) {
-                const lCourse = String(l.course || '').replace(/\s/g, '');
-                if (lCourse.includes('제과') || lCourse.includes('제빵')) return true;
-                if (lCourse.includes('양식기능사')) return true;
-            }
-            
             const cClean = String(l.course).replace(/\([^)]*\)/g, '').trim();
             const fClean = String(courseFilter).replace(/\([^)]*\)/g, '').trim();
             const cList = cClean.split(',').map(c => c.trim());
@@ -99,11 +93,10 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
     const uniqueRowLogsMap = new Map();
     rowLogsRaw.forEach(l => {
         const dateStr = l.date ? (l.date.includes('T') ? l.date.split('T')[0] : l.date) : (l.dateObj ? l.dateObj.toISOString().split('T')[0] : '');
-        if (!uniqueRowLogsMap.has(dateStr)) {
-            uniqueRowLogsMap.set(dateStr, { ...l, date: dateStr });
-        }
+        // Deduplicate using date AND course to match sheet.html exactly
+        uniqueRowLogsMap.set(`${dateStr}_${l.course || ''}`, { ...l, date: dateStr });
     });
-    const uniqueLogs = Array.from(uniqueRowLogsMap.values()).sort((a, b) => a.date.localeCompare(b.date));
+    const uniqueLogs = Array.from(uniqueRowLogsMap.values()).sort((a,b) => a.date.localeCompare(b.date));
 
     const hasAnyAttendance = uniqueLogs.length > 0;
 
