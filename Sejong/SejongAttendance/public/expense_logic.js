@@ -166,8 +166,9 @@ function processNewPayments() {
                         }
                         dateBlockEndIndex = j;
                     }
+                    break; // Only break when we FOUND the date we're looking for
                 }
-                break;
+                // If it's a DIFFERENT date, do NOT break. Keep searching upwards.
             }
         }
 
