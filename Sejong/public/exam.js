@@ -110,16 +110,16 @@ function renderExamTable() {
         for (let i = currentRows; i < minRows; i++) {
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td class="col-date" style="border: 1px solid #cbd5e1;">&nbsp;</td>
-                <td class="col-res-date" style="border: 1px solid #cbd5e1;">&nbsp;</td>
-                <td class="col-subject" style="border: 1px solid #cbd5e1;">&nbsp;</td>
-                <td class="col-name" style="border: 1px solid #cbd5e1;">&nbsp;</td>
-                <td class="col-time" style="border: 1px solid #cbd5e1;">&nbsp;</td>
-                <td class="col-exam-num" style="border: 1px solid #cbd5e1;">&nbsp;</td>
-                <td class="col-id-pass" style="border: 1px solid #cbd5e1;">&nbsp;</td>
-                <td class="col-score" style="border: 1px solid #cbd5e1;">&nbsp;</td>
-                <td class="col-note" style="border: 1px solid #cbd5e1;">&nbsp;</td>
-                <td class="col-action" style="border: 1px solid #cbd5e1;">&nbsp;</td>
+                <td class="col-date" style="border: 1px solid #000;">&nbsp;</td>
+                <td class="col-res-date" style="border: 1px solid #000;">&nbsp;</td>
+                <td class="col-subject" style="border: 1px solid #000;">&nbsp;</td>
+                <td class="col-name" style="border: 1px solid #000;">&nbsp;</td>
+                <td class="col-time" style="border: 1px solid #000;">&nbsp;</td>
+                <td class="col-exam-num" style="border: 1px solid #000;">&nbsp;</td>
+                <td class="col-id-pass" style="border: 1px solid #000;">&nbsp;</td>
+                <td class="col-score" style="border: 1px solid #000;">&nbsp;</td>
+                <td class="col-note" style="border: 1px solid #000;">&nbsp;</td>
+                <td class="col-action" style="border: 1px solid #000;">&nbsp;</td>
             `;
             tbody.appendChild(tr);
         }
