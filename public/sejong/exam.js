@@ -82,6 +82,8 @@ function renderExamTable() {
             if (monthStr && (!exam.examDate || !exam.examDate.startsWith(monthStr))) return;
 
             const tr = document.createElement('tr');
+            tr.setAttribute('title', '더블클릭하여 삭제');
+            tr.setAttribute('ondblclick', `deleteExam(${index})`);
             tr.innerHTML = `
                 <td class="col-date"><input type="text" value="${exam.examDate || ''}" onchange="updateExam(${index}, 'examDate', this.value)" placeholder="MM/DD"></td>
                 <td class="col-res-date"><input type="text" value="${exam.resultDate || ''}" onchange="updateExam(${index}, 'resultDate', this.value)" placeholder="MM/DD"></td>
@@ -97,7 +99,6 @@ function renderExamTable() {
                 </td>
                 <td class="col-score"><input type="text" value="${exam.score || ''}" onchange="updateExam(${index}, 'score', this.value)" class="${getScoreClass(exam.score)}"></td>
                 <td class="col-note"><input type="text" value="${exam.note || ''}" onchange="updateExam(${index}, 'note', this.value)"></td>
-                <td class="col-action"><span class="material-icons action-icon" onclick="deleteExam(${index})" title="삭제">delete</span></td>
             `;
             tbody.appendChild(tr);
         });
@@ -119,7 +120,6 @@ function renderExamTable() {
                 <td class="col-id-pass"></td>
                 <td class="col-score"><input type="text" disabled style="background: transparent; border: none;"></td>
                 <td class="col-note"><input type="text" disabled style="background: transparent; border: none;"></td>
-                <td class="col-action"></td>
             `;
             tbody.appendChild(tr);
         }

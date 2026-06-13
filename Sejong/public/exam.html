@@ -149,17 +149,16 @@
         .exam-table .score-col.fail { color: #dc2626; }
         .exam-table .score-col.cancel { color: #64748b; text-decoration: line-through; }
 
-        /* Column widths matching the notebook */
-        .col-date { width: 6%; }
-        .col-res-date { width: 6%; }
+        /* Column widths matching the notebook exactly (9 columns) */
+        .col-date { width: 8%; }
+        .col-res-date { width: 8%; }
         .col-subject { width: 10%; }
-        .col-name { width: 8%; }
-        .col-time { width: 6%; }
-        .col-exam-num { width: 12%; }
+        .col-name { width: 10%; }
+        .col-time { width: 8%; }
+        .col-exam-num { width: 15%; }
         .col-id-pass { width: 16%; }
         .col-score { width: 8%; }
-        .col-note { width: 20%; }
-        .col-action { width: 8%; }
+        .col-note { width: 17%; }
 
         .btn-add-row {
             margin-top: 20px;
@@ -451,7 +450,6 @@
                                         <th class="col-id-pass">I.D / Pass</th>
                                         <th class="col-score">점수</th>
                                         <th class="col-note">비고</th>
-                                        <th class="col-action">관리</th>
                                     </tr>
                                 </thead>
                                 <tbody id="examTbody">
@@ -480,7 +478,7 @@
     </div>
 
     <script src="script.js"></script>
-    <script src="exam.js?v=20260613-16" defer></script>
+    <script src="exam.js?v=20260613-17" defer></script>
 </body>
 
 </html>
