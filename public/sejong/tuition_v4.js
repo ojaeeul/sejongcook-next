@@ -1474,6 +1474,8 @@ function getUnpaidCountForMonth(year, month) {
             courses = courses.filter(c => !c.includes('제과') && !c.includes('제빵'));
             courses.push('제과제빵기능사');
         }
+        
+        courses = [...new Set(courses)];
 
         courses.forEach(courseNameOnly => {
             const stats = getLedgerMonthStatsForBadge(m.id, year, month, courseNameOnly);

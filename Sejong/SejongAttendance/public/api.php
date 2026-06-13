@@ -150,11 +150,19 @@ if ($board === 'sejong_payments' && $method === 'POST') {
 
     $filtered = [];
     foreach ($data as $p) {
+        $pCourse = $normalizeCourse($p['course'] ?? null);
+        
         if (strval($p['memberId'] ?? '') === strval($input['memberId']) &&
             strval($p['year'] ?? '') === strval($input['year']) &&
-            strval($p['month'] ?? '') === strval($input['month']) &&
-            $normalizeCourse($p['course'] ?? null) === $courseToMatch) {
-            continue; // Remove existing
+            strval($p['month'] ?? '') === strval($input['month'])) {
+            
+            if ($courseToMatch === null) {
+                continue; // Remove all existing courses for this month if setting 'all'
+            } else {
+                if ($pCourse === $courseToMatch || $pCourse === null) {
+                    continue; // Remove exact match and also any existing 'all' record
+                }
+            }
         }
         $filtered[] = $p;
     }

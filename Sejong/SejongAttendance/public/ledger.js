@@ -266,6 +266,7 @@ function getAllLedgerMonthStats(memberId, year, month) {
         courses = courses.filter(c => !c.includes('제과') && !c.includes('제빵'));
         courses.push('제과제빵기능사');
     }
+    courses = [...new Set(courses)];
 
     const results = [];
 
@@ -541,7 +542,7 @@ function renderTable(container, title, members, id) {
                         String(p.year) === String(currentYear) &&
                         String(p.month) === String(month) &&
                         p.status === 'paid' &&
-                        (p.course && s.course && (p.course.includes(s.course) || s.course.includes(p.course)))
+                        (!p.course || p.course === 'null' || p.course === 'undefined' || p.course === '' || !s.course || p.course.includes(s.course) || s.course.includes(p.course))
                     );
 
                     if (isPaid) {
@@ -697,7 +698,7 @@ function renderTable(container, title, members, id) {
                         String(p.year) === String(currentYear) &&
                         String(p.month) === String(month) &&
                         p.status === 'paid' &&
-                        (p.course.includes(s.course) || s.course.includes(p.course))
+                        (!p.course || p.course === 'null' || p.course === 'undefined' || p.course === '' || !s.course || p.course.includes(s.course) || s.course.includes(p.course))
                     );
 
                     return !isPaid;
