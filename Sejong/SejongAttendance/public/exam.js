@@ -78,8 +78,13 @@ function renderExamTable() {
         const examMonthRaw = document.getElementById('examMonthFilter') ? document.getElementById('examMonthFilter').value : '';
         const resultMonthRaw = document.getElementById('resultMonthFilter') ? document.getElementById('resultMonthFilter').value : '';
 
+        const examYearStr = examMonthRaw ? examMonthRaw.split('-')[0] : '';
         const examMonthStr = examMonthRaw ? examMonthRaw.split('-')[1] : '';
+        const examDayStr = examMonthRaw ? examMonthRaw.split('-')[2] : '';
+        
+        const resultYearStr = resultMonthRaw ? resultMonthRaw.split('-')[0] : '';
         const resultMonthStr = resultMonthRaw ? resultMonthRaw.split('-')[1] : '';
+        const resultDayStr = resultMonthRaw ? resultMonthRaw.split('-')[2] : '';
 
         const validExams = Array.isArray(exams) ? exams : [];
         const displayExams = [...validExams];
@@ -142,8 +147,20 @@ function renderExamTable() {
         pageExams.forEach((exam, localIdx) => {
             const index = startIdx + localIdx;
             if (searchStr && (!exam.name || !exam.name.toLowerCase().includes(searchStr))) return;
-            if (examMonthStr && (!exam.examDate || !exam.examDate.startsWith(examMonthStr + "/"))) return;
-            if (resultMonthStr && (!exam.resultDate || !exam.resultDate.startsWith(resultMonthStr + "/"))) return;
+            
+            // Exam Date Filtering
+            if (examMonthStr) {
+                if (!exam.examDate) return;
+                const filterStr = examMonthStr + "/" + (examDayStr || "");
+                if (!exam.examDate.startsWith(filterStr)) return;
+            }
+            
+            // Result Date Filtering
+            if (resultMonthStr) {
+                if (!exam.resultDate) return;
+                const filterStr = resultMonthStr + "/" + (resultDayStr || "");
+                if (!exam.resultDate.startsWith(filterStr)) return;
+            }
 
             const tr = document.createElement('tr');
             tr.setAttribute('title', '더블클릭하여 삭제');
@@ -529,42 +546,55 @@ function initInlineMonthPickers() {
     });
 }
 
-function populateInlineSelects(type, y, m) {
+function populateInlineSelects(type, y, m, d = null) {
     const yearSelect = document.getElementById(type + 'YearSelect');
     const monthSelect = document.getElementById(type + 'MonthSelect');
+    const daySelect = document.getElementById(type + 'DaySelect');
     
-    let yearOptions = '<option value="">전체년도</option>';
+    let yearOptions = '<option value="">년</option>';
     for(let i=y-5; i<=y+5; i++) {
         yearOptions += `<option value="${i}">${i}년</option>`;
     }
     yearSelect.innerHTML = yearOptions;
     
-    let monthOptions = '<option value="">전체월</option>';
+    let monthOptions = '<option value="">월</option>';
     for(let i=0; i<12; i++) {
         monthOptions += `<option value="${i}">${i+1}월</option>`;
     }
     monthSelect.innerHTML = monthOptions;
+
+    let dayOptions = '<option value="">일</option>';
+    for(let i=1; i<=31; i++) {
+        dayOptions += `<option value="${i}">${i}일</option>`;
+    }
+    daySelect.innerHTML = dayOptions;
 }
 
 function updateInlineSelects(type) {
     const yearSelect = document.getElementById(type + 'YearSelect');
     const monthSelect = document.getElementById(type + 'MonthSelect');
+    const daySelect = document.getElementById(type + 'DaySelect');
     
     if (pickerDates[type] === null) {
         yearSelect.value = "";
         monthSelect.value = "";
+        daySelect.value = "";
     } else {
         yearSelect.value = pickerDates[type].getFullYear();
         monthSelect.value = pickerDates[type].getMonth();
+        daySelect.value = pickerDates[type].getDate() || "";
     }
 }
 
 function changeInlineMonth(type, delta) {
     if (pickerDates[type] === null) {
         pickerDates[type] = new Date();
-        pickerDates[type].setDate(1);
+        pickerDates[type].setDate(1); // Default to 1st
     } else {
+        // preserve day if possible, or set to 1 if it was null
+        const currentDay = pickerDates[type].getDate() || 1;
         pickerDates[type].setMonth(pickerDates[type].getMonth() + delta);
+        pickerDates[type].setDate(currentDay);
     }
     updateInlineSelects(type);
     applyInlineMonth(type, true);
@@ -579,14 +609,27 @@ function resetInlineMonth(type) {
 function applyInlineMonth(type, skipRead = false) {
     const yearSelect = document.getElementById(type + 'YearSelect');
     const monthSelect = document.getElementById(type + 'MonthSelect');
+    const daySelect = document.getElementById(type + 'DaySelect');
     
     if (!skipRead) {
         const y = yearSelect.value;
         const m = monthSelect.value;
-        if (y === "" || m === "") {
+        const d = daySelect.value;
+        if (y === "" && m === "" && d === "") {
             pickerDates[type] = null;
         } else {
-            pickerDates[type] = new Date(parseInt(y), parseInt(m), 1);
+            // If year/month not selected, use current year/month as fallback
+            const fallbackDate = new Date();
+            const year = y === "" ? fallbackDate.getFullYear() : parseInt(y);
+            const month = m === "" ? fallbackDate.getMonth() : parseInt(m);
+            const day = d === "" ? null : parseInt(d);
+            pickerDates[type] = new Date(year, month, day || 1); // Set to 1st if day is empty for date object
+            if (d === "") {
+                pickerDates[type].isDayEmpty = true;
+            } else {
+                pickerDates[type].isDayEmpty = false;
+                pickerDates[type].setDate(day);
+            }
         }
         updateInlineSelects(type);
     }
@@ -597,7 +640,8 @@ function applyInlineMonth(type, skipRead = false) {
     } else {
         const y = pickerDates[type].getFullYear();
         const m = pickerDates[type].getMonth() + 1;
-        hiddenInput.value = y + '-' + (m < 10 ? '0'+m : m);
+        const d = pickerDates[type].isDayEmpty ? '' : pickerDates[type].getDate();
+        hiddenInput.value = y + '-' + (m < 10 ? '0'+m : m) + '-' + (d ? (d < 10 ? '0'+d : d) : '');
     }
     
     renderExamTable();

@@ -441,49 +441,56 @@
                                 flex: 1;
                                 display: flex;
                                 align-items: center;
-                                justify-content: space-between;
+                                justify-content: flex-start;
+                                gap: 6px;
                                 background: white;
                                 border: 1px solid #e2e8f0;
-                                border-radius: 8px;
-                                padding: 4px 8px;
+                                border-radius: 6px;
+                                padding: 4px 6px;
+                                overflow: hidden;
                             }
                             .inline-picker-label {
-                                font-size: 0.75rem;
+                                font-size: 0.7rem;
                                 font-weight: 600;
                                 color: #64748b;
                                 display: flex;
                                 align-items: center;
-                                gap: 4px;
+                                gap: 2px;
+                                white-space: nowrap;
                             }
                             .inline-picker-controls {
                                 display: flex;
                                 align-items: center;
-                                gap: 4px;
+                                gap: 3px;
                             }
                             .mp-btn {
                                 border: 1px solid #e2e8f0; background: white; border-radius: 4px;
-                                width: 22px; height: 22px; cursor: pointer; display: flex;
+                                width: 20px; height: 20px; cursor: pointer; display: flex;
                                 align-items: center; justify-content: center; font-weight: bold; color: #475569;
-                                font-size: 0.75rem;
+                                font-size: 0.65rem;
+                                padding: 0;
                             }
                             .mp-btn:hover { background: #f1f5f9; }
                             .mp-select {
-                                border: none; font-size: 0.85rem; font-weight: 600; color: #1e293b;
-                                outline: none; cursor: pointer; background: transparent;
-                                appearance: none; -webkit-appearance: none; padding-right: 10px;
+                                border: 1px solid #e2e8f0; border-radius: 4px;
+                                font-size: 0.65rem; font-weight: 600; color: #1e293b;
+                                outline: none; cursor: pointer; background: #f8fafc;
+                                appearance: none; -webkit-appearance: none; 
+                                padding: 2px 14px 2px 4px;
+                                min-width: 45px;
                             }
                             .mp-select-wrapper { position: relative; display: inline-block; }
                             .mp-select-wrapper::after {
-                                content: "▼"; font-size: 0.5rem; position: absolute;
-                                right: 0; top: 50%; transform: translateY(-50%); pointer-events: none; color: #475569;
+                                content: "▼"; font-size: 0.45rem; position: absolute;
+                                right: 4px; top: 50%; transform: translateY(-50%); pointer-events: none; color: #475569;
                             }
                         </style>
-                        <div style="flex: 1; display: flex; gap: 10px; flex-direction: column;">
-                            <div style="display: flex; gap: 10px; width: 100%;">
+                        <div style="flex: 1; display: flex; gap: 5px; flex-direction: column;">
+                            <div style="display: flex; gap: 5px; width: 100%;">
                                 <!-- Exam Date Picker -->
                                 <div class="inline-picker-container" title="시험일 검색">
                                     <div class="inline-picker-label">
-                                        <span class="material-icons" style="font-size: 0.9rem;">event</span> 시험일
+                                        <span class="material-icons" style="font-size: 0.8rem;">event</span> 시험일
                                     </div>
                                     <div class="inline-picker-controls">
                                         <button class="mp-btn" onclick="changeInlineMonth('exam', -1)">&lt;</button>
@@ -493,8 +500,11 @@
                                         <div class="mp-select-wrapper">
                                             <select class="mp-select" id="examMonthSelect" onchange="applyInlineMonth('exam')"></select>
                                         </div>
+                                        <div class="mp-select-wrapper">
+                                            <select class="mp-select" id="examDaySelect" onchange="applyInlineMonth('exam')"></select>
+                                        </div>
                                         <button class="mp-btn" onclick="changeInlineMonth('exam', 1)">&gt;</button>
-                                        <button class="mp-btn" onclick="resetInlineMonth('exam')" title="초기화" style="margin-left: 4px;">↺</button>
+                                        <button class="mp-btn" onclick="resetInlineMonth('exam')" title="초기화" style="margin-left: 2px;">↺</button>
                                     </div>
                                     <input type="hidden" id="examMonthFilter" value="">
                                 </div>
@@ -502,7 +512,7 @@
                                 <!-- Result Date Picker -->
                                 <div class="inline-picker-container" title="발표일 검색">
                                     <div class="inline-picker-label">
-                                        <span class="material-icons" style="font-size: 0.9rem;">event_available</span> 발표일
+                                        <span class="material-icons" style="font-size: 0.8rem;">event_available</span> 발표일
                                     </div>
                                     <div class="inline-picker-controls">
                                         <button class="mp-btn" onclick="changeInlineMonth('result', -1)">&lt;</button>
@@ -512,8 +522,11 @@
                                         <div class="mp-select-wrapper">
                                             <select class="mp-select" id="resultMonthSelect" onchange="applyInlineMonth('result')"></select>
                                         </div>
+                                        <div class="mp-select-wrapper">
+                                            <select class="mp-select" id="resultDaySelect" onchange="applyInlineMonth('result')"></select>
+                                        </div>
                                         <button class="mp-btn" onclick="changeInlineMonth('result', 1)">&gt;</button>
-                                        <button class="mp-btn" onclick="resetInlineMonth('result')" title="초기화" style="margin-left: 4px;">↺</button>
+                                        <button class="mp-btn" onclick="resetInlineMonth('result')" title="초기화" style="margin-left: 2px;">↺</button>
                                     </div>
                                     <input type="hidden" id="resultMonthFilter" value="">
                                 </div>
@@ -608,7 +621,7 @@
     </div>
 
     <script src="script.js"></script>
-    <script src="exam.js?v=20260613-43" defer></script>
+    <script src="exam.js?v=20260613-44" defer></script>
 </body>
 
 </html>
