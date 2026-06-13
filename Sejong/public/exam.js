@@ -60,6 +60,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         exams = [];
     }
 
+    const savedPage = localStorage.getItem('examCurrentPage');
+    if (savedPage && !isNaN(parseInt(savedPage, 10))) {
+        currentPage = parseInt(savedPage, 10);
+    }
+
     renderExamTable();
 
     document.getElementById('btnAddNew').addEventListener('click', openStudentModal);
@@ -156,22 +161,15 @@ function renderExamTable() {
             totalPages++;
         }
         
-        let cPage = window.currentPage;
-        if (typeof cPage === 'undefined' || isNaN(cPage) || cPage === null) {
-            const saved = localStorage.getItem('examCurrentPage');
-            cPage = saved && !isNaN(parseInt(saved, 10)) ? parseInt(saved, 10) : 1;
-        }
-        
         // Ensure totalPages is at least currentPage so forced blank pages aren't destroyed
-        if (cPage > totalPages) {
-            totalPages = cPage;
+        if (currentPage > totalPages) {
+            totalPages = currentPage;
         }
         
-        if (cPage < 1) cPage = 1;
-        window.currentPage = cPage;
+        if (currentPage < 1) currentPage = 1;
         
         // Save current page to localStorage so it persists across refreshes
-        localStorage.setItem('examCurrentPage', cPage);
+        localStorage.setItem('examCurrentPage', currentPage);
         
         // Update pagination indicator
         const indicators = document.querySelectorAll('.pageIndicator');
@@ -236,7 +234,6 @@ function renderExamTable() {
 }
 
 function prevPage() {
-    if (typeof currentPage === 'undefined') window.currentPage = 1;
     if (currentPage > 1) {
         currentPage--;
         animatePageTurn('prev');
@@ -244,7 +241,6 @@ function prevPage() {
 }
 
 function nextPage() {
-    if (typeof currentPage === 'undefined') window.currentPage = 1;
     currentPage++;
     animatePageTurn('next');
 }
