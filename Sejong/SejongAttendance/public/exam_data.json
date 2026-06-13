@@ -1,7 +1,7 @@
 [
     {
         "examDate": "10/25",
-        "resultDate": "10/10",
+        "resultDate": "01/01",
         "subject": "제과기능사",
         "name": "오재을666",
         "time": "12:30",
@@ -50,12 +50,12 @@
     {
         "examDate": "10/31",
         "resultDate": "11/13",
-        "subject": "양식",
-        "name": "김소윤",
+        "subject": "제과제빵",
+        "name": "을",
         "time": "10:00",
         "examNum": "05900008",
-        "genId": "gsy",
-        "genPw": "gsy@",
+        "genId": "e123456",
+        "genPw": "e123456@",
         "score": "50",
         "note": "살리스버리, 타르타르소스"
     },
@@ -135,11 +135,11 @@
         "examDate": "11/19",
         "resultDate": "11/27",
         "subject": "양식",
-        "name": "오지원",
+        "name": "방자",
         "time": "12:30",
         "examNum": "0985",
-        "genId": "ojw",
-        "genPw": "ojw@",
+        "genId": "bj",
+        "genPw": "bj@",
         "score": "",
         "note": "비프스튜 월도프샐러드"
     },
@@ -182,12 +182,12 @@
     {
         "examDate": "",
         "resultDate": "",
-        "subject": "",
-        "name": "",
+        "subject": "양식",
+        "name": "오재1",
         "time": "",
         "examNum": "",
-        "genId": "",
-        "genPw": "",
+        "genId": "oj1123456",
+        "genPw": "oj1123456@",
         "score": "",
         "note": ""
     },

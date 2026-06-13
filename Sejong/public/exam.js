@@ -39,7 +39,8 @@ function generateId(name, resident_num) {
 document.addEventListener('DOMContentLoaded', async () => {
     // 1. Load members and exams data
     try {
-        const mRes = await fetch('test_members.json');
+        const url = typeof getFetchUrl === 'function' ? getFetchUrl('members') : '/api/sejong/members';
+        const mRes = await fetch(url);
         if (mRes.ok) {
             examMembers = await mRes.json();
         }
@@ -178,8 +179,9 @@ function updateExam(index, field, value) {
             exams[index].genPw = genId ? genId + '@' : '';
             
             // Auto-fill subject if it's currently empty or name changed
-            if (member.course) {
-                const courses = member.course.split(',').map(c => c.trim()).filter(c => c);
+            const memberCourse = member.course || member.course_select;
+            if (memberCourse) {
+                const courses = memberCourse.split(',').map(c => c.trim()).filter(c => c);
                 if (courses.length === 1) {
                     exams[index].subject = courses[0].split('(')[0].replace('기능사', '').trim();
                     saveExams();
