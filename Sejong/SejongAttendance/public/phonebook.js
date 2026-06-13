@@ -249,30 +249,30 @@ function renderPage() {
         const regDateText = m.registeredDate ? m.registeredDate.replace(/-/g, '.') : '';
 
         html += `
-            <div class="phone-card" style="display: flex; align-items: stretch; justify-content: flex-start; padding: 0;">
+            <div class="phone-card" style="display: flex; align-items: center; justify-content: flex-start; padding: 4px 0;">
                 
                 <!-- Left Column: Name & Reg Date -->
                 <div style="width: 100px; display: flex; flex-direction: column; justify-content: center; border-right: 1px solid #e2e8f0; padding: 0 10px; flex-shrink: 0;">
                     <span class="member-name" style="font-weight: 600; font-size: 0.8rem;">${m.name}</span>
-                    <span class="member-reg-date" style="font-size: 0.5rem; color: #94a3b8; margin-top: 2px;">${regDateText}</span>
+                    <span class="member-reg-date" style="font-size: 0.35rem; color: #94a3b8; margin-top: 2px;">${regDateText}</span>
                 </div>
                 
-                <!-- Middle Column: Contact Info -->
-                <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 2px; border-right: 1px solid #e2e8f0; min-width: 180px; padding: 0 10px;">
+                <!-- Middle Column: Contact Info (Row layout now) -->
+                <div style="flex: 1; display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 15px; border-right: 1px solid #e2e8f0; min-width: 250px; padding: 0 10px;">
                     <div class="contact-box" style="display: flex; align-items: center; height: auto;">
-                        <span class="contact-label" style="width: 30px; font-size: 0.5rem; padding: 1px 4px; flex-shrink: 0;">본인</span>
-                        <span class="phone-number" style="font-weight: 500; font-size: 0.65rem; width: 95px; margin-left: 6px; flex-shrink: 0;">${m.phone || '-'}</span>
+                        <span class="contact-label" style="width: 25px; font-size: 0.4rem; padding: 1px 3px; flex-shrink: 0;">본인</span>
+                        <span class="phone-number" style="font-weight: 500; font-size: 0.5rem; margin-left: 4px; flex-shrink: 0;">${m.phone || '-'}</span>
                         ${getPhoneButtons(m.phone, coursesStr)}
                     </div>
                     <div class="contact-box" style="display: flex; align-items: center; height: auto;">
-                        <span class="contact-label guardian" style="width: 30px; font-size: 0.5rem; padding: 1px 4px; flex-shrink: 0;">부모</span>
-                        <span class="phone-number" style="font-weight: 500; font-size: 0.65rem; width: 95px; margin-left: 6px; flex-shrink: 0;">${m.phone_guardian || '-'}</span>
+                        <span class="contact-label guardian" style="width: 25px; font-size: 0.4rem; padding: 1px 3px; flex-shrink: 0;">부모</span>
+                        <span class="phone-number" style="font-weight: 500; font-size: 0.5rem; margin-left: 4px; flex-shrink: 0;">${m.phone_guardian || '-'}</span>
                         ${getPhoneButtons(m.phone_guardian, coursesStr)}
                     </div>
                 </div>
 
                 <!-- Right Column: Courses -->
-                <div class="course-badge-list" style="width: 180px; display: flex; align-items: center; justify-content: flex-start; padding: 0 10px; gap: 4px; flex-wrap: wrap; margin-left: auto;">
+                <div class="course-badge-list" style="width: 160px; display: flex; align-items: center; justify-content: flex-start; padding: 0 10px; gap: 4px; flex-wrap: wrap; margin-left: auto;">
                     ${courseBadges}
                 </div>
             </div>

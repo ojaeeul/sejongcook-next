@@ -530,7 +530,16 @@ function renderTargetList() {
                             const endTime = new Date(rangeEnd.getFullYear(), rangeEnd.getMonth(), rangeEnd.getDate(), 23, 59, 59).getTime();
                             
                             if (exactTime >= startTime && exactTime <= endTime) {
-                                foundDates.add(`${year}-${month}-${d}`);
+                                const isPaid = (typeof paymentsData !== 'undefined' ? paymentsData : []).some(p =>
+                                    String(p.memberId) === String(m.id) &&
+                                    String(p.year) === String(year) &&
+                                    String(p.month) === String(month) &&
+                                    p.status === 'paid' &&
+                                    (p.course && cName && (p.course.includes(cName) || cName.includes(p.course)))
+                                );
+                                if (!isPaid) {
+                                    foundDates.add(`${year}-${month}-${d}`);
+                                }
                             }
                         });
                     }
@@ -845,8 +854,16 @@ function selectFilteredCourses() {
     const rangeEndVal = document.getElementById('paymentRangeEnd').value;
     const searchVal = (document.getElementById('memberSearchInputSide') ? document.getElementById('memberSearchInputSide').value : '').toLowerCase();
 
-    let rangeStart = rangeStartVal ? new Date(rangeStartVal + 'T00:00:00') : null;
-    let rangeEnd = rangeEndVal ? new Date(rangeEndVal + 'T00:00:00') : null;
+    let rangeStart = null;
+    let rangeEnd = null;
+    if (rangeStartVal) {
+        const p1 = rangeStartVal.split('-');
+        rangeStart = new Date(p1[0], p1[1] - 1, p1[2], 0, 0, 0);
+    }
+    if (rangeEndVal) {
+        const p2 = rangeEndVal.split('-');
+        rangeEnd = new Date(p2[0], p2[1] - 1, p2[2], 23, 59, 59);
+    }
 
     if (usePaymentFilter && !rangeStart && !rangeEnd) {
         rangeStart = new Date(calendarYear, calendarMonth, 1);
@@ -1915,14 +1932,23 @@ function getAllMilestonesForRange(memberId, courseFilter, startRange, endRange) 
                     const endTime = new Date(endRange.getFullYear(), endRange.getMonth(), endRange.getDate(), 23, 59, 59).getTime();
                     
                     if (exactTime >= startTime && exactTime <= endTime) {
-                        const isDup = matched.some(x => x.year === year && x.month === month && x.day === d && x.course === cName);
-                        if (!isDup) {
-                            matched.push({
-                                year: year,
-                                month: month,
-                                day: d,
-                                course: cName === 'all' ? null : cName
-                            });
+                        const isPaid = (typeof paymentsData !== 'undefined' ? paymentsData : []).some(p =>
+                            String(p.memberId) === String(m.id) &&
+                            String(p.year) === String(year) &&
+                            String(p.month) === String(month) &&
+                            p.status === 'paid' &&
+                            (p.course && cName && (p.course.includes(cName) || cName.includes(p.course)))
+                        );
+                        if (!isPaid) {
+                            const isDup = matched.some(x => x.year === year && x.month === month && x.day === d && x.course === cName);
+                            if (!isDup) {
+                                matched.push({
+                                    year: year,
+                                    month: month,
+                                    day: d,
+                                    course: cName === 'all' ? null : cName
+                                });
+                            }
                         }
                     }
                 });

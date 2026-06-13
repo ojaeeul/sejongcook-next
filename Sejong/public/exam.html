@@ -20,7 +20,7 @@
             display: flex;
             align-items: flex-start;
             gap: 0;
-            padding: 20px;
+            padding: 0px 20px 20px 20px; /* Removed top padding */
             max-width: 1400px;
             margin: 0 auto;
         }
@@ -138,7 +138,11 @@
         }
 
         .exam-table .id-pass-col span {
-            line-height: 1.2;
+            display: block;
+        }
+
+        .main-wrapper {
+            padding-top: 0 !important;
         }
 
         .exam-table .score-col {
@@ -246,7 +250,7 @@
 </head>
 
 <body>
-    <div class="app-layout">
+    <div class="app-container">
         <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
         <aside class="sidebar">
             <div class="sidebar-header">
@@ -357,7 +361,7 @@
     </div>
 
     <script src="script.js"></script>
-    <script src="exam.js"></script>
+    <script src="exam.js?v=20260613_5" defer></script>
 </body>
 
 </html>
