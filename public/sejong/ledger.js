@@ -732,11 +732,19 @@ function renderTable(container, title, members, id) {
                     </div>
                 `}).join('');
 
-            let actualHTML = paid.map(p => `
+            let uniquePaid = [...paid];
+            // 전체과정(null)과 특정 과정이 동시에 있다면 중복 표기를 막기 위해 특정 과정을 남기거나 묶어줌
+            // 여기서는 단순히 '실' 항목이 여러 개 생기는 걸 방지하기 위해 필터링
+            if (uniquePaid.length > 1 && uniquePaid.some(up => !up.course || up.course === 'null' || up.course === 'undefined' || up.course === '')) {
+                uniquePaid = uniquePaid.filter(up => up.course && up.course !== 'null' && up.course !== 'undefined' && up.course !== '');
+                if (uniquePaid.length === 0) uniquePaid = [paid[0]]; // 다 필터링되면 첫번째 유지
+            }
+
+            let actualHTML = uniquePaid.map(p => `
                 <div style="font-size: 0.65rem; font-weight: 900; display: flex; flex-direction: column; gap: 2px; align-items: center; margin-bottom: 4px;">
                     <div>${new Date(p.updatedAt).getDate()}일</div>
                     <div style="font-size: 0.6rem; color: #059669;">${p.amount / 10000}만</div>
-                    ${p.course ? `<div style="font-size: 0.55rem; color: #64748b; font-weight: 600; line-height: 1;">${p.course.replace('기능사', '')}</div>` : ''}
+                    ${p.course && p.course !== 'null' && p.course !== 'undefined' ? `<div style="font-size: 0.55rem; color: #64748b; font-weight: 600; line-height: 1;">${p.course.replace('기능사', '')}</div>` : ''}
                 </div>
             `).join('');
 
