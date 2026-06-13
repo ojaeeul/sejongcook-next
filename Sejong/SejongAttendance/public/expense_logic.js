@@ -126,6 +126,9 @@ function processNewPayments() {
         .filter(p => p.status === 'paid')
         .sort((a, b) => new Date(a.updatedAt || 0) - new Date(b.updatedAt || 0));
         
+    const cookingContainer = document.getElementById('sales-cooking-container');
+    const bakingContainer = document.getElementById('sales-baking-container');
+        
     paidPayments.forEach(p => {
         // 이미 DOM에 있는지 확인
         if (document.querySelector(`[data-payment-id="${p.memberId}_${p.year}_${p.month}"]`)) {
@@ -140,40 +143,61 @@ function processNewPayments() {
         const dateObj = p.updatedAt ? new Date(p.updatedAt) : new Date();
         const dateStr = `${dateObj.getMonth() + 1}/${dateObj.getDate()}(${['일','월','화','수','목','금','토'][dateObj.getDay()]})`;
         
-        // 과정 분류에 따라 타겟 컨테이너 결정
-        let targetContainerId = 'sales-cooking-container'; // 기본값 (요리)
-        if (BAKING_COURSES.some(bc => courseName.includes(bc))) {
-            targetContainerId = 'sales-baking-container';
-        }
+        const isBaking = BAKING_COURSES.some(bc => courseName.includes(bc));
         
-        const container = document.getElementById(targetContainerId);
-        
-        // 날짜가 처음 등장하는지 확인
-        const existingDates = Array.from(container.querySelectorAll('.date-col')).map(el => el.textContent.trim());
+        // 날짜 기준은 무조건 요리(왼쪽) 쪽
+        const existingDates = Array.from(cookingContainer.querySelectorAll('.date-col')).map(el => el.textContent.trim());
         const isFirstOfDay = !existingDates.includes(dateStr);
         
-        // 첫 데이터면 2줄 띄우기
-        if (isFirstOfDay && container.children.length > 0) {
-            container.insertAdjacentHTML('beforeend', `<div class="entry-line"><div class="date-col"></div><div class="desc-col"></div><div class="amount-col"></div><div class="method-col"></div></div>`);
-            container.insertAdjacentHTML('beforeend', `<div class="entry-line"><div class="date-col"></div><div class="desc-col"></div><div class="amount-col"></div><div class="method-col"></div></div>`);
+        // 첫 데이터면 둘 다 2줄 띄우기
+        if (isFirstOfDay && Math.max(cookingContainer.children.length, bakingContainer.children.length) > 0) {
+            for(let i=0; i<2; i++) {
+                cookingContainer.insertAdjacentHTML('beforeend', `<div class="entry-line"><div class="date-col" contenteditable="true"></div><div class="desc-col" contenteditable="true"></div><div class="amount-col" contenteditable="true"></div><div class="method-col" contenteditable="true"></div></div>`);
+                bakingContainer.insertAdjacentHTML('beforeend', `<div class="entry-line"><div class="desc-col" contenteditable="true"></div><div class="amount-col" contenteditable="true"></div><div class="method-col" contenteditable="true"></div></div>`);
+            }
         }
         
-        // 항목 추가
-        const newLine = document.createElement('div');
-        newLine.className = 'entry-line tuition-auto';
-        newLine.setAttribute('data-payment-id', `${p.memberId}_${p.year}_${p.month}`);
-        
-        // 이름 뒤에 과정명 표기? 요청에 의하면 "예: 이름, 수강비". 과정명도 살짝 넣으면 좋음
         const shortCourse = courseName ? courseName.split('(')[0] : '';
+        const descHtml = `${memberName} ${shortCourse ? '('+shortCourse+')' : ''}`;
         
-        newLine.innerHTML = `
-            <div class="date-col" contenteditable="true">${isFirstOfDay ? dateStr : ''}</div>
-            <div class="desc-col" contenteditable="true">${memberName} ${shortCourse ? '('+shortCourse+')' : ''}</div>
-            <div class="amount-col" contenteditable="true">${amountStr}</div>
-            <div class="method-col" contenteditable="true">(카)</div>
-        `;
+        const cookLine = document.createElement('div');
+        cookLine.className = 'entry-line';
+        const bakeLine = document.createElement('div');
+        bakeLine.className = 'entry-line';
         
-        container.appendChild(newLine);
+        if (isBaking) {
+            bakeLine.className += ' tuition-auto';
+            bakeLine.setAttribute('data-payment-id', `${p.memberId}_${p.year}_${p.month}`);
+            cookLine.innerHTML = `
+                <div class="date-col" contenteditable="true">${isFirstOfDay ? dateStr : ''}</div>
+                <div class="desc-col" contenteditable="true"></div>
+                <div class="amount-col" contenteditable="true"></div>
+                <div class="method-col" contenteditable="true"></div>
+            `;
+            bakeLine.innerHTML = `
+                <div class="desc-col" contenteditable="true">${descHtml}</div>
+                <div class="amount-col" contenteditable="true">${amountStr}</div>
+                <div class="method-col" contenteditable="true">(카)</div>
+            `;
+        } else {
+            cookLine.className += ' tuition-auto';
+            cookLine.setAttribute('data-payment-id', `${p.memberId}_${p.year}_${p.month}`);
+            cookLine.innerHTML = `
+                <div class="date-col" contenteditable="true">${isFirstOfDay ? dateStr : ''}</div>
+                <div class="desc-col" contenteditable="true">${descHtml}</div>
+                <div class="amount-col" contenteditable="true">${amountStr}</div>
+                <div class="method-col" contenteditable="true">(카)</div>
+            `;
+            bakeLine.innerHTML = `
+                <div class="desc-col" contenteditable="true"></div>
+                <div class="amount-col" contenteditable="true"></div>
+                <div class="method-col" contenteditable="true"></div>
+            `;
+        }
+        
+        cookingContainer.appendChild(cookLine);
+        bakingContainer.appendChild(bakeLine);
+        
         hasChanges = true;
     });
     
@@ -191,12 +215,26 @@ function handleInput(e) {
     if (target.classList.contains('desc-col')) {
         const text = target.textContent.trim();
         const line = target.closest('.entry-line');
-        const dateCol = line.querySelector('.date-col');
+        const container = line.closest('.right-col-half') || line.closest('#expense-container');
         
-        if (text.length > 0 && dateCol && dateCol.textContent.trim() === '') {
-            const now = new Date();
-            const days = ['일', '월', '화', '수', '목', '금', '토'];
-            dateCol.textContent = `${now.getMonth() + 1}/${now.getDate()}(${days[now.getDay()]})`;
+        if (text.length > 0) {
+            let targetDateCol = null;
+            
+            if (container && container.id === 'sales-baking-container') {
+                const index = Array.from(container.children).indexOf(line);
+                const leftContainer = document.getElementById('sales-cooking-container');
+                if (leftContainer && leftContainer.children[index]) {
+                    targetDateCol = leftContainer.children[index].querySelector('.date-col');
+                }
+            } else {
+                targetDateCol = line.querySelector('.date-col');
+            }
+            
+            if (targetDateCol && targetDateCol.textContent.trim() === '') {
+                const now = new Date();
+                const days = ['일', '월', '화', '수', '목', '금', '토'];
+                targetDateCol.textContent = `${now.getMonth() + 1}/${now.getDate()}(${days[now.getDay()]})`;
+            }
         }
     }
     
@@ -291,20 +329,17 @@ window.selectCardOption = function(optionText) {
     }
 }
 
-// 빈 줄이 부족하면 항상 유지하도록
+// 빈 줄이 부족하면 항상 유지하도록 + 레이아웃 동기화
 function ensureMinimumLines() {
-    const containers = [
-        document.getElementById('expense-container'),
-        document.getElementById('sales-cooking-container'),
-        document.getElementById('sales-baking-container')
-    ];
+    const expenseContainer = document.getElementById('expense-container');
+    const cookingContainer = document.getElementById('sales-cooking-container');
+    const bakingContainer = document.getElementById('sales-baking-container');
     
-    containers.forEach(container => {
-        if(!container) return;
-        const emptyLines = Array.from(container.children).filter(line => line.textContent.trim() === '').length;
+    if (expenseContainer) {
+        const emptyLines = Array.from(expenseContainer.children).filter(line => line.textContent.trim() === '').length;
         if (emptyLines < 5) {
             for(let i=0; i<10; i++) {
-                container.insertAdjacentHTML('beforeend', `
+                expenseContainer.insertAdjacentHTML('beforeend', `
                     <div class="entry-line">
                         <div class="date-col" contenteditable="true"></div>
                         <div class="desc-col" contenteditable="true"></div>
@@ -314,5 +349,42 @@ function ensureMinimumLines() {
                 `);
             }
         }
-    });
+    }
+    
+    if (cookingContainer && bakingContainer) {
+        // 기존에 잘못 들어간 bakingContainer의 date-col 제거
+        bakingContainer.querySelectorAll('.date-col').forEach(el => el.remove());
+        
+        const cookLines = cookingContainer.children.length;
+        const bakeLines = bakingContainer.children.length;
+        let maxLines = Math.max(cookLines, bakeLines);
+        
+        const cookEmpty = Array.from(cookingContainer.children).filter(line => line.textContent.trim() === '').length;
+        const bakeEmpty = Array.from(bakingContainer.children).filter(line => line.textContent.trim() === '').length;
+        
+        if (Math.min(cookEmpty, bakeEmpty) < 5) {
+            maxLines += 10;
+        }
+        
+        while (cookingContainer.children.length < maxLines) {
+            cookingContainer.insertAdjacentHTML('beforeend', `
+                <div class="entry-line">
+                    <div class="date-col" contenteditable="true"></div>
+                    <div class="desc-col" contenteditable="true"></div>
+                    <div class="amount-col" contenteditable="true"></div>
+                    <div class="method-col" contenteditable="true"></div>
+                </div>
+            `);
+        }
+        
+        while (bakingContainer.children.length < maxLines) {
+            bakingContainer.insertAdjacentHTML('beforeend', `
+                <div class="entry-line">
+                    <div class="desc-col" contenteditable="true"></div>
+                    <div class="amount-col" contenteditable="true"></div>
+                    <div class="method-col" contenteditable="true"></div>
+                </div>
+            `);
+        }
+    }
 }
