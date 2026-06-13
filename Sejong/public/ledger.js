@@ -541,7 +541,7 @@ function renderTable(container, title, members, id) {
                         String(p.year) === String(currentYear) &&
                         String(p.month) === String(month) &&
                         p.status === 'paid' &&
-                        (p.course && s.course && (p.course.includes(s.course) || s.course.includes(p.course)))
+                        (!p.course || p.course === 'null' || p.course === '' || !s.course || p.course.includes(s.course) || s.course.includes(p.course))
                     );
 
                     if (isPaid) {
@@ -704,7 +704,26 @@ function renderTable(container, title, members, id) {
                 });
             }
 
-            const paid = paymentsData.filter(p => String(p.memberId) === String(m.id) && String(p.year) === String(currentYear) && String(p.month) === String(month) && p.status === 'paid');
+            let paid = paymentsData.filter(p => String(p.memberId) === String(m.id) && String(p.year) === String(currentYear) && String(p.month) === String(month) && p.status === 'paid');
+            // 중복된 결제 내역(course가 null인 과거 데이터와 course가 있는 신규 데이터 등)이 중복 표시되지 않도록 정리
+            let uniquePaid = [];
+            paid.forEach(p => {
+                const c = (!p.course || p.course === 'null') ? 'all' : p.course;
+                const existing = uniquePaid.find(up => {
+                    const upC = (!up.course || up.course === 'null') ? 'all' : up.course;
+                    return upC === c || upC.includes(c) || c.includes(upC);
+                });
+                if (!existing) {
+                    uniquePaid.push(p);
+                } else if (new Date(p.updatedAt) > new Date(existing.updatedAt)) {
+                    uniquePaid[uniquePaid.indexOf(existing)] = p;
+                }
+            });
+            // 전체과정(null)과 특정 과정이 동시에 있다면 전체과정 제거
+            if (uniquePaid.length > 1 && uniquePaid.some(up => !up.course || up.course === 'null' || up.course === '')) {
+                uniquePaid = uniquePaid.filter(up => up.course && up.course !== 'null' && up.course !== '');
+            }
+            paid = uniquePaid;
 
             let expectedHTML = schedules
                 .filter(s => {
