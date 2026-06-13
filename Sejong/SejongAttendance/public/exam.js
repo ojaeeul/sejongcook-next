@@ -238,14 +238,13 @@ function animatePageTurn(dir) {
     const container = document.getElementById('notebookContainer');
     if (!container) return renderExamTable();
     
-    // Create cylindrical roll effect
-    container.style.transition = 'transform 0.3s ease-in, opacity 0.3s ease-in';
-    container.style.transformOrigin = 'center center'; // Roll from center
+    // Smooth horizontal slide out
+    container.style.transition = 'transform 0.25s ease-in, opacity 0.25s ease-in';
     
     if (dir === 'next') {
-        container.style.transform = 'perspective(1500px) scale(0.95) rotateX(90deg)';
+        container.style.transform = 'translateX(-40px)';
     } else {
-        container.style.transform = 'perspective(1500px) scale(0.95) rotateX(-90deg)';
+        container.style.transform = 'translateX(40px)';
     }
     container.style.opacity = '0';
     
@@ -254,18 +253,19 @@ function animatePageTurn(dir) {
         
         container.style.transition = 'none';
         if (dir === 'next') {
-            container.style.transform = 'perspective(1500px) scale(0.95) rotateX(-90deg)';
+            container.style.transform = 'translateX(40px)';
         } else {
-            container.style.transform = 'perspective(1500px) scale(0.95) rotateX(90deg)';
+            container.style.transform = 'translateX(-40px)';
         }
         
         // Force reflow
         void container.offsetWidth;
         
-        container.style.transition = 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease-out';
-        container.style.transform = 'perspective(1500px) scale(1) rotateX(0deg)';
+        // Smooth horizontal slide in with a nice cubic-bezier curve
+        container.style.transition = 'transform 0.35s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.35s ease-out';
+        container.style.transform = 'translateX(0)';
         container.style.opacity = '1';
-    }, 300);
+    }, 250);
 }
 
 function getScoreClass(score) {
