@@ -128,6 +128,41 @@ function updateExam(index, field, value) {
     
     exams[index][field] = value;
     
+    // Auto-format dates
+    if (field === 'examDate' || field === 'resultDate') {
+        if (value.includes('/')) {
+            let parts = value.split('/').map(p => p.replace(/[^0-9]/g, '')).filter(p => p !== '');
+            if (parts.length >= 2) {
+                let m = parts[0].padStart(2, '0');
+                let d = parts[1].padStart(2, '0');
+                if (m !== '00' && d !== '00') {
+                    exams[index][field] = `${m}/${d}`;
+                    renderExamTable();
+                }
+            } else if (parts.length === 1) {
+                // If they just typed "10/" and hit enter, don't break it
+            }
+        } else {
+            let cleaned = value.replace(/[^0-9]/g, '');
+            if (cleaned.length === 4) {
+                exams[index][field] = `${cleaned.substring(0, 2)}/${cleaned.substring(2, 4)}`;
+                renderExamTable();
+            } else if (cleaned.length === 3) {
+                // If 3 digits, e.g. 501 -> 05/01. But what if 101 -> 10/01?
+                // Usually month is 1-12. If the first two digits are > 12, then it's M/DD.
+                let firstTwo = parseInt(cleaned.substring(0, 2));
+                if (firstTwo >= 10 && firstTwo <= 12) {
+                    exams[index][field] = `${cleaned.substring(0, 2)}/0${cleaned.substring(2, 3)}`;
+                } else {
+                    exams[index][field] = `0${cleaned.substring(0, 1)}/${cleaned.substring(1, 3)}`;
+                }
+                renderExamTable();
+            } else if (cleaned.length === 1 || cleaned.length === 2) {
+                // Just numbers, no formatting
+            }
+        }
+    }
+    
     // Auto-generate ID, PW, and Subject if name is entered
     if (field === 'name') {
         const member = examMembers.find(m => m.name && m.name.trim() === value.trim());
