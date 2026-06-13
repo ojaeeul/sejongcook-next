@@ -515,3 +515,95 @@ function parseCourses(courseStr) {
         return acc;
     }, []);
 }
+
+// Inline Month Picker Logic
+const pickerDates = {
+    exam: null, // null means "전체" (All)
+    result: null
+};
+
+function initInlineMonthPickers() {
+    const today = new Date();
+    ['exam', 'result'].forEach(type => {
+        populateInlineSelects(type, today.getFullYear(), today.getMonth());
+    });
+}
+
+function populateInlineSelects(type, y, m) {
+    const yearSelect = document.getElementById(type + 'YearSelect');
+    const monthSelect = document.getElementById(type + 'MonthSelect');
+    
+    let yearOptions = '<option value="">전체년도</option>';
+    for(let i=y-5; i<=y+5; i++) {
+        yearOptions += `<option value="${i}">${i}년</option>`;
+    }
+    yearSelect.innerHTML = yearOptions;
+    
+    let monthOptions = '<option value="">전체월</option>';
+    for(let i=0; i<12; i++) {
+        monthOptions += `<option value="${i}">${i+1}월</option>`;
+    }
+    monthSelect.innerHTML = monthOptions;
+}
+
+function updateInlineSelects(type) {
+    const yearSelect = document.getElementById(type + 'YearSelect');
+    const monthSelect = document.getElementById(type + 'MonthSelect');
+    
+    if (pickerDates[type] === null) {
+        yearSelect.value = "";
+        monthSelect.value = "";
+    } else {
+        yearSelect.value = pickerDates[type].getFullYear();
+        monthSelect.value = pickerDates[type].getMonth();
+    }
+}
+
+function changeInlineMonth(type, delta) {
+    if (pickerDates[type] === null) {
+        pickerDates[type] = new Date();
+        pickerDates[type].setDate(1);
+    } else {
+        pickerDates[type].setMonth(pickerDates[type].getMonth() + delta);
+    }
+    updateInlineSelects(type);
+    applyInlineMonth(type, true);
+}
+
+function resetInlineMonth(type) {
+    pickerDates[type] = null;
+    updateInlineSelects(type);
+    applyInlineMonth(type, true);
+}
+
+function applyInlineMonth(type, skipRead = false) {
+    const yearSelect = document.getElementById(type + 'YearSelect');
+    const monthSelect = document.getElementById(type + 'MonthSelect');
+    
+    if (!skipRead) {
+        const y = yearSelect.value;
+        const m = monthSelect.value;
+        if (y === "" || m === "") {
+            pickerDates[type] = null;
+        } else {
+            pickerDates[type] = new Date(parseInt(y), parseInt(m), 1);
+        }
+        updateInlineSelects(type);
+    }
+    
+    const hiddenInput = document.getElementById(type + 'MonthFilter');
+    if (pickerDates[type] === null) {
+        hiddenInput.value = '';
+    } else {
+        const y = pickerDates[type].getFullYear();
+        const m = pickerDates[type].getMonth() + 1;
+        hiddenInput.value = y + '-' + (m < 10 ? '0'+m : m);
+    }
+    
+    renderExamTable();
+}
+
+// Call init when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    initInlineMonthPickers();
+});
