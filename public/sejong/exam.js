@@ -94,6 +94,7 @@ function renderExamTable() {
         const searchStr = document.getElementById('examSearchInput') ? document.getElementById('examSearchInput').value.toLowerCase() : '';
         const examMonthRaw = document.getElementById('examMonthFilter') ? document.getElementById('examMonthFilter').value : '';
         const resultMonthRaw = document.getElementById('resultMonthFilter') ? document.getElementById('resultMonthFilter').value : '';
+        const resultDayStr = document.getElementById('resultDaySelect') ? document.getElementById('resultDaySelect').value : '';
 
         const examYearStr = examMonthRaw ? examMonthRaw.split('-')[0] : '';
         const examMonthStr = examMonthRaw ? examMonthRaw.split('-')[1] : '';
@@ -102,6 +103,12 @@ function renderExamTable() {
         const resultYearStr = resultMonthRaw ? resultMonthRaw.split('-')[0] : '';
         const resultMonthStr = resultMonthRaw ? resultMonthRaw.split('-')[1] : '';
         const resultDayStr = resultMonthRaw ? resultMonthRaw.split('-')[2] : '';
+        
+        const currentFilterState = searchStr + '|' + examMonthRaw + '|' + resultMonthRaw;
+        if (window.lastFilterState !== undefined && window.lastFilterState !== currentFilterState) {
+            window.currentPage = 1;
+        }
+        window.lastFilterState = currentFilterState;
 
         const validExams = Array.isArray(exams) ? exams : [];
         const displayExams = [...validExams];
@@ -149,14 +156,20 @@ function renderExamTable() {
             totalPages++;
         }
         
-        if (typeof currentPage === 'undefined') window.currentPage = 1;
+        if (typeof currentPage === 'undefined') {
+            const saved = localStorage.getItem('examCurrentPage');
+            window.currentPage = saved ? parseInt(saved, 10) : 1;
+        }
         
         // Ensure totalPages is at least currentPage so forced blank pages aren't destroyed
         if (currentPage > totalPages) {
             totalPages = currentPage;
         }
         
-        if (currentPage < 1) currentPage = 1;
+        if (currentPage < 1) window.currentPage = 1;
+        
+        // Save current page to localStorage so it persists across refreshes
+        localStorage.setItem('examCurrentPage', currentPage);
         
         // Update pagination indicator
         const indicators = document.querySelectorAll('.pageIndicator');
