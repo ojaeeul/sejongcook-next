@@ -1856,49 +1856,86 @@ function setWeekRange(week) {
 
 function getAllMilestonesForRange(memberId, courseFilter, startRange, endRange) {
     const cleanFilter = String(courseFilter || 'all').replace(/\([^)]*\)/g, '').trim();
-    
     const syncData = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
     let matched = [];
 
-    let current = new Date(startRange);
-    while (current <= endRange) {
-        const y = current.getFullYear();
-        const m = current.getMonth() + 1;
-        const d = current.getDate();
+    const m = (typeof allMembers !== 'undefined' ? allMembers : []).find(mem => String(mem.id) === String(memberId));
+    if (!m) return [];
 
-        Object.keys(syncData).forEach(k => {
-            if (k.includes('_simulated')) return;
-            const parts = k.split('_'); 
-            if (parts.length >= 4 && parts[0] == memberId && parts[1] == y && parts[2] == m) {
-                const courseName = parts[3];
-                if (cleanFilter !== 'all' && courseName !== 'all' && !courseName.includes(cleanFilter)) {
-                    return;
-                }
-                const days = syncData[k];
-                let hasRedBoxOnDay = false;
-                
-                const normalizeDay = (val) => {
-                    return String(val).includes('-') ? parseInt(String(val).split('-')[2], 10) : parseInt(val, 10);
-                };
+    const startY = startRange.getFullYear();
+    const startM = startRange.getMonth() + 1;
+    const endY = endRange.getFullYear();
+    const endM = endRange.getMonth() + 1;
 
-                if (Array.isArray(days)) {
-                    hasRedBoxOnDay = days.some(dVal => normalizeDay(dVal) === d);
-                } else if (days !== null && days !== undefined) {
-                    hasRedBoxOnDay = (normalizeDay(days) === d);
-                }
-                
-                if (hasRedBoxOnDay) {
-                    matched.push({
-                        year: y,
-                        month: m,
-                        day: d,
-                        course: courseName === 'all' ? null : courseName
-                    });
+    let year = startY;
+    let month = startM;
+    
+    while (year < endY || (year === endY && month <= endM)) {
+        let coursesToCheck = [];
+        if (cleanFilter !== 'all') {
+            coursesToCheck = [cleanFilter];
+        } else {
+            let rawC = (m.course || '').split(',').map(c => c.replace(/\([^)]*\)/g, '').trim()).filter(c => c !== '');
+            const hasJeggwa = rawC.some(c => c.includes('제과') && !c.includes('제과제빵'));
+            const hasJeppang = rawC.some(c => c.includes('제빵') && !c.includes('제과제빵'));
+            if (hasJeggwa && hasJeppang) {
+                rawC = rawC.filter(c => !c.includes('제과') && !c.includes('제빵'));
+                rawC.push('제과제빵기능사');
+            }
+            coursesToCheck = rawC;
+        }
+
+        coursesToCheck.forEach(cName => {
+            const syncKey = `${m.id}_${year}_${month}_${cName}`;
+            let daysArr = [];
+            let hasAtt = false;
+            let isSim = false;
+
+            if (syncData && syncData[syncKey]) {
+                const rawSync = syncData[syncKey];
+                daysArr = Array.isArray(rawSync) ? rawSync : (typeof rawSync === 'number' ? [rawSync] : []);
+                if (daysArr.length > 0) hasAtt = true;
+            } else if (typeof window.calculateRedBoxesForMonth === 'function') {
+                const result = window.calculateRedBoxesForMonth(m, year, month, typeof attendanceData !== 'undefined' ? attendanceData : [], cName, typeof window.GLOBAL_DATA_ADJUSTMENTS !== 'undefined' ? window.GLOBAL_DATA_ADJUSTMENTS : {});
+                if (result && result.redDays && result.redDays.length > 0) {
+                    daysArr = result.redDays;
+                    isSim = result.isSimulated;
+                    hasAtt = result.hasAnyAttendance;
                 }
             }
+
+            if (daysArr.length > 0 && hasAtt && !isSim) {
+                daysArr.forEach(dVal => {
+                    const d = String(dVal).includes('-') ? parseInt(String(dVal).split('-')[2], 10) : parseInt(dVal, 10);
+                    if (isNaN(d) || d <= 0) return;
+                    
+                    const exactDate = new Date(year, month - 1, d);
+                    const exactTime = exactDate.getTime();
+                    const startTime = new Date(startRange.getFullYear(), startRange.getMonth(), startRange.getDate()).getTime();
+                    const endTime = new Date(endRange.getFullYear(), endRange.getMonth(), endRange.getDate(), 23, 59, 59).getTime();
+                    
+                    if (exactTime >= startTime && exactTime <= endTime) {
+                        const isDup = matched.some(x => x.year === year && x.month === month && x.day === d && x.course === cName);
+                        if (!isDup) {
+                            matched.push({
+                                year: year,
+                                month: month,
+                                day: d,
+                                course: cName === 'all' ? null : cName
+                            });
+                        }
+                    }
+                });
+            }
         });
-        current.setDate(current.getDate() + 1);
+
+        month++;
+        if (month > 12) {
+            month = 1;
+            year++;
+        }
     }
+    
     return matched;
 }
 
