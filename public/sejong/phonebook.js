@@ -235,7 +235,7 @@ function renderPage() {
         const getPhoneButtons = (phone, courseName) => {
             if (!phone) return '';
             return `
-                <div class="card-actions">
+                <div class="card-actions" style="gap: 2px; margin-left: 2px;">
                     <button class="action-icon-btn call" onclick="window.location.href='tel:${phone}'" title="전화 걸기">
                         <i class="material-icons">call</i>
                     </button>
@@ -252,27 +252,27 @@ function renderPage() {
             <div class="phone-card" style="display: flex; align-items: stretch; justify-content: flex-start; padding: 0;">
                 
                 <!-- Left Column: Name & Reg Date -->
-                <div style="width: 140px; display: flex; flex-direction: column; justify-content: center; border-right: 1px solid #e2e8f0; padding: 0 15px; flex-shrink: 0;">
-                    <span class="member-name" style="font-weight: 600; font-size: 1.1rem;">${m.name}</span>
-                    <span class="member-reg-date" style="font-size: 0.55rem; color: #94a3b8; margin-top: 4px;">${regDateText}</span>
+                <div style="width: 100px; display: flex; flex-direction: column; justify-content: center; border-right: 1px solid #e2e8f0; padding: 0 10px; flex-shrink: 0;">
+                    <span class="member-name" style="font-weight: 600; font-size: 0.8rem;">${m.name}</span>
+                    <span class="member-reg-date" style="font-size: 0.5rem; color: #94a3b8; margin-top: 2px;">${regDateText}</span>
                 </div>
                 
                 <!-- Middle Column: Contact Info -->
-                <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 8px; border-right: 1px solid #e2e8f0; min-width: 250px; padding: 0 15px;">
+                <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 2px; border-right: 1px solid #e2e8f0; min-width: 180px; padding: 0 10px;">
                     <div class="contact-box" style="display: flex; align-items: center; height: auto;">
-                        <span class="contact-label" style="width: 50px; flex-shrink: 0;">본인</span>
-                        <span class="phone-number" style="font-weight: 500; width: 130px; flex-shrink: 0;">${m.phone || '-'}</span>
+                        <span class="contact-label" style="width: 30px; font-size: 0.5rem; padding: 1px 4px; flex-shrink: 0;">본인</span>
+                        <span class="phone-number" style="font-weight: 500; font-size: 0.65rem; width: 95px; margin-left: 6px; flex-shrink: 0;">${m.phone || '-'}</span>
                         ${getPhoneButtons(m.phone, coursesStr)}
                     </div>
                     <div class="contact-box" style="display: flex; align-items: center; height: auto;">
-                        <span class="contact-label guardian" style="width: 50px; flex-shrink: 0;">부모</span>
-                        <span class="phone-number" style="font-weight: 500; width: 130px; flex-shrink: 0;">${m.phone_guardian || '-'}</span>
+                        <span class="contact-label guardian" style="width: 30px; font-size: 0.5rem; padding: 1px 4px; flex-shrink: 0;">부모</span>
+                        <span class="phone-number" style="font-weight: 500; font-size: 0.65rem; width: 95px; margin-left: 6px; flex-shrink: 0;">${m.phone_guardian || '-'}</span>
                         ${getPhoneButtons(m.phone_guardian, coursesStr)}
                     </div>
                 </div>
 
                 <!-- Right Column: Courses -->
-                <div class="course-badge-list" style="width: 250px; display: flex; align-items: center; justify-content: flex-start; padding: 0 15px; gap: 6px; flex-wrap: wrap;">
+                <div class="course-badge-list" style="width: 180px; display: flex; align-items: center; justify-content: flex-start; padding: 0 10px; gap: 4px; flex-wrap: wrap; margin-left: auto;">
                     ${courseBadges}
                 </div>
             </div>

@@ -146,7 +146,7 @@
             justify-content: space-between;
             transition: all 0.2s ease;
             font-size: 0.85rem;
-            height: 80px; /* match 2 lines of notebook paper */
+            height: 40px; /* match line height of notebook paper */
         }
 
         .phone-card:hover {
@@ -219,8 +219,8 @@
         }
 
         .action-icon-btn {
-            width: 30px;
-            height: 30px;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -229,6 +229,7 @@
             cursor: pointer;
             transition: all 0.2s;
             color: white;
+            flex-shrink: 0;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
@@ -236,7 +237,7 @@
         .action-icon-btn.call:hover { background: #059669; transform: scale(1.1); box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3); }
         .action-icon-btn.sms { background: #3b82f6; }
         .action-icon-btn.sms:hover { background: #2563eb; transform: scale(1.1); box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3); }
-        .action-icon-btn i { font-size: 1rem; }
+        .action-icon-btn i { font-size: 11px; }
 
         .course-badge-list {
             display: flex;
