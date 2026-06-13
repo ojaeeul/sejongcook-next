@@ -535,6 +535,8 @@ function renderTable(container, title, members, id) {
     members.forEach(m => {
         for (let month = 1; month <= 12; month++) {
             const schedules = getAllLedgerMonthStats(m.id, currentYear, month);
+            let hasAnyPaid = false;
+            
             schedules.forEach(s => {
                 if (!s.isSimulated && s.eighthDay && !isNaN(parseInt(s.eighthDay)) && Number(s.eighthDay) > 0) {
                     const isPaid = (typeof paymentsData !== 'undefined' ? paymentsData : window.paymentsData || []).some(p =>
@@ -546,12 +548,16 @@ function renderTable(container, title, members, id) {
                     );
 
                     if (isPaid) {
-                        blueCounts[month]++;
+                        hasAnyPaid = true;
                     } else {
                         monthCounts[month]++;
                     }
                 }
             });
+            
+            if (hasAnyPaid) {
+                blueCounts[month]++;
+            }
         }
     });
 
