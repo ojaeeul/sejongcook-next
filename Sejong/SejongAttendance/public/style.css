@@ -1443,8 +1443,15 @@ input:checked+.slider:before {
 }
 
 @media print {
+    body {
+        height: auto !important;
+        overflow: visible !important;
+    }
+
     .app-container {
         display: block;
+        height: auto !important;
+        overflow: visible !important;
     }
 
     .sidebar,
