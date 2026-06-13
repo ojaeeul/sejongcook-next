@@ -7,7 +7,7 @@
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>지출내역 및 날짜별 매출</title>
-    <link rel="stylesheet" href="style.css?v=20260613-59">
+    <link rel="stylesheet" href="style.css?v=20260613-60">
     <!-- 손글씨 느낌을 위한 폰트 -->
     <link href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&display=swap" rel="stylesheet">
     <style>
@@ -52,7 +52,7 @@
         .page::before {
             content: '';
             position: absolute;
-            top: 0;
+            top: 50px; /* 맨 위 마진 영역에는 빨간 선이 없도록 50px부터 시작 */
             bottom: 0;
             left: 110px;
             width: 2px;
@@ -89,14 +89,13 @@
         }
         .page-title {
             font-family: 'Noto Sans KR', sans-serif;
-            font-size: 22px;
+            font-size: 24px;
             font-weight: 700;
-            margin-bottom: 20px;
-            background: #fcf9f2;
-            display: inline-block;
-            padding-right: 15px;
-            margin-left: 90px;
-            position: relative;
+            position: absolute;
+            top: 10px; /* 맨 위 줄 위로 올림 */
+            left: 130px; /* 빨간 선 오른쪽으로 위치 */
+            margin: 0;
+            background: transparent;
             z-index: 2;
             color: #475569;
         }
@@ -199,9 +198,9 @@
                     <!-- 중앙 스프링 -->
                     <div class="binding"></div>
 
-                    <!-- 오른쪽 페이지: 날짜별 매출 -->
+                    <!-- 오른쪽 페이지: 매출내역 -->
                     <div class="page page-right">
-                        <div class="page-title">날짜별 매출</div>
+                        <div class="page-title">매출내역</div>
                         
                         <div class="right-page-columns">
                             <!-- 매출 첫 번째 단 -->
