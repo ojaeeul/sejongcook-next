@@ -175,11 +175,20 @@ function openStudentModal() {
     document.getElementById('studentModal').classList.add('active');
     document.getElementById('modalSearchInput').value = '';
     
-    // Populate course dropdown
+    // Populate course dropdown by splitting comma-separated courses
     const courseSelect = document.getElementById('modalCourseSelect');
     courseSelect.innerHTML = '<option value="">전체 과정</option>';
     
-    const uniqueCourses = [...new Set(examMembers.map(m => m.course).filter(c => c))].sort();
+    const allCourses = [];
+    examMembers.forEach(m => {
+        if (m.course) {
+            m.course.split(',').forEach(c => {
+                const trimmed = c.trim();
+                if (trimmed) allCourses.push(trimmed);
+            });
+        }
+    });
+    const uniqueCourses = [...new Set(allCourses)].sort();
     uniqueCourses.forEach(course => {
         const option = document.createElement('option');
         option.value = course;
@@ -206,19 +215,24 @@ function renderModalStudents(filterStr = '', filterCourse = '') {
     
     sorted.forEach(m => {
         if (filterStr && !m.name.includes(filterStr) && !(m.phone && m.phone.includes(filterStr))) return;
-        if (filterCourse && m.course !== filterCourse) return;
         
-        const div = document.createElement('div');
-        div.className = 'student-item';
-        div.innerHTML = `
-            <div>
-                <div class="student-name">${m.name}</div>
-                <div class="student-course">${m.course || '과정 없음'}</div>
-            </div>
-            <span class="material-icons" style="color: #cbd5e1;">add_circle</span>
-        `;
-        div.onclick = () => addExamForStudent(m);
-        list.appendChild(div);
+        const courses = m.course ? m.course.split(',').map(c => c.trim()).filter(c => c) : ['과정 없음'];
+        
+        courses.forEach(course => {
+            if (filterCourse && course !== filterCourse) return;
+            
+            const div = document.createElement('div');
+            div.className = 'student-item';
+            div.innerHTML = `
+                <div>
+                    <div class="student-name">${m.name}</div>
+                    <div class="student-course">${course}</div>
+                </div>
+                <span class="material-icons" style="color: #cbd5e1;">add_circle</span>
+            `;
+            div.onclick = () => addExamForStudent(m, course);
+            list.appendChild(div);
+        });
     });
 }
 
@@ -228,16 +242,22 @@ function filterModalStudents() {
     renderModalStudents(str, course);
 }
 
-function addExamForStudent(member) {
+function addExamForStudent(member, selectedCourse) {
     const genId = generateId(member.name, member.resident_num);
     const genPw = genId ? genId + '@' : '';
+    
+    // Extract subject from course string (e.g. "일식기능사(19:00)" -> "일식기능사")
+    let subject = '';
+    if (selectedCourse && selectedCourse !== '과정 없음') {
+        subject = selectedCourse.split('(')[0].trim();
+    }
     
     const newExam = {
         memberId: member.id,
         name: member.name,
         examDate: '',
         resultDate: '',
-        subject: member.course ? member.course.split('(')[0] : '', // Extract subject roughly
+        subject: subject,
         time: '',
         examNum: '',
         genId: genId,
