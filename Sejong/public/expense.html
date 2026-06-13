@@ -1,0 +1,71 @@
+<!DOCTYPE html
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>지출내역</title>
+    <link rel="stylesheet" href="style.css?v=20260613-57">
+    <style>
+        .expense-page {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px;
+        }
+        .icons-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 40px;
+        }
+        .icons-container img {
+            width: 180px;
+            height: 180px;
+            object-fit: contain;
+        }
+        .spring {
+            width: 4px;
+            height: 200px;
+            background: repeating-linear-gradient(
+                45deg,
+                #ff8c00,
+                #ff8c00 10px,
+                #ffa500 10px,
+                #ffa500 20px
+            );
+            border-radius: 2px;
+        }
+        .page-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #222;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <!-- Existing sidebar is included via server-side include; for simplicity we reuse the same navigation as other pages -->
+            <script src="shared_sidebar.js" defer></script>
+        </aside>
+        <main class="main-content">
+            <div class="expense-page">
+                <h1 class="page-title">지출내역</h1>
+                <div class="icons-container">
+                    <img src="expense_icon_1781358903545.png" alt="지출 아이콘">
+                    <div class="spring"></div>
+                    <img src="sales_by_date_icon_1781358927277.png" alt="날짜별 매출 아이콘">
+                </div>
+                <p style="margin-top:30px; font-size:1.2rem; color:#555; text-align:center;">
+                    좌측은 지출을, 우측은 날짜별 매출을 나타냅니다.
+                </p>
+            </div>
+        </main>
+    </div>
+</body>
+</html>
