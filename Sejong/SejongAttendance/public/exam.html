@@ -484,7 +484,13 @@
                 <h3>수강생 선택</h3>
                 <button class="close-btn" onclick="closeStudentModal()">&times;</button>
             </div>
-            <input type="text" class="search-input" id="modalSearchInput" placeholder="이름 검색..." onkeyup="filterModalStudents()">
+            <div class="modal-filters" style="display: flex; gap: 8px; margin-bottom: 12px;">
+                <select id="modalCourseSelect" style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.9rem;" onchange="filterModalStudents()">
+                    <option value="">전체 과정</option>
+                    <!-- Populated dynamically -->
+                </select>
+                <input type="text" class="search-input" id="modalSearchInput" placeholder="이름 검색..." onkeyup="filterModalStudents()" style="flex: 1; margin-bottom: 0;">
+            </div>
             <div class="student-list" id="modalStudentList">
                 <!-- Populated by JS -->
             </div>
@@ -492,7 +498,7 @@
     </div>
 
     <script src="script.js"></script>
-    <script src="exam.js?v=20260613-24" defer></script>
+    <script src="exam.js?v=20260613-25" defer></script>
 </body>
 
 </html>

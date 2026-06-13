@@ -174,6 +174,22 @@ function deleteExam(index) {
 function openStudentModal() {
     document.getElementById('studentModal').classList.add('active');
     document.getElementById('modalSearchInput').value = '';
+    
+    // Populate course dropdown
+    const courseSelect = document.getElementById('modalCourseSelect');
+    courseSelect.innerHTML = '<option value="">전체 과정</option>';
+    
+    const uniqueCourses = [...new Set(examMembers.map(m => m.course).filter(c => c))].sort();
+    uniqueCourses.forEach(course => {
+        const option = document.createElement('option');
+        option.value = course;
+        option.textContent = course;
+        courseSelect.appendChild(option);
+    });
+    
+    // Reset selection to 'all'
+    courseSelect.value = '';
+    
     renderModalStudents();
 }
 
@@ -181,15 +197,16 @@ function closeStudentModal() {
     document.getElementById('studentModal').classList.remove('active');
 }
 
-function renderModalStudents(filterStr = '') {
+function renderModalStudents(filterStr = '', filterCourse = '') {
     const list = document.getElementById('modalStudentList');
     list.innerHTML = '';
     
     // Sort by name
-    const sorted = [...members].sort((a,b) => (a.name||'').localeCompare(b.name||''));
+    const sorted = [...examMembers].sort((a,b) => (a.name||'').localeCompare(b.name||''));
     
     sorted.forEach(m => {
-        if (filterStr && !m.name.includes(filterStr) && !m.phone.includes(filterStr)) return;
+        if (filterStr && !m.name.includes(filterStr) && !(m.phone && m.phone.includes(filterStr))) return;
+        if (filterCourse && m.course !== filterCourse) return;
         
         const div = document.createElement('div');
         div.className = 'student-item';
@@ -207,7 +224,8 @@ function renderModalStudents(filterStr = '') {
 
 function filterModalStudents() {
     const str = document.getElementById('modalSearchInput').value;
-    renderModalStudents(str);
+    const course = document.getElementById('modalCourseSelect').value;
+    renderModalStudents(str, course);
 }
 
 function addExamForStudent(member) {
