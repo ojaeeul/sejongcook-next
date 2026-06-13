@@ -266,6 +266,7 @@ function getAllLedgerMonthStats(memberId, year, month) {
         courses = courses.filter(c => !c.includes('제과') && !c.includes('제빵'));
         courses.push('제과제빵기능사');
     }
+    courses = [...new Set(courses)];
 
     const results = [];
 
@@ -541,7 +542,7 @@ function renderTable(container, title, members, id) {
                         String(p.year) === String(currentYear) &&
                         String(p.month) === String(month) &&
                         p.status === 'paid' &&
-                        (!p.course || p.course === 'null' || p.course === '' || !s.course || p.course.includes(s.course) || s.course.includes(p.course))
+                        (!p.course || p.course === 'null' || p.course === 'undefined' || p.course === '' || !s.course || p.course.includes(s.course) || s.course.includes(p.course))
                     );
 
                     if (isPaid) {
@@ -708,9 +709,9 @@ function renderTable(container, title, members, id) {
             // 중복된 결제 내역(course가 null인 과거 데이터와 course가 있는 신규 데이터 등)이 중복 표시되지 않도록 정리
             let uniquePaid = [];
             paid.forEach(p => {
-                const c = (!p.course || p.course === 'null') ? 'all' : p.course;
+                const c = (!p.course || p.course === 'null' || p.course === 'undefined') ? 'all' : p.course;
                 const existing = uniquePaid.find(up => {
-                    const upC = (!up.course || up.course === 'null') ? 'all' : up.course;
+                    const upC = (!up.course || up.course === 'null' || up.course === 'undefined') ? 'all' : up.course;
                     return upC === c || upC.includes(c) || c.includes(upC);
                 });
                 if (!existing) {
@@ -720,8 +721,8 @@ function renderTable(container, title, members, id) {
                 }
             });
             // 전체과정(null)과 특정 과정이 동시에 있다면 전체과정 제거
-            if (uniquePaid.length > 1 && uniquePaid.some(up => !up.course || up.course === 'null' || up.course === '')) {
-                uniquePaid = uniquePaid.filter(up => up.course && up.course !== 'null' && up.course !== '');
+            if (uniquePaid.length > 1 && uniquePaid.some(up => !up.course || up.course === 'null' || up.course === 'undefined' || up.course === '')) {
+                uniquePaid = uniquePaid.filter(up => up.course && up.course !== 'null' && up.course !== 'undefined' && up.course !== '');
             }
             paid = uniquePaid;
 

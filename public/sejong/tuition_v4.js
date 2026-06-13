@@ -1039,6 +1039,7 @@ function getCourseShort(courseStr) {
 }
 
 async function togglePayment(memberId, forcedStatus = null, courseName = null, amount = null, targetYear = null, targetMonth = null) {
+    if (courseName === 'undefined' || courseName === '') courseName = null;
     const member = membersData.find(m => m.id == memberId);
     if (!member) return;
 
@@ -1156,7 +1157,8 @@ function confirmStatusChange(memberId, newStatus, memberName, courseName = null,
         '상태 변경 확인',
         `<strong>${memberName}</strong> 님의 <strong>${targetDesc}${dateDesc}</strong> 상태를<br><strong>[${statusText}]</strong>로 변경하시겠습니까?`,
         () => {
-            togglePayment(memberId, newStatus, courseName, amount, targetYear, targetMonth);
+            const safeCourse = (courseName === 'undefined' || courseName === '') ? null : courseName;
+            togglePayment(memberId, newStatus, safeCourse, amount, targetYear, targetMonth);
         },
         () => {
             renderTable(); // Revert select value on cancel
