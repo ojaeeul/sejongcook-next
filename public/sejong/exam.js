@@ -170,6 +170,27 @@ function updateExam(index, field, value) {
         renderExamTable();
     }
     
+    // Auto-format time
+    if (field === 'time' && value) {
+        let cleanValue = value.replace(/[^0-9:]/g, '');
+        if (cleanValue && !cleanValue.includes(':')) {
+            if (cleanValue.length <= 2) {
+                cleanValue = cleanValue.padStart(2, '0') + ':00';
+            } else if (cleanValue.length === 3) {
+                const firstTwo = parseInt(cleanValue.substring(0, 2));
+                if (firstTwo <= 23) {
+                    cleanValue = cleanValue.substring(0, 2) + ':0' + cleanValue.substring(2, 3);
+                } else {
+                    cleanValue = '0' + cleanValue.substring(0, 1) + ':' + cleanValue.substring(1, 3);
+                }
+            } else if (cleanValue.length >= 4) {
+                cleanValue = cleanValue.substring(0, 2) + ':' + cleanValue.substring(2, 4);
+            }
+            exams[index][field] = cleanValue;
+            renderExamTable();
+        }
+    }
+    
     // Auto-generate ID, PW, and Subject if name is entered
     if (field === 'name') {
         const member = examMembers.find(m => m.name && m.name.trim() === value.trim());
