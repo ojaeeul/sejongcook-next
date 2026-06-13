@@ -436,18 +436,64 @@
                     <div class="search-filters-wrapper"
                         style="display: flex; gap: 10px; max-width: 900px; margin: 0 auto; background: white; padding: 12px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
                         <!-- Date Filter -->
+                        <style>
+                            .custom-month-btn {
+                                width: 100%;
+                                padding: 8px 5px 8px 28px;
+                                border-radius: 8px;
+                                border: 1px solid #e2e8f0;
+                                font-size: 0.8rem;
+                                outline: none;
+                                background: white;
+                                text-align: left;
+                                cursor: pointer;
+                                box-sizing: border-box;
+                                color: #94a3b8;
+                                white-space: nowrap;
+                                overflow: hidden;
+                                text-overflow: ellipsis;
+                            }
+                            .custom-month-btn.has-value { color: #1e293b; font-weight: 500; }
+                            .month-picker-popup {
+                                display: none;
+                                position: absolute;
+                                top: 100%; left: 0; margin-top: 5px;
+                                background: white; border: 1px solid #e2e8f0; border-radius: 8px;
+                                padding: 8px 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+                                z-index: 1000; width: 200px;
+                            }
+                            .month-picker-popup.active {
+                                display: flex; justify-content: space-between; align-items: center;
+                            }
+                            .mp-btn {
+                                border: 1px solid #e2e8f0; background: white; border-radius: 6px;
+                                width: 26px; height: 26px; cursor: pointer; display: flex;
+                                align-items: center; justify-content: center; font-weight: bold; color: #475569;
+                            }
+                            .mp-btn:hover { background: #f1f5f9; }
+                            .mp-select {
+                                border: none; font-size: 0.95rem; font-weight: 600; color: #1e293b;
+                                outline: none; cursor: pointer; background: transparent;
+                                appearance: none; -webkit-appearance: none; padding-right: 14px;
+                            }
+                            .mp-select-wrapper { position: relative; display: inline-block; }
+                            .mp-select-wrapper::after {
+                                content: "▼"; font-size: 0.55rem; position: absolute;
+                                right: 0; top: 50%; transform: translateY(-50%); pointer-events: none; color: #475569;
+                            }
+                        </style>
                         <div style="flex: 1; display: flex; gap: 5px;">
                             <div style="flex: 1; position: relative;" title="시험일 검색">
-                                <span class="material-icons"
-                                    style="position: absolute; left: 8px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 1rem;">event</span>
-                                <input type="month" id="examMonthFilter" title="시험일 월 검색"
-                                    style="width: 100%; padding: 8px 5px 8px 28px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.8rem; outline: none; box-sizing: border-box;">
+                                <span class="material-icons" style="position: absolute; left: 8px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 1rem; z-index: 1; pointer-events: none;">event</span>
+                                <div class="custom-month-btn" id="examMonthBtn" onclick="toggleMonthPicker('exam')">시험일 전체</div>
+                                <div id="examMonthPopup" class="month-picker-popup"></div>
+                                <input type="hidden" id="examMonthFilter" value="">
                             </div>
                             <div style="flex: 1; position: relative;" title="발표일 검색">
-                                <span class="material-icons"
-                                    style="position: absolute; left: 8px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 1rem;">event_available</span>
-                                <input type="month" id="resultMonthFilter" title="발표일 월 검색"
-                                    style="width: 100%; padding: 8px 5px 8px 28px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.8rem; outline: none; box-sizing: border-box;">
+                                <span class="material-icons" style="position: absolute; left: 8px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 1rem; z-index: 1; pointer-events: none;">event_available</span>
+                                <div class="custom-month-btn" id="resultMonthBtn" onclick="toggleMonthPicker('result')">발표일 전체</div>
+                                <div id="resultMonthPopup" class="month-picker-popup"></div>
+                                <input type="hidden" id="resultMonthFilter" value="">
                             </div>
                         </div>
 
@@ -539,7 +585,7 @@
     </div>
 
     <script src="script.js"></script>
-    <script src="exam.js?v=20260613-41" defer></script>
+    <script src="exam.js?v=20260613-42" defer></script>
 </body>
 
 </html>
