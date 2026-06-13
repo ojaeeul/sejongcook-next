@@ -1,4 +1,4 @@
-const EXPENSE_API_URL = '/api/sejong/sejong_expense';
+const EXPENSE_API_URL = '/api/sejong/expense';
 
 // 과정 분류
 const COOKING_COURSES = ['한식기능사', '양식기능사', '일식기능사', '중식기능사', '복어기능사', '산업기사', '가정요리', '브런치', '피자', '분식', '원데이클래스'];
@@ -105,10 +105,12 @@ async function saveNotebookData() {
 // 수강료 데이터 로드
 async function fetchTuitionData() {
     try {
-        const pRes = await fetch('/api/sejong/sejong_payments?t=' + Date.now());
+        const pRes = await fetch('/api/sejong/payments?t=' + Date.now());
+        if (!pRes.ok) throw new Error('Payments fetch failed');
         paymentsData = await pRes.json();
         
-        const mRes = await fetch('/api/sejong/sejong_members?t=' + Date.now());
+        const mRes = await fetch('/api/sejong/members?t=' + Date.now());
+        if (!mRes.ok) throw new Error('Members fetch failed');
         membersData = await mRes.json();
     } catch (e) {
         console.error("Failed to fetch tuition data:", e);
