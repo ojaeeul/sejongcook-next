@@ -130,12 +130,71 @@ function processNewPayments() {
         
     const cookingContainer = document.getElementById('sales-cooking-container');
     const bakingContainer = document.getElementById('sales-baking-container');
+    
+    const getText = (node, selector) => {
+        if (!node) return '';
+        const el = node.querySelector(selector);
+        return el ? el.textContent.trim() : '';
+    };
+
+    const insertEmptyRowAt = (index) => {
+        const cookLine = document.createElement('div');
+        cookLine.className = 'entry-line';
+        cookLine.innerHTML = `<div class="date-col" contenteditable="true"></div><div class="desc-col" contenteditable="true"></div><div class="amount-col" contenteditable="true"></div><div class="method-col" contenteditable="true"></div>`;
         
-    paidPayments.forEach(p => {
-        // 이미 DOM에 있는지 확인
-        if (document.querySelector(`[data-payment-id="${p.memberId}_${p.year}_${p.month}"]`)) {
-            return;
+        const bakeLine = document.createElement('div');
+        bakeLine.className = 'entry-line';
+        bakeLine.innerHTML = `<div class="desc-col" contenteditable="true"></div><div class="amount-col" contenteditable="true"></div><div class="method-col" contenteditable="true"></div>`;
+        
+        if (index < cookingContainer.children.length) {
+            cookingContainer.insertBefore(cookLine, cookingContainer.children[index]);
+        } else {
+            cookingContainer.appendChild(cookLine);
         }
+        
+        if (index < bakingContainer.children.length) {
+            bakingContainer.insertBefore(bakeLine, bakingContainer.children[index]);
+        } else {
+            bakingContainer.appendChild(bakeLine);
+        }
+    };
+
+    // 1. 취소된 항목(unpaid로 변경된 항목) 내용 지우기
+    const existingAutoItems = Array.from(document.querySelectorAll('.tuition-auto'));
+    existingAutoItems.forEach(el => {
+        const pIdCook = el.getAttribute('data-payment-id-cook');
+        const pIdBake = el.getAttribute('data-payment-id-bake');
+        const pIdLegacy = el.getAttribute('data-payment-id');
+        const pId = pIdCook || pIdBake || pIdLegacy;
+        
+        if (pId) {
+            const stillPaid = paidPayments.some(p => `${p.memberId}_${p.year}_${p.month}` === pId);
+            if (!stillPaid) {
+                if (el.querySelector('.desc-col')) el.querySelector('.desc-col').textContent = '';
+                if (el.querySelector('.amount-col')) el.querySelector('.amount-col').textContent = '';
+                if (el.querySelector('.method-col')) el.querySelector('.method-col').textContent = '';
+                el.removeAttribute('data-payment-id-cook');
+                el.removeAttribute('data-payment-id-bake');
+                el.removeAttribute('data-payment-id');
+                el.classList.remove('tuition-auto');
+                hasChanges = true;
+            }
+        }
+    });
+
+    paidPayments.forEach(p => {
+        const pId = `${p.memberId}_${p.year}_${p.month}`;
+        
+        let existingCook = cookingContainer.querySelector(`[data-payment-id-cook="${pId}"]`);
+        let existingBake = bakingContainer.querySelector(`[data-payment-id-bake="${pId}"]`);
+        if (!existingCook) existingCook = cookingContainer.querySelector(`[data-payment-id="${pId}"]`);
+        if (!existingBake) existingBake = bakingContainer.querySelector(`[data-payment-id="${pId}"]`);
+        
+        // Ensure the found elements actually belong to their respective containers
+        if (existingCook && !existingCook.closest('#sales-cooking-container')) existingCook = null;
+        if (existingBake && !existingBake.closest('#sales-baking-container')) existingBake = null;
+        
+        if (existingCook || existingBake) return; // Already exists
         
         const member = membersData.find(m => String(m.id) === String(p.memberId));
         const memberName = member ? member.name : '알수없음';
@@ -146,83 +205,102 @@ function processNewPayments() {
         const dateStr = `${dateObj.getMonth() + 1}/${dateObj.getDate()}(${['일','월','화','수','목','금','토'][dateObj.getDay()]})`;
         
         const isBaking = BAKING_COURSES.some(bc => courseName.includes(bc));
-        
-        // 날짜 기준은 무조건 요리(왼쪽) 쪽
-        const existingDates = Array.from(cookingContainer.querySelectorAll('.date-col')).map(el => el.textContent.trim());
-        const isFirstOfDay = !existingDates.includes(dateStr);
-        
-        // 첫 데이터면 둘 다 2줄 띄우기
-        if (isFirstOfDay && Math.max(cookingContainer.children.length, bakingContainer.children.length) > 0) {
-            for(let i=0; i<2; i++) {
-                cookingContainer.insertAdjacentHTML('beforeend', `<div class="entry-line"><div class="date-col" contenteditable="true"></div><div class="desc-col" contenteditable="true"></div><div class="amount-col" contenteditable="true"></div><div class="method-col" contenteditable="true"></div></div>`);
-                bakingContainer.insertAdjacentHTML('beforeend', `<div class="entry-line"><div class="desc-col" contenteditable="true"></div><div class="amount-col" contenteditable="true"></div><div class="method-col" contenteditable="true"></div></div>`);
-            }
-        }
-        
         const shortCourse = courseName ? courseName.split('(')[0] : '';
         const descHtml = `${memberName} ${shortCourse ? '('+shortCourse+')' : ''}`;
         
-        const cookLine = document.createElement('div');
-        cookLine.className = 'entry-line';
-        const bakeLine = document.createElement('div');
-        bakeLine.className = 'entry-line';
+        const currentCookRows = Array.from(cookingContainer.children);
+        const currentBakeRows = Array.from(bakingContainer.children);
+        const currentMaxLen = Math.max(currentCookRows.length, currentBakeRows.length);
         
-        if (isBaking) {
-            bakeLine.className += ' tuition-auto';
-            bakeLine.setAttribute('data-payment-id', `${p.memberId}_${p.year}_${p.month}`);
-            cookLine.innerHTML = `
-                <div class="date-col" contenteditable="true">${isFirstOfDay ? dateStr : ''}</div>
-                <div class="desc-col" contenteditable="true"></div>
-                <div class="amount-col" contenteditable="true"></div>
-                <div class="method-col" contenteditable="true"></div>
-            `;
-            bakeLine.innerHTML = `
-                <div class="desc-col" contenteditable="true">${descHtml}</div>
-                <div class="amount-col" contenteditable="true">${amountStr}</div>
-                <div class="method-col" contenteditable="true">(카)</div>
-            `;
-        } else {
-            cookLine.className += ' tuition-auto';
-            cookLine.setAttribute('data-payment-id', `${p.memberId}_${p.year}_${p.month}`);
-            cookLine.innerHTML = `
-                <div class="date-col" contenteditable="true">${isFirstOfDay ? dateStr : ''}</div>
-                <div class="desc-col" contenteditable="true">${descHtml}</div>
-                <div class="amount-col" contenteditable="true">${amountStr}</div>
-                <div class="method-col" contenteditable="true">(카)</div>
-            `;
-            bakeLine.innerHTML = `
-                <div class="desc-col" contenteditable="true"></div>
-                <div class="amount-col" contenteditable="true"></div>
-                <div class="method-col" contenteditable="true"></div>
-            `;
-        }
+        let lastUsedIndex = -1;
+        let dayStartIndex = -1;
+        let dayEndIndex = -1;
+        let iteratingDate = '';
         
-        cookingContainer.appendChild(cookLine);
-        bakingContainer.appendChild(bakeLine);
-        
-        hasChanges = true;
-    });
-    
-    // 취소된 항목(unpaid로 변경된 항목) 제거 로직
-    const existingAutoItems = Array.from(document.querySelectorAll('[data-payment-id]'));
-    existingAutoItems.forEach(el => {
-        const pId = el.getAttribute('data-payment-id');
-        const stillPaid = paidPayments.some(p => `${p.memberId}_${p.year}_${p.month}` === pId);
-        
-        if (!stillPaid) {
-            const container = el.closest('.right-col-half');
-            if (container) {
-                const index = Array.from(container.children).indexOf(el);
-                const otherContainerId = container.id === 'sales-cooking-container' ? 'sales-baking-container' : 'sales-cooking-container';
-                const otherContainer = document.getElementById(otherContainerId);
-                
-                if (otherContainer && otherContainer.children[index]) {
-                    otherContainer.removeChild(otherContainer.children[index]);
-                }
-                container.removeChild(el);
-                hasChanges = true;
+        for (let i = 0; i < currentMaxLen; i++) {
+            const cRow = currentCookRows[i];
+            const bRow = currentBakeRows[i];
+            
+            const dateVal = getText(cRow, '.date-col');
+            if (dateVal) iteratingDate = dateVal;
+            
+            const cDesc = getText(cRow, '.desc-col');
+            const cAmt = getText(cRow, '.amount-col');
+            const bDesc = getText(bRow, '.desc-col');
+            const bAmt = getText(bRow, '.amount-col');
+            
+            if (dateVal || cDesc || cAmt || bDesc || bAmt) {
+                lastUsedIndex = i;
+            }
+            
+            if (iteratingDate === dateStr) {
+                if (dayStartIndex === -1) dayStartIndex = i;
+                dayEndIndex = i;
             }
         }
+        
+        let targetIndex = -1;
+        
+        if (dayStartIndex !== -1) {
+            // 해당 날짜 영역이 이미 있음. 맞는 쪽에 빈 칸이 있는지 확인
+            for (let i = dayStartIndex; i <= dayEndIndex; i++) {
+                const row = isBaking ? currentBakeRows[i] : currentCookRows[i];
+                if (!row) continue;
+                const desc = getText(row, '.desc-col');
+                const amt = getText(row, '.amount-col');
+                if (!desc && !amt) {
+                    targetIndex = i;
+                    break;
+                }
+            }
+            
+            if (targetIndex === -1) {
+                // 빈 칸이 없으면 해당 날짜 블록 마지막에 한 줄 추가 (바로 이어붙임)
+                targetIndex = dayEndIndex + 1;
+                insertEmptyRowAt(targetIndex);
+            }
+        } else {
+            // 새로운 날짜인 경우
+            if (lastUsedIndex >= 0) {
+                targetIndex = lastUsedIndex + 2; // 한 칸 띄우고 붙임 (사용자 요청: "첫음만 한칸 뛰고")
+            } else {
+                targetIndex = 0;
+            }
+            
+            while (cookingContainer.children.length <= targetIndex) {
+                insertEmptyRowAt(cookingContainer.children.length);
+            }
+        }
+        
+        while (cookingContainer.children.length <= targetIndex) {
+            insertEmptyRowAt(cookingContainer.children.length);
+        }
+        
+        const cRow = cookingContainer.children[targetIndex];
+        const bRow = bakingContainer.children[targetIndex];
+        
+        if (isBaking) {
+            bRow.classList.add('tuition-auto');
+            bRow.setAttribute('data-payment-id-bake', pId);
+            bRow.querySelector('.desc-col').textContent = descHtml;
+            bRow.querySelector('.amount-col').textContent = amountStr;
+            bRow.querySelector('.method-col').textContent = '(카)';
+            
+            if (dayStartIndex === -1 && cRow.querySelector('.date-col')) {
+                cRow.querySelector('.date-col').textContent = dateStr;
+            }
+        } else {
+            cRow.classList.add('tuition-auto');
+            cRow.setAttribute('data-payment-id-cook', pId);
+            if (dayStartIndex === -1 && cRow.querySelector('.date-col')) {
+                cRow.querySelector('.date-col').textContent = dateStr;
+            }
+            cRow.querySelector('.desc-col').textContent = descHtml;
+            cRow.querySelector('.amount-col').textContent = amountStr;
+            cRow.querySelector('.method-col').textContent = '(카)';
+        }
+        
+        hasChanges = true;
     });
     
     if (hasChanges) {
