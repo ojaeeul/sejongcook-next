@@ -427,7 +427,13 @@ let activeMethodCol = null;
 
 function handleClick(e) {
     const target = e.target;
-    hideCardPopup();
+    
+    // method-col (결제수단칸) 클릭 시 팝업창
+    if (target.classList.contains('method-col')) {
+        showCardPopup(target);
+    } else {
+        hideCardPopup();
+    }
 }
 
 function initCardPopup() {
