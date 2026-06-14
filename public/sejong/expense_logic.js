@@ -215,8 +215,7 @@ function processNewPayments() {
         const dateStr = `${dateObj.getMonth() + 1}/${dateObj.getDate()}(${['일','월','화','수','목','금','토'][dateObj.getDay()]})`;
         
         const isBaking = BAKING_COURSES.some(bc => courseName.includes(bc));
-        const shortCourse = courseName ? courseName.split('(')[0] : '';
-        const descHtml = `${memberName} ${shortCourse ? '('+shortCourse+')' : ''}`;
+        const descHtml = memberName;
         
         const currentCookRows = Array.from(cookingContainer.children);
         const currentBakeRows = Array.from(bakingContainer.children);
