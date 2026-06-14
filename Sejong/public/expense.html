@@ -7,7 +7,7 @@
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>지출내역 및 날짜별 매출</title>
-    <link rel="stylesheet" href="style.css?v=20260614-84">
+    <link rel="stylesheet" href="style.css?v=20260614-85">
     <!-- Material Icons for sidebar -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <!-- 손글씨 느낌을 위한 폰트 -->
@@ -168,32 +168,13 @@
             font-size: 0.6em; /* 글자 크기 반으로 줄임 */
         }
         
-        /* 빈 칸일 때 힌트 텍스트 표시 */
-        .date-col:empty:not(:focus)::before {
-            content: "날짜";
-            color: #cbd5e1;
-            pointer-events: none;
-            font-size: 16px;
-        }
-        .desc-col:empty:not(:focus)::before {
-            content: "이름/내용";
-            color: #cbd5e1;
-            pointer-events: none;
-            font-size: 16px;
-        }
-        .amount-col:empty:not(:focus)::before {
-            content: "수강료";
-            color: #cbd5e1;
-            pointer-events: none;
-            font-size: 16px;
-            float: right;
-            margin-right: 5px;
-        }
+        /* 빈 칸일 때 힌트 텍스트 표시 (사용자 요청으로 숨김) */
+        .date-col:empty:not(:focus)::before,
+        .desc-col:empty:not(:focus)::before,
+        .amount-col:empty:not(:focus)::before,
         .method-col:empty:not(:focus)::before {
-            content: "(카)";
-            color: #cbd5e1;
-            pointer-events: none;
-            font-size: 16px;
+            display: none !important;
+            content: "";
         }
         /* 오른쪽 페이지 다단 레이아웃 */
         .right-page-columns {
@@ -651,7 +632,7 @@
 
     </div>
 
-    <script src="expense_logic.js?v=20260614-84"></script>
+    <script src="expense_logic.js?v=20260614-85"></script>
     <script>
         // 기존 하드코딩된 contenteditable 부분은 expense_logic.js로 통합됨
     </script>
@@ -750,6 +731,6 @@
         }
 
     </style>
-    <script src="expense_settings.js?v=20260614-84"></script>
+    <script src="expense_settings.js?v=20260614-85"></script>
 </body>
 </html>
