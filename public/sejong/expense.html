@@ -7,7 +7,7 @@
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>지출내역 및 날짜별 매출</title>
-    <link rel="stylesheet" href="style.css?v=20260614-36">
+    <link rel="stylesheet" href="style.css?v=20260614-37">
     <!-- Material Icons for sidebar -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <!-- 손글씨 느낌을 위한 폰트 -->
@@ -138,12 +138,14 @@
             letter-spacing: 1px;
             padding-left: 10px; /* 빨간선에서 띄움 */
             min-width: 0;
+            border-right: 1px dashed rgba(203, 213, 225, 0.4); /* 연한 점선 구분선 */
         }
         .amount-col {
             text-align: right;
             padding-right: 5px;
             width: 90px;
             flex-shrink: 0;
+            border-right: 1px dashed rgba(203, 213, 225, 0.4); /* 연한 점선 구분선 */
         }
         .method-col {
             text-align: center;
@@ -151,6 +153,34 @@
             color: #64748b;
             flex-shrink: 0;
             cursor: text;
+        }
+        
+        /* 빈 칸일 때 힌트 텍스트 표시 */
+        .date-col:empty:not(:focus)::before {
+            content: "날짜";
+            color: #cbd5e1;
+            pointer-events: none;
+            font-size: 16px;
+        }
+        .desc-col:empty:not(:focus)::before {
+            content: "이름/내용";
+            color: #cbd5e1;
+            pointer-events: none;
+            font-size: 16px;
+        }
+        .amount-col:empty:not(:focus)::before {
+            content: "수강료";
+            color: #cbd5e1;
+            pointer-events: none;
+            font-size: 16px;
+            float: right;
+            margin-right: 5px;
+        }
+        .method-col:empty:not(:focus)::before {
+            content: "(카)";
+            color: #cbd5e1;
+            pointer-events: none;
+            font-size: 16px;
         }
         /* 오른쪽 페이지 다단 레이아웃 */
         .right-page-columns {
@@ -505,7 +535,7 @@
         </main>
     </div>
 
-    <script src="expense_logic.js?v=20260614-36"></script>
+    <script src="expense_logic.js?v=20260614-37"></script>
     <script>
         // 기존 하드코딩된 contenteditable 부분은 expense_logic.js로 통합됨
     </script>

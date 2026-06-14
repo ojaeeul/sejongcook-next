@@ -1,0 +1,6 @@
+.date-col:empty:not(:focus)::before {
+    content: "날짜";
+    color: #cbd5e1;
+    pointer-events: none;
+    font-size: 16px;
+}
