@@ -53,8 +53,9 @@ async function loadNotebookData() {
 
 function fixMissingCols() {
     document.querySelectorAll('.entry-line').forEach(line => {
-        // date-col 확인 (좌측 페이지, 우측 첫번째 단)
-        const needsDateCol = line.closest('#expense-container') || line.closest('#sales-cooking-container');
+        // date-col 확인 (좌측 페이지, 우측 첫번째 단, 그리고 페이지 바로 밑 빈칸)
+        const isDirectChildOfPage = line.parentElement && line.parentElement.classList.contains('page');
+        const needsDateCol = line.closest('#expense-container') || line.closest('#sales-cooking-container') || isDirectChildOfPage;
         if (needsDateCol) {
             let dateCol = line.querySelector('.date-col');
             if (!dateCol) {
