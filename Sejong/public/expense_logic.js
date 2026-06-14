@@ -761,7 +761,7 @@ window.changeExpensePage = function(dir) {
     }
 
     // --- 3D Page Flip Animation ---
-    const wrapper = document.querySelector('.notebook');
+    const wrapper = document.querySelector('.notebook-wrapper');
     const pageRight = document.querySelector('.page-right');
     const pageLeft = document.querySelector('.page-left');
     
