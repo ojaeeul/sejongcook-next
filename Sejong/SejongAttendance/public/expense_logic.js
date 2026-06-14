@@ -928,17 +928,6 @@ window.alignAllDates = function(isAuto = false) {
                     paymentIdBake: line.getAttribute('data-payment-id-bake') || '',
                     className: line.className
                 });
-            } else if (isBaking) {
-                // Keep empty placeholders for baking if needed to maintain alignment, but we group by date later anyway.
-                // Actually, if we group by date, empty items with no text but a lastDate shouldn't be discarded IF we need them.
-                // But it's better to just push them if they have a lastDate so they join the date group.
-                if (lastDate) {
-                    items.push({
-                        date: lastDate,
-                        descHtml: '', amountHtml: '', methodHtml: '',
-                        paymentIdCook: '', paymentIdBake: '', className: line.className
-                    });
-                }
             }
         });
         return items;
