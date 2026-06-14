@@ -53,6 +53,19 @@ async function loadNotebookData() {
 
 function fixMissingCols() {
     document.querySelectorAll('.entry-line').forEach(line => {
+        // date-col 확인 (좌측 페이지, 우측 첫번째 단)
+        const needsDateCol = line.closest('#expense-container') || line.closest('#sales-cooking-container');
+        if (needsDateCol) {
+            let dateCol = line.querySelector('.date-col');
+            if (!dateCol) {
+                dateCol = document.createElement('div');
+                dateCol.className = 'date-col';
+                dateCol.setAttribute('contenteditable', 'true');
+                dateCol.setAttribute('spellcheck', 'false');
+                line.insertBefore(dateCol, line.firstChild);
+            }
+        }
+
         // desc-col 확인
         let descCol = line.querySelector('.desc-col');
         if (!descCol) {
