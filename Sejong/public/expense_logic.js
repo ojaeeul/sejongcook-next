@@ -254,7 +254,7 @@ function processNewPayments() {
         } else {
             // 다른 날짜면 1줄 띄우고 새 날짜로 시작
             if (lastUsedIndex >= 0) {
-                targetIndex = lastUsedIndex + 2;
+                targetIndex = lastUsedIndex + 1;
             } else {
                 targetIndex = 0;
             }
