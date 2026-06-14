@@ -2,7 +2,7 @@ const EXPENSE_API_URL = '/api/sejong/expense';
 
 // 과정 분류
 const COOKING_COURSES = ['한식기능사', '양식기능사', '일식기능사', '중식기능사', '복어기능사', '산업기사', '가정요리', '브런치', '피자', '분식', '원데이클래스'];
-const BAKING_COURSES = ['제과기능사', '제빵기능사', '제과제빵기능사', '원데이', '케익디자이너'];
+const BAKING_COURSES = ['제과기능사', '제빵기능사', '제과제빵기능사', '원데이', '게익원데이', '케익원데이', '케익디자이너'];
 
 let paymentsData = [];
 let membersData = [];
