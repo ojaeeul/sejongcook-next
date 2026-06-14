@@ -706,7 +706,7 @@ function updateExpensePagination() {
     
     if (indicator) indicator.textContent = `${currentExpensePage + 1} / ${totalPages}`;
     if (prevBtn) prevBtn.disabled = currentExpensePage === 0;
-    if (nextBtn) nextBtn.disabled = currentExpensePage >= totalPages - 1;
+    if (nextBtn) nextBtn.disabled = false; // 항상 다음 페이지 추가 가능
 }
 
 window.changeExpensePage = function(dir) {
@@ -716,7 +716,49 @@ window.changeExpensePage = function(dir) {
     const totalLines = expenseContainer.querySelectorAll('.entry-line').length;
     const totalPages = Math.ceil(totalLines / LINES_PER_PAGE);
     
-    if (currentExpensePage + dir < 0 || currentExpensePage + dir >= totalPages) return;
+
+    if (dir > 0 && currentExpensePage + dir >= totalPages) {
+        // Automatically create a new page
+        for (let i = 0; i < LINES_PER_PAGE; i++) {
+            expenseContainer.insertAdjacentHTML('beforeend', `
+                <div class="entry-line">
+                    <div class="date-col" contenteditable="true"></div>
+                    <div class="desc-col" contenteditable="true"></div>
+                    <div class="amount-col" contenteditable="true"></div>
+                    <div class="method-col" contenteditable="true"></div>
+                </div>
+            `);
+        }
+        
+        const cookingContainer = document.getElementById('sales-cooking-container');
+        if (cookingContainer) {
+            for (let i = 0; i < LINES_PER_PAGE; i++) {
+                cookingContainer.insertAdjacentHTML('beforeend', `
+                    <div class="entry-line">
+                        <div class="date-col" contenteditable="true"></div>
+                        <div class="desc-col" contenteditable="true"></div>
+                        <div class="amount-col" contenteditable="true"></div>
+                        <div class="method-col" contenteditable="true"></div>
+                    </div>
+                `);
+            }
+        }
+        
+        const bakingContainer = document.getElementById('sales-baking-container');
+        if (bakingContainer) {
+            for (let i = 0; i < LINES_PER_PAGE; i++) {
+                bakingContainer.insertAdjacentHTML('beforeend', `
+                    <div class="entry-line">
+                        <div class="desc-col" contenteditable="true"></div>
+                        <div class="amount-col" contenteditable="true"></div>
+                        <div class="method-col" contenteditable="true"></div>
+                    </div>
+                `);
+            }
+        }
+    } else if (currentExpensePage + dir < 0) {
+        return;
+    }
 
     // --- 3D Page Flip Animation ---
     const wrapper = document.querySelector('.notebook-wrapper');
