@@ -45,9 +45,9 @@ async function loadNotebookData() {
     migrateMethodCol();
     
     // 강제 contenteditable 적용
-    document.querySelectorAll('.date-col, .desc-col, .amount-col, .method-col').forEach(el => {
-        el.setAttribute('contenteditable', 'true');
-        el.setAttribute('spellcheck', 'false');
+    document.querySelectorAll('.desc-col, .amount-col, .date-col, .method-col').forEach(col => {
+        col.setAttribute('contenteditable', 'true');
+        col.setAttribute('spellcheck', 'false');
     });
 }
 
@@ -357,13 +357,7 @@ let activeMethodCol = null;
 
 function handleClick(e) {
     const target = e.target;
-    
-    // method-col (결제수단칸) 클릭 시 팝업창
-    if (target.classList.contains('method-col')) {
-        showCardPopup(target);
-    } else {
-        hideCardPopup();
-    }
+    hideCardPopup();
 }
 
 function initCardPopup() {
