@@ -918,7 +918,15 @@ window.alignAllDates = function(isAuto = false) {
             
             if (dateStr) lastDate = dateStr;
             
-            if (desc || amount || method || dateStr) {
+            let hasContent = false;
+            if (isBaking) {
+                // Baking has no physical date column. Inherited date shouldn't make an empty line "valid".
+                hasContent = !!(desc || amount || method);
+            } else {
+                hasContent = !!(desc || amount || method || dateStr);
+            }
+            
+            if (hasContent) {
                 items.push({
                     date: lastDate,
                     descHtml: descCol ? descCol.innerHTML : '',
