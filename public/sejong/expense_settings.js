@@ -168,7 +168,8 @@ function applySettingsToDOM() {
         document.head.appendChild(styleTag);
     }
     
-    const weight = currentSettings.isBold ? 'bold' : 'normal';
+    const weight = currentSettings.isExtraBold ? '900' : (currentSettings.isBold ? 'bold' : 'normal');
+    const strokeStr = currentSettings.isExtraBold ? '-webkit-text-stroke: 0.8px currentColor !important;' : (currentSettings.isBold ? '-webkit-text-stroke: 0.2px currentColor !important;' : '');
     const colorStr = currentSettings.color === 'inherit' ? '' : `color: ${currentSettings.color} !important;`;
     const fontSize = FONT_SIZES[currentSettings.fontFamily] || '16px';
     
@@ -181,12 +182,14 @@ function applySettingsToDOM() {
             font-size: ${fontSizeStr} !important;
             font-weight: ${weight} !important;
             ${colorStr}
+            ${strokeStr}
         }
         .entry-line .method-col {
             font-family: '${currentSettings.fontFamily}', cursive, sans-serif !important;
             font-size: calc(${fontSizeStr} * 0.7) !important;
             font-weight: bold !important;
             ${colorStr}
+            ${strokeStr}
         }
         .page-title {
             font-family: '${currentSettings.fontFamily}', cursive, sans-serif !important;
