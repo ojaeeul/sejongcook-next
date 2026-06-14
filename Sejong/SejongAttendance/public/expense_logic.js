@@ -876,8 +876,8 @@ if (typeof originalEnsureMinimumLines === 'undefined') {
     };
 }
 
-window.alignAllDates = function() {
-    if (!confirm("양쪽 페이지의 모든 내역을 날짜순으로 자동 정렬하고, 같은 날짜끼리 줄을 맞추시겠습니까?")) return;
+window.alignAllDates = function(isAuto = false) {
+    if (!isAuto && !confirm("양쪽 페이지의 모든 내역을 날짜순으로 자동 정렬하고, 같은 날짜끼리 줄을 맞추시겠습니까?")) return;
     
     const expenseContainer = document.getElementById('expense-container');
     const cookingContainer = document.getElementById('sales-cooking-container');
@@ -979,5 +979,7 @@ window.alignAllDates = function() {
     updateExpensePagination();
     saveNotebookData();
     
-    setTimeout(() => alert("날짜별 정렬 및 줄 맞춤이 완료되었습니다!"), 100);
+    if (!isAuto) {
+        setTimeout(() => alert("날짜별 정렬 및 줄 맞춤이 완료되었습니다!"), 100);
+    }
 };
