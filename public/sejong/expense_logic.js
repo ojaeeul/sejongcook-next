@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // 초기 로딩 및 결제 연동 후 최종적으로 중복 날짜 숨김 처리 적용
     hideDuplicateDates();
+    updateExpensePagination();
 });
 
 // 수동 데이터 로드
@@ -60,12 +61,14 @@ async function loadNotebookData() {
     
     fixMissingCols();
     hideDuplicateDates();
+    updateExpensePagination();
     
     // 강제 contenteditable 적용
     document.querySelectorAll('.desc-col, .amount-col, .date-col, .method-col').forEach(col => {
         col.setAttribute('contenteditable', 'true');
         col.setAttribute('spellcheck', 'false');
     });
+    if (typeof updateExpensePagination === 'function') updateExpensePagination();
 }
 
 function fixMissingCols() {
@@ -521,7 +524,7 @@ function ensureMinimumLines() {
         const emptyLines = Array.from(expenseContainer.children).filter(line => line.textContent.trim() === '').length;
         let targetLines = expenseContainer.children.length;
         if (emptyLines < 5) targetLines += 10;
-        targetLines = Math.max(targetLines, 32); // 최소 32줄 유지하여 화면 꽉 채움
+        targetLines = Math.ceil(Math.max(targetLines, 32) / 32) * 32; // 최소 32줄 유지하여 화면 꽉 채움
         
         while (expenseContainer.children.length < targetLines) {
             expenseContainer.insertAdjacentHTML('beforeend', `
