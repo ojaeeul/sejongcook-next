@@ -69,7 +69,16 @@ export default function MainPopup() {
                         }
                         return true;
                     });
-                    setPopups(visiblePopups);
+
+                    // Sort popups: Image popups (like 여름방학) come first, newest image first. Template popups keep their original order.
+                    const sortedPopups = visiblePopups.sort((a: Popup, b: Popup) => {
+                        if (a.type === 'image' && b.type !== 'image') return -1;
+                        if (a.type !== 'image' && b.type === 'image') return 1;
+                        if (a.type === 'image' && b.type === 'image') return b.id - a.id;
+                        return a.id - b.id;
+                    });
+
+                    setPopups(sortedPopups);
                 }
             })
             .catch(err => console.error(err));
