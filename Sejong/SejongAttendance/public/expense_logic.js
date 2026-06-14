@@ -66,6 +66,9 @@ async function loadNotebookData() {
         console.error("Failed to load notebook data:", e);
     }
     
+    // Auto-align on load
+    if (window.alignAllDates) window.alignAllDates(true);
+    
     fixMissingCols();
     hideDuplicateDates();
     updateExpensePagination();
@@ -397,7 +400,12 @@ function processNewPayments() {
     
     if (hasChanges) {
         ensureMinimumLines();
-        saveNotebookData();
+        
+        if (window.alignAllDates) {
+            window.alignAllDates(true);
+        } else {
+            saveNotebookData();
+        }
     }
 }
 
@@ -927,7 +935,9 @@ window.alignAllDates = function(isAuto = false) {
     bakeItems.forEach(i => { if(i.date) allDates.add(i.date); });
     
     const parseDate = (dStr) => {
-        const match = dStr.match(/(\d+)\/(\d+)/);
+        if (!dStr) return 9999;
+        // 숫자 부분만 추출하여 유연하게 매칭 (예: " 6 / 14 (일) " -> "6", "14")
+        const match = dStr.match(/(\d+)[\D]+(\d+)/);
         if (!match) return 9999;
         return parseInt(match[1]) * 100 + parseInt(match[2]);
     };
