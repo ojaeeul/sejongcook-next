@@ -124,7 +124,7 @@ export default function MainPopup() {
                         '--popup-top': `${popup.position.top}px`,
                         '--popup-left': `${popup.position.left}px`,
                         '--popup-width': `${popup.size.width}px`,
-                        '--popup-height': popup.type === 'template' ? `${popup.size.height}px` : 'auto',
+                        '--popup-height': `${popup.size.height}px`,
                         zIndex: 9999 + index, // High z-index to sit on top of backdrop
                         boxShadow: '0 4px 25px rgba(0,0,0,0.5)',
                         backgroundColor: 'white',
@@ -155,7 +155,7 @@ export default function MainPopup() {
                                                 sizes="100vw"
                                                 style={{
                                                     width: '100%',
-                                                    height: 'auto',
+                                                    height: '100%',
                                                     maxHeight: 'calc(90vh - 36px)',
                                                     objectFit: 'contain',
                                                     display: 'block'
