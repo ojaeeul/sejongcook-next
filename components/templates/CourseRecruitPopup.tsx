@@ -46,8 +46,7 @@ interface Props {
 
 export default function CourseRecruitPopup({ content, onClose, link }: Props) {
     const handleBackgroundClick = () => {
-        // Prevent click from propagating
-        // e.stopPropagation();
+        onClose(false);
     };
 
     // Default to true if undefined. 
@@ -64,7 +63,7 @@ export default function CourseRecruitPopup({ content, onClose, link }: Props) {
 
     return (
         <div
-            className="w-full h-full relative flex flex-col font-sans select-none overflow-hidden bg-black text-white shadow-2xl group"
+            className="cursor-pointer w-full h-full relative flex flex-col font-sans select-none overflow-hidden bg-black text-white shadow-2xl group"
             onClick={handleBackgroundClick}
         >
             {/* Link Wrapper */}
