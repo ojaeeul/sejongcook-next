@@ -42,7 +42,7 @@ async function loadNotebookData() {
         console.error("Failed to load notebook data:", e);
     }
     
-    migrateMethodCol();
+    fixMissingCols();
     
     // 강제 contenteditable 적용
     document.querySelectorAll('.desc-col, .amount-col, .date-col, .method-col').forEach(col => {
@@ -51,22 +51,50 @@ async function loadNotebookData() {
     });
 }
 
-function migrateMethodCol() {
-    document.querySelectorAll('.amount-col').forEach(col => {
-        if (!col.nextElementSibling || !col.nextElementSibling.classList.contains('method-col')) {
+function fixMissingCols() {
+    document.querySelectorAll('.entry-line').forEach(line => {
+        // desc-col 확인
+        let descCol = line.querySelector('.desc-col');
+        if (!descCol) {
+            descCol = document.createElement('div');
+            descCol.className = 'desc-col';
+            descCol.setAttribute('contenteditable', 'true');
+            descCol.setAttribute('spellcheck', 'false');
+            line.appendChild(descCol);
+        }
+        
+        // amount-col 확인
+        let amountCol = line.querySelector('.amount-col');
+        if (!amountCol) {
+            amountCol = document.createElement('div');
+            amountCol.className = 'amount-col';
+            amountCol.setAttribute('contenteditable', 'true');
+            amountCol.setAttribute('spellcheck', 'false');
+            line.appendChild(amountCol);
+        } else if (!amountCol.nextElementSibling || !amountCol.nextElementSibling.classList.contains('method-col')) {
+            // 구버전 데이터 마이그레이션 ((카) 분리)
             const methodCol = document.createElement('div');
             methodCol.className = 'method-col';
             methodCol.setAttribute('contenteditable', 'true');
             methodCol.setAttribute('spellcheck', 'false');
             
-            let text = col.textContent;
-            // (카) 등 패턴 추출하여 분리
+            let text = amountCol.textContent;
             const match = text.match(/\s*(\([^)]+\))\s*$/);
             if (match) {
                 methodCol.textContent = match[1];
-                col.textContent = text.replace(match[0], '');
+                amountCol.textContent = text.replace(match[0], '');
             }
-            col.parentNode.insertBefore(methodCol, col.nextSibling);
+            amountCol.parentNode.insertBefore(methodCol, amountCol.nextSibling);
+        }
+        
+        // method-col이 혹시라도 없으면 (위의 if-else에 걸리지 않은 경우)
+        let methodCol = line.querySelector('.method-col');
+        if (!methodCol) {
+            methodCol = document.createElement('div');
+            methodCol.className = 'method-col';
+            methodCol.setAttribute('contenteditable', 'true');
+            methodCol.setAttribute('spellcheck', 'false');
+            line.appendChild(methodCol);
         }
     });
 }
