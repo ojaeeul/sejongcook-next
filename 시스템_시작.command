@@ -112,13 +112,15 @@ if [ ! -z "$PORT_PID" ]; then
     echo "    ✅ 기존 Next.js 서버(Port 3000) 종료 완료"
 fi
 
-# 열려있는 예전 브라우저 탭 닫기 (Chrome, Safari)
 osascript -e '
 try
     tell application "Google Chrome"
         repeat with w in windows
-            repeat with t in tabs of w
-                if URL of t starts with "http://localhost:3000" then close t
+            set t_count to count of tabs of w
+            repeat with i from t_count to 1 by -1
+                set t to tab i of w
+                set u to URL of t
+                if u starts with "http://localhost:3000" or u starts with "http://127.0.0.1" then close t
             end repeat
         end repeat
     end tell
@@ -126,8 +128,11 @@ end try
 try
     tell application "Safari"
         repeat with w in windows
-            repeat with t in tabs of w
-                if URL of t starts with "http://localhost:3000" then close t
+            set t_count to count of tabs of w
+            repeat with i from t_count to 1 by -1
+                set t to tab i of w
+                set u to URL of t
+                if u starts with "http://localhost:3000" or u starts with "http://127.0.0.1" then close t
             end repeat
         end repeat
     end tell
@@ -135,17 +140,17 @@ end try
 ' 2>/dev/null
 echo "    ✅ 이전 인터넷 창 정리 완료"
 
-# 열려있는 다른 터미널 창들 닫기 (현재 창은 제외, npm/node 관련 창 닫기)
-osascript -e 'tell application "Terminal"
+# 열려있는 다른 터미널 창들 닫기 (현재 창 제외)
+osascript -e "tell application \"Terminal\"
     set windowList to windows
     repeat with w in windowList
-        if (name of w contains "npm") or (name of w contains "node") or (name of w contains "bash") then
-            try
+        try
+            if id of w is not ${MY_WINDOW_ID:-0} then
                 close w
-            end try
-        end if
+            end if
+        end try
     end repeat
-end tell' 2>/dev/null
+end tell" 2>/dev/null
 
 echo "    ✅ 이전 터미널 창 정리 완료"
 echo ""

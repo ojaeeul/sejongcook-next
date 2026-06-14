@@ -249,10 +249,27 @@ function processNewPayments() {
         let isNewDay = false;
         
         if (lastUsedDate === dateStr) {
-            // 같은 날짜 블록이 맨 아래에 진행 중이면, 빈 칸 없이 바로 밑에 추가
-            targetIndex = lastUsedIndex + 1;
+            let blockStartIndex = lastUsedIndex;
+            while (blockStartIndex > 0 && !getText(currentCookRows[blockStartIndex], '.date-col')) {
+                blockStartIndex--;
+            }
+            
+            for (let i = blockStartIndex; i <= lastUsedIndex; i++) {
+                const isMySideEmpty = isBaking ? 
+                    (!getText(currentBakeRows[i], '.desc-col') && !getText(currentBakeRows[i], '.amount-col')) :
+                    (!getText(currentCookRows[i], '.desc-col') && !getText(currentCookRows[i], '.amount-col'));
+                    
+                if (isMySideEmpty) {
+                    targetIndex = i;
+                    break;
+                }
+            }
+            
+            if (targetIndex === -1) {
+                targetIndex = lastUsedIndex + 1;
+            }
         } else {
-            // 다른 날짜면 1줄 띄우고 새 날짜로 시작
+            // 다른 날짜면 1줄 띄우고 새 날짜로 시작 (이전 패치에서 수정됨)
             if (lastUsedIndex >= 0) {
                 targetIndex = lastUsedIndex + 1;
             } else {
