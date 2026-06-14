@@ -280,7 +280,8 @@ function processNewPayments() {
             return;
         }
         
-        const amountStr = Number(p.amount || 0).toLocaleString();
+        let amountStr = Number(p.amount || 0).toLocaleString('en-US');
+        amountStr = amountStr.replace(/,000$/, '.—');
         const dateObj = p.updatedAt ? new Date(p.updatedAt) : new Date();
         const dateStr = `${dateObj.getMonth() + 1}/${dateObj.getDate()}(${['일','월','화','수','목','금','토'][dateObj.getDay()]})`;
         
