@@ -267,7 +267,7 @@ function renderPage() {
                     </div>
 
                     <!-- Right Column: Courses -->
-                    <div class="course-badge-list" style="flex: 1; display: flex; align-items: center; justify-content: flex-start; padding: 0 10px; gap: 6px; flex-wrap: wrap; margin-left: auto;">
+                    <div class="course-badge-list" style="width: 160px; display: flex; align-items: center; justify-content: flex-start; padding: 0 10px; gap: 4px; flex-wrap: wrap; margin-left: auto;">
                         ${courseBadges}
                     </div>
                 </div>
