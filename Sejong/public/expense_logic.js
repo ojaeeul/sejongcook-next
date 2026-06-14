@@ -110,6 +110,13 @@ function fixMissingCols() {
             methodCol.setAttribute('spellcheck', 'false');
             line.appendChild(methodCol);
         }
+        
+        // 빈 줄 정리 (스페이스바나 <br>만 있으면 완전히 비워서 CSS :empty가 작동하게 함)
+        line.querySelectorAll('div[contenteditable="true"]').forEach(col => {
+            if (col.textContent.trim() === '') {
+                col.innerHTML = '';
+            }
+        });
     });
 }
 
@@ -541,6 +548,13 @@ function ensureMinimumLines() {
 }
 
 function handleFocusOut(e) {
+    // 빈 칸(스페이스바, <br> 등)만 남았을 경우 완전히 비워서 placeholder(:empty)가 보이게 함
+    if (e.target.hasAttribute('contenteditable')) {
+        if (e.target.textContent.trim() === '') {
+            e.target.innerHTML = '';
+        }
+    }
+
     if (e.target.classList.contains('amount-col')) {
         let raw = e.target.textContent.trim();
         if (!raw) return;
