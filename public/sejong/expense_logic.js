@@ -891,19 +891,27 @@ window.alignAllDates = function(isAuto = false) {
     const cookingContainer = document.getElementById('sales-cooking-container');
     const bakingContainer = document.getElementById('sales-baking-container');
     
-    const extractItems = (container) => {
+    const extractItems = (container, isBaking = false, cookItemsForDate = null) => {
         if (!container) return [];
         const items = [];
         let lastDate = '';
-        Array.from(container.children).forEach(line => {
+        
+        Array.from(container.children).forEach((line, index) => {
             if (line.classList.contains('hidden-page-line')) line.classList.remove('hidden-page-line');
             
-            const dateCol = line.querySelector('.date-col');
+            let dateStr = '';
+            if (isBaking && cookItemsForDate && cookItemsForDate[index]) {
+                // Baking inherits date from Cooking column at the same row
+                dateStr = cookItemsForDate[index].date;
+            } else {
+                const dateCol = line.querySelector('.date-col');
+                dateStr = dateCol ? dateCol.textContent.trim() : '';
+            }
+            
             const descCol = line.querySelector('.desc-col');
             const amountCol = line.querySelector('.amount-col');
             const methodCol = line.querySelector('.method-col');
             
-            const dateStr = dateCol ? dateCol.textContent.trim() : '';
             const desc = descCol ? descCol.textContent.trim() : '';
             const amount = amountCol ? amountCol.textContent.trim() : '';
             const method = methodCol ? methodCol.textContent.trim() : '';
@@ -920,19 +928,50 @@ window.alignAllDates = function(isAuto = false) {
                     paymentIdBake: line.getAttribute('data-payment-id-bake') || '',
                     className: line.className
                 });
+            } else if (isBaking) {
+                // Keep empty placeholders for baking if needed to maintain alignment, but we group by date later anyway.
+                // Actually, if we group by date, empty items with no text but a lastDate shouldn't be discarded IF we need them.
+                // But it's better to just push them if they have a lastDate so they join the date group.
+                if (lastDate) {
+                    items.push({
+                        date: lastDate,
+                        descHtml: '', amountHtml: '', methodHtml: '',
+                        paymentIdCook: '', paymentIdBake: '', className: line.className
+                    });
+                }
             }
         });
         return items;
     };
     
+    // First extract cooking items because baking depends on its dates
+    const cookItemsAllRaw = [];
+    let cookLastDateRaw = '';
+    if (cookingContainer) {
+        Array.from(cookingContainer.children).forEach(line => {
+            const dCol = line.querySelector('.date-col');
+            const ds = dCol ? dCol.textContent.trim() : '';
+            if (ds) cookLastDateRaw = ds;
+            cookItemsAllRaw.push({ date: cookLastDateRaw });
+        });
+    }
+    
     const expItems = extractItems(expenseContainer);
     const cookItems = extractItems(cookingContainer);
-    const bakeItems = extractItems(bakingContainer);
+    const bakeItems = extractItems(bakingContainer, true, cookItemsAllRaw);
     
     const allDates = new Set();
     expItems.forEach(i => { if(i.date) allDates.add(i.date); });
     cookItems.forEach(i => { if(i.date) allDates.add(i.date); });
     bakeItems.forEach(i => { if(i.date) allDates.add(i.date); });
+    
+    // Fallback for items with no date
+    bakeItems.forEach(i => {
+        if (!i.date) {
+            i.date = "미지정";
+            allDates.add("미지정");
+        }
+    });
     
     const parseDate = (dStr) => {
         if (!dStr) return 9999;
