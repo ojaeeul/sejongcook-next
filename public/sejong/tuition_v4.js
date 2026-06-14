@@ -617,7 +617,7 @@ function renderTable() {
                 let remainingForLoop = currentProgressObj.count;
 
                 stats.allMilestones.forEach(ms => {
-                    const msPayment = paymentsData.find(p => p.memberId == m.id && p.year == ms.year && p.month == ms.month && p.status !== 'delete' && (!p.course || p.course === 'null' || p.course === 'undefined' || p.course === '' || !courseNameOnly || p.course.includes(courseNameOnly) || courseNameOnly.includes(p.course)));
+                    const msPayment = [...paymentsData].reverse().find(p => p.memberId == m.id && p.year == ms.year && p.month == ms.month && p.status !== 'delete' && (!p.course || p.course === 'null' || p.course === 'undefined' || p.course === '' || !courseNameOnly || p.course.includes(courseNameOnly) || courseNameOnly.includes(p.course)));
                     
                     if (msPayment && msPayment.status === 'paid') {
                         paidMilestonesCount++;
@@ -674,7 +674,7 @@ function renderTable() {
 
             // [추가] "미납" 상태(isDueThisMonth)를 수강료 납부대장 뱃지 로직과 100% 동일하게 강제
             const statsBadge = getLedgerMonthStatsForBadge(m.id, window.currentState.year, window.currentState.month, courseNameOnly);
-            const isPaidBadge = (typeof window.paymentsData !== 'undefined' ? window.paymentsData : []).some(p =>
+            const isPaidBadge = paymentsData.some(p =>
                 String(p.memberId) === String(m.id) &&
                 String(p.year) === String(window.currentState.year) &&
                 String(p.month) === String(window.currentState.month) &&
@@ -1490,7 +1490,7 @@ function getUnpaidCountForMonth(year, month) {
             if (stats && stats.eighthDays && stats.eighthDays.length > 0 && stats.hasAnyAttendance && !stats.isSimulated) {
                 stats.eighthDays.forEach(d => {
                     if (!isNaN(parseInt(d)) && Number(d) > 0) {
-                        const isPaid = (typeof window.paymentsData !== 'undefined' ? window.paymentsData : []).some(p =>
+                        const isPaid = paymentsData.some(p =>
                             String(p.memberId) === String(m.id) &&
                             String(p.year) === String(year) &&
                             String(p.month) === String(month) &&
