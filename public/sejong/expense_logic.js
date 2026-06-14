@@ -485,17 +485,19 @@ function ensureMinimumLines() {
     
     if (expenseContainer) {
         const emptyLines = Array.from(expenseContainer.children).filter(line => line.textContent.trim() === '').length;
-        if (emptyLines < 5) {
-            for(let i=0; i<10; i++) {
-                expenseContainer.insertAdjacentHTML('beforeend', `
-                    <div class="entry-line">
-                        <div class="date-col" contenteditable="true"></div>
-                        <div class="desc-col" contenteditable="true"></div>
-                        <div class="amount-col" contenteditable="true"></div>
-                        <div class="method-col" contenteditable="true"></div>
-                    </div>
-                `);
-            }
+        let targetLines = expenseContainer.children.length;
+        if (emptyLines < 5) targetLines += 10;
+        targetLines = Math.max(targetLines, 32); // 최소 32줄 유지하여 화면 꽉 채움
+        
+        while (expenseContainer.children.length < targetLines) {
+            expenseContainer.insertAdjacentHTML('beforeend', `
+                <div class="entry-line">
+                    <div class="date-col" contenteditable="true"></div>
+                    <div class="desc-col" contenteditable="true"></div>
+                    <div class="amount-col" contenteditable="true"></div>
+                    <div class="method-col" contenteditable="true"></div>
+                </div>
+            `);
         }
     }
     
@@ -513,6 +515,7 @@ function ensureMinimumLines() {
         if (Math.min(cookEmpty, bakeEmpty) < 5) {
             maxLines += 10;
         }
+        maxLines = Math.max(maxLines, 30); // 우측 페이지는 48px 여백이 있으므로 최소 30줄 유지
         
         while (cookingContainer.children.length < maxLines) {
             cookingContainer.insertAdjacentHTML('beforeend', `
