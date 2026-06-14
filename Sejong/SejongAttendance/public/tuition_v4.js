@@ -663,7 +663,7 @@ function renderTable() {
 
             // 개별 과정에 해당하는 리뷰 중인 달의 명시적 결제 기록 찾기 (휴지통 상태는 무시)
             const normalizeCourse = (c) => (!c || c === 'null') ? null : String(c).trim();
-            const payment = paymentsData.find(p => 
+            const payment = [...paymentsData].reverse().find(p => 
                 p.memberId == m.id && 
                 p.year == window.currentState.year && 
                 p.month == window.currentState.month && 
@@ -1053,7 +1053,7 @@ async function togglePayment(memberId, forcedStatus = null, courseName = null, a
     const month = targetMonth || window.currentState.month;
 
     const normalizeCourse = (c) => (!c || c === 'null') ? null : String(c).trim();
-    const payment = paymentsData.find(p => p.memberId == memberId && p.year == year && p.month == month && normalizeCourse(p.course) === normalizeCourse(courseName) && p.status !== 'delete');
+    const payment = [...paymentsData].reverse().find(p => p.memberId == memberId && p.year == year && p.month == month && normalizeCourse(p.course) === normalizeCourse(courseName) && p.status !== 'delete');
     const isPaid = payment && payment.status === 'paid';
     const newStatus = forcedStatus || (isPaid ? 'unpaid' : 'paid');
 
@@ -1186,7 +1186,7 @@ function exportToCSV() {
             if (window.currentState.course !== 'all' && courseNameOnly !== window.currentState.course) return;
 
             const normalizeCourse = (c) => (!c || c === 'null') ? null : String(c).trim();
-            const payment = paymentsData.find(p =>
+            const payment = [...paymentsData].reverse().find(p =>
                 p.memberId == m.id &&
                 p.year == window.currentState.year &&
                 p.month == window.currentState.month &&

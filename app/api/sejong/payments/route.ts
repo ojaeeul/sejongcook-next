@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
             .eq('month', data.month);
 
         if (courseToMatch) {
-            delQ = delQ.eq('course', courseToMatch);
+            delQ = delQ.or(`course.eq.${courseToMatch},course.is.null`);
         } else {
             delQ = delQ.is('course', null);
         }
