@@ -1013,11 +1013,6 @@ window.alignAllDates = function(isAuto = false) {
             if (cookingContainer) cookingContainer.appendChild(createRow(date, dCook[i], false, false));
             if (bakingContainer) bakingContainer.appendChild(createRow(date, dBake[i], false, true));
         }
-        
-        // 그룹 구분을 위한 빈 줄 1줄 추가
-        if (expenseContainer) expenseContainer.appendChild(createRow('', null, true, false));
-        if (cookingContainer) cookingContainer.appendChild(createRow('', null, false, false));
-        if (bakingContainer) bakingContainer.appendChild(createRow('', null, false, true));
     });
     
     ensureMinimumLines();
