@@ -38,6 +38,19 @@ async function loadNotebookData() {
         if (data && data.bakingHTML) {
             document.getElementById('sales-baking-container').innerHTML = data.bakingHTML;
         }
+
+        // DB에 잘못 저장된 고아(orphan) 태그들 청소 (entry-line이 아닌 자식 태그들 삭제)
+        ['expense-container', 'sales-cooking-container', 'sales-baking-container'].forEach(id => {
+            const container = document.getElementById(id);
+            if (container) {
+                Array.from(container.children).forEach(child => {
+                    if (!child.classList.contains('entry-line')) {
+                        child.remove();
+                    }
+                });
+            }
+        });
+
     } catch (e) {
         console.error("Failed to load notebook data:", e);
     }
