@@ -7,7 +7,7 @@
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>지출내역 및 날짜별 매출</title>
-    <link rel="stylesheet" href="style.css?v=20260614-83">
+    <link rel="stylesheet" href="style.css?v=20260614-84">
     <!-- Material Icons for sidebar -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <!-- 손글씨 느낌을 위한 폰트 -->
@@ -365,10 +365,7 @@
             .right-col-half {
                 flex: 1 !important;
             }
-            /* Hide the red vertical line if it's annoying, or adjust it */
-            .page::before {
-                left: 45px !important; /* adjusted for padding 20px instead of 40px */
-            }
+
             .page-title {
                 position: relative !important;
                 top: 0 !important;
@@ -380,9 +377,19 @@
             #expense-container, .right-page-columns {
                 margin-top: 0 !important;
             }
-            /* Adjust the red line and black middle line */
-            .page::before, .right-page-columns::before {
+            /* Adjust the red line and any vertical lines */
+            .page::before, .page::after, .right-page-columns::before, .right-page-columns::after {
                 display: none !important; /* Hide vertical lines for clean printing */
+                border: none !important;
+                background: none !important;
+                width: 0 !important;
+            }
+            .date-col, .desc-col, .amount-col, .method-col {
+                border-right: none !important;
+                border-left: none !important;
+            }
+            .right-col-half {
+                border-right: none !important;
             }
         }
     </style>
@@ -644,7 +651,7 @@
 
     </div>
 
-    <script src="expense_logic.js?v=20260614-83"></script>
+    <script src="expense_logic.js?v=20260614-84"></script>
     <script>
         // 기존 하드코딩된 contenteditable 부분은 expense_logic.js로 통합됨
     </script>
@@ -743,6 +750,6 @@
         }
 
     </style>
-    <script src="expense_settings.js?v=20260614-83"></script>
+    <script src="expense_settings.js?v=20260614-84"></script>
 </body>
 </html>
