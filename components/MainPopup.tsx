@@ -97,7 +97,9 @@ export default function MainPopup() {
                     width: 90vw !important;
                     max-width: var(--popup-width) !important;
                     height: var(--popup-height) !important;
-                    max-height: 80vh !important;
+                    max-height: 90vh !important;
+                    display: flex !important;
+                    flex-direction: column !important;
                 }
                 @media (min-width: 1024px) {
                     .popup-container-responsive {
@@ -107,7 +109,7 @@ export default function MainPopup() {
                         transform: none !important;
                         width: var(--popup-width) !important;
                         height: var(--popup-height) !important;
-                        max-height: none !important;
+                        max-height: 90vh !important;
                     }
                 }
             `}} />
@@ -141,7 +143,7 @@ export default function MainPopup() {
                     ) : (
                         // Fallback/Default Image Popup
                         <>
-                            <div className="relative">
+                            <div className="relative flex-1 overflow-y-auto bg-white">
                                 {popup.link ? (
                                     <Link href={popup.link}>
                                         {popup.imageUrl ? (
@@ -154,6 +156,8 @@ export default function MainPopup() {
                                                 style={{
                                                     width: '100%',
                                                     height: 'auto',
+                                                    maxHeight: 'calc(90vh - 36px)',
+                                                    objectFit: 'contain',
                                                     display: 'block'
                                                 }}
                                             />
@@ -179,6 +183,8 @@ export default function MainPopup() {
                                                 style={{
                                                     width: '100%',
                                                     height: 'auto',
+                                                    maxHeight: 'calc(90vh - 36px)',
+                                                    objectFit: 'contain',
                                                     display: 'block'
                                                 }}
                                             />
