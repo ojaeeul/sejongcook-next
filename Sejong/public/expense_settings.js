@@ -24,6 +24,33 @@ const fontList = [
     { name: '나눔 명조', value: 'Nanum Myeongjo' }
 ];
 
+
+const FONT_SIZES = {
+    'Nanum Pen Script': '19px',
+    'Noto Sans KR': '13px',
+    'Gowun Dodum': '14px',
+    'Gowun Batang': '14px',
+    'Gamja Flower': '18px',
+    'Hi Melody': '17px',
+    'Jua': '15px',
+    'Do Hyeon': '14px',
+    'Black And White Picture': '16px',
+    'Cute Font': '18px',
+    'Dokdo': '18px',
+    'Dongle': '22px',
+    'Gaegu': '16px',
+    'Gugi': '15px',
+    'Poor Story': '15px',
+    'Single Day': '15px',
+    'Song Myung': '15px',
+    'Stylish': '16px',
+    'Sunflower': '14px',
+    'Yeon Sung': '16px',
+    'Hahmlet': '14px',
+    'Nanum Gothic': '13px',
+    'Nanum Myeongjo': '14px'
+};
+
 const PRESET_COLORS = [
     { name: '기본(검정)', value: 'inherit' },
     { name: '다크 블루', value: '#1e3a8a' },
@@ -126,11 +153,19 @@ function applySettingsToDOM() {
     
     const weight = currentSettings.isBold ? 'bold' : 'normal';
     const colorStr = currentSettings.color === 'inherit' ? '' : `color: ${currentSettings.color} !important;`;
+    const fontSize = FONT_SIZES[currentSettings.fontFamily] || '16px';
     
     styleTag.innerHTML = `
-        .entry-line, .entry-line .desc-col, .entry-line .amount-col, .entry-line .method-col, .entry-line .date-col {
+        .entry-line, .entry-line .desc-col, .entry-line .amount-col, .entry-line .date-col {
             font-family: '${currentSettings.fontFamily}', cursive, sans-serif !important;
             font-weight: ${weight} !important;
+            font-size: ${fontSize} !important;
+            ${colorStr}
+        }
+        .entry-line .method-col {
+            font-family: '${currentSettings.fontFamily}', cursive, sans-serif !important;
+            font-weight: ${weight} !important;
+            font-size: calc(${fontSize} * 0.7) !important;
             ${colorStr}
         }
         .page-title {

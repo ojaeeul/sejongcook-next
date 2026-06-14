@@ -7,7 +7,7 @@
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>지출내역 및 날짜별 매출</title>
-    <link rel="stylesheet" href="style.css?v=20260614-73">
+    <link rel="stylesheet" href="style.css?v=20260614-74">
     <!-- Material Icons for sidebar -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <!-- 손글씨 느낌을 위한 폰트 -->
@@ -124,7 +124,7 @@
             position: relative;
             z-index: 2;
             display: flex;
-            align-items: baseline;
+            align-items: center;
             white-space: nowrap; /* 줄바꿈 방지 */
         }
         .date-col {
@@ -139,6 +139,8 @@
         }
         .desc-col {
             flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
             letter-spacing: 1px;
             padding-left: 10px; /* 빨간선에서 띄움 */
             min-width: 0;
@@ -146,6 +148,8 @@
         }
         .amount-col {
             text-align: right;
+            overflow: hidden;
+            text-overflow: ellipsis;
             padding-right: 5px;
             width: 90px;
             flex-shrink: 0;
@@ -553,7 +557,7 @@
 
     </div>
 
-    <script src="expense_logic.js?v=20260614-73"></script>
+    <script src="expense_logic.js?v=20260614-74"></script>
     <script>
         // 기존 하드코딩된 contenteditable 부분은 expense_logic.js로 통합됨
     </script>
