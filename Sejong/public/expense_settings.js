@@ -167,8 +167,8 @@ function applySettingsToDOM() {
         }
         .entry-line .method-col {
             font-family: '${currentSettings.fontFamily}', cursive, sans-serif !important;
-            font-size: calc(${fontSizeStr} * 0.5) !important;
-            font-weight: ${weight} !important;
+            font-size: calc(${fontSizeStr} * 0.7) !important;
+            font-weight: bold !important;
             ${colorStr}
         }
         .page-title {
