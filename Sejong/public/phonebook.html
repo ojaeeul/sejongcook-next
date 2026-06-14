@@ -7,18 +7,19 @@
     <meta http-equiv="Expires" content="0">    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>전화번호부 - 세종요리</title>
-    <link rel="stylesheet" href="style.css?v=20260614-56">
+    <link rel="stylesheet" href="style.css?v=20260614-57">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="phonebook.js?v=20260614-56" defer></script>
+    <script src="phonebook.js?v=20260614-57" defer></script>
     <style>
                 .notebook-wrapper {
             display: flex;
+            justify-content: center;
             align-items: flex-start;
-            padding: 40px 10px;
+            padding: 40px 10px 20px 10px;
             min-height: calc(100vh - 80px);
-            background-color: #d1d5db;
+            position: relative;
         }
 
         .notebook {
@@ -28,21 +29,19 @@
             min-width: 1200px;
             height: 850px;
             margin: auto;
-            background: #fcf9f2;
-            border-radius: 12px;
-            box-shadow: 20px 20px 40px rgba(0,0,0,0.2), -5px 5px 15px rgba(0,0,0,0.05);
             position: relative;
         }
 
         .page {
             flex: 1;
             position: relative;
-            background-image: repeating-linear-gradient(transparent, transparent 23px, #cbd5e1 23px, #cbd5e1 24px);
+            background: #fffdf8;
+            border: 1px solid #d1d5db;
+            box-shadow: 20px 20px 40px rgba(0,0,0,0.1), -5px 5px 15px rgba(0,0,0,0.05);
+            background-image: repeating-linear-gradient(transparent, transparent 39px, #e2e8f0 39px, #e2e8f0 40px);
             background-position: 0 40px;
-            background-size: 100% 768px; /* 24px * 32칸 = 768px */
-            background-repeat: no-repeat;
-            padding: 40px 15px 40px 10px;
             overflow: hidden;
+            padding: 30px 40px 80px 40px;
             display: flex;
             flex-direction: column;
         }
@@ -50,26 +49,15 @@
         .page-left {
             border-top-left-radius: 12px;
             border-bottom-left-radius: 12px;
+            border-right: none;
         }
 
         .page-right {
             border-top-right-radius: 12px;
             border-bottom-right-radius: 12px;
+            border-left: none;
         }
 
-        /* 세로 빨간색 마진 선 */
-        .page::before {
-            content: '';
-            position: absolute;
-            top: 40px;
-            height: 768px;
-            left: 30px;
-            width: 2px;
-            background-color: #fca5a5;
-            z-index: 1;
-        }
-
-        /* 중앙 스프링 바인딩 */
         .binding {
             width: 40px;
             background: linear-gradient(to right, #e2e8f0 0%, #fcf9f2 20%, #e2e8f0 50%, #fcf9f2 80%, #e2e8f0 100%);
@@ -77,6 +65,7 @@
             z-index: 10;
             box-shadow: inset 0 0 15px rgba(0,0,0,0.1);
         }
+        
         .binding::before {
             content: '';
             position: absolute;
@@ -104,7 +93,8 @@
             display: flex;
             flex-direction: column;
             gap: 2px;
-            z-index: 9;
+            margin-top: 30px;
+            z-index: 10;
         }
 
         .index-tab {
@@ -119,7 +109,7 @@
             font-weight: 800;
             box-shadow: inset 1px 1px 2px rgba(255,255,255,0.8), 2px 2px 4px rgba(0,0,0,0.08);
             transition: all 0.2s ease;
-            font-size: 18px;
+            font-size: 0.9rem;
             text-align: center;
             min-width: 35px;
             opacity: 0.7;
@@ -140,18 +130,20 @@
         }
 
         .page-header {
-            position: absolute;
-            top: 10px;
-            left: 40px;
-            z-index: 2;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+            border-bottom: 3px solid #3b82f6;
         }
 
         .page-title {
-            font-family: 'Noto Sans KR', sans-serif;
-            font-size: 22px;
+            font-size: 2rem;
             font-weight: 900;
             color: #1e293b;
             margin: 0;
+            line-height: 1;
         }
 
         .phone-card-list {
@@ -162,10 +154,6 @@
         }
 
         .phone-card {
-            position: relative;
-            z-index: 2;
-            padding-left: 25px; /* Red line offset */
-
             background: transparent;
             padding: 0;
             display: flex;
@@ -173,7 +161,7 @@
             justify-content: space-between;
             transition: all 0.2s ease;
             font-size: 0.85rem;
-            height: 24px; line-height: 24px; font-family: "Nanum Pen Script", cursive;
+            height: 40px; /* match line height of notebook paper */
         }
 
         .phone-card:hover {
@@ -190,14 +178,14 @@
         }
 
         .member-name {
-            font-size: 19px;
+            font-size: 1rem;
             font-weight: 700;
             color: #1e293b;
             min-width: 60px;
         }
 
         .member-reg-date {
-            font-size: 14px;
+            font-size: 0.75rem;
             color: #64748b;
             font-weight: 400;
         }
@@ -235,7 +223,7 @@
             font-family: 'Inter', sans-serif;
             font-weight: 600;
             color: #334155;
-            font-size: 18px;
+            font-size: 0.9rem;
             letter-spacing: -0.01em;
         }
 
@@ -333,7 +321,7 @@
         .page-indicator {
             font-weight: bold;
             color: #64748b;
-            font-size: 19px;
+            font-size: 1rem;
             background: rgba(255,255,255,0.7);
             padding: 4px 12px;
             border-radius: 12px;
@@ -344,10 +332,6 @@
                 padding: 20px 15px 70px 30px;
             }
             .phone-card {
-            position: relative;
-            z-index: 2;
-            padding-left: 25px; /* Red line offset */
-
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 8px;
@@ -569,7 +553,7 @@
                         <div style="flex: 2; display: flex; gap: 4px;">
                             <div style="flex: 1.2; position: relative;">
                                 <span class="material-icons"
-                                    style="position: absolute; left: 8px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 19px;">calendar_today</span>
+                                    style="position: absolute; left: 8px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 1rem;">calendar_today</span>
                                 <select id="yearFilter"
                                     style="width: 100%; padding: 8px 6px 8px 30px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.8rem; outline: none; appearance: none; background: #fff;">
                                     <option value="">년도 전체</option>
