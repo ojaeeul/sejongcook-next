@@ -89,24 +89,38 @@ export default function MainPopup() {
     return (
         <>
             <style dangerouslySetInnerHTML={{__html: `
+                .popup-wrapper {
+                    position: fixed;
+                    inset: 0;
+                    z-index: 9999;
+                    pointer-events: none;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 1rem;
+                    padding: 1rem;
+                    overflow-y: auto;
+                    overflow-x: hidden;
+                }
                 .popup-container-responsive {
-                    position: fixed !important;
-                    top: 50% !important;
-                    left: 50% !important;
-                    transform: translate(-50%, -50%) !important;
+                    pointer-events: auto;
+                    position: relative !important;
                     width: 90vw !important;
                     max-width: var(--popup-width) !important;
                     height: var(--popup-height) !important;
                     max-height: 90vh !important;
                     display: flex !important;
                     flex-direction: column !important;
+                    flex-shrink: 0;
                 }
                 @media (min-width: 1024px) {
+                    .popup-wrapper {
+                        flex-direction: row;
+                        flex-wrap: wrap;
+                        overflow-y: auto;
+                    }
                     .popup-container-responsive {
-                        position: absolute !important;
-                        top: var(--popup-top) !important;
-                        left: var(--popup-left) !important;
-                        transform: none !important;
                         width: var(--popup-width) !important;
                         height: var(--popup-height) !important;
                         max-height: 90vh !important;
@@ -117,23 +131,21 @@ export default function MainPopup() {
             {/* Backdrop for drawing attention to the popup first */}
             <div className="fixed inset-0 z-[9998] bg-black/50 transition-opacity" aria-hidden="true" />
 
-            {popups.map((popup, index) => (
-                <div
-                    key={popup.id}
-                    style={{
-                        '--popup-top': `${popup.position.top}px`,
-                        '--popup-left': `${popup.position.left}px`,
-                        '--popup-width': `${popup.size.width}px`,
-                        '--popup-height': `${popup.size.height}px`,
-                        zIndex: 9999 + index, // High z-index to sit on top of backdrop
-                        boxShadow: '0 4px 25px rgba(0,0,0,0.5)',
-                        backgroundColor: 'white',
-                        border: '1px solid #ddd',
-                        borderRadius: '8px',
-                        overflow: 'hidden'
-                    } as React.CSSProperties}
-                    className="popup-container-responsive popup-container"
-                >
+            <div className="popup-wrapper">
+                {popups.map((popup, index) => (
+                    <div
+                        key={popup.id}
+                        style={{
+                            '--popup-width': `${popup.size.width}px`,
+                            '--popup-height': `${popup.size.height}px`,
+                            boxShadow: '0 4px 25px rgba(0,0,0,0.5)',
+                            backgroundColor: 'white',
+                            border: '1px solid #ddd',
+                            borderRadius: '8px',
+                            overflow: 'hidden'
+                        } as React.CSSProperties}
+                        className="popup-container-responsive popup-container"
+                    >
                     {popup.type === 'template' && popup.content ? (
                         <CourseRecruitPopup
                             content={popup.content}
@@ -220,6 +232,7 @@ export default function MainPopup() {
                     )}
                 </div>
             ))}
+            </div>
         </>
     );
 }
