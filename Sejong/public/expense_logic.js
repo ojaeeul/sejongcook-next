@@ -760,32 +760,99 @@ window.changeExpensePage = function(dir) {
         return;
     }
 
-
-    // --- Soft Fade Transition ---
-    const notebook = document.querySelector('.notebook');
-    if (notebook) {
-        notebook.style.transition = 'opacity 0.2s ease-out';
-        notebook.style.opacity = '0';
-        
-        setTimeout(() => {
-            currentExpensePage += dir;
-            if (typeof updateExpensePagination === 'function') {
-                updateExpensePagination();
-            } else if (typeof updatePhonebookPagination === 'function') {
-                updatePhonebookPagination();
-            }
-            
-            notebook.style.transition = 'opacity 0.3s ease-in';
-            notebook.style.opacity = '1';
-        }, 200);
-    } else {
+    // --- 3D Page Flip Animation ---
+    const wrapper = document.querySelector('.notebook-wrapper');
+    const pageRight = document.querySelector('.page-right');
+    const pageLeft = document.querySelector('.page-left');
+    
+    if (!wrapper || !pageRight || !pageLeft) {
+        // Fallback without animation
         currentExpensePage += dir;
-        if (typeof updateExpensePagination === 'function') {
-            updateExpensePagination();
-        } else if (typeof updatePhonebookPagination === 'function') {
-            updatePhonebookPagination();
-        }
+        updateExpensePagination();
+        return;
     }
+
+    const oldPageHTMLRight = pageRight.innerHTML;
+    const oldPageHTMLLeft = pageLeft.innerHTML;
+    
+    currentExpensePage += dir;
+    updateExpensePagination();
+    
+    const newPageHTMLRight = pageRight.innerHTML;
+    const newPageHTMLLeft = pageLeft.innerHTML;
+    
+    // Restore DOM temporarily for animation start
+    currentExpensePage -= dir;
+    updateExpensePagination();
+    
+    const flipContainer = document.createElement('div');
+    flipContainer.className = 'flip-page-container';
+    
+    const front = document.createElement('div');
+    front.className = 'flip-page-front page page-right';
+    
+    const back = document.createElement('div');
+    back.className = 'flip-page-back page page-left';
+    
+    const staticUnderlay = document.createElement('div');
+    staticUnderlay.className = 'flip-page-underlay page';
+    staticUnderlay.style.position = 'absolute';
+    
+    if (dir > 0) {
+        front.innerHTML = oldPageHTMLRight;
+        back.innerHTML = newPageHTMLLeft;
+        
+        staticUnderlay.style.left = '0';
+        staticUnderlay.style.width = 'calc(50% - 20px)';
+        staticUnderlay.style.height = '100%';
+        staticUnderlay.style.top = '0';
+        staticUnderlay.classList.add('page-left');
+        staticUnderlay.innerHTML = oldPageHTMLLeft;
+        
+        flipContainer.style.transformOrigin = 'left center';
+        flipContainer.style.right = '0';
+        flipContainer.style.transform = 'perspective(2000px) rotateY(0deg)';
+        
+    } else {
+        front.innerHTML = oldPageHTMLLeft;
+        back.innerHTML = newPageHTMLRight;
+        
+        staticUnderlay.style.right = '0';
+        staticUnderlay.style.width = 'calc(50% - 20px)';
+        staticUnderlay.style.height = '100%';
+        staticUnderlay.style.top = '0';
+        staticUnderlay.classList.add('page-right');
+        staticUnderlay.innerHTML = oldPageHTMLRight;
+        
+        flipContainer.style.transformOrigin = 'right center';
+        flipContainer.style.left = '0';
+        flipContainer.style.transform = 'perspective(2000px) rotateY(0deg)';
+    }
+    
+    flipContainer.appendChild(front);
+    flipContainer.appendChild(back);
+    
+    wrapper.appendChild(staticUnderlay);
+    wrapper.appendChild(flipContainer);
+    
+    setTimeout(() => {
+        flipContainer.classList.add('flip');
+        if (dir > 0) {
+            flipContainer.style.transform = 'perspective(2000px) rotateY(-180deg)';
+        } else {
+            flipContainer.style.transform = 'perspective(2000px) rotateY(180deg)';
+        }
+        
+        // Actually apply the new page after the flip starts to the main background
+        currentExpensePage += dir;
+        updateExpensePagination();
+        
+    }, 50);
+    
+    setTimeout(() => {
+        flipContainer.remove();
+        staticUnderlay.remove();
+    }, 600);
 };
 
 // Override ensureMinimumLines to also update pagination
