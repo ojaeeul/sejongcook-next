@@ -560,6 +560,38 @@ export default function AdminPopupsPage() {
                                                 </div>
                                             </div>
 
+                                            {/* Schedule Box Scale Control */}
+                                            <div className="bg-white p-5 rounded-lg border border-gray-200 mb-6 shadow-sm">
+                                                <h5 className="text-xs font-black text-slate-700 mb-4 uppercase tracking-wider flex items-center gap-2">
+                                                    🔍 중앙 시간표 박스 크기 조절 (Scale)
+                                                </h5>
+                                                <div className="flex items-center gap-4">
+                                                    <input
+                                                        type="range"
+                                                        min="0.5"
+                                                        max="2.0"
+                                                        step="0.05"
+                                                        value={editForm.content.scheduleScale || 1}
+                                                        onChange={(e) => handleEditChange('content.scheduleScale', Number(e.target.value))}
+                                                        className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600 hover:accent-blue-500 touch-none"
+                                                    />
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-sm font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                                                            {editForm.content.scheduleScale ? editForm.content.scheduleScale.toFixed(2) : '1.00'}x
+                                                        </span>
+                                                        <button 
+                                                            onClick={() => handleEditChange('content.scheduleScale', 1)}
+                                                            className="text-[10px] bg-slate-100 px-2 py-1 rounded hover:bg-slate-200 font-bold"
+                                                        >
+                                                            초기화
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <p className="text-[10px] text-gray-400 mt-2">
+                                                    * 중앙의 오전반/저녁반 박스 크기를 숫자와 함께 전체적으로 확대 또는 축소합니다.
+                                                </p>
+                                            </div>
+
                                             {/* Schedule Editors */}
                                             <div className="grid md:grid-cols-2 gap-6">
                                                 {/* Schedule A */}

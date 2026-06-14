@@ -25,6 +25,7 @@ export interface CourseRecruitContent {
     subImage?: string;
     footerContact: string; // Left Text (Contact/Notice)
     textVisible?: boolean;
+    scheduleScale?: number; // Added for center box scaling
     // Granular Style configurations
     titleStyle?: TextStyle;
     subTextStyle?: TextStyle;
@@ -60,6 +61,8 @@ export default function CourseRecruitPopup({ content, onClose, link }: Props) {
         fontWeight: style?.fontWeight || defaultWeight,
         fontFamily: fontFamily || '"Jua", sans-serif'
     });
+
+    const scale = content.scheduleScale || 1;
 
     return (
         <div
@@ -97,7 +100,7 @@ export default function CourseRecruitPopup({ content, onClose, link }: Props) {
             {/* Content Layer: Bottom Banner Style */}
             {showText && (
                 <div className="absolute inset-0 z-20 flex flex-col justify-center items-center px-6 text-center pointer-events-none">
-                    <div className="pointer-events-auto">
+                    <div className="pointer-events-auto w-full flex flex-col items-center">
 
                         {/* Title Section (Hero Text) */}
                         <div className="mb-4">
@@ -116,7 +119,14 @@ export default function CourseRecruitPopup({ content, onClose, link }: Props) {
                         </div>
 
                         {/* Unified Schedule Banner - Compact & Centered */}
-                        <div className="bg-white/10 backdrop-blur-md rounded-lg border border-white/20 py-2 px-1 mb-1 mx-auto w-full max-w-[300px]">
+                        <div 
+                            className="bg-white/10 backdrop-blur-md rounded-lg border border-white/20 py-2 px-1 mb-1 mx-auto w-full max-w-[300px]"
+                            style={{ 
+                                transform: `scale(${scale})`, 
+                                transformOrigin: 'top center',
+                                marginBottom: `${(scale - 1) * 50 + 4}px` // Add some bottom margin dynamically based on scale to prevent overlap
+                            }}
+                        >
                             <div className="flex divide-x divide-white/20">
                                 {/* Schedule A */}
                                 <div className="flex-1 px-1 flex flex-col justify-center items-center">
