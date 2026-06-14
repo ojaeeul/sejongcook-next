@@ -193,6 +193,10 @@ function processNewPayments() {
         if (existingCook && !existingCook.closest('#sales-cooking-container')) existingCook = null;
         if (existingBake && !existingBake.closest('#sales-baking-container')) existingBake = null;
         
+        const member = membersData.find(m => String(m.id) === String(p.memberId));
+        const memberName = member ? member.name : '알수없음';
+        const courseName = p.course || (member ? member.course : '');
+        
         if (existingCook || existingBake) {
             let existingNode = existingCook || existingBake;
             let currentDesc = existingNode.querySelector('.desc-col') ? existingNode.querySelector('.desc-col').textContent.trim() : '';
@@ -205,10 +209,6 @@ function processNewPayments() {
             }
             return;
         }
-        
-        const member = membersData.find(m => String(m.id) === String(p.memberId));
-        const memberName = member ? member.name : '알수없음';
-        const courseName = p.course || (member ? member.course : '');
         
         const amountStr = Number(p.amount || 0).toLocaleString();
         const dateObj = p.updatedAt ? new Date(p.updatedAt) : new Date();
