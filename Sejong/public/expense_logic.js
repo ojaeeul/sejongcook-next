@@ -56,6 +56,7 @@ async function loadNotebookData() {
     }
     
     fixMissingCols();
+    hideDuplicateDates();
     
     // 강제 contenteditable 적용
     document.querySelectorAll('.desc-col, .amount-col, .date-col, .method-col').forEach(col => {
@@ -137,7 +138,10 @@ function fixMissingCols() {
 let saveTimeout;
 function triggerAutoSave() {
     clearTimeout(saveTimeout);
-    saveTimeout = setTimeout(saveNotebookData, 1500);
+    saveTimeout = setTimeout(saveNotebookData, 1000);
+    
+    // 중복 날짜 숨김 처리 (입력 중에도 반응형으로 작동)
+    hideDuplicateDates();
 }
 
 async function saveNotebookData() {
@@ -594,4 +598,36 @@ function handleFocusOut(e) {
             }
         }
     }
+    
+    // 포커스를 잃었을 때도 중복 날짜 체크 수행 (값이 바뀌었을 수 있으므로)
+    hideDuplicateDates();
+}
+
+function hideDuplicateDates() {
+    const containers = [
+        document.getElementById('expense-container'),
+        document.getElementById('sales-cooking-container')
+    ];
+    
+    containers.forEach(container => {
+        if (!container) return;
+        let lastDate = null;
+        
+        const rows = container.querySelectorAll('.entry-line');
+        rows.forEach(row => {
+            const dateCol = row.querySelector('.date-col');
+            if (!dateCol) return;
+            
+            const currentDate = dateCol.textContent.trim();
+            dateCol.classList.remove('duplicate-date');
+            
+            if (currentDate !== '') {
+                if (currentDate === lastDate) {
+                    dateCol.classList.add('duplicate-date');
+                } else {
+                    lastDate = currentDate;
+                }
+            }
+        });
+    });
 }
