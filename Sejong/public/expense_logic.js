@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const notebook = document.querySelector('.notebook');
     notebook.addEventListener('input', handleInput);
     notebook.addEventListener('click', handleClick);
+    notebook.addEventListener('focusout', handleFocusOut);
     
     // 초기 내용물이 비어있으면 기본 30줄 생성
     ensureMinimumLines();
@@ -496,6 +497,35 @@ function ensureMinimumLines() {
                     <div class="method-col" contenteditable="true"></div>
                 </div>
             `);
+        }
+    }
+}
+
+function handleFocusOut(e) {
+    if (e.target.classList.contains('amount-col')) {
+        let raw = e.target.textContent.trim();
+        if (!raw) return;
+        
+        let isNegative = raw.startsWith('(-)') || raw.startsWith('-');
+        if (isNegative) {
+            raw = raw.replace(/^(\(-\)|-)\s*/, '');
+        }
+        
+        // 사용자가 실수로 이미 .— 입력했거나, 쉼표가 있는 경우를 위해 숫자만 추출
+        let numStr = raw.replace(/\.—/g, '000').replace(/\.-/g, '000').replace(/,/g, '');
+        
+        if (!isNaN(numStr) && numStr !== '') {
+            let num = Number(numStr);
+            let formatted = num.toLocaleString('en-US');
+            // 뒤의 ,000 을 .— (긴 하이픈)으로 교체
+            formatted = formatted.replace(/,000$/, '.—');
+            
+            let resultText = (isNegative ? '(-) ' : '') + formatted;
+            if (e.target.textContent !== resultText) {
+                e.target.textContent = resultText;
+                if (typeof hasChanges !== 'undefined') hasChanges = true;
+                if (typeof saveNotebookData === 'function') saveNotebookData();
+            }
         }
     }
 }
