@@ -264,9 +264,6 @@ function processNewPayments() {
         while (cookingContainer.children.length <= targetIndex) {
             insertEmptyRowAt(cookingContainer.children.length);
         }
-        while (bakingContainer.children.length <= targetIndex) {
-            insertEmptyRowAt(bakingContainer.children.length);
-        }
         
         const cRow = cookingContainer.children[targetIndex];
         const bRow = bakingContainer.children[targetIndex];

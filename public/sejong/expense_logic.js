@@ -192,7 +192,19 @@ function processNewPayments() {
         
         if (existingCook && !existingCook.closest('#sales-cooking-container')) existingCook = null;
         if (existingBake && !existingBake.closest('#sales-baking-container')) existingBake = null;
-        if (existingCook || existingBake) return;
+        
+        if (existingCook || existingBake) {
+            let existingNode = existingCook || existingBake;
+            let currentDesc = existingNode.querySelector('.desc-col') ? existingNode.querySelector('.desc-col').textContent.trim() : '';
+            if (!currentDesc) {
+                // Re-fill if accidentally cleared
+                existingNode.querySelector('.desc-col').textContent = `${memberName} ${courseName ? '(' + courseName.split('(')[0] + ')' : ''}`;
+                existingNode.querySelector('.amount-col').textContent = Number(p.amount || 0).toLocaleString();
+                existingNode.querySelector('.method-col').textContent = '(카)';
+                hasChanges = true;
+            }
+            return;
+        }
         
         const member = membersData.find(m => String(m.id) === String(p.memberId));
         const memberName = member ? member.name : '알수없음';
@@ -251,6 +263,9 @@ function processNewPayments() {
         
         while (cookingContainer.children.length <= targetIndex) {
             insertEmptyRowAt(cookingContainer.children.length);
+        }
+        while (bakingContainer.children.length <= targetIndex) {
+            insertEmptyRowAt(bakingContainer.children.length);
         }
         
         const cRow = cookingContainer.children[targetIndex];
