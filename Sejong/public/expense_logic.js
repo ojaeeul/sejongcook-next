@@ -190,11 +190,9 @@ function processNewPayments() {
         if (!existingCook) existingCook = cookingContainer.querySelector(`[data-payment-id="${pId}"]`);
         if (!existingBake) existingBake = bakingContainer.querySelector(`[data-payment-id="${pId}"]`);
         
-        // Ensure the found elements actually belong to their respective containers
         if (existingCook && !existingCook.closest('#sales-cooking-container')) existingCook = null;
         if (existingBake && !existingBake.closest('#sales-baking-container')) existingBake = null;
-        
-        if (existingCook || existingBake) return; // Already exists
+        if (existingCook || existingBake) return;
         
         const member = membersData.find(m => String(m.id) === String(p.memberId));
         const memberName = member ? member.name : '알수없음';
@@ -213,63 +211,42 @@ function processNewPayments() {
         const currentMaxLen = Math.max(currentCookRows.length, currentBakeRows.length);
         
         let lastUsedIndex = -1;
-        let dayStartIndex = -1;
-        let dayEndIndex = -1;
-        let iteratingDate = '';
+        let lastUsedDate = '';
         
         for (let i = 0; i < currentMaxLen; i++) {
             const cRow = currentCookRows[i];
             const bRow = currentBakeRows[i];
             
             const dateVal = getText(cRow, '.date-col');
-            if (dateVal) iteratingDate = dateVal;
-            
             const cDesc = getText(cRow, '.desc-col');
             const cAmt = getText(cRow, '.amount-col');
             const bDesc = getText(bRow, '.desc-col');
             const bAmt = getText(bRow, '.amount-col');
             
+            if (dateVal) {
+                lastUsedDate = dateVal;
+            }
             if (dateVal || cDesc || cAmt || bDesc || bAmt) {
                 lastUsedIndex = i;
-            }
-            
-            if (iteratingDate === dateStr) {
-                if (dayStartIndex === -1) dayStartIndex = i;
-                dayEndIndex = i;
+                // Update lastUsedDate specifically for the last used row to know the current block's date
+                if (dateVal) lastUsedDate = dateVal;
             }
         }
         
         let targetIndex = -1;
+        let isNewDay = false;
         
-        if (dayStartIndex !== -1) {
-            // 해당 날짜 영역이 이미 있음. 맞는 쪽에 빈 칸이 있는지 확인
-            for (let i = dayStartIndex; i <= dayEndIndex; i++) {
-                const row = isBaking ? currentBakeRows[i] : currentCookRows[i];
-                if (!row) continue;
-                const desc = getText(row, '.desc-col');
-                const amt = getText(row, '.amount-col');
-                if (!desc && !amt) {
-                    targetIndex = i;
-                    break;
-                }
-            }
-            
-            if (targetIndex === -1) {
-                // 빈 칸이 없으면 해당 날짜 블록 마지막에 한 줄 추가 (바로 이어붙임)
-                targetIndex = dayEndIndex + 1;
-                insertEmptyRowAt(targetIndex);
-            }
+        if (lastUsedDate === dateStr) {
+            // 같은 날짜 블록이 맨 아래에 진행 중이면, 빈 칸 없이 바로 밑에 추가
+            targetIndex = lastUsedIndex + 1;
         } else {
-            // 새로운 날짜인 경우
+            // 다른 날짜면 1줄 띄우고 새 날짜로 시작
             if (lastUsedIndex >= 0) {
-                targetIndex = lastUsedIndex + 2; // 한 칸 띄우고 붙임 (사용자 요청: "첫음만 한칸 뛰고")
+                targetIndex = lastUsedIndex + 2;
             } else {
                 targetIndex = 0;
             }
-            
-            while (cookingContainer.children.length <= targetIndex) {
-                insertEmptyRowAt(cookingContainer.children.length);
-            }
+            isNewDay = true;
         }
         
         while (cookingContainer.children.length <= targetIndex) {
@@ -286,13 +263,13 @@ function processNewPayments() {
             bRow.querySelector('.amount-col').textContent = amountStr;
             bRow.querySelector('.method-col').textContent = '(카)';
             
-            if (dayStartIndex === -1 && cRow.querySelector('.date-col')) {
+            if (isNewDay && cRow.querySelector('.date-col')) {
                 cRow.querySelector('.date-col').textContent = dateStr;
             }
         } else {
             cRow.classList.add('tuition-auto');
             cRow.setAttribute('data-payment-id-cook', pId);
-            if (dayStartIndex === -1 && cRow.querySelector('.date-col')) {
+            if (isNewDay && cRow.querySelector('.date-col')) {
                 cRow.querySelector('.date-col').textContent = dateStr;
             }
             cRow.querySelector('.desc-col').textContent = descHtml;
