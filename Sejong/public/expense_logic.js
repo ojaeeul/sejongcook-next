@@ -21,6 +21,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // 초기 내용물이 비어있으면 기본 30줄 생성
     ensureMinimumLines();
+    
+    // 초기 로딩 및 결제 연동 후 최종적으로 중복 날짜 숨김 처리 적용
+    hideDuplicateDates();
 });
 
 // 수동 데이터 로드
