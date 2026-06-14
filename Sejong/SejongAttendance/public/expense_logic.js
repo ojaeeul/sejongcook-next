@@ -704,7 +704,7 @@ function updateExpensePagination() {
     const prevBtn = document.getElementById('expense-prev-btn');
     const nextBtn = document.getElementById('expense-next-btn');
     
-    if (indicator) indicator.textContent = `${currentExpensePage + 1} / ${totalPages}`;
+    if (indicator) indicator.innerHTML = `<span>${currentExpensePage + 1}</span><span>/</span><span>${totalPages}</span>`;
     if (prevBtn) prevBtn.disabled = currentExpensePage === 0;
     if (nextBtn) nextBtn.disabled = false; // 항상 다음 페이지 추가 가능
 }

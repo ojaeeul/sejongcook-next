@@ -281,19 +281,7 @@ function renderPage() {
 
         html += `</div>`; // end phone-card-list
 
-        if (isLeft && totalPages > 1) {
-            html += `
-                <div class="pagination-controls" style="position: absolute; bottom: 20px; left: 0; right: 0; display: flex; justify-content: center; align-items: center;">
-                    <button class="page-btn" onclick="changePage(-1)" ${currentPage === 0 ? 'disabled' : ''}>
-                        <i class="material-icons">chevron_left</i> 이전
-                    </button>
-                    <span class="page-indicator" style="margin: 0 15px;">${currentPage + 1} / ${totalPages}</span>
-                    <button class="page-btn" onclick="changePage(1)" ${currentPage === totalPages - 1 ? 'disabled' : ''}>
-                        다음 <i class="material-icons">chevron_right</i>
-                    </button>
-                </div>
-            `;
-        }
+        
 
         return html;
     }
@@ -405,4 +393,20 @@ function showCourseOverlay(element, studentName, coursesStr) {
             }
         }, 200);
     });
+}
+
+function updatePaginationUI() {
+    const controls = document.querySelector('.pagination-controls');
+    const prevBtn = document.getElementById('phonebook-prev-btn');
+    const nextBtn = document.getElementById('phonebook-next-btn');
+    const indicator = document.getElementById('phonebook-page-indicator');
+
+    if (totalPages > 1) {
+        if (controls) controls.style.display = 'flex';
+        if (prevBtn) prevBtn.disabled = currentPage === 0;
+        if (nextBtn) nextBtn.disabled = currentPage === totalPages - 1;
+        if (indicator) indicator.innerHTML = `<span>${currentPage + 1}</span><span>/</span><span>${totalPages}</span>`;
+    } else {
+        if (controls) controls.style.display = 'none';
+    }
 }
