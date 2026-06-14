@@ -159,9 +159,15 @@ function applySettingsToDOM() {
     const fontSizeStr = fontObj.size;
     
     styleTag.innerHTML = `
-        .entry-line, .entry-line .desc-col, .entry-line .amount-col, .entry-line .method-col, .entry-line .date-col {
+        .entry-line, .entry-line .desc-col, .entry-line .amount-col, .entry-line .date-col {
             font-family: '${currentSettings.fontFamily}', cursive, sans-serif !important;
             font-size: ${fontSizeStr} !important;
+            font-weight: ${weight} !important;
+            ${colorStr}
+        }
+        .entry-line .method-col {
+            font-family: '${currentSettings.fontFamily}', cursive, sans-serif !important;
+            font-size: calc(${fontSizeStr} * 0.5) !important;
             font-weight: ${weight} !important;
             ${colorStr}
         }
