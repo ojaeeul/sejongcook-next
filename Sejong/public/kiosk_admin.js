@@ -348,6 +348,18 @@ window.playTTSSample = function() {
     }
 };
 
+window.playTTSSampleFail = function() {
+    const text = document.getElementById('ttsFailTemplateInput').value;
+    if (!text) return;
+    const style = document.getElementById('ttsStyleSelect').value;
+    
+    if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        applyVoiceStyle(utterance, style);
+        speechSynthesis.speak(utterance);
+    }
+};
+
 window.manualFaceUpload = async function(event, memberId) {
     const file = event.target.files[0];
     if (!file) return;
@@ -541,6 +553,13 @@ function loadSettings() {
     const ttsMode = localStorage.getItem('kiosk_tts_mode') || 'browser';
     
     const ttsTemplate = localStorage.getItem('kiosk_tts_template') || '{name}님 등원 완료되었습니다.';
+    const ttsInput = document.getElementById('ttsTemplateInput');
+    if (ttsInput) ttsInput.value = ttsTemplate;
+
+    const ttsFailTemplate = localStorage.getItem('kiosk_tts_fail_template') || '미등록 얼굴입니다.';
+    const ttsFailInput = document.getElementById('ttsFailTemplateInput');
+    if (ttsFailInput) ttsFailInput.value = ttsFailTemplate;
+
     const ttsStyle = localStorage.getItem('kiosk_tts_style') || '1';
     
     const ttsMp3 = localStorage.getItem('kiosk_tts_mp3') || '1';
@@ -584,6 +603,7 @@ function saveSettings() {
     
     const ttsModeEl = document.getElementById('ttsModeSelect');
     const ttsInput = document.getElementById('ttsTemplateInput');
+    const ttsFailInput = document.getElementById('ttsFailTemplateInput');
     const ttsStyleEl = document.getElementById('ttsStyleSelect');
     const ttsMp3El = document.getElementById('ttsMp3Select');
     const ttsApiKeyEl = document.getElementById('ttsApiKey');
@@ -597,6 +617,7 @@ function saveSettings() {
     
     if (ttsModeEl) localStorage.setItem('kiosk_tts_mode', ttsModeEl.value);
     if (ttsInput) localStorage.setItem('kiosk_tts_template', ttsInput.value);
+    if (ttsFailInput) localStorage.setItem('kiosk_tts_fail_template', ttsFailInput.value);
     if (ttsStyleEl) localStorage.setItem('kiosk_tts_style', ttsStyleEl.value);
     if (ttsMp3El) localStorage.setItem('kiosk_tts_mp3', ttsMp3El.value);
     if (ttsApiKeyEl) localStorage.setItem('kiosk_tts_api_key', ttsApiKeyEl.value);

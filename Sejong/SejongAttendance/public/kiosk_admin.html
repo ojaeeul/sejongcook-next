@@ -404,9 +404,15 @@
                         </select>
 
                         <label style="font-size: 0.95rem; color: #475569; display:block; margin-bottom: 8px;">안내 문구 (<span style="color:#2563eb; font-weight:bold;">{name}</span> 자동 변환)</label>
-                        <div style="display: flex; gap: 10px; align-items: center;">
+                        <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px;">
                             <input type="text" id="ttsTemplateInput" value="{name}님 등원 완료되었습니다." style="flex: 1; margin-bottom: 0;" onchange="saveSettings();">
                             <button onclick="window.playTTSSample && window.playTTSSample()" style="background: #3b82f6; color: white; border: none; padding: 12px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; white-space: nowrap;">미리듣기</button>
+                        </div>
+                        
+                        <label style="font-size: 0.95rem; color: #475569; display:block; margin-bottom: 8px;">실패/미등록 안내 문구 (얼굴 인식 실패 시)</label>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="text" id="ttsFailTemplateInput" value="미등록 얼굴입니다." style="flex: 1; margin-bottom: 0;" onchange="saveSettings();">
+                            <button onclick="window.playTTSSampleFail && window.playTTSSampleFail()" style="background: #ef4444; color: white; border: none; padding: 12px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; white-space: nowrap;">미리듣기</button>
                         </div>
                     </div>
 
@@ -484,7 +490,7 @@
     <canvas id="hiddenCanvas" style="display: none;"></canvas>
 
     <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
-    <script src="/sejong/kiosk_admin.js?v=20260616-0"></script>
+    <script src="/sejong/kiosk_admin.js?v=20260616-1"></script>
 
 </div>
 </main>

@@ -344,6 +344,10 @@ async function processAutoAttendance() {
             setTimeout(() => { isAuthenticating = false; }, 3000);
         } else {
             showStatus("미등록 얼굴입니다.", "red");
+            if (localStorage.getItem('kiosk_voice_enabled') !== 'false' && window.speakTTS) {
+                const failMsg = localStorage.getItem('kiosk_tts_fail_template') || '미등록 얼굴입니다.';
+                speakTTS(failMsg, 'browser');
+            }
             // 실패 시 1.5초 후 다시 시도
             setTimeout(() => { isAuthenticating = false; }, 1500);
         }
