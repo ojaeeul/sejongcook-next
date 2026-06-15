@@ -211,6 +211,9 @@ echo "  🌐 Vercel 실서버:      https://sejongcook.co.kr"
 echo "======================================================"
 echo ""
 
+# 완료 메시지를 맥OS 팝업 창으로 띄우기 (버전 표시)
+osascript -e 'tell app "System Events" to display dialog "✅ 시스템 동기화, 백업 및 실행이 완료되었습니다!\n\n현재 배포된 버전: '"$NEW_VERSION"'" buttons {"확인"} default button "확인" with title "세종요리제과학원 시스템 시작"'
+
 # 명령어 실행 창 스스로 닫기 (이 터미널 창)
 if [ ! -z "$MY_WINDOW_ID" ]; then
     osascript -e "tell application \"Terminal\" to close window id $MY_WINDOW_ID" &
