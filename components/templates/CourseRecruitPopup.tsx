@@ -111,7 +111,7 @@ export default function CourseRecruitPopup({ content, onClose, link }: Props) {
                                 {content.subText}
                             </p>
                             <h2
-                                className="leading-none drop-shadow-xl break-keep"
+                                className="leading-none drop-shadow-xl whitespace-nowrap"
                                 style={getStyle(content.titleStyle, 'white', 36, '900')}
                             >
                                 {content.title}
@@ -120,7 +120,7 @@ export default function CourseRecruitPopup({ content, onClose, link }: Props) {
 
                         {/* Unified Schedule Banner - Compact & Centered */}
                         <div 
-                            className="bg-white/10 backdrop-blur-md rounded-lg border border-white/20 py-2 px-1 mb-1 mx-auto w-full max-w-[300px]"
+                            className="bg-white/10 backdrop-blur-md rounded-lg border border-white/20 py-2 px-1 mb-1 mx-auto w-full max-w-[360px]"
                             style={{ 
                                 transform: `scale(${scale})`, 
                                 transformOrigin: 'top center',
@@ -143,7 +143,7 @@ export default function CourseRecruitPopup({ content, onClose, link }: Props) {
                                         {content.scheduleA.period}
                                     </div>
                                     <div
-                                        className="tracking-wide drop-shadow-sm break-keep"
+                                        className="tracking-wide drop-shadow-sm whitespace-nowrap"
                                         style={getStyle(content.scheduleATimeStyle, '#fde047', 12, '800', 'sans-serif')}
                                     >
                                         {content.scheduleA.time}
@@ -165,7 +165,7 @@ export default function CourseRecruitPopup({ content, onClose, link }: Props) {
                                         {content.scheduleB.period}
                                     </div>
                                     <div
-                                        className="tracking-wide drop-shadow-sm break-keep"
+                                        className="tracking-wide drop-shadow-sm whitespace-nowrap"
                                         style={getStyle(content.scheduleBTimeStyle, '#fde047', 12, '800', 'sans-serif')}
                                     >
                                         {content.scheduleB.time}
