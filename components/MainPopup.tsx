@@ -139,7 +139,7 @@ export default function MainPopup() {
             <div className="fixed inset-0 z-[9998] bg-black/50 transition-opacity" aria-hidden="true" />
 
             <div className="popup-wrapper">
-                {[...popups].reverse().map((popup, index) => (
+                {popups.length > 0 && [popups[0]].map((popup, index) => (
                     <div
                         key={popup.id}
                         style={{
