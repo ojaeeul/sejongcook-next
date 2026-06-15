@@ -3,10 +3,10 @@ self.addEventListener('install', (e) => {
 });
 
 self.addEventListener('activate', (e) => {
-  // Claim clients so the service worker takes control immediately
   e.waitUntil(clients.claim());
 });
 
 self.addEventListener('fetch', (e) => {
-  // A minimal fetch handler is required by Chrome to pass PWA installability criteria
+  // Pass through all requests to satisfy PWA installability requirement
+  e.respondWith(fetch(e.request).catch(() => new Response('Offline')));
 });
