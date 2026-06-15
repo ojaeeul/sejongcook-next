@@ -103,16 +103,12 @@ export default function MainPopup() {
                     inset: 0;
                     z-index: 9999;
                     pointer-events: none;
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    justify-content: center;
-                    gap: 1rem;
+                    display: grid;
+                    place-items: center;
                     padding: 1rem;
-                    overflow-y: auto;
-                    overflow-x: hidden;
                 }
                 .popup-container-responsive {
+                    grid-area: 1 / 1;
                     pointer-events: auto;
                     position: relative !important;
                     width: 90vw !important;
@@ -128,11 +124,6 @@ export default function MainPopup() {
                     max-width: min(var(--popup-width), 90vw, calc((90vh - 40px) * var(--popup-aspect-ratio))) !important;
                 }
                 @media (min-width: 1024px) {
-                    .popup-wrapper {
-                        flex-direction: row;
-                        flex-wrap: wrap;
-                        overflow-y: auto;
-                    }
                     .popup-container-responsive {
                         width: var(--popup-width) !important;
                         height: var(--popup-height) !important;
