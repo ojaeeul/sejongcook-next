@@ -50,7 +50,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     try {
-        const eRes = await fetch('exam_data.json');
+        const eUrl = typeof getFetchUrl === 'function' ? getFetchUrl('exams') : '/api/sejong/exams';
+        const eRes = await fetch(eUrl);
         if (eRes.ok) {
             exams = await eRes.json();
         }
