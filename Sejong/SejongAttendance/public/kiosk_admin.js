@@ -573,7 +573,6 @@ function loadSettings() {
     const sensEl = document.getElementById('sensitivitySelect');
     
     const ttsModeEl = document.getElementById('ttsModeSelect');
-    const ttsInput = document.getElementById('ttsTemplateInput');
     const ttsStyleEl = document.getElementById('ttsStyleSelect');
     const ttsMp3El = document.getElementById('ttsMp3Select');
     const ttsApiKeyEl = document.getElementById('ttsApiKey');
@@ -585,7 +584,6 @@ function loadSettings() {
     if (sensEl) sensEl.value = sensitivity;
     
     if (ttsModeEl) ttsModeEl.value = ttsMode;
-    if (ttsInput) ttsInput.value = ttsTemplate;
     if (ttsStyleEl) ttsStyleEl.value = ttsStyle;
     if (ttsMp3El) ttsMp3El.value = ttsMp3;
     if (ttsApiKeyEl) ttsApiKeyEl.value = ttsApiKey;
