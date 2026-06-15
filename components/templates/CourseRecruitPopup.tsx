@@ -111,7 +111,7 @@ export default function CourseRecruitPopup({ content, onClose, link }: Props) {
                                 {content.subText}
                             </p>
                             <h2
-                                className="leading-none drop-shadow-xl"
+                                className="leading-none drop-shadow-xl break-keep"
                                 style={getStyle(content.titleStyle, 'white', 36, '900')}
                             >
                                 {content.title}
@@ -143,7 +143,7 @@ export default function CourseRecruitPopup({ content, onClose, link }: Props) {
                                         {content.scheduleA.period}
                                     </div>
                                     <div
-                                        className="tracking-wide drop-shadow-sm"
+                                        className="tracking-wide drop-shadow-sm break-keep"
                                         style={getStyle(content.scheduleATimeStyle, '#fde047', 12, '800', 'sans-serif')}
                                     >
                                         {content.scheduleA.time}
@@ -165,7 +165,7 @@ export default function CourseRecruitPopup({ content, onClose, link }: Props) {
                                         {content.scheduleB.period}
                                     </div>
                                     <div
-                                        className="tracking-wide drop-shadow-sm"
+                                        className="tracking-wide drop-shadow-sm break-keep"
                                         style={getStyle(content.scheduleBTimeStyle, '#fde047', 12, '800', 'sans-serif')}
                                     >
                                         {content.scheduleB.time}
