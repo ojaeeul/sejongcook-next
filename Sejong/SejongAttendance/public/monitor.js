@@ -10,6 +10,35 @@ let currentInput = "";
 let stream = null;
 let currentMode = 'home';
 
+// Cached data for instant sub-1s authentication
+let cachedMembers = [];
+let cachedTimetable = {};
+
+async function preloadData() {
+    try {
+        const [mRes, tRes] = await Promise.all([
+            fetch(getFetchUrl('members') + '&t=' + Date.now()),
+            fetch(getFetchUrl('timetable') + '&t=' + Date.now())
+        ]);
+        if (mRes.ok) {
+            const raw = await mRes.json();
+            cachedMembers = Array.isArray(raw) ? raw.filter(m => !['delete', 'trash', 'hold', 'completed'].includes(m.status)) : [];
+        }
+        if (tRes.ok) {
+            const tData = await tRes.json();
+            if (tData && Object.keys(tData).length > 0) {
+                cachedTimetable = { ...timetableData, ...tData };
+            } else {
+                cachedTimetable = timetableData;
+            }
+        }
+    } catch (e) {
+        console.error("Preload data failed", e);
+    }
+}
+setInterval(preloadData, 10000); // refresh every 10s
+setTimeout(preloadData, 500); // Initial load shortly after boot
+
 const video = document.getElementById('video');
 const canvas = document.getElementById('canvas');
 const shutter = document.getElementById('shutterEffect');
@@ -165,7 +194,7 @@ function startAutoDetectionLoop() {
         } catch(e) {
             console.error("Auto detect error:", e);
         }
-    }, 100); // 초당 약 10프레임 속도로 십자선 업데이트
+    }, 50); // 초당 20프레임 속도로 초고속 십자선 업데이트
 }
 
 function stopAutoDetectionLoop() {
@@ -235,6 +264,29 @@ function drawMultiFocusUI(detections) {
             if(p) drawCrosshair(p.x, p.y, 8);
         });
         
+        // 100개의 다중 십자 타겟팅 (얼굴 안쪽 영역을 스캔하는 이펙트)
+        const numPoints = 100;
+        const cols = 10;
+        const cellW = box.width / cols;
+        const cellH = box.height / (numPoints / cols);
+        for (let i = 0; i < numPoints; i++) {
+            const col = i % cols;
+            const row = Math.floor(i / cols);
+            // 약간의 지터(떨림) 효과를 주어 실제로 스캔하는 느낌 부여
+            const jitterX = Math.sin(i * 1.5 + Date.now() * 0.005) * (cellW * 0.5);
+            const jitterY = Math.cos(i * 2.1 + Date.now() * 0.005) * (cellH * 0.5);
+            
+            const px = box.x + col * cellW + cellW * 0.5 + jitterX;
+            const py = box.y + row * cellH + cellH * 0.5 + jitterY;
+            
+            ctx.beginPath();
+            ctx.moveTo(px - 3, py); ctx.lineTo(px + 3, py);
+            ctx.moveTo(px, py - 3); ctx.lineTo(px, py + 3);
+            ctx.strokeStyle = 'rgba(16, 185, 129, 0.4)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+
         // 큰 타겟 윤곽선 박스
         ctx.beginPath();
         ctx.rect(box.x, box.y, box.width, box.height);
@@ -250,9 +302,9 @@ async function processAutoAttendance() {
         if (shutter) shutter.style.opacity = '1';
         setTimeout(() => { if (shutter) shutter.style.opacity = '0'; }, 100);
 
-        const [detection, res] = await Promise.all([
-            faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor(),
-            fetch(getFetchUrl('members') + '&t=' + Date.now())
+        const [detection] = await Promise.all([
+            faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor()
+            // fetch(members) 로드가 병목을 일으키지 않도록 사전에 캐시된 cachedMembers 사용
         ]);
 
         if (!detection) {
@@ -261,8 +313,7 @@ async function processAutoAttendance() {
             return;
         }
 
-        const rawMembers = await res.json();
-        const members = Array.isArray(rawMembers) ? rawMembers.filter(m => !['delete', 'trash', 'hold', 'completed'].includes(m.status)) : [];
+        const members = cachedMembers;
 
         let bestMatch = null;
         let savedSens = localStorage.getItem('kiosk_sensitivity');
@@ -425,17 +476,20 @@ function determineAttendanceStatus(member) {
     if (slots.length === 0) return 'present';
 
     for (const slotMins of slots) {
-        // Valid attendance window: 120 mins before to 120 mins after the slot
-        if (currentMins >= (slotMins - 120) && currentMins <= (slotMins + 120)) {
-            if (currentMins >= slotMins + 5) {
+        // Valid attendance window: 60 mins before to 60 mins after the slot
+        if (currentMins >= (slotMins - 60) && currentMins <= (slotMins + 60)) {
+            // 5 mins after class start = late
+            if (currentMins > slotMins + 5) {
                 return 'late';
             }
             const h = Math.floor(slotMins / 60);
             if (h === 10) return '10';
             if (h === 12) return '12';
             if (h === 14 || h === 2) return '2';
+            if (h === 15 || h === 3) return '3';
             if (h === 17 || h === 5) return '5';
             if (h === 19 || h === 7) return '7';
+            if (h === 21 || h === 9) return '9';
             return 'present';
         }
     }
@@ -459,16 +513,9 @@ let timetableData = {
 async function checkTimetableAllowed(member) {
     if (!member || !member.course) return true;
     
-    try {
-        const res = await fetch(getFetchUrl('timetable') + '&t=' + Date.now());
-        if (res.ok) {
-            const apiData = await res.json();
-            if (apiData && Object.keys(apiData).length > 0) {
-                timetableData = { ...timetableData, ...apiData };
-            }
-        }
-    } catch (e) {
-        console.error("Timetable fetch failed", e);
+    // 캐시된 시간표 사용
+    if (Object.keys(cachedTimetable).length === 0) {
+        cachedTimetable = timetableData;
     }
     
     const today = new Date();
@@ -480,15 +527,15 @@ async function checkTimetableAllowed(member) {
     let foundTimetableEntry = false;
     
     for (const cName of courses) {
-        if (timetableData[cName]) {
+        if (cachedTimetable[cName]) {
             foundTimetableEntry = true;
-            if (timetableData[cName].includes(dayOfWeek)) {
+            if (cachedTimetable[cName].includes(dayOfWeek)) {
                 hasClassToday = true;
                 break;
             }
-        } else if (timetableData[cName.replace(/\s/g, '')]) {
+        } else if (cachedTimetable[cName.replace(/\s/g, '')]) {
              foundTimetableEntry = true;
-             if (timetableData[cName.replace(/\s/g, '')].includes(dayOfWeek)) {
+             if (cachedTimetable[cName.replace(/\s/g, '')].includes(dayOfWeek)) {
                 hasClassToday = true;
                 break;
              }
@@ -507,9 +554,13 @@ async function processAttendance(inputNumOrObj, overridePhoto = null) {
         if (typeof inputNumOrObj === 'object' && inputNumOrObj !== null) {
             member = inputNumOrObj;
         } else {
-            const res = await fetch(getFetchUrl('members') + '&t=' + Date.now());
-            const rawMembers = await res.json();
-            const members = Array.isArray(rawMembers) ? rawMembers.filter(m => !['delete', 'trash', 'hold', 'completed'].includes(m.status)) : [];
+            // Use cached members for instant lookup instead of fetch
+            let members = cachedMembers;
+            if (!members || members.length === 0) {
+                const res = await fetch(getFetchUrl('members') + '&t=' + Date.now());
+                const rawMembers = await res.json();
+                members = Array.isArray(rawMembers) ? rawMembers.filter(m => !['delete', 'trash', 'hold', 'completed'].includes(m.status)) : [];
+            }
             member = members.find(m => m.phone && m.phone.replace(/-/g, '').endsWith(inputNumOrObj));
         }
 
