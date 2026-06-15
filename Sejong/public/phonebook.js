@@ -274,7 +274,7 @@ function renderPage() {
                     </div>
 
                     <!-- Right Column: Courses -->
-                    <div class="course-badge-list" style="width: 140px; display: flex; flex-direction: column; align-items: flex-end; justify-content: center; padding: 0 10px; gap: 2px; overflow: hidden; margin-left: auto; cursor: pointer; height: 100%; white-space: nowrap;" onclick="showCourseOverlay(this, '${m.name}', '${coursesStr}')" title="크게 보기">
+                    <div class="course-badge-list" style="width: 180px; display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: flex-end; padding: 0 10px; gap: 2px; overflow: hidden; margin-left: auto; cursor: pointer; height: 100%;" onclick="showCourseOverlay(this, '${m.name}', '${coursesStr}')" title="크게 보기">
                         ${courseBadges}
                     </div>
                 </div>
