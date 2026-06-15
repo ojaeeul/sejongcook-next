@@ -227,6 +227,13 @@ function renderPage() {
                 </div>
             `).join('') : '';
 
+            const getCourseBadge = (course) => {
+                const colorObj = getCourseColor(course);
+                return `<span style="background: white; border: 1px solid ${colorObj.bg}; color: ${colorObj.text}; padding: 1px 4px; border-radius: 50px; font-size: 0.6rem; font-weight: 600; white-space: nowrap; box-shadow: 0 1px 2px rgba(0,0,0,0.05); display: inline-flex; align-items: center; gap: 2px; line-height: 1;">
+                    <i class="material-icons" style="font-size: 0.6rem;">domain</i> ${course}
+                </span>`;
+            };
+
             const getPhoneButtons = (phone, courseName) => {
                 if (!phone) return '';
                 return `
@@ -267,7 +274,7 @@ function renderPage() {
                     </div>
 
                     <!-- Right Column: Courses -->
-                    <div class="course-badge-list" style="width: 160px; display: flex; align-items: center; justify-content: flex-start; padding: 0 10px; gap: 4px; flex-wrap: nowrap; overflow: hidden; margin-left: auto; cursor: pointer; height: 100%; white-space: nowrap;" onclick="showCourseOverlay(this, '${m.name}', '${coursesStr}')" title="크게 보기">
+                    <div class="course-badge-list" style="width: 140px; display: flex; flex-direction: column; align-items: flex-end; justify-content: center; padding: 0 10px; gap: 2px; overflow: hidden; margin-left: auto; cursor: pointer; height: 100%; white-space: nowrap;" onclick="showCourseOverlay(this, '${m.name}', '${coursesStr}')" title="크게 보기">
                         ${courseBadges}
                     </div>
                 </div>
