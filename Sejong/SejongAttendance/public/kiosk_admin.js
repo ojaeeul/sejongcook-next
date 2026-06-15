@@ -92,12 +92,6 @@ function renderList() {
                 <button class="btn btn-danger" onclick="deleteFace('${m.id}')">
                     <span class="material-icons" style="font-size:18px;">delete_sweep</span> 개인 사진 초기화
                 </button>
-                <button class="btn btn-primary" onclick="autoCorrectFace('${m.id}')">
-                    <span class="material-icons" style="font-size:18px;">face_retouching_natural</span> 얼굴자동보정
-                </button>
-                <button class="btn" style="background:#f43f5e; color:white;" onclick="animeFace('${m.id}')">
-                    <span class="material-icons" style="font-size:18px;">auto_awesome</span> 애니로등록해줘
-                </button>
                 <button class="btn" style="background:#8b5cf6; color:white;" onclick="faceReading('${m.id}')">
                     <span class="material-icons" style="font-size:18px;">psychology</span> AI 관상보기
                 </button>

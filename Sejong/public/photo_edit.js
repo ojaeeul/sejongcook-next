@@ -34,9 +34,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('currentPhoto').src = currentMember.photo;
             document.getElementById('currentPhoto').style.display = 'block';
             document.getElementById('noPhotoIcon').style.display = 'none';
+            document.getElementById('editCurrentBtn').style.display = 'flex';
         } else {
             document.getElementById('currentPhoto').style.display = 'none';
             document.getElementById('noPhotoIcon').style.display = 'flex';
+            document.getElementById('editCurrentBtn').style.display = 'none';
         }
 
         document.getElementById('userInfoCard').style.display = 'block';
@@ -46,6 +48,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         alert("데이터를 불러오는 중 오류가 발생했습니다.");
     }
 });
+
+window.editCurrentPhoto = function() {
+    if (currentMember && currentMember.photo) {
+        openCropper(currentMember.photo);
+    }
+};
 
 // Load Face API Models
 async function loadFaceModels() {
