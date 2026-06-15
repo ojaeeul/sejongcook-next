@@ -231,11 +231,11 @@ function renderPage() {
                 if (!phone) return '';
                 return `
                     <div class="card-actions" style="gap: 2px; margin-left: 2px;">
-                        <button class="action-icon-btn call" onclick="window.location.href='tel:${phone}'" title="전화 걸기">
-                            <i class="material-icons">call</i>
+                        <button class="action-icon-btn call" onclick="window.location.href='tel:${phone}'" title="전화 걸기" style="width: 16px; height: 16px;">
+                            <i class="material-icons" style="font-size: 10px;">call</i>
                         </button>
-                        <button class="action-icon-btn sms" onclick="window.location.href='sms:${phone}'" title="문자 보내기">
-                            <i class="material-icons">chat_bubble</i>
+                        <button class="action-icon-btn sms" onclick="window.location.href='sms:${phone}'" title="문자 보내기" style="width: 16px; height: 16px;">
+                            <i class="material-icons" style="font-size: 10px;">chat_bubble</i>
                         </button>
                     </div>
                 `;
@@ -244,10 +244,10 @@ function renderPage() {
             const regDateText = m.registeredDate ? m.registeredDate.replace(/-/g, '.') : '';
 
             html += `
-                <div class="phone-card" style="display: flex; align-items: center; justify-content: flex-start; padding: 1px 0;">
+                <div class="phone-card" style="display: flex; align-items: center; justify-content: flex-start; padding: 0; height: 40px; overflow: hidden;">
                     
                     <!-- Left Column: Name & Reg Date -->
-                    <div style="width: 90px; display: flex; flex-direction: column; justify-content: center; border-right: 1px solid #e2e8f0; padding: 0 10px; flex-shrink: 0;">
+                    <div style="width: 90px; display: flex; flex-direction: column; justify-content: center; border-right: 1px solid #e2e8f0; padding: 0 10px; flex-shrink: 0; height: 100%;">
                         <span class="member-name" style="font-size: 0.85rem;">${m.name}</span>
                         <span class="member-reg-date" style="margin-top: 1px; font-size: 0.65rem; line-height: 1;">${regDateText}</span>
                     </div>
@@ -267,7 +267,7 @@ function renderPage() {
                     </div>
 
                     <!-- Right Column: Courses -->
-                    <div class="course-badge-list" style="width: 160px; display: flex; align-items: center; justify-content: flex-start; padding: 0 10px; gap: 4px; flex-wrap: wrap; margin-left: auto; cursor: pointer;" onclick="showCourseOverlay(this, '${m.name}', '${coursesStr}')" title="크게 보기">
+                    <div class="course-badge-list" style="width: 160px; display: flex; align-items: center; justify-content: flex-start; padding: 0 10px; gap: 4px; flex-wrap: nowrap; overflow: hidden; margin-left: auto; cursor: pointer; height: 100%; white-space: nowrap;" onclick="showCourseOverlay(this, '${m.name}', '${coursesStr}')" title="크게 보기">
                         ${courseBadges}
                     </div>
                 </div>
