@@ -661,15 +661,17 @@ window.animeFace = function(memberId) {
 window.faceReading = function(memberId) {
     const member = adminMembers.find(m => String(m.id) === String(memberId));
     const name = member ? member.name : '수강생';
-    const readings = [
-        `[AI 관상 분석] ${name}님은 요리에 천부적인 재능이 있는 관상입니다! 미래의 미슐랭 3스타 셰프가 될 상이네요.`,
-        `[AI 관상 분석] ${name}님은 칼질을 할 때 손목 스냅이 예술일 관상입니다. 재료들이 알아서 썰리겠어요.`,
-        `[AI 관상 분석] ${name}님은 미각이 아주 예민하여 간을 기가 막히게 맞출 관상입니다. 장금이가 울고 가겠네요.`,
-        `[AI 관상 분석] ${name}님은 수업에 절대 지각하지 않을 아주 성실하고 모범적인 관상입니다!`,
-        `[AI 관상 분석] ${name}님은 계량스푼 없이도 1g의 오차 없이 소금을 뿌리는 '절대 손맛'을 가진 관상입니다.`
-    ];
-    const r = readings[Math.floor(Math.random() * readings.length)];
-    alert(r);
+    
+    if (typeof window.getFortuneReading === 'function') {
+        alert(window.getFortuneReading(name));
+    } else {
+        const script = document.createElement('script');
+        script.src = '/sejong/fortune_data.js?v=' + Date.now();
+        script.onload = () => {
+            alert(window.getFortuneReading(name));
+        };
+        document.head.appendChild(script);
+    }
 };
 
 // ---------------------------------------------------------
