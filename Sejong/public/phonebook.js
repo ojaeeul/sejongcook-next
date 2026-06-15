@@ -252,8 +252,8 @@ function renderPage() {
                         <span class="member-reg-date" style="margin-top: 2px;">${regDateText}</span>
                     </div>
                     
-                    <!-- Middle Column: Contact Info (Row layout now) -->
-                    <div style="flex: 1; display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 15px; border-right: 1px solid #e2e8f0; min-width: 250px; padding: 0 10px;">
+                    <!-- Middle Column: Contact Info (Column layout for better fitting) -->
+                    <div style="flex: 1; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 6px; border-right: 1px solid #e2e8f0; min-width: 200px; padding: 4px 10px;">
                         <div class="contact-box" style="display: flex; align-items: center; height: auto;">
                             <span class="contact-label" style="width: 25px; padding: 1px 3px; flex-shrink: 0;">본인</span>
                             <span class="phone-number" style="margin-left: 4px; flex-shrink: 0;">${m.phone || '-'}</span>
