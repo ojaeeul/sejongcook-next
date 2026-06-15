@@ -123,6 +123,10 @@ export default function MainPopup() {
                     flex-direction: column !important;
                     flex-shrink: 0;
                 }
+                .popup-image-mode {
+                    height: auto !important;
+                    max-width: min(var(--popup-width), 90vw, calc((90vh - 40px) * var(--popup-aspect-ratio))) !important;
+                }
                 @media (min-width: 1024px) {
                     .popup-wrapper {
                         flex-direction: row;
@@ -133,6 +137,9 @@ export default function MainPopup() {
                         width: var(--popup-width) !important;
                         height: var(--popup-height) !important;
                         max-height: 90vh !important;
+                    }
+                    .popup-image-mode {
+                        max-width: min(var(--popup-width), calc((90vh - 40px) * var(--popup-aspect-ratio))) !important;
                     }
                 }
             `}} />
@@ -146,14 +153,15 @@ export default function MainPopup() {
                         key={popup.id}
                         style={{
                             '--popup-width': `${popup.size.width}px`,
-                            '--popup-height': popup.type !== 'template' ? `${popup.size.height + 36}px` : `${popup.size.height}px`,
+                            '--popup-height': `${popup.size.height}px`,
+                            '--popup-aspect-ratio': popup.size.height ? popup.size.width / popup.size.height : 1,
                             boxShadow: '0 4px 25px rgba(0,0,0,0.5)',
                             backgroundColor: 'white',
                             border: '1px solid #ddd',
                             borderRadius: '8px',
                             overflow: 'hidden'
                         } as React.CSSProperties}
-                        className="popup-container-responsive popup-container"
+                        className={`popup-container-responsive popup-container ${popup.type !== 'template' ? 'popup-image-mode' : ''}`}
                     >
                     {popup.type === 'template' && popup.content ? (
                         <CourseRecruitPopup
@@ -176,9 +184,7 @@ export default function MainPopup() {
                                                 sizes="100vw"
                                                 style={{
                                                     width: '100%',
-                                                    height: '100%',
-                                                    maxHeight: 'calc(90vh - 36px)',
-                                                    objectFit: 'fill',
+                                                    height: 'auto',
                                                     display: 'block'
                                                 }}
                                             />
@@ -203,9 +209,7 @@ export default function MainPopup() {
                                                 sizes="100vw"
                                                 style={{
                                                     width: '100%',
-                                                    height: '100%',
-                                                    maxHeight: 'calc(90vh - 36px)',
-                                                    objectFit: 'fill',
+                                                    height: 'auto',
                                                     display: 'block'
                                                 }}
                                             />
