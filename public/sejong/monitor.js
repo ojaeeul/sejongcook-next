@@ -344,7 +344,7 @@ async function processAutoAttendance() {
             setTimeout(() => { isAuthenticating = false; }, 3000);
         } else {
             showStatus("미등록 얼굴입니다.", "red");
-            if (localStorage.getItem('kiosk_voice_enabled') !== 'false') {
+            if (localStorage.getItem('kiosk_voice_enabled') !== 'false' && localStorage.getItem('kiosk_fail_voice_enabled') !== 'false') {
                 const failMode = localStorage.getItem('kiosk_tts_fail_mode') || 'tts';
                 if (failMode === 'mech' && window.playMechSound) {
                     const mechType = localStorage.getItem('kiosk_mech_fail_type') || '1';
@@ -601,7 +601,7 @@ async function processAttendance(inputNumOrObj, overridePhoto = null) {
         if (!isAllowed) {
             const msg = localStorage.getItem('kiosk_invalid_day_msg') || "오늘은 수강 요일이 아닙니다.";
             showStatus(msg, "red");
-            if (localStorage.getItem('kiosk_voice_enabled') !== 'false' && localStorage.getItem('kiosk_invalid_voice_enabled') !== 'false' && window.speakTTS) {
+            if (localStorage.getItem('kiosk_voice_enabled') !== 'false' && localStorage.getItem('kiosk_invalid_day_voice_enabled') !== 'false' && window.speakTTS) {
                 speakTTS(msg, 'browser');
             }
             return; // Reject attendance
@@ -614,7 +614,7 @@ async function processAttendance(inputNumOrObj, overridePhoto = null) {
         if (status === 'invalid_time') {
             const msg = localStorage.getItem('kiosk_invalid_time_msg') || "현재는 예약된 수강 시간이 아닙니다.";
             showStatus(msg, "red");
-            if (localStorage.getItem('kiosk_voice_enabled') !== 'false' && localStorage.getItem('kiosk_invalid_voice_enabled') !== 'false' && window.speakTTS) {
+            if (localStorage.getItem('kiosk_voice_enabled') !== 'false' && localStorage.getItem('kiosk_invalid_time_voice_enabled') !== 'false' && window.speakTTS) {
                 speakTTS(msg, 'browser');
             }
             return; // Reject attendance
@@ -637,7 +637,7 @@ async function processAttendance(inputNumOrObj, overridePhoto = null) {
             localStorage.setItem('sejong_attendance_sync', Date.now().toString());
 
             // TTS Voice Feedback
-            if (localStorage.getItem('kiosk_voice_enabled') !== 'false') {
+            if (localStorage.getItem('kiosk_voice_enabled') !== 'false' && localStorage.getItem('kiosk_success_voice_enabled') !== 'false') {
                 const mode = localStorage.getItem('kiosk_tts_mode') || 'browser';
                 let ttsMsg = '';
                 if (mode === 'browser') {

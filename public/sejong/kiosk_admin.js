@@ -697,9 +697,16 @@ function loadSettings() {
     const invalidTimeInput = document.getElementById('ttsInvalidTimeMsg');
     if (invalidTimeInput) invalidTimeInput.value = invalidTimeMsg;
 
-    const invalidVoiceEnabled = localStorage.getItem('kiosk_invalid_voice_enabled') !== 'false';
-    const invalidVoiceToggle = document.getElementById('ttsInvalidVoiceEnabled');
-    if (invalidVoiceToggle) invalidVoiceToggle.checked = invalidVoiceEnabled;
+    // Individual Voice Toggles
+    const successVoiceEnabled = localStorage.getItem('kiosk_success_voice_enabled') !== 'false'; // default true
+    const failVoiceEnabled = localStorage.getItem('kiosk_fail_voice_enabled') !== 'false'; // default true
+    const invalidDayVoiceEnabled = localStorage.getItem('kiosk_invalid_day_voice_enabled') !== 'false'; // default true
+    const invalidTimeVoiceEnabled = localStorage.getItem('kiosk_invalid_time_voice_enabled') !== 'false'; // default true
+    
+    if (document.getElementById('ttsSuccessVoiceEnabled')) document.getElementById('ttsSuccessVoiceEnabled').checked = successVoiceEnabled;
+    if (document.getElementById('ttsFailVoiceEnabled')) document.getElementById('ttsFailVoiceEnabled').checked = failVoiceEnabled;
+    if (document.getElementById('ttsInvalidDayVoiceEnabled')) document.getElementById('ttsInvalidDayVoiceEnabled').checked = invalidDayVoiceEnabled;
+    if (document.getElementById('ttsInvalidTimeVoiceEnabled')) document.getElementById('ttsInvalidTimeVoiceEnabled').checked = invalidTimeVoiceEnabled;
 
     const failMode = localStorage.getItem('kiosk_tts_fail_mode') || 'tts';
     const failModeSelect = document.getElementById('ttsFailModeSelect');
@@ -764,7 +771,12 @@ function saveSettings() {
 
     const invalidDayInput = document.getElementById('ttsInvalidDayMsg');
     const invalidTimeInput = document.getElementById('ttsInvalidTimeMsg');
-    const invalidVoiceToggle = document.getElementById('ttsInvalidVoiceEnabled');
+
+    // Toggles
+    const ttsSuccessVoiceEnabled = document.getElementById('ttsSuccessVoiceEnabled');
+    const ttsFailVoiceEnabled = document.getElementById('ttsFailVoiceEnabled');
+    const ttsInvalidDayVoiceEnabled = document.getElementById('ttsInvalidDayVoiceEnabled');
+    const ttsInvalidTimeVoiceEnabled = document.getElementById('ttsInvalidTimeVoiceEnabled');
 
     if (toggleEl) localStorage.setItem('kiosk_voice_enabled', toggleEl.checked);
     if (sensEl) localStorage.setItem('kiosk_sensitivity', sensEl.value);
@@ -779,7 +791,11 @@ function saveSettings() {
 
     if (invalidDayInput) localStorage.setItem('kiosk_invalid_day_msg', invalidDayInput.value);
     if (invalidTimeInput) localStorage.setItem('kiosk_invalid_time_msg', invalidTimeInput.value);
-    if (invalidVoiceToggle) localStorage.setItem('kiosk_invalid_voice_enabled', invalidVoiceToggle.checked);
+    
+    if (ttsSuccessVoiceEnabled) localStorage.setItem('kiosk_success_voice_enabled', ttsSuccessVoiceEnabled.checked);
+    if (ttsFailVoiceEnabled) localStorage.setItem('kiosk_fail_voice_enabled', ttsFailVoiceEnabled.checked);
+    if (ttsInvalidDayVoiceEnabled) localStorage.setItem('kiosk_invalid_day_voice_enabled', ttsInvalidDayVoiceEnabled.checked);
+    if (ttsInvalidTimeVoiceEnabled) localStorage.setItem('kiosk_invalid_time_voice_enabled', ttsInvalidTimeVoiceEnabled.checked);
     
     if (ttsStyleEl) localStorage.setItem('kiosk_tts_style', ttsStyleEl.value);
     if (ttsMp3El) localStorage.setItem('kiosk_tts_mp3', ttsMp3El.value);
