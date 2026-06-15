@@ -261,14 +261,14 @@ function renderPage() {
                     
                     <!-- Middle Column: Contact Info (Column layout for tight fitting) -->
                     <div style="flex: 1; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 1px; border-right: 1px solid #e2e8f0; min-width: 200px; padding: 0 10px; height: 100%;">
-                        <div class="contact-box" style="display: flex; align-items: center; height: auto;">
+                        <div class="contact-box" style="display: flex; align-items: center; height: auto; width: 100%;">
                             <span style="font-size: 0.7rem; font-weight: 700; color: #1e40af; width: 22px; flex-shrink: 0; line-height: 1;">(본)</span>
-                            <span class="phone-number" style="margin-left: 2px; flex-shrink: 0; font-size: 0.75rem; line-height: 1;">${m.phone || '-'}</span>
+                            <span class="phone-number" style="margin-left: 2px; flex-shrink: 0; width: 95px; font-size: 0.75rem; line-height: 1;">${m.phone || '-'}</span>
                             ${getPhoneButtons(m.phone, coursesStr)}
                         </div>
-                        <div class="contact-box" style="display: flex; align-items: center; height: auto;">
+                        <div class="contact-box" style="display: flex; align-items: center; height: auto; width: 100%;">
                             <span style="font-size: 0.7rem; font-weight: 700; color: #475569; width: 22px; flex-shrink: 0; line-height: 1;">(부)</span>
-                            <span class="phone-number" style="margin-left: 2px; flex-shrink: 0; font-size: 0.75rem; line-height: 1;">${m.phone_guardian || '-'}</span>
+                            <span class="phone-number" style="margin-left: 2px; flex-shrink: 0; width: 95px; font-size: 0.75rem; line-height: 1;">${m.phone_guardian || '-'}</span>
                             ${getPhoneButtons(m.phone_guardian, coursesStr)}
                         </div>
                     </div>
