@@ -244,7 +244,7 @@ function renderPage() {
             const regDateText = m.registeredDate ? m.registeredDate.replace(/-/g, '.') : '';
 
             html += `
-                <div class="phone-card" style="display: flex; align-items: center; justify-content: flex-start; padding: 4px 0;">
+                <div class="phone-card" style="display: flex; align-items: center; justify-content: flex-start; padding: 1px 0;">
                     
                     <!-- Left Column: Name & Reg Date -->
                     <div style="width: 90px; display: flex; flex-direction: column; justify-content: center; border-right: 1px solid #e2e8f0; padding: 0 10px; flex-shrink: 0;">
@@ -252,16 +252,16 @@ function renderPage() {
                         <span class="member-reg-date" style="margin-top: 1px; font-size: 0.65rem; line-height: 1;">${regDateText}</span>
                     </div>
                     
-                    <!-- Middle Column: Contact Info (Row layout for better fitting) -->
-                    <div style="flex: 1; display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 15px; border-right: 1px solid #e2e8f0; min-width: 300px; padding: 0 10px;">
+                    <!-- Middle Column: Contact Info (Column layout for tight fitting) -->
+                    <div style="flex: 1; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px; border-right: 1px solid #e2e8f0; min-width: 200px; padding: 0 10px;">
                         <div class="contact-box" style="display: flex; align-items: center; height: auto;">
-                            <span class="contact-label" style="white-space: nowrap; padding: 1px 4px; flex-shrink: 0;">본인</span>
-                            <span class="phone-number" style="margin-left: 4px; flex-shrink: 0; font-size: 0.85rem;">${m.phone || '-'}</span>
+                            <span style="font-size: 0.75rem; font-weight: 700; color: #1e40af; width: 22px; flex-shrink: 0;">(본)</span>
+                            <span class="phone-number" style="margin-left: 2px; flex-shrink: 0; font-size: 0.8rem;">${m.phone || '-'}</span>
                             ${getPhoneButtons(m.phone, coursesStr)}
                         </div>
                         <div class="contact-box" style="display: flex; align-items: center; height: auto;">
-                            <span class="contact-label guardian" style="white-space: nowrap; padding: 1px 4px; flex-shrink: 0;">부모</span>
-                            <span class="phone-number" style="margin-left: 4px; flex-shrink: 0; font-size: 0.85rem;">${m.phone_guardian || '-'}</span>
+                            <span style="font-size: 0.75rem; font-weight: 700; color: #475569; width: 22px; flex-shrink: 0;">(부)</span>
+                            <span class="phone-number" style="margin-left: 2px; flex-shrink: 0; font-size: 0.8rem;">${m.phone_guardian || '-'}</span>
                             ${getPhoneButtons(m.phone_guardian, coursesStr)}
                         </div>
                     </div>
