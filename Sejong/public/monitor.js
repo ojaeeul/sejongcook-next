@@ -513,7 +513,7 @@ let timetableData = {
 };
 
 async function checkTimetableAllowed(member) {
-    if (!member || !member.course) return false; // Strict check: must have course
+    if (!member || !member.course) return { allowed: false, allowedDaysStr: '' }; // Strict check: must have course
     
     // 캐시된 시간표 사용
     if (Object.keys(cachedTimetable).length === 0) {
@@ -527,30 +527,33 @@ async function checkTimetableAllowed(member) {
     
     let hasClassToday = false;
     let foundTimetableEntry = false;
+    let allowedDaysSet = new Set();
     
     for (const cName of courses) {
         if (cachedTimetable[cName]) {
             foundTimetableEntry = true;
+            cachedTimetable[cName].forEach(d => allowedDaysSet.add(d));
             if (cachedTimetable[cName].includes(dayOfWeek)) {
                 hasClassToday = true;
-                break;
             }
         } else if (cachedTimetable[cName.replace(/\s/g, '')]) {
              foundTimetableEntry = true;
+             cachedTimetable[cName.replace(/\s/g, '')].forEach(d => allowedDaysSet.add(d));
              if (cachedTimetable[cName.replace(/\s/g, '')].includes(dayOfWeek)) {
                 hasClassToday = true;
-                break;
              }
         }
     }
     
     if (foundTimetableEntry && !hasClassToday) {
-        return false;
+        const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+        const allowedStr = Array.from(allowedDaysSet).sort().map(d => dayNames[d]).join(', ');
+        return { allowed: false, allowedDaysStr: allowedStr };
     }
     // If we have courses but none matched any timetable entry, we assume no class today (strict)
-    if (!foundTimetableEntry) return false;
+    if (!foundTimetableEntry) return { allowed: false, allowedDaysStr: '' };
     
-    return true;
+    return { allowed: true };
 }
 
 async function processAttendance(inputNumOrObj, overridePhoto = null) {
@@ -597,9 +600,12 @@ async function processAttendance(inputNumOrObj, overridePhoto = null) {
         // ---------------------------------------------
         
         // --- NEW: Check if today is a valid class day ---
-        const isAllowed = await checkTimetableAllowed(member);
-        if (!isAllowed) {
-            const msg = localStorage.getItem('kiosk_invalid_day_msg') || "오늘은 수강 요일이 아닙니다.";
+        const timetableCheck = await checkTimetableAllowed(member);
+        if (timetableCheck && typeof timetableCheck === 'object' && !timetableCheck.allowed) {
+            let msg = localStorage.getItem('kiosk_invalid_day_msg') || "{days}요일에 수강이 가능합니다.";
+            msg = msg.replace(/{name}/g, member.name || '');
+            msg = msg.replace(/{days}/g, timetableCheck.allowedDaysStr || '지정된');
+            
             showStatus(msg, "red");
             if (localStorage.getItem('kiosk_voice_enabled') !== 'false' && localStorage.getItem('kiosk_invalid_day_voice_enabled') !== 'false' && window.speakTTS) {
                 speakTTS(msg, 'browser');
@@ -612,7 +618,10 @@ async function processAttendance(inputNumOrObj, overridePhoto = null) {
         const status = determineAttendanceStatus(member);
 
         if (status === 'invalid_time') {
-            const msg = localStorage.getItem('kiosk_invalid_time_msg') || "현재는 예약된 수강 시간이 아닙니다.";
+            let msg = localStorage.getItem('kiosk_invalid_time_msg') || "{time}에 로그인 해야 합니다.";
+            msg = msg.replace(/{name}/g, member.name || '');
+            msg = msg.replace(/{time}/g, member.timeSlot || '예약된 시간');
+            
             showStatus(msg, "red");
             if (localStorage.getItem('kiosk_voice_enabled') !== 'false' && localStorage.getItem('kiosk_invalid_time_voice_enabled') !== 'false' && window.speakTTS) {
                 speakTTS(msg, 'browser');

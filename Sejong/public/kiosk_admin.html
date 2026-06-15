@@ -463,8 +463,8 @@
                             <label style="font-size: 0.95rem; color: #475569; display:block; margin-bottom: 8px; font-weight:bold;">출석 요일/시간 오류 메시지 설정</label>
                             
                             <div style="margin-bottom: 15px;">
-                                <span style="font-size:0.85rem; color:#64748b; display:block; margin-bottom:3px;">수강 요일이 아닐 때 메시지</span>
-                                <input type="text" id="ttsInvalidDayMsg" value="오늘은 수강 요일이 아닙니다." style="width:100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; margin-bottom:5px;" onchange="saveSettings();">
+                                <span style="font-size:0.85rem; color:#64748b; display:block; margin-bottom:3px;">수강 요일이 아닐 때 메시지 (<span style="color:#2563eb; font-weight:bold;">{days}</span> 요일 변환)</span>
+                                <input type="text" id="ttsInvalidDayMsg" value="{days}요일에 수강이 가능합니다." style="width:100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; margin-bottom:5px;" onchange="saveSettings();">
                                 <label style="display:flex; align-items:center; gap:8px; font-size: 0.9rem; color: #475569; cursor: pointer;">
                                     <input type="checkbox" id="ttsInvalidDayVoiceEnabled" onchange="saveSettings();" style="width: 18px; height: 18px;">
                                     수강 요일 오류 시 음성 안내 켜기
@@ -472,8 +472,8 @@
                             </div>
                             
                             <div style="margin-bottom: 10px;">
-                                <span style="font-size:0.85rem; color:#64748b; display:block; margin-bottom:3px;">예약된 수강 시간이 아닐 때 메시지</span>
-                                <input type="text" id="ttsInvalidTimeMsg" value="현재는 예약된 수강 시간이 아닙니다." style="width:100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; margin-bottom:5px;" onchange="saveSettings();">
+                                <span style="font-size:0.85rem; color:#64748b; display:block; margin-bottom:3px;">예약된 수강 시간이 아닐 때 메시지 (<span style="color:#2563eb; font-weight:bold;">{time}</span> 시간 변환)</span>
+                                <input type="text" id="ttsInvalidTimeMsg" value="{time}에 로그인 해야 합니다." style="width:100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; margin-bottom:5px;" onchange="saveSettings();">
                                 <label style="display:flex; align-items:center; gap:8px; font-size: 0.9rem; color: #475569; cursor: pointer;">
                                     <input type="checkbox" id="ttsInvalidTimeVoiceEnabled" onchange="saveSettings();" style="width: 18px; height: 18px;">
                                     수강 시간 오류 시 음성 안내 켜기
@@ -556,7 +556,7 @@
     <canvas id="hiddenCanvas" style="display: none;"></canvas>
 
     <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
-    <script src="/sejong/kiosk_admin.js?v=20260616-8"></script>
+    <script src="/sejong/kiosk_admin.js?v=20260616-9"></script>
 
 </div>
 </main>

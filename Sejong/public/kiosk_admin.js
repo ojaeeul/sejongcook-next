@@ -689,11 +689,11 @@ function loadSettings() {
     const ttsFailInput = document.getElementById('ttsFailTemplateInput');
     if (ttsFailInput) ttsFailInput.value = ttsFailTemplate;
 
-    const invalidDayMsg = localStorage.getItem('kiosk_invalid_day_msg') || '오늘은 수강 요일이 아닙니다.';
+    const invalidDayMsg = localStorage.getItem('kiosk_invalid_day_msg') || '{days}요일에 수강이 가능합니다.';
     const invalidDayInput = document.getElementById('ttsInvalidDayMsg');
     if (invalidDayInput) invalidDayInput.value = invalidDayMsg;
 
-    const invalidTimeMsg = localStorage.getItem('kiosk_invalid_time_msg') || '현재는 예약된 수강 시간이 아닙니다.';
+    const invalidTimeMsg = localStorage.getItem('kiosk_invalid_time_msg') || '{time}에 로그인 해야 합니다.';
     const invalidTimeInput = document.getElementById('ttsInvalidTimeMsg');
     if (invalidTimeInput) invalidTimeInput.value = invalidTimeMsg;
 
