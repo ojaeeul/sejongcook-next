@@ -106,13 +106,29 @@ function closeCropper() {
 
 let currentFilter = 'none';
 
-function applyFilter(filterStr) {
-    currentFilter = filterStr;
+window.updateFilters = function() {
+    const b = document.getElementById('filterBrightness').value;
+    const c = document.getElementById('filterContrast').value;
+    const blur = document.getElementById('filterBlur').value;
+    const s = document.getElementById('filterSaturate').value;
+    const g = document.getElementById('filterGrayscale').value;
+    
+    currentFilter = `brightness(${b}%) contrast(${c}%) blur(${blur}px) saturate(${s}%) grayscale(${g}%)`;
+    
     const cropperImage = document.querySelector('.cropper-view-box img');
     if (cropperImage) {
-        cropperImage.style.filter = filterStr;
+        cropperImage.style.filter = currentFilter;
     }
-}
+};
+
+window.resetFilters = function() {
+    document.getElementById('filterBrightness').value = 100;
+    document.getElementById('filterContrast').value = 100;
+    document.getElementById('filterBlur').value = 0;
+    document.getElementById('filterSaturate').value = 100;
+    document.getElementById('filterGrayscale').value = 0;
+    updateFilters();
+};
 
 async function cropAndSave() {
     if (!cropper) return;

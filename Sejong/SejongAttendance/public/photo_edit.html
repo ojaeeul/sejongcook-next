@@ -76,14 +76,28 @@
         </div>
         
         <!-- Filter Controls -->
-        <div style="background: #0f172a; color: white; padding: 15px 10px; overflow-x: auto; white-space: nowrap; border-bottom: 1px solid #334155;">
-            <p style="margin: 0 0 10px; font-size: 0.85rem; color: #94a3b8;">✨ 색감 보정 (인식률 저하 없음)</p>
-            <div style="display: flex; gap: 10px;">
-                <button class="btn btn-secondary filter-btn" style="width: auto; padding: 8px 16px; margin-bottom: 0;" onclick="applyFilter('none')">원본</button>
-                <button class="btn btn-secondary filter-btn" style="width: auto; padding: 8px 16px; margin-bottom: 0;" onclick="applyFilter('brightness(1.1) contrast(1.1)')">화사하게</button>
-                <button class="btn btn-secondary filter-btn" style="width: auto; padding: 8px 16px; margin-bottom: 0;" onclick="applyFilter('sepia(0.5) contrast(1.1)')">따뜻하게</button>
-                <button class="btn btn-secondary filter-btn" style="width: auto; padding: 8px 16px; margin-bottom: 0;" onclick="applyFilter('grayscale(1)')">흑백</button>
-                <button class="btn btn-secondary filter-btn" style="width: auto; padding: 8px 16px; margin-bottom: 0;" onclick="applyFilter('contrast(1.3) saturate(1.2)')">선명하게</button>
+        <div style="background: #0f172a; color: white; padding: 15px; border-bottom: 1px solid #334155; font-size: 0.9rem;">
+            <p style="margin: 0 0 15px; font-weight:bold; color: #38bdf8; font-size: 1rem;">✨ 뽀샤시 & 색감 보정 (인식률 저하 주의)</p>
+            
+            <div style="display: grid; grid-template-columns: 80px 1fr; gap: 12px; align-items: center; margin-bottom: 15px;">
+                <label style="color:#94a3b8;">밝기</label>
+                <input type="range" id="filterBrightness" min="50" max="150" value="100" oninput="updateFilters()" style="width:100%;">
+                
+                <label style="color:#94a3b8;">대비 (선명)</label>
+                <input type="range" id="filterContrast" min="50" max="150" value="100" oninput="updateFilters()" style="width:100%;">
+                
+                <label style="color:#94a3b8;">뽀샤시</label>
+                <input type="range" id="filterBlur" min="0" max="4" step="0.5" value="0" oninput="updateFilters()" style="width:100%;">
+                
+                <label style="color:#94a3b8;">채도 (생기)</label>
+                <input type="range" id="filterSaturate" min="0" max="200" value="100" oninput="updateFilters()" style="width:100%;">
+                
+                <label style="color:#94a3b8;">흑백 사진</label>
+                <input type="range" id="filterGrayscale" min="0" max="100" value="0" oninput="updateFilters()" style="width:100%;">
+            </div>
+            
+            <div style="text-align: right;">
+                <button class="btn btn-secondary" style="padding: 8px 16px; font-size: 0.85rem; width: auto; margin:0;" onclick="resetFilters()">설정 초기화</button>
             </div>
         </div>
 
@@ -105,6 +119,6 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
-    <script src="/sejong/photo_edit.js?v=20260616-11"></script>
+    <script src="/sejong/photo_edit.js?v=20260616-12"></script>
 </body>
 </html>
