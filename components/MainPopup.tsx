@@ -146,7 +146,7 @@ export default function MainPopup() {
                         key={popup.id}
                         style={{
                             '--popup-width': `${popup.size.width}px`,
-                            '--popup-height': `${popup.size.height}px`,
+                            '--popup-height': popup.type !== 'template' ? `${popup.size.height + 36}px` : `${popup.size.height}px`,
                             boxShadow: '0 4px 25px rgba(0,0,0,0.5)',
                             backgroundColor: 'white',
                             border: '1px solid #ddd',
@@ -164,7 +164,7 @@ export default function MainPopup() {
                     ) : (
                         // Fallback/Default Image Popup
                         <>
-                            <div className="relative flex-1 overflow-y-auto bg-white">
+                            <div className="relative flex-1 overflow-hidden bg-white">
                                 {popup.link ? (
                                     <Link href={popup.link}>
                                         {popup.imageUrl ? (
@@ -178,7 +178,7 @@ export default function MainPopup() {
                                                     width: '100%',
                                                     height: '100%',
                                                     maxHeight: 'calc(90vh - 36px)',
-                                                    objectFit: 'contain',
+                                                    objectFit: 'fill',
                                                     display: 'block'
                                                 }}
                                             />
@@ -203,9 +203,9 @@ export default function MainPopup() {
                                                 sizes="100vw"
                                                 style={{
                                                     width: '100%',
-                                                    height: 'auto',
+                                                    height: '100%',
                                                     maxHeight: 'calc(90vh - 36px)',
-                                                    objectFit: 'contain',
+                                                    objectFit: 'fill',
                                                     display: 'block'
                                                 }}
                                             />
