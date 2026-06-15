@@ -26,23 +26,52 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        // Show info
+        // Show auth info
         document.getElementById('memberName').innerText = currentMember.name;
         document.getElementById('memberCourse').innerText = currentMember.course || '과목 없음';
         
         if (currentMember.photo) {
             document.getElementById('currentPhoto').src = currentMember.photo;
+            document.getElementById('currentPhoto').style.display = 'block';
+            document.getElementById('noPhotoIcon').style.display = 'none';
         } else {
-            document.getElementById('currentPhoto').style.display = 'none'; // or show placeholder
+            document.getElementById('currentPhoto').style.display = 'none';
+            document.getElementById('noPhotoIcon').style.display = 'flex';
         }
 
-        document.getElementById('userInfoCard').style.display = 'block';
+        document.getElementById('authCard').style.display = 'block';
 
     } catch (e) {
         console.error(e);
         alert("데이터를 불러오는 중 오류가 발생했습니다.");
     }
 });
+
+window.verifyPassword = function() {
+    if (!currentMember) return;
+    
+    const input = document.getElementById('passwordInput').value.replace(/-/g, '').trim();
+    const memberPhone = (currentMember.phone || '').replace(/-/g, '').trim();
+    
+    let isValid = false;
+    
+    // Check if input matches full phone or at least last 8 digits of phone
+    if (memberPhone && (input === memberPhone || (input.length === 8 && memberPhone.endsWith(input)))) {
+        isValid = true;
+    } 
+    // Fallback: If member has no phone number, use their name as password (strict match)
+    else if (!memberPhone && input === currentMember.name.trim()) {
+        isValid = true;
+    }
+
+    if (isValid) {
+        document.getElementById('authCard').style.display = 'none';
+        document.getElementById('userInfoCard').style.display = 'block';
+        document.getElementById('authErrorMsg').style.display = 'none';
+    } else {
+        document.getElementById('authErrorMsg').style.display = 'block';
+    }
+};
 
 // Load Face API Models
 async function loadFaceModels() {
@@ -174,6 +203,7 @@ async function cropAndSave() {
         closeCropper();
         document.getElementById('currentPhoto').src = croppedDataUrl;
         document.getElementById('currentPhoto').style.display = 'block';
+        document.getElementById('noPhotoIcon').style.display = 'none';
         alert("🎉 사진이 성공적으로 등록되었습니다!");
 
     } catch (e) {

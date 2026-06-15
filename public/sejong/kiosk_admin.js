@@ -70,7 +70,7 @@ function renderList() {
         const item = document.createElement('div');
         item.className = 'member-item';
         
-        const photoPreview = hasFace && m.photo ? `<img src="${m.photo}" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid #3b82f6; flex-shrink: 0; cursor: pointer;" onclick="previewLargePhoto('${m.photo}', '${m.name}', '${m.id}')">` : `<div style="width: 60px; height: 60px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><span class="material-icons" style="color:#94a3b8; font-size: 32px;">person</span></div>`;
+        const photoPreview = hasFace && m.photo ? `<img src="${m.photo}" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid #3b82f6; flex-shrink: 0; cursor: pointer;" onclick="previewLargePhoto('${m.photo}', '${m.name}', '${m.id}')">` : `<div style="width: 60px; height: 60px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer;" onclick="previewLargePhoto('', '${m.name}', '${m.id}')"><span class="material-icons" style="color:#94a3b8; font-size: 32px;">person</span></div>`;
 
         const infoHtml = `
             <div style="display: flex; gap: 15px; align-items: center;">
@@ -134,7 +134,7 @@ function previewLargePhoto(photoUrl, name, memberId) {
             <div style="background: white; padding: 30px; border-radius: 16px; text-align: center; width: 90%; max-width: 400px; display: flex; flex-direction: column; align-items: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
                 <h3 style="margin-top: 0; margin-bottom: 20px; color: #0f172a; font-size: 1.4rem;">${name}님의 얼굴</h3>
                 
-                <img src="${photoUrl}" style="width: 200px; height: 200px; border-radius: 50%; border: 4px solid #3b82f6; object-fit: cover; margin-bottom: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                ${photoUrl ? `<img src="${photoUrl}" style="width: 200px; height: 200px; border-radius: 50%; border: 4px solid #3b82f6; object-fit: cover; margin-bottom: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">` : `<div style="width: 200px; height: 200px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; margin: 0 auto 25px auto; border: 4px solid #cbd5e1;"><span class="material-icons" style="color:#94a3b8; font-size: 80px;">person</span></div>`}
                 
                 <button class="btn btn-success" onclick="copyToClipboard('${editUrl}')" style="width: 100%; padding: 12px; margin-bottom: 10px; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 8px; background: #10b981; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">
                     <span class="material-icons">content_copy</span> 개인 사진 수정 링크 복사
