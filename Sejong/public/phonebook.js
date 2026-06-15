@@ -231,11 +231,11 @@ function renderPage() {
                 if (!phone) return '';
                 return `
                     <div class="card-actions" style="gap: 2px; margin-left: 2px;">
-                        <button class="action-icon-btn call" onclick="window.location.href='tel:${phone}'" title="전화 걸기" style="width: 16px; height: 16px;">
-                            <i class="material-icons" style="font-size: 10px;">call</i>
+                        <button class="action-icon-btn call" onclick="window.location.href='tel:${phone}'" title="전화 걸기" style="width: 14px; height: 14px;">
+                            <i class="material-icons" style="font-size: 9px;">call</i>
                         </button>
-                        <button class="action-icon-btn sms" onclick="window.location.href='sms:${phone}'" title="문자 보내기" style="width: 16px; height: 16px;">
-                            <i class="material-icons" style="font-size: 10px;">chat_bubble</i>
+                        <button class="action-icon-btn sms" onclick="window.location.href='sms:${phone}'" title="문자 보내기" style="width: 14px; height: 14px;">
+                            <i class="material-icons" style="font-size: 9px;">chat_bubble</i>
                         </button>
                     </div>
                 `;
@@ -248,20 +248,20 @@ function renderPage() {
                     
                     <!-- Left Column: Name & Reg Date -->
                     <div style="width: 90px; display: flex; flex-direction: column; justify-content: center; border-right: 1px solid #e2e8f0; padding: 0 10px; flex-shrink: 0; height: 100%;">
-                        <span class="member-name" style="font-size: 0.85rem;">${m.name}</span>
-                        <span class="member-reg-date" style="margin-top: 1px; font-size: 0.65rem; line-height: 1;">${regDateText}</span>
+                        <span class="member-name" style="font-size: 0.8rem; line-height: 1;">${m.name}</span>
+                        <span class="member-reg-date" style="margin-top: 2px; font-size: 0.6rem; line-height: 1;">${regDateText}</span>
                     </div>
                     
                     <!-- Middle Column: Contact Info (Column layout for tight fitting) -->
-                    <div style="flex: 1; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px; border-right: 1px solid #e2e8f0; min-width: 200px; padding: 0 10px;">
+                    <div style="flex: 1; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 1px; border-right: 1px solid #e2e8f0; min-width: 200px; padding: 0 10px; height: 100%;">
                         <div class="contact-box" style="display: flex; align-items: center; height: auto;">
-                            <span style="font-size: 0.75rem; font-weight: 700; color: #1e40af; width: 22px; flex-shrink: 0;">(본)</span>
-                            <span class="phone-number" style="margin-left: 2px; flex-shrink: 0; font-size: 0.8rem;">${m.phone || '-'}</span>
+                            <span style="font-size: 0.7rem; font-weight: 700; color: #1e40af; width: 22px; flex-shrink: 0; line-height: 1;">(본)</span>
+                            <span class="phone-number" style="margin-left: 2px; flex-shrink: 0; font-size: 0.75rem; line-height: 1;">${m.phone || '-'}</span>
                             ${getPhoneButtons(m.phone, coursesStr)}
                         </div>
                         <div class="contact-box" style="display: flex; align-items: center; height: auto;">
-                            <span style="font-size: 0.75rem; font-weight: 700; color: #475569; width: 22px; flex-shrink: 0;">(부)</span>
-                            <span class="phone-number" style="margin-left: 2px; flex-shrink: 0; font-size: 0.8rem;">${m.phone_guardian || '-'}</span>
+                            <span style="font-size: 0.7rem; font-weight: 700; color: #475569; width: 22px; flex-shrink: 0; line-height: 1;">(부)</span>
+                            <span class="phone-number" style="margin-left: 2px; flex-shrink: 0; font-size: 0.75rem; line-height: 1;">${m.phone_guardian || '-'}</span>
                             ${getPhoneButtons(m.phone_guardian, coursesStr)}
                         </div>
                     </div>
