@@ -114,28 +114,88 @@ function closeCropper() {
 
 let currentFilter = 'none';
 
-window.updateFilters = function() {
-    const b = document.getElementById('filterBrightness').value;
-    const c = document.getElementById('filterContrast').value;
-    const blur = document.getElementById('filterBlur').value;
-    const s = document.getElementById('filterSaturate').value;
-    const g = document.getElementById('filterGrayscale').value;
-    
-    currentFilter = `brightness(${b}%) contrast(${c}%) blur(${blur}px) saturate(${s}%) grayscale(${g}%)`;
-    
+window.applyFilter = function(filterStr, btnElement) {
+    currentFilter = filterStr;
     const cropperImage = document.querySelector('.cropper-view-box img');
     if (cropperImage) {
-        cropperImage.style.filter = currentFilter;
+        cropperImage.style.filter = filterStr;
+    }
+    
+    // Highlight selected button
+    document.querySelectorAll('.preset-btn').forEach(btn => {
+        btn.style.background = '#1e293b';
+        btn.style.borderColor = '#334155';
+        btn.style.color = '#cbd5e1';
+    });
+    if (btnElement) {
+        btnElement.style.background = '#3b82f6';
+        btnElement.style.borderColor = '#60a5fa';
+        btnElement.style.color = 'white';
     }
 };
 
-window.resetFilters = function() {
-    document.getElementById('filterBrightness').value = 100;
-    document.getElementById('filterContrast').value = 100;
-    document.getElementById('filterBlur').value = 0;
-    document.getElementById('filterSaturate').value = 100;
-    document.getElementById('filterGrayscale').value = 0;
-    updateFilters();
+function renderPresets() {
+    const createBtn = (containerId, label, filterStr) => {
+        const btn = document.createElement('button');
+        btn.className = 'preset-btn';
+        btn.style.cssText = 'padding:6px 12px; font-size:0.8rem; border-radius:6px; border:1px solid #334155; background:#1e293b; color:#cbd5e1; cursor:pointer; white-space:nowrap; transition:all 0.2s;';
+        btn.innerText = label;
+        btn.onclick = () => applyFilter(filterStr, btn);
+        document.getElementById(containerId).appendChild(btn);
+    };
+
+    // 1. 뽀샵 (10)
+    for (let i = 1; i <= 10; i++) {
+        const b = 100 + (i * 3);
+        const c = 100 + (i * 2);
+        const blur = i * 0.15;
+        createBtn('presetBoshop', `뽀샵 ${i}단계`, `brightness(${b}%) contrast(${c}%) blur(${blur}px)`);
+    }
+
+    // 2. 밝기 (10)
+    for (let i = 1; i <= 10; i++) {
+        createBtn('presetBrightness', `밝기 +${i}`, `brightness(${100 + (i * 5)}%)`);
+    }
+
+    // 3. 애니 (10)
+    for (let i = 1; i <= 10; i++) {
+        const s = 100 + (i * 15);
+        const c = 100 + (i * 10);
+        createBtn('presetAnime', `애니 ${i}단계`, `saturate(${s}%) contrast(${c}%)`);
+    }
+
+    // 4. 수채화 (20)
+    for (let i = 1; i <= 20; i++) {
+        const blur = 0.5 + (i * 0.1);
+        const s = 120 + (i * 5);
+        const b = 105 + (i * 1);
+        createBtn('presetWatercolor', `수채화 ${i}`, `blur(${blur}px) saturate(${s}%) brightness(${b}%)`);
+    }
+
+    // 5. 머리 보정 (10)
+    for (let i = 1; i <= 10; i++) {
+        const deg = i * 36;
+        createBtn('presetHair', `헤어톤 ${i}`, `hue-rotate(${deg}deg) saturate(150%)`);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    renderPresets();
+});
+
+window.showFortune = function() {
+    if (!currentMember) return;
+    const name = currentMember.name;
+    if (typeof window.getFortuneReading === 'function') {
+        alert(window.getFortuneReading(name));
+    } else {
+        const script = document.createElement('script');
+        script.src = '/sejong/fortune_data.js?v=' + Date.now();
+        script.onload = () => {
+            alert(window.getFortuneReading(name));
+        };
+        document.head.appendChild(script);
+    }
 };
 
 async function cropAndSave() {
