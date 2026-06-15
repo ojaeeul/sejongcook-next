@@ -108,6 +108,19 @@ export default function AdminPopupsPage() {
         await savePopups(updatedPopups);
     };
 
+    const movePopup = async (index: number, direction: 'up' | 'down') => {
+        const newPopups = [...popups];
+        if (direction === 'up' && index > 0) {
+            [newPopups[index - 1], newPopups[index]] = [newPopups[index], newPopups[index - 1]];
+        } else if (direction === 'down' && index < newPopups.length - 1) {
+            [newPopups[index + 1], newPopups[index]] = [newPopups[index], newPopups[index + 1]];
+        } else {
+            return;
+        }
+        setPopups(newPopups);
+        await savePopups(newPopups);
+    };
+
     const savePopups = async (data: Popup[]) => {
         try {
             const url = '/api/admin/popups?_t=' + Date.now();
@@ -237,8 +250,14 @@ export default function AdminPopupsPage() {
                 </button>
             </div>
 
+            <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-8 rounded shadow-sm">
+                <p className="text-sm text-blue-800 font-bold">
+                    💡 팝업 노출 순서 안내: 목록의 가장 <b>위에 있는 팝업</b>이 방문자의 화면에서 <b>제일 앞(위)에</b> 표시됩니다.
+                </p>
+            </div>
+
             <div className="space-y-8">
-                {popups.map(popup => (
+                {popups.map((popup, index) => (
                     <div key={popup.id} className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200 ring-1 ring-black/5 hover:ring-blue-400 transition-all">
                         {/* Header */}
                         <div className="bg-gradient-to-r from-gray-50 to-white px-6 py-4 border-b flex justify-between items-center">
@@ -250,6 +269,24 @@ export default function AdminPopupsPage() {
                                 </span>
                             </div>
                             <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-1 mr-4 border-r pr-4">
+                                    <button 
+                                        onClick={() => movePopup(index, 'up')}
+                                        disabled={index === 0}
+                                        className={`px-2 py-1 rounded text-xs font-bold transition-colors ${index === 0 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100 bg-white border'}`}
+                                        title="순서 위로 올리기"
+                                    >
+                                        ⬆️ 위로
+                                    </button>
+                                    <button 
+                                        onClick={() => movePopup(index, 'down')}
+                                        disabled={index === popups.length - 1}
+                                        className={`px-2 py-1 rounded text-xs font-bold transition-colors ${index === popups.length - 1 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100 bg-white border'}`}
+                                        title="순서 아래로 내리기"
+                                    >
+                                        ⬇️ 아래로
+                                    </button>
+                                </div>
                                 <button
                                     onClick={() => handleToggleActive(popup.id, popup.isActive)}
                                     className={`px-4 py-1.5 rounded-full text-xs font-extrabold transition-all shadow-sm ${popup.isActive ? 'bg-green-500 text-white hover:bg-green-600' : 'bg-gray-200 text-gray-500 hover:bg-gray-300'}`}
