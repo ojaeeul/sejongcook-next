@@ -396,7 +396,7 @@ function updateExam(index, field, value) {
 
 async function saveExams() {
     try {
-        const url = typeof getFetchUrl === 'function' ? getFetchUrl('exams', true) : '/api/exams';
+        const url = typeof getFetchUrl === 'function' ? getFetchUrl('exams', true) : '/api/sejong/exams';
         await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

@@ -121,8 +121,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (memberListEl) {
         if (currentFilter === 'archive') {
             if (document.getElementById('pageTitle')) document.getElementById('pageTitle').textContent = '수 료 생 및 보 류 명 단';
+            const cardGrid = document.querySelector('.card-grid');
+            if(cardGrid) cardGrid.style.display = 'none';
+            const filterSec = document.querySelector('.filter-section');
+            if(filterSec) filterSec.style.display = 'none';
         } else if (currentFilter === 'trash') {
             if (document.getElementById('pageTitle')) document.getElementById('pageTitle').textContent = '휴 지 통';
+            const cardGrid = document.querySelector('.card-grid');
+            if(cardGrid) cardGrid.style.display = 'none';
+            const filterSec = document.querySelector('.filter-section');
+            if(filterSec) filterSec.style.display = 'none';
         }
         initDashboard();
     }

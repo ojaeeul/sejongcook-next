@@ -300,7 +300,7 @@ async function processAutoAttendance() {
         showStatus("AI 정밀 스캔 중...", "#3b82f6");
         
         if (shutter) shutter.style.opacity = '1';
-        setTimeout(() => { if (shutter) shutter.style.opacity = '0'; }, 100);
+        setTimeout(() => { if (shutter) shutter.style.opacity = '0'; }, 50);
 
         const [detection] = await Promise.all([
             faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor()
@@ -309,7 +309,7 @@ async function processAutoAttendance() {
 
         if (!detection) {
             showStatus("초점이 맞지 않았습니다. 다시 스캔합니다.", "red");
-            setTimeout(() => { isAuthenticating = false; }, 800);
+            setTimeout(() => { isAuthenticating = false; }, 300);
             return;
         }
 
@@ -472,7 +472,7 @@ async function capturePhoto() {
 }
 
 function determineAttendanceStatus(member) {
-    if (!member || !member.timeSlot) return 'present';
+    if (!member || !member.timeSlot) return 'invalid_time'; // Strict check: must have time slot
 
     const now = new Date();
     const currentMins = now.getHours() * 60 + now.getMinutes();
@@ -483,23 +483,15 @@ function determineAttendanceStatus(member) {
         return parseInt(parts[0]) * 60 + parseInt(parts[1]);
     }).filter(m => m !== -1);
 
-    if (slots.length === 0) return 'present';
+    if (slots.length === 0) return 'invalid_time'; // Strict check
 
     for (const slotMins of slots) {
         // Valid attendance window: 60 mins before to 60 mins after the slot
         if (currentMins >= (slotMins - 60) && currentMins <= (slotMins + 60)) {
-            // 5 mins after class start = late
-            if (currentMins > slotMins + 5) {
+            // Strictly late if after class start time
+            if (currentMins > slotMins) {
                 return 'late';
             }
-            const h = Math.floor(slotMins / 60);
-            if (h === 10) return '10';
-            if (h === 12) return '12';
-            if (h === 14 || h === 2) return '2';
-            if (h === 15 || h === 3) return '3';
-            if (h === 17 || h === 5) return '5';
-            if (h === 19 || h === 7) return '7';
-            if (h === 21 || h === 9) return '9';
             return 'present';
         }
     }
@@ -521,7 +513,7 @@ let timetableData = {
 };
 
 async function checkTimetableAllowed(member) {
-    if (!member || !member.course) return true;
+    if (!member || !member.course) return false; // Strict check: must have course
     
     // 캐시된 시간표 사용
     if (Object.keys(cachedTimetable).length === 0) {
@@ -555,6 +547,9 @@ async function checkTimetableAllowed(member) {
     if (foundTimetableEntry && !hasClassToday) {
         return false;
     }
+    // If we have courses but none matched any timetable entry, we assume no class today (strict)
+    if (!foundTimetableEntry) return false;
+    
     return true;
 }
 
@@ -1008,4 +1003,45 @@ window.playMechSound = function(type) {
             playOsc('sawtooth', 100, now+0.1, 0.2, 0.5);
             break;
     }
+};
+
+window.speakTTS = function(text, mode = 'browser') {
+    if (!text || !window.speechSynthesis) return;
+    
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'ko-KR';
+    
+    const style = localStorage.getItem('kiosk_tts_style') || '1';
+    let pitch = 1.0, rate = 1.0;
+    switch(style) {
+        case '1': pitch = 1.0; rate = 1.0; break;
+        case '2': pitch = 1.2; rate = 1.1; break;
+        case '3': pitch = 0.9; rate = 0.9; break;
+        case '4': pitch = 1.3; rate = 1.3; break;
+        case '5': pitch = 0.7; rate = 0.8; break;
+        case '6': pitch = 1.8; rate = 1.1; break;
+        case '7': pitch = 2.0; rate = 1.5; break;
+        case '8': pitch = 0.5; rate = 0.85; break;
+        case '9': pitch = 0.1; rate = 0.9; break;
+        case '10': pitch = 1.1; rate = 0.95; break;
+        case '11': pitch = 1.5; rate = 1.6; break;
+        case '12': pitch = 1.6; rate = 0.7; break;
+        case '13': pitch = 0.4; rate = 0.7; break;
+        case '14': pitch = 0.8; rate = 1.2; break;
+        case '15': pitch = 1.4; rate = 1.2; break;
+        case '16': pitch = 1.0; rate = 1.15; break;
+        case '17': pitch = 0.6; rate = 0.6; break;
+        case '18': pitch = 1.1; rate = 0.8; break;
+        case '19': pitch = 0.2; rate = 1.4; break;
+        case '20': pitch = 1.7; rate = 1.2; break;
+    }
+    utterance.pitch = pitch;
+    utterance.rate = rate;
+    
+    const voices = window.speechSynthesis.getVoices();
+    const koVoice = voices.find(v => v.lang.includes('ko'));
+    if (koVoice) utterance.voice = koVoice;
+    
+    window.speechSynthesis.speak(utterance);
 };
