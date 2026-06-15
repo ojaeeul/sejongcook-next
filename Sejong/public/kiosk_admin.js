@@ -349,14 +349,56 @@ window.playTTSSample = function() {
 };
 
 window.playTTSSampleFail = function() {
-    const text = document.getElementById('ttsFailTemplateInput').value;
-    if (!text) return;
-    const style = document.getElementById('ttsStyleSelect').value;
-    
-    if ('speechSynthesis' in window) {
+    try {
+        const text = document.getElementById('ttsFailTemplateInput').value;
+        if (!text || !window.speechSynthesis) return;
+        
+        window.speechSynthesis.cancel();
+        
         const utterance = new SpeechSynthesisUtterance(text);
-        applyVoiceStyle(utterance, style);
-        speechSynthesis.speak(utterance);
+        utterance.lang = 'ko-KR';
+        
+        const style = document.getElementById('ttsStyleSelect') ? document.getElementById('ttsStyleSelect').value : '1';
+        let pitch = 1.0, rate = 1.0;
+        switch(style) {
+            case '1': pitch = 1.0; rate = 1.0; break;
+            case '2': pitch = 1.2; rate = 1.1; break;
+            case '3': pitch = 0.9; rate = 0.9; break;
+            case '4': pitch = 1.3; rate = 1.3; break;
+            case '5': pitch = 0.7; rate = 0.8; break;
+            case '6': pitch = 1.8; rate = 1.1; break;
+            case '7': pitch = 2.0; rate = 1.4; break;
+            case '8': pitch = 0.5; rate = 0.8; break;
+            case '9': pitch = 1.0; rate = 0.9; break;
+            case '10': pitch = 1.1; rate = 1.05; break;
+            case '11': pitch = 1.4; rate = 1.5; break;
+            case '12': pitch = 1.1; rate = 0.85; break;
+            case '13': pitch = 0.6; rate = 0.75; break;
+            case '14': pitch = 0.8; rate = 1.1; break;
+            case '15': pitch = 1.5; rate = 1.2; break;
+            case '16': pitch = 1.05; rate = 1.1; break;
+            case '17': pitch = 0.5; rate = 0.6; break;
+            case '18': pitch = 1.2; rate = 0.9; break;
+            case '19': pitch = 0.3; rate = 1.4; break;
+            case '20': pitch = 1.6; rate = 1.1; break;
+        }
+        
+        utterance.pitch = pitch;
+        utterance.rate = rate;
+        
+        const voices = window.speechSynthesis.getVoices();
+        const koVoice = voices.find(v => v.lang.includes('ko') || v.lang.includes('KO'));
+        if (koVoice) utterance.voice = koVoice;
+
+        window.speechSynthesis.speak(utterance);
+    } catch(err) {
+        console.error("TTS Fail Preview Error:", err);
+        if (window.speechSynthesis) {
+            const text = document.getElementById('ttsFailTemplateInput') ? document.getElementById('ttsFailTemplateInput').value : "미등록 얼굴입니다";
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'ko-KR';
+            window.speechSynthesis.speak(utterance);
+        }
     }
 };
 
