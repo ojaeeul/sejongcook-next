@@ -684,7 +684,10 @@ async function startCamera() {
         }
         
         stream = await navigator.mediaDevices.getUserMedia(constraints);
-        if (video) video.srcObject = stream;
+        if (video) {
+            video.srcObject = stream;
+            video.play().catch(e => console.warn("Video play failed:", e));
+        }
 
         // 카메라 헬스체크 시작 (검은 화면 멈춤 복구용)
         if (cameraHealthCheckInterval) clearInterval(cameraHealthCheckInterval);
@@ -697,7 +700,10 @@ async function startCamera() {
                     stopCamera();
                     try {
                         stream = await navigator.mediaDevices.getUserMedia(constraints);
-                        if (video) video.srcObject = stream;
+                        if (video) {
+                            video.srcObject = stream;
+                            video.play().catch(e => console.warn("Video play failed:", e));
+                        }
                     } catch(e) { console.error("Camera recovery failed", e); }
                 }
                 lastVideoTime = video.currentTime;
@@ -708,7 +714,10 @@ async function startCamera() {
         // Fallback if specific camera fails
         try {
             stream = await navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720, focusMode: { ideal: "continuous" } } });
-            if (video) video.srcObject = stream;
+            if (video) {
+                video.srcObject = stream;
+                video.play().catch(e => console.warn("Video play failed:", e));
+            }
         } catch(e2) {
             showStatus("카메라 에러", "red");
         }
