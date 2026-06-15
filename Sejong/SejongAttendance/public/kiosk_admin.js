@@ -256,6 +256,93 @@ window.toggleTtsModeUI = function() {
     if (apiUI) apiUI.style.display = (mode === 'api') ? 'block' : 'none';
 };
 
+window.toggleFailModeUI = function() {
+    const failMode = document.getElementById('ttsFailModeSelect') ? document.getElementById('ttsFailModeSelect').value : 'tts';
+    const ttsUI = document.getElementById('failModeTTSUI');
+    const mechUI = document.getElementById('failModeMechUI');
+    if (ttsUI) ttsUI.style.display = (failMode === 'tts') ? 'block' : 'none';
+    if (mechUI) mechUI.style.display = (failMode === 'mech') ? 'block' : 'none';
+};
+
+window.playMechSound = function(type) {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+    const ctx = new AudioContext();
+    const now = ctx.currentTime;
+    
+    const playOsc = (oscType, freq, time, dur, vol, volEnd=0) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = oscType;
+        
+        if (Array.isArray(freq)) {
+            osc.frequency.setValueAtTime(freq[0], time);
+            osc.frequency.exponentialRampToValueAtTime(freq[1], time + dur);
+        } else {
+            osc.frequency.setValueAtTime(freq, time);
+        }
+        
+        gain.gain.setValueAtTime(vol, time);
+        gain.gain.linearRampToValueAtTime(volEnd, time + dur);
+        
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(time);
+        osc.stop(time + dur);
+    };
+
+    switch(String(type)) {
+        case '1': playOsc('sine', 800, now, 0.1, 1); break;
+        case '2': playOsc('sawtooth', 150, now, 0.5, 0.5); break;
+        case '3': 
+            playOsc('square', 600, now, 0.1, 0.5);
+            playOsc('square', 600, now+0.15, 0.1, 0.5);
+            break;
+        case '4': playOsc('sine', [800, 200], now, 0.4, 1); break;
+        case '5': 
+            playOsc('sine', 659.25, now, 0.15, 0.5);
+            playOsc('sine', 622.25, now+0.15, 0.15, 0.5);
+            playOsc('sine', 587.33, now+0.3, 0.15, 0.5);
+            playOsc('sine', 554.37, now+0.45, 0.4, 0.5);
+            break;
+        case '6': playOsc('triangle', [100, 40], now, 0.2, 1); break;
+        case '7': playOsc('sawtooth', [2000, 100], now, 0.3, 0.5); break;
+        case '8': 
+            playOsc('square', 800, now, 0.08, 0.5);
+            playOsc('square', 800, now+0.12, 0.08, 0.5);
+            playOsc('square', 800, now+0.24, 0.15, 0.5);
+            break;
+        case '9': 
+            playOsc('square', 300, now, 0.15, 0.3);
+            playOsc('square', 250, now+0.15, 0.15, 0.3);
+            playOsc('square', 200, now+0.3, 0.4, 0.3);
+            break;
+        case '10': 
+            playOsc('square', [4000, 100], now, 0.2, 0.2);
+            playOsc('sawtooth', [3000, 50], now+0.05, 0.2, 0.2);
+            break;
+        case '11': playOsc('sine', 80, now, 0.6, 1); break;
+        case '12': 
+            playOsc('square', 1000, now, 0.05, 0.3);
+            playOsc('sawtooth', 200, now+0.05, 0.05, 0.3);
+            playOsc('square', 1500, now+0.1, 0.05, 0.3);
+            playOsc('sine', 100, now+0.15, 0.05, 0.3);
+            break;
+        case '13': 
+            playOsc('sine', 1200, now, 0.5, 0.5);
+            playOsc('sine', 2400, now, 0.3, 0.2);
+            break;
+        case '14': 
+            playOsc('sine', [400, 800], now, 0.3, 0.5, 0.5);
+            playOsc('sine', [800, 400], now+0.3, 0.3, 0.5, 0);
+            break;
+        case '15': 
+            playOsc('sawtooth', 150, now, 0.1, 0.5);
+            playOsc('sawtooth', 100, now+0.1, 0.2, 0.5);
+            break;
+    }
+};
+
 window.playTTSSample = function() {
     const mode = document.getElementById('ttsModeSelect') ? document.getElementById('ttsModeSelect').value : 'browser';
     
@@ -602,6 +689,14 @@ function loadSettings() {
     const ttsFailInput = document.getElementById('ttsFailTemplateInput');
     if (ttsFailInput) ttsFailInput.value = ttsFailTemplate;
 
+    const failMode = localStorage.getItem('kiosk_tts_fail_mode') || 'tts';
+    const failModeSelect = document.getElementById('ttsFailModeSelect');
+    if (failModeSelect) failModeSelect.value = failMode;
+
+    const mechFailType = localStorage.getItem('kiosk_mech_fail_type') || '1';
+    const mechFailSelect = document.getElementById('ttsFailMechSelect');
+    if (mechFailSelect) mechFailSelect.value = mechFailType;
+
     const ttsStyle = localStorage.getItem('kiosk_tts_style') || '1';
     
     const ttsMp3 = localStorage.getItem('kiosk_tts_mp3') || '1';
@@ -634,6 +729,7 @@ function loadSettings() {
     if (ttsApiTemplateEl) ttsApiTemplateEl.value = ttsApiTemplate;
     
     if (window.toggleTtsModeUI) window.toggleTtsModeUI();
+    if (window.toggleFailModeUI) window.toggleFailModeUI();
 }
 
 function saveSettings() {
@@ -651,13 +747,20 @@ function saveSettings() {
     const ttsApiVoiceEl = document.getElementById('ttsApiVoice');
     const ttsApiTemplateEl = document.getElementById('ttsApiTemplate');
     
+    const ttsFailModeEl = document.getElementById('ttsFailModeSelect');
+    const mechFailSelect = document.getElementById('ttsFailMechSelect');
+
     if (toggleEl) localStorage.setItem('kiosk_voice_enabled', toggleEl.checked);
     if (sensEl) localStorage.setItem('kiosk_sensitivity', sensEl.value);
     if (camEl && camEl.value) localStorage.setItem('kiosk_camera_id', camEl.value);
     
     if (ttsModeEl) localStorage.setItem('kiosk_tts_mode', ttsModeEl.value);
     if (ttsInput) localStorage.setItem('kiosk_tts_template', ttsInput.value);
+    
+    if (ttsFailModeEl) localStorage.setItem('kiosk_tts_fail_mode', ttsFailModeEl.value);
     if (ttsFailInput) localStorage.setItem('kiosk_tts_fail_template', ttsFailInput.value);
+    if (mechFailSelect) localStorage.setItem('kiosk_mech_fail_type', mechFailSelect.value);
+    
     if (ttsStyleEl) localStorage.setItem('kiosk_tts_style', ttsStyleEl.value);
     if (ttsMp3El) localStorage.setItem('kiosk_tts_mp3', ttsMp3El.value);
     if (ttsApiKeyEl) localStorage.setItem('kiosk_tts_api_key', ttsApiKeyEl.value);

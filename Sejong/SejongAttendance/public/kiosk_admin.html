@@ -409,10 +409,42 @@
                             <button onclick="window.playTTSSample && window.playTTSSample()" style="background: #3b82f6; color: white; border: none; padding: 12px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; white-space: nowrap;">미리듣기</button>
                         </div>
                         
-                        <label style="font-size: 0.95rem; color: #475569; display:block; margin-bottom: 8px;">실패/미등록 안내 문구 (얼굴 인식 실패 시)</label>
-                        <div style="display: flex; gap: 10px; align-items: center;">
-                            <input type="text" id="ttsFailTemplateInput" value="미등록 얼굴입니다." style="flex: 1; margin-bottom: 0;" onchange="saveSettings();">
-                            <button onclick="window.playTTSSampleFail && window.playTTSSampleFail()" style="background: #ef4444; color: white; border: none; padding: 12px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; white-space: nowrap;">미리듣기</button>
+                        <label style="font-size: 0.95rem; color: #475569; display:block; margin-bottom: 8px;">실패/미등록 안내 (얼굴 인식 실패 시)</label>
+                        <select id="ttsFailModeSelect" onchange="window.toggleFailModeUI && window.toggleFailModeUI(); saveSettings();" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 1rem; margin-bottom: 10px;">
+                            <option value="tts">브라우저 기본 톤 (목소리 직접 조작)</option>
+                            <option value="mech">기계음 (짧은 효과음/음악소리)</option>
+                        </select>
+
+                        <div id="failModeTTSUI">
+                            <label style="font-size: 0.95rem; color: #475569; display:block; margin-bottom: 8px;">안내 문구 직접 입력</label>
+                            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px;">
+                                <input type="text" id="ttsFailTemplateInput" value="미등록 얼굴입니다." style="flex: 1; margin-bottom: 0;" onchange="saveSettings();">
+                                <button onclick="window.playTTSSampleFail && window.playTTSSampleFail()" style="background: #ef4444; color: white; border: none; padding: 12px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; white-space: nowrap;">미리듣기</button>
+                            </div>
+                        </div>
+
+                        <div id="failModeMechUI" style="display:none; margin-bottom: 15px;">
+                            <label style="font-size: 0.95rem; color: #475569; display:block; margin-bottom: 8px;">15가지 기계음 중 선택</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <select id="ttsFailMechSelect" onchange="saveSettings(); window.playMechSound && window.playMechSound(this.value);" style="flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 1rem; margin-bottom: 0;">
+                                    <option value="1">1. 짧은 삑 (에러)</option>
+                                    <option value="2">2. 긴 부저음 (강력한 경고)</option>
+                                    <option value="3">3. 띠띠 (빠른 경고)</option>
+                                    <option value="4">4. 하향음 (실패 느낌)</option>
+                                    <option value="5">5. 띠로리 (슬픈 멜로디)</option>
+                                    <option value="6">6. 둔탁한 퍽 (타격음)</option>
+                                    <option value="7">7. 레이저 빔</option>
+                                    <option value="8">8. 띠띠띠 (세 번 울림)</option>
+                                    <option value="9">9. 게임 오버 멜로디</option>
+                                    <option value="10">10. 쨍그랑 (유리 느낌)</option>
+                                    <option value="11">11. 낮게 웅~ (에러 진동)</option>
+                                    <option value="12">12. 디지털 글리치 (시스템 오류)</option>
+                                    <option value="13">13. 금속성 띵</option>
+                                    <option value="14">14. 경찰 사이렌 (짧게)</option>
+                                    <option value="15">15. 로봇 거절음</option>
+                                </select>
+                                <button onclick="window.playMechSound && window.playMechSound(document.getElementById('ttsFailMechSelect').value)" style="background: #ef4444; color: white; border: none; padding: 12px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; white-space: nowrap;">미리듣기</button>
+                            </div>
                         </div>
                     </div>
 
@@ -490,7 +522,7 @@
     <canvas id="hiddenCanvas" style="display: none;"></canvas>
 
     <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
-    <script src="/sejong/kiosk_admin.js?v=20260616-3"></script>
+    <script src="/sejong/kiosk_admin.js?v=20260616-4"></script>
 
 </div>
 </main>

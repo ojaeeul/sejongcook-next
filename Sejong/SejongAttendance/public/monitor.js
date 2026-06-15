@@ -344,9 +344,15 @@ async function processAutoAttendance() {
             setTimeout(() => { isAuthenticating = false; }, 3000);
         } else {
             showStatus("미등록 얼굴입니다.", "red");
-            if (localStorage.getItem('kiosk_voice_enabled') !== 'false' && window.speakTTS) {
-                const failMsg = localStorage.getItem('kiosk_tts_fail_template') || '미등록 얼굴입니다.';
-                speakTTS(failMsg, 'browser');
+            if (localStorage.getItem('kiosk_voice_enabled') !== 'false') {
+                const failMode = localStorage.getItem('kiosk_tts_fail_mode') || 'tts';
+                if (failMode === 'mech' && window.playMechSound) {
+                    const mechType = localStorage.getItem('kiosk_mech_fail_type') || '1';
+                    window.playMechSound(mechType);
+                } else if (window.speakTTS) {
+                    const failMsg = localStorage.getItem('kiosk_tts_fail_template') || '미등록 얼굴입니다.';
+                    speakTTS(failMsg, 'browser');
+                }
             }
             // 실패 시 1.5초 후 다시 시도
             setTimeout(() => { isAuthenticating = false; }, 1500);
@@ -922,5 +928,84 @@ window.playLoginSound = function() {
         }
     } catch(e) {
         console.log("Audio not supported or blocked");
+    }
+};
+
+window.playMechSound = function(type) {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+    const ctx = new AudioContext();
+    const now = ctx.currentTime;
+    
+    const playOsc = (oscType, freq, time, dur, vol, volEnd=0) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = oscType;
+        
+        if (Array.isArray(freq)) {
+            osc.frequency.setValueAtTime(freq[0], time);
+            osc.frequency.exponentialRampToValueAtTime(freq[1], time + dur);
+        } else {
+            osc.frequency.setValueAtTime(freq, time);
+        }
+        
+        gain.gain.setValueAtTime(vol, time);
+        gain.gain.linearRampToValueAtTime(volEnd, time + dur);
+        
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(time);
+        osc.stop(time + dur);
+    };
+
+    switch(String(type)) {
+        case '1': playOsc('sine', 800, now, 0.1, 1); break;
+        case '2': playOsc('sawtooth', 150, now, 0.5, 0.5); break;
+        case '3': 
+            playOsc('square', 600, now, 0.1, 0.5);
+            playOsc('square', 600, now+0.15, 0.1, 0.5);
+            break;
+        case '4': playOsc('sine', [800, 200], now, 0.4, 1); break;
+        case '5': 
+            playOsc('sine', 659.25, now, 0.15, 0.5);
+            playOsc('sine', 622.25, now+0.15, 0.15, 0.5);
+            playOsc('sine', 587.33, now+0.3, 0.15, 0.5);
+            playOsc('sine', 554.37, now+0.45, 0.4, 0.5);
+            break;
+        case '6': playOsc('triangle', [100, 40], now, 0.2, 1); break;
+        case '7': playOsc('sawtooth', [2000, 100], now, 0.3, 0.5); break;
+        case '8': 
+            playOsc('square', 800, now, 0.08, 0.5);
+            playOsc('square', 800, now+0.12, 0.08, 0.5);
+            playOsc('square', 800, now+0.24, 0.15, 0.5);
+            break;
+        case '9': 
+            playOsc('square', 300, now, 0.15, 0.3);
+            playOsc('square', 250, now+0.15, 0.15, 0.3);
+            playOsc('square', 200, now+0.3, 0.4, 0.3);
+            break;
+        case '10': 
+            playOsc('square', [4000, 100], now, 0.2, 0.2);
+            playOsc('sawtooth', [3000, 50], now+0.05, 0.2, 0.2);
+            break;
+        case '11': playOsc('sine', 80, now, 0.6, 1); break;
+        case '12': 
+            playOsc('square', 1000, now, 0.05, 0.3);
+            playOsc('sawtooth', 200, now+0.05, 0.05, 0.3);
+            playOsc('square', 1500, now+0.1, 0.05, 0.3);
+            playOsc('sine', 100, now+0.15, 0.05, 0.3);
+            break;
+        case '13': 
+            playOsc('sine', 1200, now, 0.5, 0.5);
+            playOsc('sine', 2400, now, 0.3, 0.2);
+            break;
+        case '14': 
+            playOsc('sine', [400, 800], now, 0.3, 0.5, 0.5);
+            playOsc('sine', [800, 400], now+0.3, 0.3, 0.5, 0);
+            break;
+        case '15': 
+            playOsc('sawtooth', 150, now, 0.1, 0.5);
+            playOsc('sawtooth', 100, now+0.1, 0.2, 0.5);
+            break;
     }
 };
