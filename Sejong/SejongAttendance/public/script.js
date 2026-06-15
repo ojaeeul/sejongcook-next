@@ -92,7 +92,7 @@ window.execDaumPostcode = function (targetId, detailId) {
 let currentDate = new Date().toISOString().split('T')[0];
 let members = [];
 let attendanceLogs = [];
-let currentFilter = 'all';
+let currentFilter = new URLSearchParams(window.location.search).get('filter') || 'all';
 
 // DOM Elements
 let currentDateEl;
@@ -118,7 +118,14 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('DOMContentLoaded: memberListEl found?', !!memberListEl);
 
 
-    if (memberListEl) initDashboard();
+    if (memberListEl) {
+        if (currentFilter === 'archive') {
+            if (document.getElementById('pageTitle')) document.getElementById('pageTitle').textContent = '수 료 생 및 보 류 명 단';
+        } else if (currentFilter === 'trash') {
+            if (document.getElementById('pageTitle')) document.getElementById('pageTitle').textContent = '휴 지 통';
+        }
+        initDashboard();
+    }
 
     // Filter logic
     document.querySelectorAll('.filter-btn').forEach(btn => {
@@ -1272,9 +1279,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (filename === 'index.html') {
         if (filter === 'archive') {
-            setTimeout(() => loadArchive(), 500);
+            document.getElementById('navArchive')?.classList.add('active');
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
         } else if (filter === 'trash') {
-            setTimeout(() => loadTrash(), 500);
+            document.getElementById('navTrash')?.classList.add('active');
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
         } else if (!filter) {
             document.getElementById('navIndex')?.classList.add('active');
         }
