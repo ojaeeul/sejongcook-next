@@ -7,11 +7,11 @@
     <meta http-equiv="Expires" content="0">    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>전화번호부 - 세종요리</title>
-    <link rel="stylesheet" href="style.css?v=20260615-32">
+    <link rel="stylesheet" href="style.css?v=20260615-33">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="phonebook.js?v=20260615-32" defer></script>
+    <script src="phonebook.js?v=20260615-33" defer></script>
     <style>
                 .notebook-wrapper {
             display: flex;
@@ -328,39 +328,56 @@
         }
 
         @media (max-width: 768px) {
-            .notebook-page {
-                padding: 20px 15px 70px 30px;
+            .notebook {
+                min-width: 100%;
+                flex-direction: column;
+                height: auto;
+            }
+            .binding {
+                display: none;
+            }
+            .page {
+                border-radius: 12px !important;
+                margin-bottom: 20px;
+                padding: 10px !important;
+            }
+            .notebook-tabs {
+                position: static;
+                flex-direction: row;
+                flex-wrap: wrap;
+                margin-top: 10px;
+                justify-content: center;
+                right: 0;
+                top: 0;
+            }
+            .index-tab {
+                border-radius: 8px;
+                border: 1px solid rgba(0,0,0,0.15);
+                padding: 8px 12px;
+                font-size: 0.8rem;
+                min-width: auto;
             }
             .phone-card {
-                flex-direction: column;
-                align-items: flex-start;
+                flex-direction: column !important;
+                align-items: flex-start !important;
                 gap: 8px;
-                padding: 12px 0;
-                height: auto;
+                padding: 12px !important;
+                height: auto !important;
                 border-bottom: 1px dashed #cbd5e1;
             }
             .phone-card:hover {
                 transform: none;
-                padding-left: 0;
                 background: transparent;
             }
-            .card-left {
-                width: 100%;
-                justify-content: space-between;
+            .phone-card > div {
+                width: 100% !important;
+                border-right: none !important;
+                justify-content: flex-start !important;
+                align-items: flex-start !important;
             }
-            .contact-info {
-                flex-direction: column;
-                width: 100%;
-            }
-            .card-actions {
-                margin-left: 0;
-                justify-content: flex-end;
-                width: 100%;
-                margin-top: 5px;
-            }
-            .index-tab {
-                padding: 10px 8px;
-                font-size: 0.8rem;
+            .course-badge-list {
+                width: 100% !important;
+                justify-content: flex-start !important;
             }
         }
     </style>
