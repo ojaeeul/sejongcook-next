@@ -689,6 +689,18 @@ function loadSettings() {
     const ttsFailInput = document.getElementById('ttsFailTemplateInput');
     if (ttsFailInput) ttsFailInput.value = ttsFailTemplate;
 
+    const invalidDayMsg = localStorage.getItem('kiosk_invalid_day_msg') || '오늘은 수강 요일이 아닙니다.';
+    const invalidDayInput = document.getElementById('ttsInvalidDayMsg');
+    if (invalidDayInput) invalidDayInput.value = invalidDayMsg;
+
+    const invalidTimeMsg = localStorage.getItem('kiosk_invalid_time_msg') || '현재는 예약된 수강 시간이 아닙니다.';
+    const invalidTimeInput = document.getElementById('ttsInvalidTimeMsg');
+    if (invalidTimeInput) invalidTimeInput.value = invalidTimeMsg;
+
+    const invalidVoiceEnabled = localStorage.getItem('kiosk_invalid_voice_enabled') !== 'false';
+    const invalidVoiceToggle = document.getElementById('ttsInvalidVoiceEnabled');
+    if (invalidVoiceToggle) invalidVoiceToggle.checked = invalidVoiceEnabled;
+
     const failMode = localStorage.getItem('kiosk_tts_fail_mode') || 'tts';
     const failModeSelect = document.getElementById('ttsFailModeSelect');
     if (failModeSelect) failModeSelect.value = failMode;
@@ -750,6 +762,10 @@ function saveSettings() {
     const ttsFailModeEl = document.getElementById('ttsFailModeSelect');
     const mechFailSelect = document.getElementById('ttsFailMechSelect');
 
+    const invalidDayInput = document.getElementById('ttsInvalidDayMsg');
+    const invalidTimeInput = document.getElementById('ttsInvalidTimeMsg');
+    const invalidVoiceToggle = document.getElementById('ttsInvalidVoiceEnabled');
+
     if (toggleEl) localStorage.setItem('kiosk_voice_enabled', toggleEl.checked);
     if (sensEl) localStorage.setItem('kiosk_sensitivity', sensEl.value);
     if (camEl && camEl.value) localStorage.setItem('kiosk_camera_id', camEl.value);
@@ -760,6 +776,10 @@ function saveSettings() {
     if (ttsFailModeEl) localStorage.setItem('kiosk_tts_fail_mode', ttsFailModeEl.value);
     if (ttsFailInput) localStorage.setItem('kiosk_tts_fail_template', ttsFailInput.value);
     if (mechFailSelect) localStorage.setItem('kiosk_mech_fail_type', mechFailSelect.value);
+
+    if (invalidDayInput) localStorage.setItem('kiosk_invalid_day_msg', invalidDayInput.value);
+    if (invalidTimeInput) localStorage.setItem('kiosk_invalid_time_msg', invalidTimeInput.value);
+    if (invalidVoiceToggle) localStorage.setItem('kiosk_invalid_voice_enabled', invalidVoiceToggle.checked);
     
     if (ttsStyleEl) localStorage.setItem('kiosk_tts_style', ttsStyleEl.value);
     if (ttsMp3El) localStorage.setItem('kiosk_tts_mp3', ttsMp3El.value);

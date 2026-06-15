@@ -599,9 +599,9 @@ async function processAttendance(inputNumOrObj, overridePhoto = null) {
         // --- NEW: Check if today is a valid class day ---
         const isAllowed = await checkTimetableAllowed(member);
         if (!isAllowed) {
-            const msg = "오늘은 수강 요일이 아닙니다.";
+            const msg = localStorage.getItem('kiosk_invalid_day_msg') || "오늘은 수강 요일이 아닙니다.";
             showStatus(msg, "red");
-            if (localStorage.getItem('kiosk_voice_enabled') !== 'false' && window.speakTTS) {
+            if (localStorage.getItem('kiosk_voice_enabled') !== 'false' && localStorage.getItem('kiosk_invalid_voice_enabled') !== 'false' && window.speakTTS) {
                 speakTTS(msg, 'browser');
             }
             return; // Reject attendance
@@ -612,9 +612,9 @@ async function processAttendance(inputNumOrObj, overridePhoto = null) {
         const status = determineAttendanceStatus(member);
 
         if (status === 'invalid_time') {
-            const msg = "현재는 예약된 수강 시간이 아닙니다.";
+            const msg = localStorage.getItem('kiosk_invalid_time_msg') || "현재는 예약된 수강 시간이 아닙니다.";
             showStatus(msg, "red");
-            if (localStorage.getItem('kiosk_voice_enabled') !== 'false' && window.speakTTS) {
+            if (localStorage.getItem('kiosk_voice_enabled') !== 'false' && localStorage.getItem('kiosk_invalid_voice_enabled') !== 'false' && window.speakTTS) {
                 speakTTS(msg, 'browser');
             }
             return; // Reject attendance

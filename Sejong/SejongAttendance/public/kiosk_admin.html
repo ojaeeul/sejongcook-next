@@ -445,6 +445,25 @@
                                 <button onclick="window.playMechSound && window.playMechSound(document.getElementById('ttsFailMechSelect').value)" style="background: #ef4444; color: white; border: none; padding: 12px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; white-space: nowrap;">미리듣기</button>
                             </div>
                         </div>
+
+                        <!-- 예약/수강시간 오류 설정 -->
+                        <div style="border-top: 1px solid #cbd5e1; padding-top: 15px; margin-top: 15px;">
+                            <label style="font-size: 0.95rem; color: #475569; display:block; margin-bottom: 8px; font-weight:bold;">출석 요일/시간 오류 메시지 설정</label>
+                            
+                            <div style="margin-bottom: 10px;">
+                                <span style="font-size:0.85rem; color:#64748b; display:block; margin-bottom:3px;">수강 요일이 아닐 때 메시지</span>
+                                <input type="text" id="ttsInvalidDayMsg" value="오늘은 수강 요일이 아닙니다." style="width:100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1;" onchange="saveSettings();">
+                            </div>
+                            <div style="margin-bottom: 10px;">
+                                <span style="font-size:0.85rem; color:#64748b; display:block; margin-bottom:3px;">예약된 수강 시간이 아닐 때 메시지</span>
+                                <input type="text" id="ttsInvalidTimeMsg" value="현재는 예약된 수강 시간이 아닙니다." style="width:100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1;" onchange="saveSettings();">
+                            </div>
+                            
+                            <label style="display:flex; align-items:center; gap:8px; font-size: 0.9rem; color: #475569; cursor: pointer;">
+                                <input type="checkbox" id="ttsInvalidVoiceEnabled" onchange="saveSettings();" style="width: 18px; height: 18px;">
+                                요일/시간 오류 발생 시에도 브라우저 음성 안내 켜기
+                            </label>
+                        </div>
                     </div>
 
                     <!-- 2. MP3 Preset UI -->
@@ -521,7 +540,7 @@
     <canvas id="hiddenCanvas" style="display: none;"></canvas>
 
     <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
-    <script src="/sejong/kiosk_admin.js?v=20260616-6"></script>
+    <script src="/sejong/kiosk_admin.js?v=20260616-7"></script>
 
 </div>
 </main>
