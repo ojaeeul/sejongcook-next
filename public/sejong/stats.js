@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             fetch(`${API_BASE}/members?t=${Date.now()}`),
             fetch(`${API_BASE}/payments?t=${Date.now()}`),
             fetch(`${API_BASE}/attendance?t=${Date.now()}`),
-            fetch(`${API_BASE}/expense?t=${Date.now()}`).catch(() => ({ok: false}))
+            fetch(`${API_BASE}/expense?year=all&t=${Date.now()}`).catch(() => ({ok: false}))
         ]);
 
         globalMembers = await mRes.json();
@@ -30,48 +30,53 @@ document.addEventListener('DOMContentLoaded', async () => {
         let globalExpenses = [];
         if (eRes && eRes.ok) {
             try { 
-                const data = await eRes.json();
-                let notebookYear = data.expenseYear || '2026';
-                notebookYear = notebookYear.replace(/[^0-9]/g, '');
-
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = data.leftHTML || '';
+                const dataArray = await eRes.json();
+                const notebooks = Array.isArray(dataArray) ? dataArray : [dataArray];
                 
-                let lastSeenDate = '';
+                notebooks.forEach(data => {
+                    if (!data) return;
+                    let notebookYear = data.expenseYear || '2026';
+                    notebookYear = notebookYear.replace(/[^0-9]/g, '');
 
-                Array.from(tempDiv.querySelectorAll('.entry-line')).forEach(line => {
-                    const dCol = line.querySelector('.date-col');
-                    const descCol = line.querySelector('.desc-col');
-                    const aCol = line.querySelector('.amount-col');
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = data.leftHTML || '';
                     
-                    if(!descCol || !aCol) return;
-                    
-                    let dText = dCol ? dCol.textContent.trim() : '';
-                    if(dText) lastSeenDate = dText;
-                    else dText = lastSeenDate;
-                    
-                    let amountText = aCol.textContent.trim();
-                    let descText = descCol.textContent.trim();
-                    if(!amountText || !descText) return;
-                    
-                    let match = dText.match(/^(\d+)\/(\d+)/);
-                    if(match) {
-                        let rowMonth = parseInt(match[1]);
-                        let rowDay = parseInt(match[2]);
-                        let rowYear = parseInt(notebookYear);
+                    let lastSeenDate = '';
+
+                    Array.from(tempDiv.querySelectorAll('.entry-line')).forEach(line => {
+                        const dCol = line.querySelector('.date-col');
+                        const descCol = line.querySelector('.desc-col');
+                        const aCol = line.querySelector('.amount-col');
                         
-                        let num = Number(amountText.replace(/,/g, '').replace(/\.—/g, '000').replace(/\.-/g, '000').replace(/[^0-9-]/g, ''));
-                        if(isNaN(num)) num = 0;
+                        if(!descCol || !aCol) return;
                         
-                        // Create JS Date object (time doesn't matter much for period filter, just set it to noon)
-                        const eDate = new Date(rowYear, rowMonth - 1, rowDay, 12, 0, 0);
+                        let dText = dCol ? dCol.textContent.trim() : '';
+                        if(dText) lastSeenDate = dText;
+                        else dText = lastSeenDate;
                         
-                        globalExpenses.push({
-                            amount: num,
-                            date: eDate.toISOString(),
-                            desc: descText
-                        });
-                    }
+                        let amountText = aCol.textContent.trim();
+                        let descText = descCol.textContent.trim();
+                        if(!amountText || !descText) return;
+                        
+                        let match = dText.match(/^(\d+)\/(\d+)/);
+                        if(match) {
+                            let rowMonth = parseInt(match[1]);
+                            let rowDay = parseInt(match[2]);
+                            let rowYear = parseInt(notebookYear);
+                            
+                            let num = Number(amountText.replace(/,/g, '').replace(/\.—/g, '000').replace(/\.-/g, '000').replace(/[^0-9-]/g, ''));
+                            if(isNaN(num)) num = 0;
+                            
+                            // Create JS Date object
+                            const eDate = new Date(rowYear, rowMonth - 1, rowDay, 12, 0, 0);
+                            
+                            globalExpenses.push({
+                                amount: num,
+                                date: eDate.toISOString(),
+                                desc: descText
+                            });
+                        }
+                    });
                 });
             } catch(e) {
                 console.error("Expense parsing error:", e);
@@ -188,8 +193,8 @@ function updateDashboard() {
     if(document.getElementById('dashUnpaid')) document.getElementById('dashUnpaid').innerText = periodUnpaid === 0 ? '당일 미납 없음' : periodUnpaid.toLocaleString();
     if(document.getElementById('dashUnpaidAcc')) document.getElementById('dashUnpaidAcc').innerText = totalUnpaid.toLocaleString();
 
-    if(document.getElementById('dashExpense')) document.getElementById('dashExpense').innerText = todayExpense.toLocaleString();
-    if(document.getElementById('dashExpenseAcc')) document.getElementById('dashExpenseAcc').innerText = thisMonthExpense.toLocaleString();
+    if(document.getElementById('dashExpense')) document.getElementById('dashExpense').innerText = todayExpense.toLocaleString() + '원';
+    if(document.getElementById('dashExpenseAcc')) document.getElementById('dashExpenseAcc').innerText = thisMonthExpense.toLocaleString() + '원';
 
     if(document.getElementById('dashStudents')) document.getElementById('dashStudents').innerText = activeMembers.length;
     if(document.getElementById('dashStudentsNew')) document.getElementById('dashStudentsNew').innerText = Math.max(0, Math.floor(activeMembers.length * 0.05)); // mock new

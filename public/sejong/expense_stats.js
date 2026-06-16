@@ -35,6 +35,9 @@ function processExpenseDataArray(dataArray) {
         
         let notebookYear = data.expenseYear || '2026';
         notebookYear = notebookYear.replace(/[^0-9]/g, '');
+        let baseYear = parseInt(notebookYear);
+        
+        if (!groupedData[baseYear]) groupedData[baseYear] = { total: 0, months: {} };
 
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = data.leftHTML || '';
@@ -60,7 +63,7 @@ function processExpenseDataArray(dataArray) {
             if(match) {
                 let rowMonth = parseInt(match[1]);
                 let rowDay = parseInt(match[2]);
-                let rowYear = parseInt(notebookYear);
+                let rowYear = baseYear;
                 
                 let num = Number(amountText.replace(/,/g, '').replace(/\.—/g, '000').replace(/\.-/g, '000').replace(/[^0-9-]/g, ''));
                 if(isNaN(num)) num = 0;
@@ -72,7 +75,6 @@ function processExpenseDataArray(dataArray) {
                 
                 totalOverall += amt;
                 
-                if (!groupedData[year]) groupedData[year] = { total: 0, months: {} };
                 groupedData[year].total += amt;
                 
                 if (!groupedData[year].months[month]) groupedData[year].months[month] = { total: 0, days: {} };
