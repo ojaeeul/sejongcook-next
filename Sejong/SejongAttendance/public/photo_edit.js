@@ -182,116 +182,187 @@ function cloneCanvas(oldCanvas) {
 }
 
 const FilterEngine = {
-    applyBasic: function(baseCanvas, type, amount) {
-        const c = cloneCanvas(baseCanvas);
-        const ctx = c.getContext('2d');
-        if (type === 'bw') {
-            ctx.filter = 'grayscale(100%) contrast(1.2)';
-        } else if (type === 'bright') {
-            ctx.filter = `brightness(${100 + (amount * 10)}%)`;
+    _fastBoxBlur: function(imgData, radius) {
+        const w = imgData.width;
+        const h = imgData.height;
+        const data = imgData.data;
+        const tData = new Uint8ClampedArray(data.length);
+        const passes = 2;
+        for(let p=0; p<passes; p++) {
+            for (let y = 0; y < h; y++) {
+                for (let x = 0; x < w; x++) {
+                    let r=0, g=0, b=0, a=0, c=0;
+                    for (let k = -radius; k <= radius; k++) {
+                        let cx = x + k;
+                        if (cx >= 0 && cx < w) {
+                            let i = (y * w + cx) * 4;
+                            r += data[i]; g += data[i+1]; b += data[i+2]; a += data[i+3];
+                            c++;
+                        }
+                    }
+                    let i = (y * w + x) * 4;
+                    tData[i] = r/c; tData[i+1] = g/c; tData[i+2] = b/c; tData[i+3] = a/c;
+                }
+            }
+            for (let x = 0; x < w; x++) {
+                for (let y = 0; y < h; y++) {
+                    let r=0, g=0, b=0, a=0, c=0;
+                    for (let k = -radius; k <= radius; k++) {
+                        let cy = y + k;
+                        if (cy >= 0 && cy < h) {
+                            let i = (cy * w + x) * 4;
+                            r += tData[i]; g += tData[i+1]; b += tData[i+2]; a += tData[i+3];
+                            c++;
+                        }
+                    }
+                    let i = (y * w + x) * 4;
+                    data[i] = r/c; data[i+1] = g/c; data[i+2] = b/c; data[i+3] = a/c;
+                }
+            }
         }
-        ctx.clearRect(0, 0, c.width, c.height);
-        ctx.drawImage(baseCanvas, 0, 0);
+    },
+    
+    applyBasic: async function(baseCanvas, type, amount) {
+        const c = cloneCanvas(baseCanvas);
+        const ctx = c.getContext('2d');
+        const imgData = ctx.getImageData(0, 0, c.width, c.height);
+        const data = imgData.data;
+        
+        if (type === 'bw') {
+            const factor = (259 * (20 + 255)) / (255 * (259 - 20));
+            for (let i = 0; i < data.length; i += 4) {
+                const gray = 0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2];
+                const res = Math.min(255, Math.max(0, factor * (gray - 128) + 128));
+                data[i] = data[i+1] = data[i+2] = res;
+            }
+        } else if (type === 'bright') {
+            const brightAmt = amount * 15;
+            for (let i = 0; i < data.length; i += 4) {
+                data[i] = Math.min(255, data[i] + brightAmt);
+                data[i+1] = Math.min(255, data[i+1] + brightAmt);
+                data[i+2] = Math.min(255, data[i+2] + brightAmt);
+            }
+        }
+        
+        ctx.putImageData(imgData, 0, 0);
         return c;
     },
     
-    applyBeauty: function(baseCanvas, intensity) {
-        // Skin smoothing via Screen Blend + Blur
+    applyBeauty: async function(baseCanvas, intensity) {
         const c = cloneCanvas(baseCanvas);
         const ctx = c.getContext('2d');
-        const blurAmount = intensity * 1.5;
-        const opacity = intensity * 0.15;
+        const imgData = ctx.getImageData(0, 0, c.width, c.height);
         
-        ctx.globalAlpha = opacity;
-        ctx.globalCompositeOperation = 'screen';
-        ctx.filter = `blur(${blurAmount}px) saturate(1.2) brightness(1.1)`;
-        ctx.drawImage(baseCanvas, 0, 0);
+        const blurData = new ImageData(new Uint8ClampedArray(imgData.data), c.width, c.height);
+        const radius = Math.floor(intensity * (c.width > 150 ? 1.2 : 0.5));
+        this._fastBoxBlur(blurData, radius);
         
-        // Reset
-        ctx.globalAlpha = 1.0;
-        ctx.globalCompositeOperation = 'source-over';
-        ctx.filter = 'none';
+        const data = imgData.data;
+        const bData = blurData.data;
+        const opacity = Math.min(1.0, 0.2 + (intensity * 0.1));
+        
+        for (let i = 0; i < data.length; i += 4) {
+            const r = 255 - (((255 - data[i]) * (255 - bData[i])) / 255);
+            const g = 255 - (((255 - data[i+1]) * (255 - bData[i+1])) / 255);
+            const b = 255 - (((255 - data[i+2]) * (255 - bData[i+2])) / 255);
+            
+            data[i] = data[i] * (1 - opacity) + r * opacity;
+            data[i+1] = data[i+1] * (1 - opacity) + g * opacity;
+            data[i+2] = data[i+2] * (1 - opacity) + b * opacity;
+        }
+        
+        ctx.putImageData(imgData, 0, 0);
         return c;
     },
     
-    applyArt: function(baseCanvas, type, level) {
+    applyArt: async function(baseCanvas, type, level) {
         const c = cloneCanvas(baseCanvas);
         const ctx = c.getContext('2d');
+        const imgData = ctx.getImageData(0, 0, c.width, c.height);
+        const data = imgData.data;
         
         if (type === 'anime') {
-            // High saturation, contrast, then posterize
-            ctx.filter = `saturate(${150 + level*20}%) contrast(${110 + level*5}%)`;
-            ctx.clearRect(0, 0, c.width, c.height);
-            ctx.drawImage(baseCanvas, 0, 0);
+            const contrast = 30 + level * 10;
+            const factor = (259 * (contrast + 255)) / (255 * (259 - contrast));
+            const quant = 255 / (8 - level * 0.5); 
             
-            const imgData = ctx.getImageData(0, 0, c.width, c.height);
-            const data = imgData.data;
-            const factor = 255 / (6 - level*0.2); // Posterize factor
             for (let i = 0; i < data.length; i += 4) {
-                data[i] = Math.round(data[i] / factor) * factor;
-                data[i+1] = Math.round(data[i+1] / factor) * factor;
-                data[i+2] = Math.round(data[i+2] / factor) * factor;
+                let r = factor * (data[i] - 128) + 128;
+                let g = factor * (data[i+1] - 128) + 128;
+                let b = factor * (data[i+2] - 128) + 128;
+                data[i] = Math.min(255, Math.max(0, Math.round(r / quant) * quant));
+                data[i+1] = Math.min(255, Math.max(0, Math.round(g / quant) * quant));
+                data[i+2] = Math.min(255, Math.max(0, Math.round(b / quant) * quant));
             }
             ctx.putImageData(imgData, 0, 0);
         } else if (type === 'watercolor') {
-            // Edges blur, color boost
-            ctx.filter = `blur(${level*0.5}px) saturate(${130 + level*10}%) brightness(1.1)`;
-            ctx.clearRect(0, 0, c.width, c.height);
-            ctx.drawImage(baseCanvas, 0, 0);
-            // Simulate color bleed
-            ctx.globalAlpha = 0.5;
-            ctx.globalCompositeOperation = 'multiply';
-            ctx.drawImage(baseCanvas, 2, 2);
-            ctx.globalAlpha = 1.0;
-            ctx.globalCompositeOperation = 'source-over';
+            const radius = Math.floor(level * (c.width > 150 ? 1 : 0.5));
+            this._fastBoxBlur(imgData, radius);
+            const contrast = 50 + level * 5;
+            const factor = (259 * (contrast + 255)) / (255 * (259 - contrast));
+            for (let i = 0; i < data.length; i += 4) {
+                data[i] = Math.min(255, Math.max(0, factor * (data[i] - 128) + 128));
+                data[i+1] = Math.min(255, Math.max(0, factor * (data[i+1] - 128) + 128));
+                data[i+2] = Math.min(255, Math.max(0, factor * (data[i+2] - 128) + 128));
+            }
+            ctx.putImageData(imgData, 0, 0);
         }
         return c;
     },
     
-    applyHair: function(baseCanvas, faceData, hairIndex, gender) {
+    applyHair: async function(baseCanvas, faceData, hairIndex, gender) {
         const c = cloneCanvas(baseCanvas);
-        if (!faceData) return c; // Fallback if no face
+        if (!faceData) return c; 
         
         const ctx = c.getContext('2d');
         const landmarks = faceData.landmarks;
         const jawline = landmarks.getJawOutline();
         
-        // Calculate head box
         const minX = Math.min(...jawline.map(p => p.x));
         const maxX = Math.max(...jawline.map(p => p.x));
-        const minY = Math.min(...jawline.map(p => p.y)); // jaw doesn't cover top of head
+        const minY = Math.min(...jawline.map(p => p.y));
+        const maxY = Math.max(...jawline.map(p => p.y));
         
         const faceWidth = maxX - minX;
-        const faceCenter = { x: minX + faceWidth / 2, y: minY };
+        const faceHeight = maxY - minY;
+        const faceCenter = { x: minX + faceWidth / 2, y: minY + faceHeight / 2 };
         
-        // Render simple vector wig using paths (Mockup for high quality SVGs)
-        // In reality, drawing complex paths
-        ctx.save();
-        ctx.translate(faceCenter.x, faceCenter.y - (faceWidth * 0.4));
+        // Realistic Transparent Hair PNGs from Pixabay/Wikimedia
+        const urls = {
+            'M': [
+                'https://cdn.pixabay.com/photo/2014/04/03/10/38/hair-310969_1280.png', 
+                'https://cdn.pixabay.com/photo/2014/04/02/14/08/hair-306263_1280.png',
+                'https://cdn.pixabay.com/photo/2013/07/13/11/44/hair-158586_1280.png'
+            ],
+            'F': [
+                'https://cdn.pixabay.com/photo/2016/04/01/10/44/hair-1300062_1280.png',
+                'https://cdn.pixabay.com/photo/2014/03/25/16/24/hair-296996_1280.png',
+                'https://cdn.pixabay.com/photo/2014/04/02/10/47/hair-304546_1280.png'
+            ]
+        };
         
-        // Simple but clean vector paths for hair representations
-        const hairWidth = faceWidth * 1.3;
-        const hairHeight = faceWidth * 1.2;
+        const url = urls[gender][hairIndex - 1];
         
-        ctx.fillStyle = (hairIndex % 2 === 0) ? '#1a1110' : '#4a2c11';
-        ctx.beginPath();
-        
-        if (gender === 'M') {
-            // Male hair shapes
-            if (hairIndex === 1) { ctx.ellipse(0, 0, hairWidth/2, hairHeight/2.5, 0, Math.PI, 0); }
-            else if (hairIndex === 2) { ctx.rect(-hairWidth/2, -hairHeight/2, hairWidth, hairHeight*0.6); }
-            else { ctx.ellipse(0, -10, hairWidth/2.2, hairHeight/2.2, 0, Math.PI, 0); }
-        } else {
-            // Female hair shapes
-            if (hairIndex === 1) { ctx.ellipse(0, hairHeight/4, hairWidth/2, hairHeight/1.5, 0, 0, Math.PI*2); }
-            else if (hairIndex === 2) { ctx.ellipse(0, 0, hairWidth/2, hairHeight/2, 0, Math.PI, 0); ctx.fillRect(-hairWidth/2, 0, hairWidth, hairHeight); }
-            else { ctx.ellipse(0, 0, hairWidth/1.8, hairHeight/1.8, 0, 0, Math.PI*2); }
-        }
-        
-        ctx.fill();
-        ctx.restore();
-        
-        return c;
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.crossOrigin = "Anonymous";
+            img.onload = () => {
+                ctx.save();
+                // Positioning tuning
+                const hairScale = faceWidth * 1.5;
+                const aspect = img.height / img.width;
+                const hairH = hairScale * aspect;
+                
+                const yOffset = gender === 'M' ? (faceHeight * 0.45) : (faceHeight * 0.3);
+                
+                ctx.translate(faceCenter.x, faceCenter.y - yOffset);
+                ctx.drawImage(img, -hairScale/2, -hairH/2, hairScale, hairH);
+                ctx.restore();
+                resolve(c);
+            };
+            img.onerror = () => resolve(c); // Fallback on error
+            img.src = url;
+        });
     }
 };
 
@@ -307,16 +378,14 @@ window.switchTab = async function(tabId) {
     document.querySelector(`.filter-tab[data-tab="${tabId}"]`).classList.add('active');
     
     const container = document.getElementById('filterThumbnails');
-    container.innerHTML = '<div style="color:#94a3b8; padding-top:20px;">썸네일 생성 중...</div>';
+    container.innerHTML = '<div style="color:#94a3b8; padding-top:20px;">썸네일 생성 중... (픽셀 연산)</div>';
     
-    // Tiny canvas for fast preview
     const thumbBase = document.createElement('canvas');
     thumbBase.width = 100;
     thumbBase.height = 100;
     const tctx = thumbBase.getContext('2d');
     tctx.drawImage(originalCanvas, 0, 0, 100, 100);
     
-    // Downscale face data for thumbnails
     let thumbFaceData = null;
     if (currentFaceData) {
         thumbFaceData = {
@@ -328,49 +397,45 @@ window.switchTab = async function(tabId) {
     
     const configs = [];
     if (tabId === 'basic') {
-        configs.push({ id: 'none', label: '원본', filter: () => cloneCanvas(thumbBase), apply: () => originalCanvas });
-        configs.push({ id: 'bw', label: '흑백', filter: () => FilterEngine.applyBasic(thumbBase, 'bw'), apply: () => FilterEngine.applyBasic(originalCanvas, 'bw') });
+        configs.push({ id: 'none', label: '원본', filter: async () => cloneCanvas(thumbBase), apply: async () => originalCanvas });
+        configs.push({ id: 'bw', label: '흑백', filter: async () => FilterEngine.applyBasic(thumbBase, 'bw'), apply: async () => FilterEngine.applyBasic(originalCanvas, 'bw') });
         for(let i=1; i<=5; i++) {
-            configs.push({ id: `br${i}`, label: `밝기 +${i}`, filter: () => FilterEngine.applyBasic(thumbBase, 'bright', i), apply: () => FilterEngine.applyBasic(originalCanvas, 'bright', i) });
+            configs.push({ id: `br${i}`, label: `밝기 +${i}`, filter: async () => FilterEngine.applyBasic(thumbBase, 'bright', i), apply: async () => FilterEngine.applyBasic(originalCanvas, 'bright', i) });
         }
     } else if (tabId === 'beauty') {
         for(let i=1; i<=8; i++) {
-            configs.push({ id: `be${i}`, label: `뽀샵 ${i}`, filter: () => FilterEngine.applyBeauty(thumbBase, i), apply: () => FilterEngine.applyBeauty(originalCanvas, i) });
+            configs.push({ id: `be${i}`, label: `뽀샵 ${i}`, filter: async () => FilterEngine.applyBeauty(thumbBase, i), apply: async () => FilterEngine.applyBeauty(originalCanvas, i) });
         }
     } else if (tabId === 'art') {
         for(let i=1; i<=4; i++) {
-            configs.push({ id: `an${i}`, label: `애니 ${i}`, filter: () => FilterEngine.applyArt(thumbBase, 'anime', i), apply: () => FilterEngine.applyArt(originalCanvas, 'anime', i) });
-            configs.push({ id: `wc${i}`, label: `수채화 ${i}`, filter: () => FilterEngine.applyArt(thumbBase, 'watercolor', i), apply: () => FilterEngine.applyArt(originalCanvas, 'watercolor', i) });
+            configs.push({ id: `an${i}`, label: `애니 ${i}`, filter: async () => FilterEngine.applyArt(thumbBase, 'anime', i), apply: async () => FilterEngine.applyArt(originalCanvas, 'anime', i) });
+            configs.push({ id: `wc${i}`, label: `수채화 ${i}`, filter: async () => FilterEngine.applyArt(thumbBase, 'watercolor', i), apply: async () => FilterEngine.applyArt(originalCanvas, 'watercolor', i) });
         }
     } else if (tabId === 'hair') {
         for(let i=1; i<=3; i++) {
-            configs.push({ id: `hm${i}`, label: `남성가발 ${i}`, filter: () => FilterEngine.applyHair(thumbBase, thumbFaceData, i, 'M'), apply: () => FilterEngine.applyHair(originalCanvas, currentFaceData, i, 'M') });
-            configs.push({ id: `hf${i}`, label: `여성가발 ${i}`, filter: () => FilterEngine.applyHair(thumbBase, thumbFaceData, i, 'F'), apply: () => FilterEngine.applyHair(originalCanvas, currentFaceData, i, 'F') });
+            configs.push({ id: `hm${i}`, label: `남성가발 ${i}`, filter: async () => FilterEngine.applyHair(thumbBase, thumbFaceData, i, 'M'), apply: async () => FilterEngine.applyHair(originalCanvas, currentFaceData, i, 'M') });
+            configs.push({ id: `hf${i}`, label: `여성가발 ${i}`, filter: async () => FilterEngine.applyHair(thumbBase, thumbFaceData, i, 'F'), apply: async () => FilterEngine.applyHair(originalCanvas, currentFaceData, i, 'F') });
         }
     }
 
-    container.innerHTML = '';
-    
     // Render configs to DOM
+    const fragment = document.createDocumentFragment();
     for (const conf of configs) {
         if (!thumbnailCache[conf.id]) {
-            // Process async to not block UI
-            await new Promise(r => setTimeout(r, 10)); 
-            const resC = conf.filter();
+            const resC = await conf.filter();
             thumbnailCache[conf.id] = resC.toDataURL('image/jpeg', 0.6);
         }
         
         const div = document.createElement('div');
         div.style.cssText = 'min-width: 70px; display:flex; flex-direction:column; align-items:center; cursor:pointer; gap:5px;';
-        div.onclick = () => {
-            // Reset active style
+        div.onclick = async () => {
             document.querySelectorAll('.thumb-img').forEach(el => el.style.borderColor = 'transparent');
             div.querySelector('.thumb-img').style.borderColor = '#3b82f6';
             
-            // Apply full resolution
-            showLoading("필터 적용 중...");
-            setTimeout(() => {
-                currentFilteredCanvas = conf.apply();
+            showLoading("초정밀 픽셀 보정 중...");
+            // Use setTimeout to allow DOM to paint loading screen
+            setTimeout(async () => {
+                currentFilteredCanvas = await conf.apply();
                 const ectx = document.getElementById('editCanvas').getContext('2d');
                 ectx.clearRect(0, 0, 400, 400);
                 ectx.drawImage(currentFilteredCanvas, 0, 0);
@@ -388,8 +453,11 @@ window.switchTab = async function(tabId) {
         
         div.appendChild(img);
         div.appendChild(lbl);
-        container.appendChild(div);
+        fragment.appendChild(div);
     }
+    
+    container.innerHTML = '';
+    container.appendChild(fragment);
 };
 
 window.applyAdvancedFilter = function(type) {
