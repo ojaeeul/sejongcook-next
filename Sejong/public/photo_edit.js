@@ -339,13 +339,17 @@ const FilterEngine = {
         const ctx = c.getContext('2d');
         const imgData = ctx.getImageData(0, 0, c.width, c.height);
         
+        // Native canvas blur is much faster and cleaner than _fastBoxBlur
+        const blurCanvas = cloneCanvas(baseCanvas);
+        const bCtx = blurCanvas.getContext('2d');
+        
         if (type === 'anime') {
             // 애니메이션 필터: 뽀샤시한 블러 + 채도/대비 증가 + 약간의 외곽선 강조 효과
-            const blurData = new ImageData(new Uint8ClampedArray(imgData.data), c.width, c.height);
-            this._fastBoxBlur(blurData, level); // 1~4 단계별 블러
+            bCtx.filter = `blur(${level}px)`;
+            bCtx.drawImage(baseCanvas, 0, 0);
+            const bData = bCtx.getImageData(0, 0, c.width, c.height).data;
             
             const data = imgData.data;
-            const bData = blurData.data;
             const contrast = 20 + level * 5;
             const factor = (259 * (contrast + 255)) / (255 * (259 - contrast));
             
@@ -375,18 +379,20 @@ const FilterEngine = {
             
         } else if (type === 'watercolor') {
             // 수채화: 캔버스 텍스처 느낌과 강한 색상 뭉개짐
-            const radius = Math.floor(level * (c.width > 150 ? 2 : 1));
-            this._fastBoxBlur(imgData, radius);
+            const radius = level * 1.5;
+            bCtx.filter = `blur(${radius}px)`;
+            bCtx.drawImage(baseCanvas, 0, 0);
+            const bData = bCtx.getImageData(0, 0, c.width, c.height).data;
             const data = imgData.data;
             
             const contrast = 40 + level * 10;
             const factor = (259 * (contrast + 255)) / (255 * (259 - contrast));
             
             for (let i = 0; i < data.length; i += 4) {
-                // 대비 증가시켜 색상 뭉개기
-                let r = factor * (data[i] - 128) + 128;
-                let g = factor * (data[i+1] - 128) + 128;
-                let b = factor * (data[i+2] - 128) + 128;
+                // 대비 증가시켜 색상 뭉개기 (블러 처리된 데이터 기준)
+                let r = factor * (bData[i] - 128) + 128;
+                let g = factor * (bData[i+1] - 128) + 128;
+                let b = factor * (bData[i+2] - 128) + 128;
                 
                 // 수채화 물빠진 느낌 (채도 감소)
                 const gray = 0.2989 * r + 0.5870 * g + 0.1140 * b;
@@ -441,12 +447,13 @@ const FilterEngine = {
             img.crossOrigin = "Anonymous";
             img.onload = () => {
                 ctx.save();
-                // Positioning tuning
-                const hairScale = faceWidth * 1.5;
+                // Positioning tuning: 머리카락이 코가 아닌 머리통 위로 올라가도록 스케일과 yOffset 대폭 상향
+                const hairScale = gender === 'M' ? faceWidth * 1.4 : faceWidth * 1.8;
                 const aspect = img.height / img.width;
                 const hairH = hairScale * aspect;
                 
-                const yOffset = gender === 'M' ? (faceHeight * 0.45) : (faceHeight * 0.3);
+                // yOffset을 얼굴 높이의 80~90% 수준으로 올려야 이마선에 맞음
+                const yOffset = gender === 'M' ? (faceHeight * 0.75) : (faceHeight * 0.95);
                 
                 ctx.translate(faceCenter.x, faceCenter.y - yOffset);
                 ctx.drawImage(img, -hairScale/2, -hairH/2, hairScale, hairH);
