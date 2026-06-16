@@ -420,48 +420,99 @@ function toggleAccordion(id, element) {
     }
 }
 
-window.showExpenseDetails = function() {
-    const expenses = window.globalExpenses || [];
-    
-    const startDateStr = document.getElementById('reportStartDate').value;
-    const endDateStr = document.getElementById('reportEndDate').value;
-    const startObj = new Date(startDateStr);
-    const endObj = new Date(endDateStr);
-    endObj.setHours(23, 59, 59, 999);
+window.toggleInlineExpenseSearch = function() {
+    const panel = document.getElementById('expense-search-panel');
+    if (panel.style.display === 'none') {
+        panel.style.display = 'block';
+        // Auto-fetch data and set current year if empty
+        doInlineExpenseSearch(true);
+    } else {
+        panel.style.display = 'none';
+    }
+}
 
-    let html = `<div style="max-height: 400px; overflow-y: auto;">
-                <table style="width:100%; border-collapse: collapse; font-size: 0.9rem;">
-                <tr style="background:#f1f5f9; text-align:left;"><th style="padding:10px;">날짜</th><th style="padding:10px;">항목</th><th style="padding:10px; text-align:right;">금액</th></tr>`;
+window.doInlineExpenseSearch = async function(isInitial = false) {
+    const tbody = document.getElementById('es-tbody');
+    const totalSpan = document.getElementById('es-total');
     
-    let hasData = false;
-    expenses.forEach(e => {
-        const eDate = new Date(e.date || e.updatedAt || Date.now());
-        if (eDate >= startObj && eDate <= endObj) {
-            hasData = true;
-            html += `<tr style="border-bottom:1px solid #e2e8f0;">
-                <td style="padding:10px;">${eDate.toISOString().split('T')[0]}</td>
-                <td style="padding:10px;">${e.item || e.desc || e.title || '-'}</td>
-                <td style="padding:10px; text-align:right; font-weight:bold; color:#f43f5e;">${parseInt(e.amount).toLocaleString()}원</td>
-            </tr>`;
-        }
-    });
-
-    if (!hasData) {
-        html += `<tr><td colspan="3" style="padding:20px; text-align:center; color:#94a3b8;">선택한 기간 내 지출 내역이 없습니다.</td></tr>`;
+    if(!isInitial) {
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 20px; color: #94a3b8;">검색 중...</td></tr>';
     }
 
-    html += `</table></div>`;
+    try {
+        const res = await fetch('/api/sejong/expense?t=' + Date.now());
+        const data = await res.json();
+        
+        let notebookYear = data.expenseYear || '2026';
+        if (isInitial) {
+            // Set dropdown default to the notebook's year if not changed by user
+            const yearSelect = document.getElementById('es-year');
+            if (yearSelect.value === '') {
+                yearSelect.value = notebookYear.replace(/[^0-9]/g, '');
+            }
+        }
 
-    let modal = document.createElement('div');
-    modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; display:flex; align-items:center; justify-content:center; backdrop-filter: blur(2px);';
-    modal.innerHTML = `
-        <div style="background:white; border-radius:12px; width:90%; max-width:500px; padding:25px; box-shadow:0 10px 25px rgba(0,0,0,0.2);">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <h3 style="margin:0; font-size:1.2rem; color:#1e293b; display:flex; align-items:center; gap:8px;"><span class="material-icons" style="color:#f43f5e;">receipt_long</span> 기간 내 지출 세부내역</h3>
-                <span class="material-icons" style="cursor:pointer; color:#64748b; font-size:1.5rem;" onclick="this.parentElement.parentElement.parentElement.remove()">close</span>
-            </div>
-            ${html}
-        </div>
-    `;
-    document.body.appendChild(modal);
+        const sYear = document.getElementById('es-year').value;
+        const sMonth = document.getElementById('es-month').value;
+        const sDay = document.getElementById('es-day').value;
+
+        let totalAmount = 0;
+        let resultsHtml = '';
+        
+        // Parse leftHTML
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = data.leftHTML || '';
+        
+        let lastSeenDate = '';
+
+        Array.from(tempDiv.querySelectorAll('.entry-line')).forEach(line => {
+            const dCol = line.querySelector('.date-col');
+            const descCol = line.querySelector('.desc-col');
+            const aCol = line.querySelector('.amount-col');
+            
+            if(!descCol || !aCol) return;
+            
+            let dText = dCol ? dCol.textContent.trim() : '';
+            if(dText) lastSeenDate = dText;
+            else dText = lastSeenDate; // inherit from above if hidden by duplicate date logic
+            
+            let amountText = aCol.textContent.trim();
+            if(!amountText || !descCol.textContent.trim()) return; // empty row
+            
+            // Expected dText format: "6/15(월)"
+            let match = dText.match(/^(\d+)\/(\d+)/);
+            if(match) {
+                let rowMonth = match[1];
+                let rowDay = match[2];
+                let rowYear = notebookYear.replace(/[^0-9]/g, ''); // default assumption
+                
+                let isMatch = true;
+                if(sYear && sYear !== rowYear) isMatch = false;
+                if(sMonth && sMonth !== rowMonth) isMatch = false;
+                if(sDay && sDay !== rowDay) isMatch = false;
+                
+                if(isMatch) {
+                    let num = Number(amountText.replace(/,/g, '').replace(/\.—/g, '000').replace(/\.-/g, '000').replace(/[^0-9-]/g, ''));
+                    if(!isNaN(num)) totalAmount += num;
+                    
+                    resultsHtml += `<tr style="border-bottom:1px solid #e2e8f0;">
+                        <td style="padding:12px 15px; color:#64748b;">${rowYear}-${rowMonth.padStart(2,'0')}-${rowDay.padStart(2,'0')}</td>
+                        <td style="padding:12px 15px;">${descCol.textContent.trim()}</td>
+                        <td style="padding:12px 15px; text-align:right; font-weight:bold; color:#1e293b;">${amountText}</td>
+                    </tr>`;
+                }
+            }
+        });
+
+        if(resultsHtml === '') {
+            resultsHtml = `<tr><td colspan="3" style="text-align:center; padding: 30px; color:#94a3b8;">조건에 맞는 지출 내역이 없습니다.</td></tr>`;
+        }
+        
+        tbody.innerHTML = resultsHtml;
+        totalSpan.textContent = totalAmount.toLocaleString();
+
+    } catch (e) {
+        console.error('Expense search error:', e);
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding: 20px; color:#ef4444;">지출 데이터를 불러오는 데 실패했습니다.</td></tr>`;
+    }
 }
