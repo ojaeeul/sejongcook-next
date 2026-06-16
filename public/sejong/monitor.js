@@ -504,6 +504,31 @@ function promptMultipleCoursesVoice(courses) {
         }
 
         courses.sort((a, b) => a.mins - b.mins);
+        const courseNames = courses.map(c => c.name.replace(/\([^)]*\)/g, '').trim());
+        const joinedNames = courseNames.join(', ');
+
+        const titleEl = overlay.querySelector('h1');
+        const subEl = document.getElementById('voicePromptSub');
+        
+        const questionText = `${joinedNames} 모든 수업에 출석하시겠습니까?`;
+        const bothExamples = `(예: 네, 모두, 다, 참석, 출석, 두 수업 모두, 둘 다, ${courseNames.join('')})`;
+        const oneExamples = `(예: 지금, 하나만, 한 개만, 한 개, 원, 일, ${courseNames[0]}만)`;
+
+        if (titleEl) titleEl.innerText = "오늘 여러 개의 수업이 있습니다";
+        if (subEl) {
+            subEl.innerHTML = `${questionText}<br>
+            <span style="font-size:1.4rem; color:#cbd5e1; display:block; margin-top:15px; line-height:1.6;">
+                <b style="color:#60a5fa;">전체 출석:</b> ${bothExamples}<br>
+                <b style="color:#f472b6;">하나만 출석:</b> ${oneExamples}
+            </span>`;
+        }
+        if (indicator) {
+            indicator.innerHTML = `<span class="material-icons" style="vertical-align: middle; animation: pulse 1s infinite;">mic</span> 듣고 있습니다...`;
+        }
+        
+        btnBoth.innerText = `모두 출석`;
+        btnOne.innerText = `${courseNames[0]}만 출석`;
+
         overlay.style.display = 'flex';
         indicator.style.display = 'block';
 
@@ -529,10 +554,8 @@ function promptMultipleCoursesVoice(courses) {
             finish([courses[0]]);
         };
 
-        const question = "오늘 여러 개의 수업이 있습니다. 모든 수업에 출석하시겠습니까? 모두 출석하려면 '모두', 지금 수업만 출석하려면 '하나만' 이라고 말씀해주세요.";
-        
         if (window.speakTTS) {
-            window.speakTTS(question, 'browser');
+            window.speakTTS(questionText + " 모두 출석하시려면 모두, 지금 수업만 출석하시려면 하나만 이라고 말씀해주세요.", 'browser');
         }
 
         setTimeout(() => {
@@ -546,12 +569,19 @@ function promptMultipleCoursesVoice(courses) {
                 
                 recognition.onresult = (e) => {
                     if (resolved) return;
-                    const transcript = e.results[0][0].transcript.trim();
+                    let transcript = e.results[0][0].transcript.trim().replace(/\s+/g, '');
                     console.log("STT Result:", transcript);
-                    if (transcript.includes('모두') || transcript.includes('전부') || transcript.includes('두') || transcript.includes('네') || transcript.includes('다')) {
+                    
+                    const bothKeywords = ['모두', '전부', '두', '네', '다', '참석', '출석', '둘다', courseNames.join('').replace(/\s+/g,'')];
+                    const isBoth = bothKeywords.some(kw => transcript.includes(kw));
+                    
+                    const oneKeywords = ['하나', '지금', '첫', '아니', '한개', '원', '일', courseNames[0].replace(/\s+/g,'')];
+                    const isOne = oneKeywords.some(kw => transcript.includes(kw));
+                    
+                    if (isBoth) {
                         if (window.speakTTS) window.speakTTS('모든 수업 출석으로 처리합니다.', 'browser');
                         finish(courses);
-                    } else if (transcript.includes('하나') || transcript.includes('지금') || transcript.includes('첫') || transcript.includes('아니')) {
+                    } else if (isOne) {
                         if (window.speakTTS) window.speakTTS('지금 수업만 출석으로 처리합니다.', 'browser');
                         finish([courses[0]]);
                     } else {
