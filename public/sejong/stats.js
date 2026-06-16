@@ -421,10 +421,8 @@ function toggleAccordion(id, element) {
 }
 
 window.showExpenseDetails = function() {
-    if(!window.globalExpenses || window.globalExpenses.length === 0) {
-        alert("표시할 지출 내역이 없습니다.");
-        return;
-    }
+    const expenses = window.globalExpenses || [];
+    
     const startDateStr = document.getElementById('reportStartDate').value;
     const endDateStr = document.getElementById('reportEndDate').value;
     const startObj = new Date(startDateStr);
@@ -436,7 +434,7 @@ window.showExpenseDetails = function() {
                 <tr style="background:#f1f5f9; text-align:left;"><th style="padding:10px;">날짜</th><th style="padding:10px;">항목</th><th style="padding:10px; text-align:right;">금액</th></tr>`;
     
     let hasData = false;
-    window.globalExpenses.forEach(e => {
+    expenses.forEach(e => {
         const eDate = new Date(e.date || e.updatedAt || Date.now());
         if (eDate >= startObj && eDate <= endObj) {
             hasData = true;
@@ -447,12 +445,12 @@ window.showExpenseDetails = function() {
             </tr>`;
         }
     });
-    html += `</table></div>`;
 
-    if(!hasData) {
-        alert("해당 기간 내의 지출 내역이 없습니다.");
-        return;
+    if (!hasData) {
+        html += `<tr><td colspan="3" style="padding:20px; text-align:center; color:#94a3b8;">선택한 기간 내 지출 내역이 없습니다.</td></tr>`;
     }
+
+    html += `</table></div>`;
 
     let modal = document.createElement('div');
     modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; display:flex; align-items:center; justify-content:center; backdrop-filter: blur(2px);';
