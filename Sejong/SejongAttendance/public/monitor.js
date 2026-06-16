@@ -511,7 +511,7 @@ function promptMultipleCoursesVoice(courses) {
         const subEl = document.getElementById('voicePromptSub');
         
         const questionText = `${joinedNames} 모든 수업에 출석하시겠습니까?`;
-        const bothExamples = `(예: 네, 모두, 다, 참석, 출석, 두 수업 모두, 둘 다, ${courseNames.join('')})`;
+        const bothExamples = `(예: 네, 모두, 다, 참석, 출석, 두 수업 모두, 둘 다, 두개, 투, ok, 좋아, 둘다ok, ${courseNames.join('')})`;
         const oneExamples = `(예: 지금, 하나만, 한 개만, 한 개, 원, 일, ${courseNames[0]}만)`;
 
         if (titleEl) titleEl.innerText = "오늘 여러 개의 수업이 있습니다";
@@ -569,10 +569,10 @@ function promptMultipleCoursesVoice(courses) {
                 
                 recognition.onresult = (e) => {
                     if (resolved) return;
-                    let transcript = e.results[0][0].transcript.trim().replace(/\s+/g, '');
+                    let transcript = e.results[0][0].transcript.trim().replace(/\s+/g, '').toLowerCase();
                     console.log("STT Result:", transcript);
                     
-                    const bothKeywords = ['모두', '전부', '두', '네', '다', '참석', '출석', '둘다', courseNames.join('').replace(/\s+/g,'')];
+                    const bothKeywords = ['모두', '전부', '두', '네', '다', '참석', '출석', '둘다', '두개', '투', 'ok', '오케이', '좋아', '둘다ok', courseNames.join('').replace(/\s+/g,'')];
                     const isBoth = bothKeywords.some(kw => transcript.includes(kw));
                     
                     const oneKeywords = ['하나', '지금', '첫', '아니', '한개', '원', '일', courseNames[0].replace(/\s+/g,'')];
