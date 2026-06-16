@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>지출 상세 통계 - 세종요리</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="script.js" defer></script>
+    <script src="expense_stats.js" defer></script>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Mobile Sidebar Overlay -->
+        <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="brand-logo">
+                <span class="logo-text">세종요리</span>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">수강 관리</div>
+                <div class="nav-sub-menu show">
+                    <a href="register.html" id="navRegister" class="nav-item">수강생 등록</a>
+                    <a href="index.html" id="navIndex" class="nav-item">수강생 대장</a>
+                    <a href="phonebook.html" id="navPhoneBook" class="nav-item">전화번호부</a>
+                    <a href="sheet.html" id="navSheet" class="nav-item">월간 출석부</a>
+                    <a href="exam.html" id="navExam" class="nav-item">국가시험</a>
+                </div>
+                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">수강료</div>
+                <div class="nav-sub-menu show">
+                    <a href="tuition.html" class="nav-item">수강료 관리</a>
+                    <a href="ledger.html" class="nav-item">수강료 납부대장</a>
+                    <a href="paid_list.html" class="nav-item">납부완료 명단</a>
+                </div>
+                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">소통</div>
+                <div class="nav-sub-menu show">
+                    <a href="notice.html" class="nav-item">학원 공지</a>
+                    <a href="feed.html" class="nav-item">피드 관리</a>
+                    <a href="wagashi.html" class="nav-item">학원 홍보</a>
+                </div>
+                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">기타</div>
+                <div class="nav-sub-menu show">
+                    <a href="class_days_admin.html" id="navClassDaysAdmin" class="nav-item">
+                        <span class="material-icons" style="font-size: 1.2rem; margin-right: 8px;">settings</span>
+                        수업 요일 설정
+                    </a>
+                    <a href="course_time_admin.html?v=1" id="navCourseTimeAdmin" class="nav-item">
+                        <span class="material-icons" style="font-size: 1.2rem; margin-right: 8px;">list_alt</span>
+                        과목/시간 설정
+                    </a>
+                    <a href="cycle_settings.html" id="navCycleSettings" class="nav-item">
+                        <span class="material-icons" style="font-size: 1.2rem; margin-right: 8px;">tune</span>
+                        결재 주기 설정
+                    </a>
+                    <a href="index.html?filter=archive" id="navArchive" class="nav-item">수료생 보관함</a>
+                    <a href="index.html?filter=trash" id="navTrash" class="nav-item">휴지통</a>
+                    <a href="stats.html" class="nav-item">통계 및 납부</a>
+                    <a href="expense.html" class="nav-item">지출현황</a>
+                </div>
+                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">학원문자</div>
+                <div class="nav-sub-menu show">
+                    <a href="attendance_daily.html" id="navDailyAttendance" class="nav-item">일일 출석부</a>
+                    <a href="sms.html" id="navSms" class="nav-item">문자 발송</a>
+                </div>
+                <a href="monitor.html" target="_blank" class="nav-item highlight">키오스크 모니터</a>
+                <a href="kiosk_admin.html" id="navKioskAdmin" class="nav-item">키오스크 설정</a>
+
+                
+                <a href="app.html" id="navMobileApp" class="nav-item" target="_blank">📱 모바일 앱</a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-wrapper">
+            <header class="top-header">
+                <button class="hamburger-btn" onclick="toggleSidebar()">
+                    <span>MENU</span>
+                    <span class="material-icons">menu</span>
+                </button>
+                <div class="page-title">
+                    <h1 style="display: flex; align-items: center; gap: 10px;">
+                        <span class="material-icons" style="color: #f43f5e; font-size: 2rem;">account_balance_wallet</span>
+                        지출 상세 검색 및 통계
+                    </h1>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-secondary" onclick="location.href='stats.html'">
+                        <span class="material-icons">arrow_back</span> 대시보드로 돌아가기
+                    </button>
+                </div>
+            </header>
+
+            <div class="content-scroll" style="background: #f8fafc; padding: 30px;">
+                
+                <!-- Overall Total Panel -->
+                <div style="background: white; border-radius: 16px; padding: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; border-left: 6px solid #f43f5e;">
+                    <div>
+                        <h2 style="margin: 0; font-size: 1.1rem; color: #64748b; font-weight: 600;">학원 전체 누적 지출 합계</h2>
+                        <div style="font-size: 2.5rem; font-weight: 800; color: #0f172a; margin-top: 10px;" id="totalExpenseAmount">로딩 중...</div>
+                    </div>
+                    <div style="background: #fff1f2; padding: 20px; border-radius: 50%;">
+                        <span class="material-icons" style="font-size: 3rem; color: #f43f5e;">payments</span>
+                    </div>
+                </div>
+
+                <!-- 3-Tier Drill Down UI -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; height: calc(100vh - 280px); min-height: 500px;">
+                    
+                    <!-- Tier 1: Year -->
+                    <div style="background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); display: flex; flex-direction: column; overflow: hidden; border: 1px solid #e2e8f0;">
+                        <div style="padding: 20px; background: #f1f5f9; border-bottom: 1px solid #e2e8f0; font-weight: 700; color: #1e293b; font-size: 1.1rem; text-align: center;">
+                            1단계: 연도 선택
+                        </div>
+                        <div id="tier-year-list" style="flex: 1; overflow-y: auto; padding: 15px;">
+                            <!-- Populated by JS -->
+                            <div style="text-align: center; color: #94a3b8; padding: 20px;">데이터 로딩 중...</div>
+                        </div>
+                    </div>
+
+                    <!-- Tier 2: Month -->
+                    <div style="background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); display: flex; flex-direction: column; overflow: hidden; border: 1px solid #e2e8f0;">
+                        <div style="padding: 20px; background: #f1f5f9; border-bottom: 1px solid #e2e8f0; font-weight: 700; color: #1e293b; font-size: 1.1rem; text-align: center;">
+                            <span id="tier-month-title">2단계: 월 선택</span>
+                        </div>
+                        <div id="tier-month-list" style="flex: 1; overflow-y: auto; padding: 15px;">
+                            <div class="empty-state">
+                                <span class="material-icons">touch_app</span>
+                                <span>좌측에서 연도를 먼저 선택해주세요.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tier 3: Day & Details -->
+                    <div style="background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); display: flex; flex-direction: column; overflow: hidden; border: 1px solid #e2e8f0;">
+                        <div style="padding: 20px; background: #f1f5f9; border-bottom: 1px solid #e2e8f0; font-weight: 700; color: #1e293b; font-size: 1.1rem; text-align: center;">
+                            <span id="tier-day-title">3단계: 일별 지출 상세</span>
+                        </div>
+                        <div id="tier-day-list" style="flex: 1; overflow-y: auto; padding: 15px;">
+                            <div class="empty-state">
+                                <span class="material-icons">touch_app</span>
+                                <span>좌측에서 월을 먼저 선택해주세요.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <style>
+        .drill-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px 20px; border-radius: 10px; border: 1px solid #e2e8f0;
+            margin-bottom: 10px; cursor: pointer; transition: all 0.2s ease;
+            background: #fff;
+        }
+        .drill-item:hover {
+            border-color: #f43f5e; box-shadow: 0 4px 10px rgba(244, 63, 94, 0.1); transform: translateY(-2px);
+        }
+        .drill-item.active {
+            background: #f43f5e; color: white; border-color: #f43f5e; box-shadow: 0 4px 15px rgba(244, 63, 94, 0.2);
+        }
+        .drill-item.active .di-label, .drill-item.active .di-val {
+            color: white !important;
+        }
+        .di-label { font-size: 1.2rem; font-weight: 800; color: #334155; }
+        .di-val { font-size: 1.1rem; font-weight: 700; color: #f43f5e; }
+        
+        .empty-state {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 100%; color: #94a3b8; gap: 15px; font-weight: 600;
+        }
+        .empty-state .material-icons { font-size: 3rem; color: #cbd5e1; }
+
+        .day-group {
+            margin-bottom: 20px; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden;
+        }
+        .day-header {
+            background: #f8fafc; padding: 12px 15px; display: flex; justify-content: space-between;
+            align-items: center; border-bottom: 1px solid #e2e8f0; font-weight: 700; color: #1e293b;
+        }
+        .day-total { color: #f43f5e; font-size: 1.1rem; }
+        .day-item {
+            padding: 12px 15px; display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px dashed #e2e8f0; background: #fff;
+        }
+        .day-item:last-child { border-bottom: none; }
+        .day-item-name { color: #475569; font-weight: 500; font-size: 0.95rem; }
+        .day-item-amount { color: #0f172a; font-weight: 700; }
+    </style>
+</body>
+</html>
