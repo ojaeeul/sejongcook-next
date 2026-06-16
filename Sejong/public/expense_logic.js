@@ -649,6 +649,9 @@ function hideDuplicateDates() {
             const dateCol = row.querySelector('.date-col');
             if (!dateCol) return;
             
+            // 페이지네이션으로 숨겨진 줄은 날짜 중복 비교에서 완전히 제외하여, 다음 페이지 첫 줄 날짜가 무조건 보이도록 함
+            if (row.style.display === 'none') return;
+            
             const currentDate = dateCol.textContent.trim();
             dateCol.classList.remove('duplicate-date');
             
