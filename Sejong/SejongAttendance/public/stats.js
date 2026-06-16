@@ -479,3 +479,4 @@ function toggleAccordion(id, element) {
         if (checkbox) checkbox.checked = false;
     }
 
+}
