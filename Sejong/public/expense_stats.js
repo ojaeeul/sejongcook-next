@@ -7,11 +7,11 @@ let selectedMonth = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
     try {
-        const res = await fetch(`/api/sejong/sejong_expense?t=${Date.now()}`);
+        const res = await fetch(`/api/sejong/expense?t=${Date.now()}`);
         if (!res.ok) throw new Error('Failed to fetch expenses');
-        rawExpenses = await res.json();
+        const data = await res.json();
         
-        processExpenseData(rawExpenses);
+        processExpenseData(data);
         renderTotalOverall();
         renderYearList();
         
@@ -22,31 +22,59 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-function processExpenseData(expenses) {
+function processExpenseData(data) {
     totalOverall = 0;
     groupedData = {};
     
-    expenses.forEach(exp => {
-        const amt = parseInt(exp.amount) || 0;
-        const eDate = new Date(exp.date || exp.updatedAt || Date.now());
+    let notebookYear = data.expenseYear || '2026';
+    notebookYear = notebookYear.replace(/[^0-9]/g, '');
+
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = data.leftHTML || '';
+    
+    let lastSeenDate = '';
+
+    Array.from(tempDiv.querySelectorAll('.entry-line')).forEach(line => {
+        const dCol = line.querySelector('.date-col');
+        const descCol = line.querySelector('.desc-col');
+        const aCol = line.querySelector('.amount-col');
         
-        if (isNaN(eDate.getTime())) return; // skip invalid dates
+        if(!descCol || !aCol) return;
         
-        const year = eDate.getFullYear();
-        const month = eDate.getMonth() + 1;
-        const day = eDate.getDate();
+        let dText = dCol ? dCol.textContent.trim() : '';
+        if(dText) lastSeenDate = dText;
+        else dText = lastSeenDate;
         
-        totalOverall += amt;
+        let amountText = aCol.textContent.trim();
+        let descText = descCol.textContent.trim();
+        if(!amountText || !descText) return;
         
-        if (!groupedData[year]) groupedData[year] = { total: 0, months: {} };
-        groupedData[year].total += amt;
-        
-        if (!groupedData[year].months[month]) groupedData[year].months[month] = { total: 0, days: {} };
-        groupedData[year].months[month].total += amt;
-        
-        if (!groupedData[year].months[month].days[day]) groupedData[year].months[month].days[day] = { total: 0, items: [] };
-        groupedData[year].months[month].days[day].total += amt;
-        groupedData[year].months[month].days[day].items.push(exp);
+        let match = dText.match(/^(\d+)\/(\d+)/);
+        if(match) {
+            let rowMonth = parseInt(match[1]);
+            let rowDay = parseInt(match[2]);
+            let rowYear = parseInt(notebookYear);
+            
+            let num = Number(amountText.replace(/,/g, '').replace(/\.—/g, '000').replace(/\.-/g, '000').replace(/[^0-9-]/g, ''));
+            if(isNaN(num)) num = 0;
+            
+            const amt = num;
+            const year = rowYear;
+            const month = rowMonth;
+            const day = rowDay;
+            
+            totalOverall += amt;
+            
+            if (!groupedData[year]) groupedData[year] = { total: 0, months: {} };
+            groupedData[year].total += amt;
+            
+            if (!groupedData[year].months[month]) groupedData[year].months[month] = { total: 0, days: {} };
+            groupedData[year].months[month].total += amt;
+            
+            if (!groupedData[year].months[month].days[day]) groupedData[year].months[month].days[day] = { total: 0, items: [] };
+            groupedData[year].months[month].days[day].total += amt;
+            groupedData[year].months[month].days[day].items.push({ desc: descText, amount: amt });
+        }
     });
 }
 
