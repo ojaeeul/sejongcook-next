@@ -236,11 +236,12 @@ const FilterEngine = {
                 data[i] = data[i+1] = data[i+2] = res;
             }
         } else if (type === 'bright') {
-            const brightAmt = amount * 15;
+            // 진짜 밝기 조절 (비율 곱셈)
+            const factor = 1 + (amount * 0.15);
             for (let i = 0; i < data.length; i += 4) {
-                data[i] = Math.min(255, data[i] + brightAmt);
-                data[i+1] = Math.min(255, data[i+1] + brightAmt);
-                data[i+2] = Math.min(255, data[i+2] + brightAmt);
+                data[i] = Math.min(255, data[i] * factor);
+                data[i+1] = Math.min(255, data[i+1] * factor);
+                data[i+2] = Math.min(255, data[i+2] * factor);
             }
         }
         
@@ -248,29 +249,87 @@ const FilterEngine = {
         return c;
     },
     
-    applyBeauty: async function(baseCanvas, intensity) {
+    applyBeauty: async function(baseCanvas, faceData, intensity) {
         const c = cloneCanvas(baseCanvas);
         const ctx = c.getContext('2d');
         const imgData = ctx.getImageData(0, 0, c.width, c.height);
-        
-        const blurData = new ImageData(new Uint8ClampedArray(imgData.data), c.width, c.height);
-        const radius = Math.floor(intensity * (c.width > 150 ? 1.2 : 0.5));
-        this._fastBoxBlur(blurData, radius);
-        
         const data = imgData.data;
-        const bData = blurData.data;
-        const opacity = Math.min(1.0, 0.2 + (intensity * 0.1));
         
-        for (let i = 0; i < data.length; i += 4) {
-            const r = 255 - (((255 - data[i]) * (255 - bData[i])) / 255);
-            const g = 255 - (((255 - data[i+1]) * (255 - bData[i+1])) / 255);
-            const b = 255 - (((255 - data[i+2]) * (255 - bData[i+2])) / 255);
-            
-            data[i] = data[i] * (1 - opacity) + r * opacity;
-            data[i+1] = data[i+1] * (1 - opacity) + g * opacity;
-            data[i+2] = data[i+2] * (1 - opacity) + b * opacity;
+        // 1. 블러 캔버스 생성 (스킨 스무딩용)
+        const blurCanvas = cloneCanvas(baseCanvas);
+        const bCtx = blurCanvas.getContext('2d');
+        bCtx.filter = `blur(${intensity * 1.5}px)`;
+        bCtx.drawImage(baseCanvas, 0, 0);
+        const bData = bCtx.getImageData(0, 0, c.width, c.height).data;
+        
+        // 화이트닝 효과 (약간 밝고 핑크빛)
+        for(let i=0; i<bData.length; i+=4) {
+            bData[i] = Math.min(255, bData[i] * 1.05 + 5);
+            bData[i+1] = Math.min(255, bData[i+1] * 1.02 + 5);
+            bData[i+2] = Math.min(255, bData[i+2] * 1.02 + 5);
         }
-        
+
+        // 2. 마스크 생성 (눈/코/입 제외한 피부만 블러 처리)
+        const maskCanvas = document.createElement('canvas');
+        maskCanvas.width = c.width; maskCanvas.height = c.height;
+        const mCtx = maskCanvas.getContext('2d');
+        mCtx.fillStyle = '#000';
+        mCtx.fillRect(0, 0, c.width, c.height);
+
+        if (faceData && faceData.landmarks) {
+            const scale = c.width / 400; // 썸네일과 원본 스케일 차이 보정
+            const getPoints = (pts) => pts.map(p => ({x: p.x * scale, y: p.y * scale}));
+            
+            const jaw = getPoints(faceData.landmarks.getJawOutline());
+            const eyebrows = getPoints(faceData.landmarks.getLeftEyeBrow()).concat(getPoints(faceData.landmarks.getRightEyeBrow()).reverse());
+            
+            // 피부 영역 (흰색)
+            mCtx.fillStyle = '#fff';
+            mCtx.filter = 'blur(8px)';
+            mCtx.beginPath();
+            if(jaw.length > 0) {
+                mCtx.moveTo(jaw[0].x, jaw[0].y);
+                jaw.forEach(p => mCtx.lineTo(p.x, p.y));
+                eyebrows.forEach(p => mCtx.lineTo(p.x, p.y));
+                mCtx.closePath();
+                mCtx.fill();
+            }
+
+            // 이목구비 영역 제외 (검은색)
+            mCtx.fillStyle = '#000';
+            mCtx.filter = 'blur(3px)';
+            const drawPoly = (pts) => {
+                mCtx.beginPath(); mCtx.moveTo(pts[0].x, pts[0].y);
+                pts.forEach(p => mCtx.lineTo(p.x, p.y)); mCtx.closePath(); mCtx.fill();
+            };
+            drawPoly(getPoints(faceData.landmarks.getLeftEye()));
+            drawPoly(getPoints(faceData.landmarks.getRightEye()));
+            drawPoly(getPoints(faceData.landmarks.getMouth()));
+            drawPoly(getPoints(faceData.landmarks.getNose()));
+        } else {
+            // 얼굴 인식이 안 된 경우 전체 약하게 적용
+            mCtx.fillStyle = 'rgba(255,255,255,0.4)';
+            mCtx.fillRect(0, 0, c.width, c.height);
+        }
+
+        const mData = mCtx.getImageData(0, 0, c.width, c.height).data;
+
+        // 3. 원본과 뽀샵본 블렌딩
+        for (let i = 0; i < data.length; i += 4) {
+            const maskAlpha = mData[i] / 255;
+            const blend = maskAlpha * 0.85; // 최대 85% 강도로 블렌딩
+            
+            data[i]   = data[i]   * (1 - blend) + bData[i]   * blend;
+            data[i+1] = data[i+1] * (1 - blend) + bData[i+1] * blend;
+            data[i+2] = data[i+2] * (1 - blend) + bData[i+2] * blend;
+            
+            // 전체적으로 뽀샤시한 느낌을 위해 밝기 조금 추가
+            const globalBoost = 1.0 + (intensity * 0.03);
+            data[i] = Math.min(255, data[i] * globalBoost);
+            data[i+1] = Math.min(255, data[i+1] * globalBoost);
+            data[i+2] = Math.min(255, data[i+2] * globalBoost);
+        }
+
         ctx.putImageData(imgData, 0, 0);
         return c;
     },
@@ -279,31 +338,65 @@ const FilterEngine = {
         const c = cloneCanvas(baseCanvas);
         const ctx = c.getContext('2d');
         const imgData = ctx.getImageData(0, 0, c.width, c.height);
-        const data = imgData.data;
         
         if (type === 'anime') {
-            const contrast = 30 + level * 10;
+            // 애니메이션 필터: 뽀샤시한 블러 + 채도/대비 증가 + 약간의 외곽선 강조 효과
+            const blurData = new ImageData(new Uint8ClampedArray(imgData.data), c.width, c.height);
+            this._fastBoxBlur(blurData, level); // 1~4 단계별 블러
+            
+            const data = imgData.data;
+            const bData = blurData.data;
+            const contrast = 20 + level * 5;
             const factor = (259 * (contrast + 255)) / (255 * (259 - contrast));
-            const quant = 255 / (8 - level * 0.5); 
             
             for (let i = 0; i < data.length; i += 4) {
+                // 원본과 블러를 섞어 뽀샤시한 느낌
+                let r = (data[i] * 0.4) + (bData[i] * 0.6);
+                let g = (data[i+1] * 0.4) + (bData[i+1] * 0.6);
+                let b = (data[i+2] * 0.4) + (bData[i+2] * 0.6);
+                
+                // 대비 증가
+                r = factor * (r - 128) + 128;
+                g = factor * (g - 128) + 128;
+                b = factor * (b - 128) + 128;
+                
+                // 채도 증가 (Saturation)
+                const gray = 0.2989 * r + 0.5870 * g + 0.1140 * b;
+                const satAmt = 1.3 + (level * 0.1);
+                r = gray + satAmt * (r - gray);
+                g = gray + satAmt * (g - gray);
+                b = gray + satAmt * (b - gray);
+                
+                data[i] = Math.min(255, Math.max(0, r * 1.05)); // 전체적으로 살짝 밝게
+                data[i+1] = Math.min(255, Math.max(0, g * 1.05));
+                data[i+2] = Math.min(255, Math.max(0, b * 1.05));
+            }
+            ctx.putImageData(imgData, 0, 0);
+            
+        } else if (type === 'watercolor') {
+            // 수채화: 캔버스 텍스처 느낌과 강한 색상 뭉개짐
+            const radius = Math.floor(level * (c.width > 150 ? 2 : 1));
+            this._fastBoxBlur(imgData, radius);
+            const data = imgData.data;
+            
+            const contrast = 40 + level * 10;
+            const factor = (259 * (contrast + 255)) / (255 * (259 - contrast));
+            
+            for (let i = 0; i < data.length; i += 4) {
+                // 대비 증가시켜 색상 뭉개기
                 let r = factor * (data[i] - 128) + 128;
                 let g = factor * (data[i+1] - 128) + 128;
                 let b = factor * (data[i+2] - 128) + 128;
-                data[i] = Math.min(255, Math.max(0, Math.round(r / quant) * quant));
-                data[i+1] = Math.min(255, Math.max(0, Math.round(g / quant) * quant));
-                data[i+2] = Math.min(255, Math.max(0, Math.round(b / quant) * quant));
-            }
-            ctx.putImageData(imgData, 0, 0);
-        } else if (type === 'watercolor') {
-            const radius = Math.floor(level * (c.width > 150 ? 1 : 0.5));
-            this._fastBoxBlur(imgData, radius);
-            const contrast = 50 + level * 5;
-            const factor = (259 * (contrast + 255)) / (255 * (259 - contrast));
-            for (let i = 0; i < data.length; i += 4) {
-                data[i] = Math.min(255, Math.max(0, factor * (data[i] - 128) + 128));
-                data[i+1] = Math.min(255, Math.max(0, factor * (data[i+1] - 128) + 128));
-                data[i+2] = Math.min(255, Math.max(0, factor * (data[i+2] - 128) + 128));
+                
+                // 수채화 물빠진 느낌 (채도 감소)
+                const gray = 0.2989 * r + 0.5870 * g + 0.1140 * b;
+                r = gray + 0.8 * (r - gray);
+                g = gray + 0.8 * (g - gray);
+                b = gray + 0.8 * (b - gray);
+                
+                data[i] = Math.min(255, Math.max(0, r + 10)); 
+                data[i+1] = Math.min(255, Math.max(0, g + 10));
+                data[i+2] = Math.min(255, Math.max(0, b + 10));
             }
             ctx.putImageData(imgData, 0, 0);
         }
@@ -327,17 +420,17 @@ const FilterEngine = {
         const faceHeight = maxY - minY;
         const faceCenter = { x: minX + faceWidth / 2, y: minY + faceHeight / 2 };
         
-        // Realistic Transparent Hair PNGs from Pixabay/Wikimedia
+        // Local Transparent Hair PNGs (AI Generated)
         const urls = {
             'M': [
-                'https://cdn.pixabay.com/photo/2014/04/03/10/38/hair-310969_1280.png', 
-                'https://cdn.pixabay.com/photo/2014/04/02/14/08/hair-306263_1280.png',
-                'https://cdn.pixabay.com/photo/2013/07/13/11/44/hair-158586_1280.png'
+                '/sejong/images/m1.png', 
+                '/sejong/images/m2.png',
+                '/sejong/images/m1.png' // fallback if 3rd requested
             ],
             'F': [
-                'https://cdn.pixabay.com/photo/2016/04/01/10/44/hair-1300062_1280.png',
-                'https://cdn.pixabay.com/photo/2014/03/25/16/24/hair-296996_1280.png',
-                'https://cdn.pixabay.com/photo/2014/04/02/10/47/hair-304546_1280.png'
+                '/sejong/images/f1.png',
+                '/sejong/images/f1.png',
+                '/sejong/images/f1.png'
             ]
         };
         
