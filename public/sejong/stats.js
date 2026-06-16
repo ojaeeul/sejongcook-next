@@ -20,15 +20,62 @@ document.addEventListener('DOMContentLoaded', async () => {
             fetch(`${API_BASE}/members?t=${Date.now()}`),
             fetch(`${API_BASE}/payments?t=${Date.now()}`),
             fetch(`${API_BASE}/attendance?t=${Date.now()}`),
-            fetch(`${API_BASE}/sejong_expense?t=${Date.now()}`).catch(() => ({ok: false}))
+            fetch(`${API_BASE}/expense?t=${Date.now()}`).catch(() => ({ok: false}))
         ]);
 
         globalMembers = await mRes.json();
         globalPayments = await pRes.json();
         globalAttendance = await aRes.json();
+        
         let globalExpenses = [];
         if (eRes && eRes.ok) {
-            try { globalExpenses = await eRes.json(); } catch(e){}
+            try { 
+                const data = await eRes.json();
+                let notebookYear = data.expenseYear || '2026';
+                notebookYear = notebookYear.replace(/[^0-9]/g, '');
+
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = data.leftHTML || '';
+                
+                let lastSeenDate = '';
+
+                Array.from(tempDiv.querySelectorAll('.entry-line')).forEach(line => {
+                    const dCol = line.querySelector('.date-col');
+                    const descCol = line.querySelector('.desc-col');
+                    const aCol = line.querySelector('.amount-col');
+                    
+                    if(!descCol || !aCol) return;
+                    
+                    let dText = dCol ? dCol.textContent.trim() : '';
+                    if(dText) lastSeenDate = dText;
+                    else dText = lastSeenDate;
+                    
+                    let amountText = aCol.textContent.trim();
+                    let descText = descCol.textContent.trim();
+                    if(!amountText || !descText) return;
+                    
+                    let match = dText.match(/^(\d+)\/(\d+)/);
+                    if(match) {
+                        let rowMonth = parseInt(match[1]);
+                        let rowDay = parseInt(match[2]);
+                        let rowYear = parseInt(notebookYear);
+                        
+                        let num = Number(amountText.replace(/,/g, '').replace(/\.—/g, '000').replace(/\.-/g, '000').replace(/[^0-9-]/g, ''));
+                        if(isNaN(num)) num = 0;
+                        
+                        // Create JS Date object (time doesn't matter much for period filter, just set it to noon)
+                        const eDate = new Date(rowYear, rowMonth - 1, rowDay, 12, 0, 0);
+                        
+                        globalExpenses.push({
+                            amount: num,
+                            date: eDate.toISOString(),
+                            desc: descText
+                        });
+                    }
+                });
+            } catch(e) {
+                console.error("Expense parsing error:", e);
+            }
         }
 
         window.globalExpenses = globalExpenses;
