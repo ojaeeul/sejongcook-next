@@ -447,13 +447,13 @@ const FilterEngine = {
             img.crossOrigin = "Anonymous";
             img.onload = () => {
                 ctx.save();
-                // Positioning tuning: 머리카락이 코가 아닌 머리통 위로 올라가도록 스케일과 yOffset 대폭 상향
-                const hairScale = gender === 'M' ? faceWidth * 1.4 : faceWidth * 1.8;
+                // Positioning tuning: 부분 가발(정수리 전용) 이미지에 맞춰 스케일과 위치 재조정
+                const hairScale = faceWidth * 1.3;
                 const aspect = img.height / img.width;
                 const hairH = hairScale * aspect;
                 
-                // yOffset을 얼굴 높이의 80~90% 수준으로 올려야 이마선에 맞음
-                const yOffset = gender === 'M' ? (faceHeight * 0.75) : (faceHeight * 0.95);
+                // 얼굴 중심(코)에서 이마선/정수리 부근까지의 거리
+                const yOffset = faceHeight * 0.65;
                 
                 ctx.translate(faceCenter.x, faceCenter.y - yOffset);
                 ctx.drawImage(img, -hairScale/2, -hairH/2, hairScale, hairH);
