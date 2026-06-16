@@ -63,6 +63,7 @@
                     <a href="index.html?filter=trash" id="navTrash" class="nav-item">휴지통</a>
                     <a href="stats.html" class="nav-item">통계 및 납부</a>
                     <a href="expense.html" class="nav-item">지출현황</a>
+                    <a href="attendance_stats.html" class="nav-item highlight" style="color: #3b82f6;">출석통계</a>
                 </div>
                 <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">학원문자</div>
                 <div class="nav-sub-menu show">
@@ -154,7 +155,10 @@
                                 </div>
                                 <!-- Row 3 -->
                                 <div class="daily-card">
-                                    <div class="d-title">결석자</div>
+                                    <div class="d-title" style="display:flex; justify-content:space-between; align-items:center;">
+                                        <span>결석자 (출석현황)</span>
+                                        <button class="btn btn-secondary" style="padding: 2px 8px; font-size: 0.75rem; height: auto;" onclick="location.href='attendance_stats.html'">상세보기</button>
+                                    </div>
                                     <div class="d-val" id="dashAbsent">-</div>
                                     <div class="d-badges"><span class="bg-purple" id="dashConsultation">상담 -</span><span class="bg-purple" id="dashMakeup">보강 -</span><span class="bg-orange" id="dashExtension">연장 -</span></div>
                                 </div>
@@ -355,7 +359,7 @@
 
     <!-- Load Chart.js from CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="stats.js?v=20260617-25"></script>
+    <script src="stats.js?v=20260617-26"></script>
     <script>
         // Set Date to today
         const d = new Date();
