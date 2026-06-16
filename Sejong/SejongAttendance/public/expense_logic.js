@@ -676,7 +676,7 @@ function hideDuplicateDates() {
             if (!dateCol) return;
             
             // 페이지네이션으로 숨겨진 줄은 날짜 중복 비교에서 완전히 제외하여, 다음 페이지 첫 줄 날짜가 무조건 보이도록 함
-            if (row.style.display === 'none') return;
+            if (row.classList.contains('hidden-page-line')) return;
             
             const currentDate = dateCol.textContent.trim();
             dateCol.classList.remove('duplicate-date');
@@ -754,6 +754,9 @@ function updateExpensePagination() {
     if (indicator) indicator.innerHTML = `<span>${currentExpensePage + 1}</span><span>/</span><span>${totalPages}</span>`;
     if (prevBtn) prevBtn.disabled = currentExpensePage === 0;
     if (nextBtn) nextBtn.disabled = false; // 항상 다음 페이지 추가 가능
+    
+    // 페이지가 바뀔 때마다 보이는 화면을 기준으로 중복 날짜 숨김 처리 재실행
+    hideDuplicateDates();
 }
 
 window.changeExpensePage = function(dir) {
@@ -920,6 +923,19 @@ window.alignAllDates = function(isAuto = false) {
     const cookingContainer = document.getElementById('sales-cooking-container');
     const bakingContainer = document.getElementById('sales-baking-container');
     
+    // 날짜 정규화 함수 (예: "6/5" -> "6/5(금)")
+    const normalizeDateStr = (dStr) => {
+        if (!dStr) return '';
+        const match = dStr.match(/^(\d+)[\D]+(\d+)/);
+        if (!match) return dStr;
+        const m = parseInt(match[1]);
+        const d = parseInt(match[2]);
+        const year = new Date().getFullYear();
+        const dateObj = new Date(year, m - 1, d);
+        const days = ['일', '월', '화', '수', '목', '금', '토'];
+        return `${m}/${d}(${days[dateObj.getDay()]})`;
+    };
+    
     const extractItems = (container, isBaking = false, cookItemsForDate = null) => {
         if (!container) return [];
         const items = [];
@@ -937,6 +953,11 @@ window.alignAllDates = function(isAuto = false) {
                 dateStr = dateCol ? dateCol.textContent.trim() : '';
             }
             
+            if (dateStr) {
+                dateStr = normalizeDateStr(dateStr);
+                lastDate = dateStr;
+            }
+            
             const descCol = line.querySelector('.desc-col');
             const amountCol = line.querySelector('.amount-col');
             const methodCol = line.querySelector('.method-col');
@@ -944,8 +965,6 @@ window.alignAllDates = function(isAuto = false) {
             const desc = descCol ? descCol.textContent.trim() : '';
             const amount = amountCol ? amountCol.textContent.trim() : '';
             const method = methodCol ? methodCol.textContent.trim() : '';
-            
-            if (dateStr) lastDate = dateStr;
             
             let hasContent = false;
             if (isBaking) {
