@@ -419,3 +419,51 @@ function toggleAccordion(id, element) {
         if (checkbox) checkbox.checked = false;
     }
 }
+
+window.showExpenseDetails = function() {
+    if(!window.globalExpenses || window.globalExpenses.length === 0) {
+        alert("표시할 지출 내역이 없습니다.");
+        return;
+    }
+    const startDateStr = document.getElementById('reportStartDate').value;
+    const endDateStr = document.getElementById('reportEndDate').value;
+    const startObj = new Date(startDateStr);
+    const endObj = new Date(endDateStr);
+    endObj.setHours(23, 59, 59, 999);
+
+    let html = `<div style="max-height: 400px; overflow-y: auto;">
+                <table style="width:100%; border-collapse: collapse; font-size: 0.9rem;">
+                <tr style="background:#f1f5f9; text-align:left;"><th style="padding:10px;">날짜</th><th style="padding:10px;">항목</th><th style="padding:10px; text-align:right;">금액</th></tr>`;
+    
+    let hasData = false;
+    window.globalExpenses.forEach(e => {
+        const eDate = new Date(e.date || e.updatedAt || Date.now());
+        if (eDate >= startObj && eDate <= endObj) {
+            hasData = true;
+            html += `<tr style="border-bottom:1px solid #e2e8f0;">
+                <td style="padding:10px;">${eDate.toISOString().split('T')[0]}</td>
+                <td style="padding:10px;">${e.item || e.desc || e.title || '-'}</td>
+                <td style="padding:10px; text-align:right; font-weight:bold; color:#f43f5e;">${parseInt(e.amount).toLocaleString()}원</td>
+            </tr>`;
+        }
+    });
+    html += `</table></div>`;
+
+    if(!hasData) {
+        alert("해당 기간 내의 지출 내역이 없습니다.");
+        return;
+    }
+
+    let modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; display:flex; align-items:center; justify-content:center; backdrop-filter: blur(2px);';
+    modal.innerHTML = `
+        <div style="background:white; border-radius:12px; width:90%; max-width:500px; padding:25px; box-shadow:0 10px 25px rgba(0,0,0,0.2);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h3 style="margin:0; font-size:1.2rem; color:#1e293b; display:flex; align-items:center; gap:8px;"><span class="material-icons" style="color:#f43f5e;">receipt_long</span> 기간 내 지출 세부내역</h3>
+                <span class="material-icons" style="cursor:pointer; color:#64748b; font-size:1.5rem;" onclick="this.parentElement.parentElement.parentElement.remove()">close</span>
+            </div>
+            ${html}
+        </div>
+    `;
+    document.body.appendChild(modal);
+}

@@ -127,8 +127,8 @@
                                     <div class="d-val" id="dashUnpaid" style="font-size:1.5rem; margin-top:10px;">당일 미납 없음</div>
                                     <div class="d-badges"><span class="bg-green">누적 <span id="dashUnpaidAcc">18,240,000</span></span></div>
                                 </div>
-                                <div class="daily-card">
-                                    <div class="d-title">지출현황</div>
+                                <div class="daily-card" style="cursor: pointer; transition: transform 0.2s;" onclick="showExpenseDetails()" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'" title="클릭하여 세부내역 보기">
+                                    <div class="d-title" style="color:#f43f5e;">지출 <span class="material-icons" style="font-size:1rem; vertical-align:middle; float:right; color:#cbd5e1;">zoom_in</span></div>
                                     <div class="d-val" id="dashExpense">378,000</div>
                                     <div class="d-badges"><span class="bg-green">누적 <span id="dashExpenseAcc">663,000</span></span></div>
                                 </div>
