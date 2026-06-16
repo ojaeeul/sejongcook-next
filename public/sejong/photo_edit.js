@@ -112,76 +112,295 @@ function closeCropper() {
     if (cropper) cropper.destroy();
 }
 
-let currentFilter = 'none';
+let originalCanvas = null;
+let currentFilteredCanvas = null;
+let currentFaceData = null;
 
-window.applyFilter = function(filterStr, btnElement) {
-    currentFilter = filterStr;
-    const cropperImage = document.querySelector('.cropper-view-box img');
-    if (cropperImage) {
-        cropperImage.style.filter = filterStr;
-    }
+window.confirmCrop = function() {
+    if (!cropper) return;
     
-    // Highlight selected button
-    document.querySelectorAll('.preset-btn').forEach(btn => {
-        btn.style.background = '#1e293b';
-        btn.style.borderColor = '#334155';
-        btn.style.color = '#cbd5e1';
-    });
-    if (btnElement) {
-        btnElement.style.background = '#3b82f6';
-        btnElement.style.borderColor = '#60a5fa';
-        btnElement.style.color = 'white';
+    // Get cropped area (400x400)
+    originalCanvas = cropper.getCroppedCanvas({ width: 400, height: 400 });
+    
+    // Hide cropper, show edit modal
+    document.getElementById('cropperModal').style.display = 'none';
+    document.getElementById('editModal').style.display = 'flex';
+    
+    initEditor();
+};
+
+window.backToCrop = function() {
+    document.getElementById('editModal').style.display = 'none';
+    document.getElementById('cropperModal').style.display = 'flex';
+};
+
+async function initEditor() {
+    const editCanvas = document.getElementById('editCanvas');
+    const ctx = editCanvas.getContext('2d');
+    editCanvas.width = 400;
+    editCanvas.height = 400;
+    ctx.drawImage(originalCanvas, 0, 0);
+    currentFilteredCanvas = cloneCanvas(originalCanvas);
+    
+    document.getElementById('faceLoadingIndicator').style.display = 'block';
+
+    if (!faceModelsLoaded) {
+        await loadFaceModels();
+    }
+
+    // Detect face
+    const imgUrl = originalCanvas.toDataURL('image/jpeg');
+    const img = new Image();
+    img.src = imgUrl;
+    await new Promise(r => img.onload = r);
+
+    const detection = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions())
+        .withFaceLandmarks()
+        .withFaceDescriptor();
+
+    document.getElementById('faceLoadingIndicator').style.display = 'none';
+
+    if (!detection) {
+        alert("⚠️ 사진에서 얼굴을 찾지 못했습니다. 가발 합성 기능이 제한될 수 있습니다.");
+    } else {
+        currentFaceData = detection;
+    }
+
+    switchTab('basic');
+}
+
+// -----------------------------------------
+// Filters & Canvas Manipulation
+// -----------------------------------------
+function cloneCanvas(oldCanvas) {
+    const newCanvas = document.createElement('canvas');
+    newCanvas.width = oldCanvas.width;
+    newCanvas.height = oldCanvas.height;
+    const context = newCanvas.getContext('2d');
+    context.drawImage(oldCanvas, 0, 0);
+    return newCanvas;
+}
+
+const FilterEngine = {
+    applyBasic: function(baseCanvas, type, amount) {
+        const c = cloneCanvas(baseCanvas);
+        const ctx = c.getContext('2d');
+        if (type === 'bw') {
+            ctx.filter = 'grayscale(100%) contrast(1.2)';
+        } else if (type === 'bright') {
+            ctx.filter = `brightness(${100 + (amount * 10)}%)`;
+        }
+        ctx.clearRect(0, 0, c.width, c.height);
+        ctx.drawImage(baseCanvas, 0, 0);
+        return c;
+    },
+    
+    applyBeauty: function(baseCanvas, intensity) {
+        // Skin smoothing via Screen Blend + Blur
+        const c = cloneCanvas(baseCanvas);
+        const ctx = c.getContext('2d');
+        const blurAmount = intensity * 1.5;
+        const opacity = intensity * 0.15;
+        
+        ctx.globalAlpha = opacity;
+        ctx.globalCompositeOperation = 'screen';
+        ctx.filter = `blur(${blurAmount}px) saturate(1.2) brightness(1.1)`;
+        ctx.drawImage(baseCanvas, 0, 0);
+        
+        // Reset
+        ctx.globalAlpha = 1.0;
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.filter = 'none';
+        return c;
+    },
+    
+    applyArt: function(baseCanvas, type, level) {
+        const c = cloneCanvas(baseCanvas);
+        const ctx = c.getContext('2d');
+        
+        if (type === 'anime') {
+            // High saturation, contrast, then posterize
+            ctx.filter = `saturate(${150 + level*20}%) contrast(${110 + level*5}%)`;
+            ctx.clearRect(0, 0, c.width, c.height);
+            ctx.drawImage(baseCanvas, 0, 0);
+            
+            const imgData = ctx.getImageData(0, 0, c.width, c.height);
+            const data = imgData.data;
+            const factor = 255 / (6 - level*0.2); // Posterize factor
+            for (let i = 0; i < data.length; i += 4) {
+                data[i] = Math.round(data[i] / factor) * factor;
+                data[i+1] = Math.round(data[i+1] / factor) * factor;
+                data[i+2] = Math.round(data[i+2] / factor) * factor;
+            }
+            ctx.putImageData(imgData, 0, 0);
+        } else if (type === 'watercolor') {
+            // Edges blur, color boost
+            ctx.filter = `blur(${level*0.5}px) saturate(${130 + level*10}%) brightness(1.1)`;
+            ctx.clearRect(0, 0, c.width, c.height);
+            ctx.drawImage(baseCanvas, 0, 0);
+            // Simulate color bleed
+            ctx.globalAlpha = 0.5;
+            ctx.globalCompositeOperation = 'multiply';
+            ctx.drawImage(baseCanvas, 2, 2);
+            ctx.globalAlpha = 1.0;
+            ctx.globalCompositeOperation = 'source-over';
+        }
+        return c;
+    },
+    
+    applyHair: function(baseCanvas, faceData, hairIndex, gender) {
+        const c = cloneCanvas(baseCanvas);
+        if (!faceData) return c; // Fallback if no face
+        
+        const ctx = c.getContext('2d');
+        const landmarks = faceData.landmarks;
+        const jawline = landmarks.getJawOutline();
+        
+        // Calculate head box
+        const minX = Math.min(...jawline.map(p => p.x));
+        const maxX = Math.max(...jawline.map(p => p.x));
+        const minY = Math.min(...jawline.map(p => p.y)); // jaw doesn't cover top of head
+        
+        const faceWidth = maxX - minX;
+        const faceCenter = { x: minX + faceWidth / 2, y: minY };
+        
+        // Render simple vector wig using paths (Mockup for high quality SVGs)
+        // In reality, drawing complex paths
+        ctx.save();
+        ctx.translate(faceCenter.x, faceCenter.y - (faceWidth * 0.4));
+        
+        // Simple but clean vector paths for hair representations
+        const hairWidth = faceWidth * 1.3;
+        const hairHeight = faceWidth * 1.2;
+        
+        ctx.fillStyle = (hairIndex % 2 === 0) ? '#1a1110' : '#4a2c11';
+        ctx.beginPath();
+        
+        if (gender === 'M') {
+            // Male hair shapes
+            if (hairIndex === 1) { ctx.ellipse(0, 0, hairWidth/2, hairHeight/2.5, 0, Math.PI, 0); }
+            else if (hairIndex === 2) { ctx.rect(-hairWidth/2, -hairHeight/2, hairWidth, hairHeight*0.6); }
+            else { ctx.ellipse(0, -10, hairWidth/2.2, hairHeight/2.2, 0, Math.PI, 0); }
+        } else {
+            // Female hair shapes
+            if (hairIndex === 1) { ctx.ellipse(0, hairHeight/4, hairWidth/2, hairHeight/1.5, 0, 0, Math.PI*2); }
+            else if (hairIndex === 2) { ctx.ellipse(0, 0, hairWidth/2, hairHeight/2, 0, Math.PI, 0); ctx.fillRect(-hairWidth/2, 0, hairWidth, hairHeight); }
+            else { ctx.ellipse(0, 0, hairWidth/1.8, hairHeight/1.8, 0, 0, Math.PI*2); }
+        }
+        
+        ctx.fill();
+        ctx.restore();
+        
+        return c;
     }
 };
 
-function renderPresets() {
-    const createBtn = (containerId, label, filterStr) => {
-        const btn = document.createElement('button');
-        btn.className = 'preset-btn';
-        btn.style.cssText = 'padding:6px 12px; font-size:0.8rem; border-radius:6px; border:1px solid #334155; background:#1e293b; color:#cbd5e1; cursor:pointer; white-space:nowrap; transition:all 0.2s;';
-        btn.innerText = label;
-        btn.onclick = () => applyFilter(filterStr, btn);
-        document.getElementById(containerId).appendChild(btn);
-    };
+// -----------------------------------------
+// UI Thumbnail Generation
+// -----------------------------------------
+let currentTab = 'basic';
+const thumbnailCache = {};
 
-    // 1. 뽀샵 (10)
-    for (let i = 1; i <= 10; i++) {
-        const b = 100 + (i * 3);
-        const c = 100 + (i * 2);
-        const blur = i * 0.15;
-        createBtn('presetBoshop', `뽀샵 ${i}단계`, `brightness(${b}%) contrast(${c}%) blur(${blur}px)`);
+window.switchTab = async function(tabId) {
+    currentTab = tabId;
+    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+    document.querySelector(`.filter-tab[data-tab="${tabId}"]`).classList.add('active');
+    
+    const container = document.getElementById('filterThumbnails');
+    container.innerHTML = '<div style="color:#94a3b8; padding-top:20px;">썸네일 생성 중...</div>';
+    
+    // Tiny canvas for fast preview
+    const thumbBase = document.createElement('canvas');
+    thumbBase.width = 100;
+    thumbBase.height = 100;
+    const tctx = thumbBase.getContext('2d');
+    tctx.drawImage(originalCanvas, 0, 0, 100, 100);
+    
+    // Downscale face data for thumbnails
+    let thumbFaceData = null;
+    if (currentFaceData) {
+        thumbFaceData = {
+            landmarks: {
+                getJawOutline: () => currentFaceData.landmarks.getJawOutline().map(p => ({x: p.x/4, y: p.y/4}))
+            }
+        };
+    }
+    
+    const configs = [];
+    if (tabId === 'basic') {
+        configs.push({ id: 'none', label: '원본', filter: () => cloneCanvas(thumbBase), apply: () => originalCanvas });
+        configs.push({ id: 'bw', label: '흑백', filter: () => FilterEngine.applyBasic(thumbBase, 'bw'), apply: () => FilterEngine.applyBasic(originalCanvas, 'bw') });
+        for(let i=1; i<=5; i++) {
+            configs.push({ id: `br${i}`, label: `밝기 +${i}`, filter: () => FilterEngine.applyBasic(thumbBase, 'bright', i), apply: () => FilterEngine.applyBasic(originalCanvas, 'bright', i) });
+        }
+    } else if (tabId === 'beauty') {
+        for(let i=1; i<=8; i++) {
+            configs.push({ id: `be${i}`, label: `뽀샵 ${i}`, filter: () => FilterEngine.applyBeauty(thumbBase, i), apply: () => FilterEngine.applyBeauty(originalCanvas, i) });
+        }
+    } else if (tabId === 'art') {
+        for(let i=1; i<=4; i++) {
+            configs.push({ id: `an${i}`, label: `애니 ${i}`, filter: () => FilterEngine.applyArt(thumbBase, 'anime', i), apply: () => FilterEngine.applyArt(originalCanvas, 'anime', i) });
+            configs.push({ id: `wc${i}`, label: `수채화 ${i}`, filter: () => FilterEngine.applyArt(thumbBase, 'watercolor', i), apply: () => FilterEngine.applyArt(originalCanvas, 'watercolor', i) });
+        }
+    } else if (tabId === 'hair') {
+        for(let i=1; i<=3; i++) {
+            configs.push({ id: `hm${i}`, label: `남성가발 ${i}`, filter: () => FilterEngine.applyHair(thumbBase, thumbFaceData, i, 'M'), apply: () => FilterEngine.applyHair(originalCanvas, currentFaceData, i, 'M') });
+            configs.push({ id: `hf${i}`, label: `여성가발 ${i}`, filter: () => FilterEngine.applyHair(thumbBase, thumbFaceData, i, 'F'), apply: () => FilterEngine.applyHair(originalCanvas, currentFaceData, i, 'F') });
+        }
     }
 
-    // 2. 밝기 (10)
-    for (let i = 1; i <= 10; i++) {
-        createBtn('presetBrightness', `밝기 +${i}`, `brightness(${100 + (i * 5)}%)`);
+    container.innerHTML = '';
+    
+    // Render configs to DOM
+    for (const conf of configs) {
+        if (!thumbnailCache[conf.id]) {
+            // Process async to not block UI
+            await new Promise(r => setTimeout(r, 10)); 
+            const resC = conf.filter();
+            thumbnailCache[conf.id] = resC.toDataURL('image/jpeg', 0.6);
+        }
+        
+        const div = document.createElement('div');
+        div.style.cssText = 'min-width: 70px; display:flex; flex-direction:column; align-items:center; cursor:pointer; gap:5px;';
+        div.onclick = () => {
+            // Reset active style
+            document.querySelectorAll('.thumb-img').forEach(el => el.style.borderColor = 'transparent');
+            div.querySelector('.thumb-img').style.borderColor = '#3b82f6';
+            
+            // Apply full resolution
+            showLoading("필터 적용 중...");
+            setTimeout(() => {
+                currentFilteredCanvas = conf.apply();
+                const ectx = document.getElementById('editCanvas').getContext('2d');
+                ectx.clearRect(0, 0, 400, 400);
+                ectx.drawImage(currentFilteredCanvas, 0, 0);
+                hideLoading();
+            }, 50);
+        };
+        
+        const img = document.createElement('div');
+        img.className = 'thumb-img';
+        img.style.cssText = `width: 60px; height: 60px; border-radius: 12px; background-image: url(${thumbnailCache[conf.id]}); background-size: cover; border: 3px solid transparent; transition: all 0.2s;`;
+        
+        const lbl = document.createElement('span');
+        lbl.style.cssText = 'font-size: 0.75rem; color: #cbd5e1; font-weight: 500;';
+        lbl.innerText = conf.label;
+        
+        div.appendChild(img);
+        div.appendChild(lbl);
+        container.appendChild(div);
     }
+};
 
-    // 3. 애니 (10)
-    for (let i = 1; i <= 10; i++) {
-        const s = 100 + (i * 15);
-        const c = 100 + (i * 10);
-        createBtn('presetAnime', `애니 ${i}단계`, `saturate(${s}%) contrast(${c}%)`);
+window.applyAdvancedFilter = function(type) {
+    if (type === 'none') {
+        currentFilteredCanvas = cloneCanvas(originalCanvas);
+        const ectx = document.getElementById('editCanvas').getContext('2d');
+        ectx.clearRect(0, 0, 400, 400);
+        ectx.drawImage(currentFilteredCanvas, 0, 0);
+        document.querySelectorAll('.thumb-img').forEach(el => el.style.borderColor = 'transparent');
     }
-
-    // 4. 수채화 (20)
-    for (let i = 1; i <= 20; i++) {
-        const blur = 0.5 + (i * 0.1);
-        const s = 120 + (i * 5);
-        const b = 105 + (i * 1);
-        createBtn('presetWatercolor', `수채화 ${i}`, `blur(${blur}px) saturate(${s}%) brightness(${b}%)`);
-    }
-
-    // 5. 머리 보정 (10)
-    for (let i = 1; i <= 10; i++) {
-        const deg = i * 36;
-        createBtn('presetHair', `헤어톤 ${i}`, `hue-rotate(${deg}deg) saturate(150%)`);
-    }
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    renderPresets();
-});
+};
 
 window.showFortune = function() {
     if (!currentMember) return;
@@ -198,55 +417,18 @@ window.showFortune = function() {
     }
 };
 
-async function cropAndSave() {
-    if (!cropper) return;
-    if (!faceModelsLoaded) {
-        alert("얼굴 인식 엔진이 아직 로드되지 않았습니다. 잠시만 기다려주세요.");
-        return;
-    }
-
-    showLoading("얼굴 분석 중...");
-
+async function saveFinal() {
+    if (!currentFilteredCanvas) return;
+    
+    showLoading("저장 중...");
+    
     try {
-        // Get cropped canvas
-        const rawCanvas = cropper.getCroppedCanvas({
-            width: 400,
-            height: 400
-        });
+        const finalDataUrl = currentFilteredCanvas.toDataURL('image/jpeg', 0.85);
         
-        // Apply filter to a new canvas if needed
-        const canvas = document.createElement('canvas');
-        canvas.width = 400;
-        canvas.height = 400;
-        const ctx = canvas.getContext('2d');
-        
-        if (currentFilter !== 'none') {
-            ctx.filter = currentFilter;
+        currentMember.photo = finalDataUrl;
+        if (currentFaceData) {
+            currentMember.faceDescriptor = Array.from(currentFaceData.descriptor);
         }
-        ctx.drawImage(rawCanvas, 0, 0);
-
-        const croppedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
-
-        // Analyze face with face-api.js
-        const img = new Image();
-        img.src = croppedDataUrl;
-        await new Promise(r => img.onload = r);
-
-        const detection = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions())
-            .withFaceLandmarks()
-            .withFaceDescriptor();
-
-        if (!detection) {
-            hideLoading();
-            alert("⚠️ 사진에서 얼굴을 찾을 수 없습니다. 정면 얼굴이 잘 보이는 밝은 사진을 사용해 주세요.");
-            return;
-        }
-
-        // Save to Server
-        currentMember.photo = croppedDataUrl;
-        currentMember.faceDescriptor = Array.from(detection.descriptor);
-
-        showLoading("저장 중...");
 
         const res = await fetch(`${API_BASE}/members`, {
             method: 'POST',
@@ -256,13 +438,12 @@ async function cropAndSave() {
 
         if (!res.ok) throw new Error("저장 실패");
 
-        // Success
         hideLoading();
-        closeCropper();
-        document.getElementById('currentPhoto').src = croppedDataUrl;
+        document.getElementById('editModal').style.display = 'none';
+        document.getElementById('currentPhoto').src = finalDataUrl;
         document.getElementById('currentPhoto').style.display = 'block';
         document.getElementById('noPhotoIcon').style.display = 'none';
-        alert("🎉 사진이 성공적으로 등록되었습니다!");
+        alert("🎉 보정된 사진이 성공적으로 등록되었습니다!");
 
     } catch (e) {
         console.error(e);
@@ -272,7 +453,8 @@ async function cropAndSave() {
 }
 
 function showLoading(text) {
-    document.getElementById('loadingText').innerText = text;
+    const el = document.getElementById('loadingText');
+    if(el) el.innerText = text;
     document.getElementById('loadingOverlay').style.display = 'flex';
 }
 
