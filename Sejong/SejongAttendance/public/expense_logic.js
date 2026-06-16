@@ -19,6 +19,32 @@ document.addEventListener('DOMContentLoaded', async () => {
     notebook.addEventListener('click', handleClick);
     notebook.addEventListener('focusout', handleFocusOut);
     
+    // 오류가 있는 줄(칸)을 쉽게 초기화할 수 있도록 X 버튼 동적 생성
+    notebook.addEventListener('focusin', function(e) {
+        const line = e.target.closest('.entry-line');
+        if (line && !line.querySelector('.row-clear-btn')) {
+            const btn = document.createElement('div');
+            btn.className = 'row-clear-btn';
+            btn.innerHTML = '✕';
+            btn.title = '이 줄 초기화';
+            
+            // 모바일/태블릿에서 클릭 시 포커스 잃어버림 현상 방지를 위해 mousedown 사용
+            btn.onmousedown = function(ev) {
+                ev.preventDefault(); // 포커스 유지
+                ev.stopPropagation(); // 이벤트 전파 방지
+                
+                if (confirm('이 줄(칸)을 초기화하시겠습니까?')) {
+                    line.querySelectorAll('div[contenteditable="true"]').forEach(col => col.textContent = '');
+                    line.classList.remove('tuition-auto');
+                    line.removeAttribute('data-payment-id');
+                    line.removeAttribute('data-payment-id-cook');
+                    triggerAutoSave();
+                }
+            };
+            line.appendChild(btn);
+        }
+    });
+    
     // 초기 내용물이 비어있으면 기본 30줄 생성
     ensureMinimumLines();
     
