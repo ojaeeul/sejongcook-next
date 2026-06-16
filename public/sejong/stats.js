@@ -146,16 +146,24 @@ function updateDashboard() {
         }
     });
 
-    // Expenses calculations
-    let periodExpense = 0;
-    let totalExpense = 0;
+    // Expenses calculations (Always Today & This Month)
+    let todayExpense = 0;
+    let thisMonthExpense = 0;
+    const now = new Date();
+    const todayYear = now.getFullYear();
+    const todayMonth = now.getMonth();
+    const todayDate = now.getDate();
+
     if (window.globalExpenses) {
         window.globalExpenses.forEach(e => {
             const eAmt = parseInt(e.amount) || 0;
-            totalExpense += eAmt;
             const eDate = new Date(e.date || e.updatedAt || Date.now());
-            if (eDate >= startObj && eDate <= endObj) {
-                periodExpense += eAmt;
+            
+            if (eDate.getFullYear() === todayYear && eDate.getMonth() === todayMonth) {
+                thisMonthExpense += eAmt;
+                if (eDate.getDate() === todayDate) {
+                    todayExpense += eAmt;
+                }
             }
         });
     }
@@ -180,8 +188,8 @@ function updateDashboard() {
     if(document.getElementById('dashUnpaid')) document.getElementById('dashUnpaid').innerText = periodUnpaid === 0 ? '당일 미납 없음' : periodUnpaid.toLocaleString();
     if(document.getElementById('dashUnpaidAcc')) document.getElementById('dashUnpaidAcc').innerText = totalUnpaid.toLocaleString();
 
-    if(document.getElementById('dashExpense')) document.getElementById('dashExpense').innerText = periodExpense.toLocaleString();
-    if(document.getElementById('dashExpenseAcc')) document.getElementById('dashExpenseAcc').innerText = totalExpense.toLocaleString();
+    if(document.getElementById('dashExpense')) document.getElementById('dashExpense').innerText = todayExpense.toLocaleString();
+    if(document.getElementById('dashExpenseAcc')) document.getElementById('dashExpenseAcc').innerText = thisMonthExpense.toLocaleString();
 
     if(document.getElementById('dashStudents')) document.getElementById('dashStudents').innerText = activeMembers.length;
     if(document.getElementById('dashStudentsNew')) document.getElementById('dashStudentsNew').innerText = Math.max(0, Math.floor(activeMembers.length * 0.05)); // mock new
