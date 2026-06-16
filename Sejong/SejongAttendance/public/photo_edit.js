@@ -154,17 +154,18 @@ async function initEditor() {
     img.src = imgUrl;
     await new Promise(r => img.onload = r);
 
-    const detection = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions())
-        .withFaceLandmarks()
-        .withFaceDescriptor();
+    // Face API로 얼굴 특징 추출 시도 (뽀샵 필터 등에서 활용)
+    try {
+        const detection = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions())
+            .withFaceLandmarks();
+        if (detection) {
+            currentFaceData = detection;
+        }
+    } catch(e) {
+        console.log("Face API warning:", e);
+    }
 
     document.getElementById('faceLoadingIndicator').style.display = 'none';
-
-    if (!detection) {
-        alert("⚠️ 사진에서 얼굴을 찾지 못했습니다. 가발 합성 기능이 제한될 수 있습니다.");
-    } else {
-        currentFaceData = detection;
-    }
 
     switchTab('basic');
 }
@@ -407,62 +408,6 @@ const FilterEngine = {
             ctx.putImageData(imgData, 0, 0);
         }
         return c;
-    },
-    
-    applyHair: async function(baseCanvas, faceData, hairIndex, gender) {
-        const c = cloneCanvas(baseCanvas);
-        if (!faceData) return c; 
-        
-        const ctx = c.getContext('2d');
-        const landmarks = faceData.landmarks;
-        const jawline = landmarks.getJawOutline();
-        
-        const minX = Math.min(...jawline.map(p => p.x));
-        const maxX = Math.max(...jawline.map(p => p.x));
-        const minY = Math.min(...jawline.map(p => p.y));
-        const maxY = Math.max(...jawline.map(p => p.y));
-        
-        const faceWidth = maxX - minX;
-        const faceHeight = maxY - minY;
-        const faceCenter = { x: minX + faceWidth / 2, y: minY + faceHeight / 2 };
-        
-        // Local Transparent Hair PNGs (AI Generated)
-        const urls = {
-            'M': [
-                '/sejong/images/m1.png', 
-                '/sejong/images/m2.png',
-                '/sejong/images/m1.png' // fallback if 3rd requested
-            ],
-            'F': [
-                '/sejong/images/f1.png',
-                '/sejong/images/f1.png',
-                '/sejong/images/f1.png'
-            ]
-        };
-        
-        const url = urls[gender][hairIndex - 1];
-        
-        return new Promise((resolve) => {
-            const img = new Image();
-            img.crossOrigin = "Anonymous";
-            img.onload = () => {
-                ctx.save();
-                // Positioning tuning: 부분 가발(정수리 전용) 이미지에 맞춰 스케일과 위치 재조정
-                const hairScale = faceWidth * 1.3;
-                const aspect = img.height / img.width;
-                const hairH = hairScale * aspect;
-                
-                // 얼굴 중심(코)에서 이마선/정수리 부근까지의 거리
-                const yOffset = faceHeight * 0.65;
-                
-                ctx.translate(faceCenter.x, faceCenter.y - yOffset);
-                ctx.drawImage(img, -hairScale/2, -hairH/2, hairScale, hairH);
-                ctx.restore();
-                resolve(c);
-            };
-            img.onerror = () => resolve(c); // Fallback on error
-            img.src = url;
-        });
     }
 };
 
@@ -510,11 +455,6 @@ window.switchTab = async function(tabId) {
         for(let i=1; i<=4; i++) {
             configs.push({ id: `an${i}`, label: `애니 ${i}`, filter: async () => FilterEngine.applyArt(thumbBase, 'anime', i), apply: async () => FilterEngine.applyArt(originalCanvas, 'anime', i) });
             configs.push({ id: `wc${i}`, label: `수채화 ${i}`, filter: async () => FilterEngine.applyArt(thumbBase, 'watercolor', i), apply: async () => FilterEngine.applyArt(originalCanvas, 'watercolor', i) });
-        }
-    } else if (tabId === 'hair') {
-        for(let i=1; i<=3; i++) {
-            configs.push({ id: `hm${i}`, label: `남성가발 ${i}`, filter: async () => FilterEngine.applyHair(thumbBase, thumbFaceData, i, 'M'), apply: async () => FilterEngine.applyHair(originalCanvas, currentFaceData, i, 'M') });
-            configs.push({ id: `hf${i}`, label: `여성가발 ${i}`, filter: async () => FilterEngine.applyHair(thumbBase, thumbFaceData, i, 'F'), apply: async () => FilterEngine.applyHair(originalCanvas, currentFaceData, i, 'F') });
         }
     }
 
