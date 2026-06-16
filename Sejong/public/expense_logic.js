@@ -56,24 +56,27 @@ document.addEventListener('DOMContentLoaded', async () => {
 // 수동 데이터 로드
 async function loadNotebookData() {
     try {
-        const res = await fetch(EXPENSE_API_URL + '?t=' + Date.now());
+        const yearElem = document.getElementById('expense-year');
+        const currentYear = yearElem ? yearElem.textContent.trim() : new Date().getFullYear();
+        
+        const res = await fetch(EXPENSE_API_URL + '?year=' + currentYear + '&t=' + Date.now());
         const data = await res.json();
         
-        if (data && data.leftHTML) {
-            document.getElementById('expense-container').innerHTML = data.leftHTML;
+        if (data && Object.keys(data).length > 0) {
+            if (data.leftHTML) document.getElementById('expense-container').innerHTML = data.leftHTML;
+            if (data.cookingHTML) document.getElementById('sales-cooking-container').innerHTML = data.cookingHTML;
+            if (data.bakingHTML) document.getElementById('sales-baking-container').innerHTML = data.bakingHTML;
+        } else {
+            // 빈 데이터일 경우 초기화
+            document.getElementById('expense-container').innerHTML = '';
+            document.getElementById('sales-cooking-container').innerHTML = '';
+            document.getElementById('sales-baking-container').innerHTML = '';
         }
-        if (data && data.cookingHTML) {
-            document.getElementById('sales-cooking-container').innerHTML = data.cookingHTML;
-        }
-        if (data && data.bakingHTML) {
-            document.getElementById('sales-baking-container').innerHTML = data.bakingHTML;
-        }
+        
         if (data && data.expenseYear) {
-            const yearElem = document.getElementById('expense-year');
             if (yearElem) yearElem.textContent = data.expenseYear;
         } else {
-            const yearElem = document.getElementById('expense-year');
-            if (yearElem && !yearElem.textContent) yearElem.textContent = new Date().getFullYear();
+            if (yearElem && !yearElem.textContent) yearElem.textContent = currentYear;
         }
 
         // DB에 잘못 저장된 고아(orphan) 태그들 청소 (entry-line이 아닌 자식 태그들 삭제)
@@ -104,6 +107,33 @@ async function loadNotebookData() {
         col.setAttribute('contenteditable', 'true');
         col.setAttribute('spellcheck', 'false');
     });
+    if (typeof updateExpensePagination === 'function') updateExpensePagination();
+}
+
+async function changeExpenseYear(delta) {
+    // 1. 현재 연도 상태를 먼저 저장
+    await saveNotebookData();
+    
+    // 2. 연도 변경
+    const yearElem = document.getElementById('expense-year');
+    if (!yearElem) return;
+    let currentYear = parseInt(yearElem.textContent.trim()) || new Date().getFullYear();
+    currentYear += delta;
+    yearElem.textContent = currentYear;
+    
+    // 3. 페이지 초기화
+    if (typeof currentExpensePage !== 'undefined') {
+        currentExpensePage = 1;
+    }
+    document.getElementById('expense-container').innerHTML = '<div class="loading" style="text-align:center; padding:50px; color:#64748b; width: 100%;">데이터를 불러오는 중입니다...</div>';
+    document.getElementById('sales-cooking-container').innerHTML = '';
+    document.getElementById('sales-baking-container').innerHTML = '';
+    
+    // 4. 새로운 연도 데이터 불러오기
+    await loadNotebookData();
+    processNewPayments();
+    ensureMinimumLines();
+    hideDuplicateDates();
     if (typeof updateExpensePagination === 'function') updateExpensePagination();
 }
 

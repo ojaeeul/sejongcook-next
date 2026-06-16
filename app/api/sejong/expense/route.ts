@@ -2,8 +2,14 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/sejongDataHandler';
 
-export async function GET() {
-    const { data, error } = await supabase.from('settings').select('value').eq('key', 'expense_notebook').maybeSingle();
+export async function GET(req: NextRequest) {
+    const url = new URL(req.url);
+    const year = url.searchParams.get('year');
+    
+    // Default to 'expense_notebook' for 2026 or when year is not specified to preserve backwards compatibility
+    const key = (!year || year === '2026') ? 'expense_notebook' : `expense_notebook_${year}`;
+
+    const { data, error } = await supabase.from('settings').select('value').eq('key', key).maybeSingle();
 
     if (error) {
         console.error("GET Expense Notebook Error:", error);
@@ -16,8 +22,11 @@ export async function GET() {
 export async function POST(req: NextRequest) {
     try {
         const payload = await req.json();
+        const year = payload.expenseYear;
+        
+        const key = (!year || year === '2026') ? 'expense_notebook' : `expense_notebook_${year}`;
 
-        const { error } = await supabase.from('settings').upsert({ key: 'expense_notebook', value: payload }, { onConflict: 'key' });
+        const { error } = await supabase.from('settings').upsert({ key: key, value: payload }, { onConflict: 'key' });
         if (error) throw error;
 
         return NextResponse.json({ success: true });
