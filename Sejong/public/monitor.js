@@ -472,30 +472,101 @@ async function capturePhoto() {
 }
 
 function determineAttendanceStatus(member) {
-    if (!member || !member.timeSlot) return 'invalid_time'; // Strict check: must have time slot
-
+    // Legacy fallback, logic moved to processAttendance for multi-course STT
+    if (!member || !member.timeSlot) return 'invalid_time';
     const now = new Date();
     const currentMins = now.getHours() * 60 + now.getMinutes();
-
     const slots = member.timeSlot.split(',').map(s => {
         const parts = s.trim().split(':');
         if (parts.length < 2) return -1;
         return parseInt(parts[0]) * 60 + parseInt(parts[1]);
     }).filter(m => m !== -1);
-
-    if (slots.length === 0) return 'invalid_time'; // Strict check
-
+    if (slots.length === 0) return 'invalid_time'; 
     for (const slotMins of slots) {
-        // Valid attendance window: 60 mins before to 60 mins after the slot
-        if (currentMins >= (slotMins - 60) && currentMins <= (slotMins + 60)) {
-            // Strictly late if after class start time
-            if (currentMins > slotMins) {
-                return 'late';
-            }
+        if (currentMins <= (slotMins + 60)) {
+            if (currentMins > slotMins) return 'late';
             return 'present';
         }
     }
     return 'invalid_time';
+}
+
+function promptMultipleCoursesVoice(courses) {
+    return new Promise((resolve) => {
+        const overlay = document.getElementById('voicePromptOverlay');
+        const btnBoth = document.getElementById('btnVoiceBoth');
+        const btnOne = document.getElementById('btnVoiceOne');
+        const indicator = document.getElementById('voiceRecognitionIndicator');
+        
+        if (!overlay) {
+            resolve([courses[0]]);
+            return;
+        }
+
+        courses.sort((a, b) => a.mins - b.mins);
+        overlay.style.display = 'flex';
+        indicator.style.display = 'block';
+
+        let recognition = null;
+        let resolved = false;
+
+        const finish = (result) => {
+            if (resolved) return;
+            resolved = true;
+            overlay.style.display = 'none';
+            if (recognition) {
+                try { recognition.stop(); } catch(e){}
+            }
+            resolve(result);
+        };
+
+        btnBoth.onclick = () => {
+            if (window.speakTTS) window.speakTTS('모든 수업 출석으로 처리합니다.', 'browser');
+            finish(courses);
+        };
+        btnOne.onclick = () => {
+            if (window.speakTTS) window.speakTTS('지금 수업만 출석으로 처리합니다.', 'browser');
+            finish([courses[0]]);
+        };
+
+        const question = "오늘 여러 개의 수업이 있습니다. 모든 수업에 출석하시겠습니까? 모두 출석하려면 '모두', 지금 수업만 출석하려면 '하나만' 이라고 말씀해주세요.";
+        
+        if (window.speakTTS) {
+            window.speakTTS(question, 'browser');
+        }
+
+        setTimeout(() => {
+            if (resolved) return;
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (SpeechRecognition) {
+                recognition = new SpeechRecognition();
+                recognition.lang = 'ko-KR';
+                recognition.interimResults = false;
+                recognition.maxAlternatives = 1;
+                
+                recognition.onresult = (e) => {
+                    if (resolved) return;
+                    const transcript = e.results[0][0].transcript.trim();
+                    console.log("STT Result:", transcript);
+                    if (transcript.includes('모두') || transcript.includes('전부') || transcript.includes('두') || transcript.includes('네') || transcript.includes('다')) {
+                        if (window.speakTTS) window.speakTTS('모든 수업 출석으로 처리합니다.', 'browser');
+                        finish(courses);
+                    } else if (transcript.includes('하나') || transcript.includes('지금') || transcript.includes('첫') || transcript.includes('아니')) {
+                        if (window.speakTTS) window.speakTTS('지금 수업만 출석으로 처리합니다.', 'browser');
+                        finish([courses[0]]);
+                    } else {
+                        if (window.speakTTS) window.speakTTS('잘 인식하지 못했습니다. 화면의 버튼을 눌러주세요.', 'browser');
+                    }
+                };
+                recognition.onerror = (e) => { console.log("STT Error:", e.error); };
+                try { recognition.start(); } catch(e){}
+            }
+        }, 4500);
+        
+        setTimeout(() => {
+            if (!resolved) finish([courses[0]]);
+        }, 15000);
+    });
 }
 
 let timetableData = {
@@ -513,18 +584,13 @@ let timetableData = {
 };
 
 async function checkTimetableAllowed(member) {
-    if (!member || !member.course) return { allowed: false, allowedDaysStr: '' }; // Strict check: must have course
-    
-    // 캐시된 시간표 사용
+    if (!member || !member.course) return { allowed: false, allowedDaysStr: '' }; 
     if (Object.keys(cachedTimetable).length === 0) {
         cachedTimetable = timetableData;
     }
-    
     const today = new Date();
-    const dayOfWeek = today.getDay(); // 0(Sun) ~ 6(Sat)
-    
+    const dayOfWeek = today.getDay(); 
     const courses = member.course.split(',').map(c => c.trim().replace(/\([^)]*\)/g, '').trim());
-    
     let hasClassToday = false;
     let foundTimetableEntry = false;
     let allowedDaysSet = new Set();
@@ -544,15 +610,12 @@ async function checkTimetableAllowed(member) {
              }
         }
     }
-    
     if (foundTimetableEntry && !hasClassToday) {
         const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
         const allowedStr = Array.from(allowedDaysSet).sort().map(d => dayNames[d]).join(', ');
         return { allowed: false, allowedDaysStr: allowedStr };
     }
-    // If we have courses but none matched any timetable entry, we assume no class today (strict)
     if (!foundTimetableEntry) return { allowed: false, allowedDaysStr: '' };
-    
     return { allowed: true };
 }
 
@@ -562,7 +625,6 @@ async function processAttendance(inputNumOrObj, overridePhoto = null) {
         if (typeof inputNumOrObj === 'object' && inputNumOrObj !== null) {
             member = inputNumOrObj;
         } else {
-            // Use cached members for instant lookup instead of fetch
             let members = cachedMembers;
             if (!members || members.length === 0) {
                 const res = await fetch(getFetchUrl('members') + '&t=' + Date.now());
@@ -577,29 +639,6 @@ async function processAttendance(inputNumOrObj, overridePhoto = null) {
             return;
         }
 
-        // --- NEW: Check if already logged in today ---
-        const todayStrForCheck = new Date().toISOString().split('T')[0];
-        try {
-            const attRes = await fetch(getFetchUrl(`attendance?date=${todayStrForCheck}`));
-            if (attRes.ok) {
-                const attData = await attRes.json();
-                const alreadyCheckedIn = attData.some(row => row.memberId === member.id && row.status !== 'unchecked');
-                if (alreadyCheckedIn) {
-                    const msg = "이미 로그인되어 있습니다.";
-                    showStatus(msg, "orange");
-                    if (localStorage.getItem('kiosk_voice_enabled') !== 'false' && window.speakTTS) {
-                        speakTTS(msg, 'browser');
-                    }
-                    setTimeout(() => switchMode('home'), 2500);
-                    return;
-                }
-            }
-        } catch(e) {
-            console.error("Duplicate check failed", e);
-        }
-        // ---------------------------------------------
-        
-        // --- NEW: Check if today is a valid class day ---
         const timetableCheck = await checkTimetableAllowed(member);
         if (timetableCheck && typeof timetableCheck === 'object' && !timetableCheck.allowed) {
             let msg = localStorage.getItem('kiosk_invalid_day_msg') || "{days}요일에 수강이 가능합니다.";
@@ -610,14 +649,59 @@ async function processAttendance(inputNumOrObj, overridePhoto = null) {
             if (localStorage.getItem('kiosk_voice_enabled') !== 'false' && localStorage.getItem('kiosk_invalid_day_voice_enabled') !== 'false' && window.speakTTS) {
                 speakTTS(msg, 'browser');
             }
-            return; // Reject attendance
+            return; 
         }
-        // ------------------------------------------------
 
-        const today = new Date().toISOString().split('T')[0];
-        const status = determineAttendanceStatus(member);
+        const todayStrForCheck = new Date().toISOString().split('T')[0];
+        let checkedInCourses = [];
+        try {
+            const attRes = await fetch(getFetchUrl(`attendance?date=${todayStrForCheck}`));
+            if (attRes.ok) {
+                const attData = await attRes.json();
+                const todaysRecords = attData.filter(row => row.memberId === member.id && row.status !== 'unchecked');
+                todaysRecords.forEach(r => {
+                    if (r.course) {
+                        r.course.split(',').forEach(c => checkedInCourses.push(c.trim()));
+                    }
+                });
+            }
+        } catch(e) { console.error("Attendance check failed", e); }
 
-        if (status === 'invalid_time') {
+        const allCourses = member.course ? member.course.split(',').map(c => c.trim()) : [];
+        const allTimeSlots = member.timeSlot ? member.timeSlot.split(',').map(c => c.trim()) : [];
+
+        let parsedCourses = allCourses.map((c, idx) => {
+            let mins = 0;
+            const tStr = allTimeSlots[idx] || '';
+            const tParts = tStr.split(':');
+            if (tParts.length >= 2) {
+                mins = parseInt(tParts[0]) * 60 + parseInt(tParts[1]);
+            } else {
+                const match = c.match(/\((\d{1,2}):(\d{2})\)/);
+                if (match) {
+                    mins = parseInt(match[1]) * 60 + parseInt(match[2]);
+                }
+            }
+            return { name: c, mins: mins };
+        });
+
+        let availableCourses = parsedCourses.filter(c => !checkedInCourses.includes(c.name));
+
+        if (allCourses.length > 0 && availableCourses.length === 0) {
+            const msg = "이미 모든 수업에 로그인되어 있습니다.";
+            showStatus(msg, "orange");
+            if (localStorage.getItem('kiosk_voice_enabled') !== 'false' && window.speakTTS) {
+                speakTTS(msg, 'browser');
+            }
+            setTimeout(() => switchMode('home'), 2500);
+            return;
+        }
+
+        const currentMins = new Date().getHours() * 60 + new Date().getMinutes();
+        
+        let validCourses = availableCourses.filter(c => currentMins <= c.mins + 60);
+
+        if (validCourses.length === 0) {
             let msg = localStorage.getItem('kiosk_invalid_time_msg') || "{time}에 로그인 해야 합니다.";
             msg = msg.replace(/{name}/g, member.name || '');
             msg = msg.replace(/{time}/g, member.timeSlot || '예약된 시간');
@@ -626,26 +710,39 @@ async function processAttendance(inputNumOrObj, overridePhoto = null) {
             if (localStorage.getItem('kiosk_voice_enabled') !== 'false' && localStorage.getItem('kiosk_invalid_time_voice_enabled') !== 'false' && window.speakTTS) {
                 speakTTS(msg, 'browser');
             }
-            return; // Reject attendance
+            return; 
         }
+
+        let targetCourses = validCourses;
+        if (validCourses.length > 1) {
+            targetCourses = await promptMultipleCoursesVoice(validCourses);
+            if (!targetCourses || targetCourses.length === 0) {
+                showStatus("출석 처리가 취소되었습니다.", "orange");
+                setTimeout(() => switchMode('home'), 2500);
+                return;
+            }
+        }
+
+        const today = todayStrForCheck;
+        let finalStatus = 'present';
+        for (const tc of targetCourses) {
+            if (currentMins > tc.mins) finalStatus = 'late';
+        }
+        const finalCourseStr = targetCourses.map(c => c.name).join(', ');
 
         const postRes = await fetch(getFetchUrl('attendance', true), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ memberId: member.id, date: today, status: status, course: member.course })
+            body: JSON.stringify({ memberId: member.id, date: today, status: finalStatus, course: finalCourseStr })
         });
 
         if (postRes.ok) {
             showStatus(`${member.name}님, 등원 완료!`, "#3b82f6");
             showFaceOverlay(overridePhoto || member.photo, member.name);
             
-            // Play login success sound
             if (window.playLoginSound) window.playLoginSound();
-
-            // Notify other tabs (like Monthly Sheet) to sync automatically
             localStorage.setItem('sejong_attendance_sync', Date.now().toString());
 
-            // TTS Voice Feedback
             if (localStorage.getItem('kiosk_voice_enabled') !== 'false' && localStorage.getItem('kiosk_success_voice_enabled') !== 'false') {
                 const mode = localStorage.getItem('kiosk_tts_mode') || 'browser';
                 let ttsMsg = '';
@@ -664,6 +761,7 @@ async function processAttendance(inputNumOrObj, overridePhoto = null) {
             setTimeout(() => switchMode('home'), 2500);
         }
     } catch (e) {
+        console.error(e);
         showStatus("통신 장애!", "red");
     }
 }

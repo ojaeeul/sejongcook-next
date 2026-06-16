@@ -31,7 +31,7 @@
       "keyword": "세종요리, 김포요리학원, 요리사 자격증, 제과제빵"
     }
     </script>
-    <link rel="stylesheet" href="style.css?v=20260616-19">
+    <link rel="stylesheet" href="style.css?v=20260616-20">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -792,7 +792,7 @@
     </style>
 
     <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
-    <script src="monitor.js?v=20260616-19"></script>
+    <script src="monitor.js?v=20260616-20"></script>
     <script>
         // Real-time Clock Implementation
         function updateKioskTime() {
@@ -811,6 +811,23 @@
         setInterval(updateKioskTime, 1000);
         updateKioskTime();
     </script>
+    
+    <!-- STT / Voice Prompt Overlay -->
+    <div id="voicePromptOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; flex-direction:column; justify-content:center; align-items:center; color:white; backdrop-filter:blur(10px);">
+        <div style="background:#1e293b; padding:4rem; border-radius:20px; text-align:center; box-shadow:0 25px 50px -12px rgba(0,0,0,0.5); border:1px solid #334155; width:90%; max-width:800px;">
+            <h1 style="font-size:3.5rem; margin-bottom:1rem; font-weight:800; background:linear-gradient(135deg, #60a5fa, #a78bfa); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">오늘 여러 개의 수업이 있습니다</h1>
+            <h2 id="voicePromptSub" style="font-size:1.8rem; margin-bottom:3rem; color:#94a3b8; font-weight:500;">
+                모든 수업에 출석하시겠습니까?<br>음성으로 대답하시거나 아래 버튼을 눌러주세요.
+            </h2>
+            <div id="voiceRecognitionIndicator" style="margin-bottom:2rem; color:#4ade80; font-size:1.5rem; display:none;">
+                <span class="material-icons" style="vertical-align: middle; animation: pulse 1s infinite;">mic</span> 듣고 있습니다... ("모두" 또는 "하나만" 이라고 말씀해주세요)
+            </div>
+            <div style="display:flex; gap:20px; justify-content:center;">
+                <button id="btnVoiceBoth" style="flex:1; font-size:2rem; padding:25px; background:linear-gradient(135deg, #3b82f6, #2563eb); border:none; border-radius:15px; color:white; font-weight:bold; cursor:pointer; box-shadow:0 10px 15px -3px rgba(59, 130, 246, 0.5); transition:transform 0.2s;">모두 출석</button>
+                <button id="btnVoiceOne" style="flex:1; font-size:2rem; padding:25px; background:#334155; border:none; border-radius:15px; color:white; font-weight:bold; cursor:pointer; box-shadow:0 10px 15px -3px rgba(0, 0, 0, 0.3); transition:transform 0.2s;">지금 수업만 출석</button>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>
