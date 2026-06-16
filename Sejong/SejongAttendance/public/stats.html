@@ -156,7 +156,7 @@
                                 <div class="daily-card">
                                     <div class="d-title">결석자</div>
                                     <div class="d-val" id="dashAbsent">-</div>
-                                    <div class="d-badges"><span class="bg-purple">상담 -</span><span class="bg-purple">보강 -</span><span class="bg-orange">과제 -</span></div>
+                                    <div class="d-badges"><span class="bg-purple" id="dashConsultation">상담 -</span><span class="bg-purple" id="dashMakeup">보강 -</span><span class="bg-orange" id="dashExtension">연장 -</span></div>
                                 </div>
                                 <div class="daily-card">
                                     <div class="d-title">부재중 전화</div>
@@ -355,7 +355,7 @@
 
     <!-- Load Chart.js from CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="stats.js?v=20260617-24"></script>
+    <script src="stats.js?v=20260617-25"></script>
     <script>
         // Set Date to today
         const d = new Date();

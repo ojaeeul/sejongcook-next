@@ -227,6 +227,20 @@ function updateDashboard() {
     const absentCount = Math.max(0, activeMembers.length - uniquePeriodAttenders.size);
     if(document.getElementById('dashAbsent')) document.getElementById('dashAbsent').innerText = absentCount;
 
+    let consultationCount = 0;
+    let makeupCount = 0;
+    let extensionCount = 0;
+    attendanceInPeriod.forEach(a => {
+        const st = a.status || '';
+        if (st === '상담' || st.includes('consultation')) consultationCount++;
+        else if (st === '보강' || st.includes('makeup')) makeupCount++;
+        else if (st === 'extension' || st.includes('연장') || st === '연' || st === 'E') extensionCount++;
+    });
+
+    if(document.getElementById('dashConsultation')) document.getElementById('dashConsultation').innerText = `상담 ${consultationCount}`;
+    if(document.getElementById('dashMakeup')) document.getElementById('dashMakeup').innerText = `보강 ${makeupCount}`;
+    if(document.getElementById('dashExtension')) document.getElementById('dashExtension').innerText = `연장 ${extensionCount}`;
+
     // Update Tab 3: Comprehensive
     if(document.getElementById('compTotalMembers')) document.getElementById('compTotalMembers').innerText = activeMembers.length;
     if(document.getElementById('compNewMembers')) document.getElementById('compNewMembers').innerText = Math.floor(activeMembers.length * 0.05);
