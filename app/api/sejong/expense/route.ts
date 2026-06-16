@@ -6,6 +6,15 @@ export async function GET(req: NextRequest) {
     const url = new URL(req.url);
     const year = url.searchParams.get('year');
     
+    if (year === 'all') {
+        const { data, error } = await supabase.from('settings').select('value').like('key', 'expense_notebook%');
+        if (error) {
+            console.error("GET All Expense Notebooks Error:", error);
+            return NextResponse.json([]);
+        }
+        return NextResponse.json(data ? data.map(d => d.value) : []);
+    }
+
     // Default to 'expense_notebook' for 2026 or when year is not specified to preserve backwards compatibility
     const key = (!year || year === '2026') ? 'expense_notebook' : `expense_notebook_${year}`;
 
