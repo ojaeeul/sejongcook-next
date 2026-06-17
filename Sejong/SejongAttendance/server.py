@@ -301,23 +301,28 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             # Simple approach: filter out old, append new
             # Optimization: check if exists
             
-            existing_idx = -1
             data_course = data.get('course') or ''
-            for i, log in enumerate(logs):
-                log_course = log.get('course') or ''
-                if str(log['memberId']) == str(data['memberId']) and log['date'] == data['date'] and log_course == data_course:
-                    existing_idx = i
-                    break
             
-            if existing_idx != -1:
-                # Update or delete?
-                if data['status'] == 'unchecked':
-                    logs.pop(existing_idx)
-                else:
-                    logs[existing_idx]['status'] = data['status']
+            if data['status'] == 'unchecked' and data_course == 'ALL':
+                # Remove ALL courses for this member on this date
+                logs = [l for l in logs if not (str(l['memberId']) == str(data['memberId']) and l['date'] == data['date'])]
             else:
-                if data['status'] != 'unchecked':
-                    logs.append(data)
+                existing_idx = -1
+                for i, log in enumerate(logs):
+                    log_course = log.get('course') or ''
+                    if str(log['memberId']) == str(data['memberId']) and log['date'] == data['date'] and log_course == data_course:
+                        existing_idx = i
+                        break
+                
+                if existing_idx != -1:
+                    # Update or delete?
+                    if data['status'] == 'unchecked':
+                        logs.pop(existing_idx)
+                    else:
+                        logs[existing_idx]['status'] = data['status']
+                else:
+                    if data['status'] != 'unchecked':
+                        logs.append(data)
                 
             self._write_json('attendance.json', logs)
             
@@ -341,7 +346,10 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             course_str = course if course else ''
 
             if status == 'unchecked':
-                logs = [l for l in logs if not (str(l['memberId']) == memberId_str and l['date'] in dates and (l.get('course') or '') == course_str)]
+                if course_str == 'ALL':
+                    logs = [l for l in logs if not (str(l['memberId']) == memberId_str and l['date'] in dates)]
+                else:
+                    logs = [l for l in logs if not (str(l['memberId']) == memberId_str and l['date'] in dates and (l.get('course') or '') == course_str)]
             else:
                 for d in dates:
                      existing_idx = -1

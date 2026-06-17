@@ -483,10 +483,8 @@ function determineAttendanceStatus(member) {
     }).filter(m => m !== -1);
     if (slots.length === 0) return 'invalid_time'; 
     for (const slotMins of slots) {
-        if (currentMins <= (slotMins + 60)) {
-            if (currentMins > slotMins) return 'late';
-            return 'present';
-        }
+        if (currentMins > slotMins) return 'late';
+        return 'present';
     }
     return 'invalid_time';
 }
@@ -729,9 +727,11 @@ async function processAttendance(inputNumOrObj, overridePhoto = null) {
 
         const currentMins = new Date().getHours() * 60 + new Date().getMinutes();
         
-        let validCourses = availableCourses.filter(c => currentMins <= c.mins + 60);
+        let validCourses = availableCourses; // Removed 1시간 제한 규칙
 
         if (validCourses.length === 0) {
+            // This case won't be hit usually since availableCourses=0 is caught above, 
+            // but kept for safety.
             let msg = localStorage.getItem('kiosk_invalid_time_msg') || "{time}에 로그인 해야 합니다.";
             msg = msg.replace(/{name}/g, member.name || '');
             msg = msg.replace(/{time}/g, member.timeSlot || '예약된 시간');

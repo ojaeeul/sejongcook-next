@@ -12,12 +12,12 @@
     <meta name="keywords" content="세종요리, 김포요리, 세종요리학원, 김포요리학원, 요리학원, 출석관리, 수강생관리, 요리자격증">
     <meta property="og:title" content="세종요리제과학원 월간 출석부">
     <meta property="og:description" content="수강생들의 출석 현황을 한눈에 확인하세요.">
-    <link rel="stylesheet" href="style.css?v=20260618-0">
+    <link rel="stylesheet" href="style.css?v=20260618-1">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="shared_calc.js?v=20260618-0"></script>
-    <script src="script.js?v=20260618-0" defer></script>
+    <script src="shared_calc.js?v=20260618-1"></script>
+    <script src="script.js?v=20260618-1" defer></script>
     <style>
         .sheet-container {
             background: white;
@@ -1883,6 +1883,7 @@
 
         // Auto-refresh polling every 5 seconds
         setInterval(async () => {
+            if (window.isSavingAttendance) return;
             if (typeof isDragging !== 'undefined' && isDragging) return;
             const modals = document.querySelectorAll('.modal-overlay:not(.hidden)');
             if (modals.length > 0) return;
@@ -2935,6 +2936,33 @@
             });
         }
 
+        window.isSavingAttendance = false;
+        let saveQueue = [];
+
+        async function processSaveQueue() {
+            if (window.isSavingAttendance || saveQueue.length === 0) return;
+            window.isSavingAttendance = true;
+            
+            while (saveQueue.length > 0) {
+                const req = saveQueue.shift();
+                try {
+                    await fetch(`${SHEET_API_BASE}/attendance`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ memberId: req.memberId, date: req.dateStr, status: req.status || 'unchecked', course: req.course }),
+                    });
+                    localStorage.setItem('sejong_attendance_sync', Date.now().toString());
+                } catch (e) {
+                    console.error("Save failed", e);
+                }
+            }
+            
+            window.isSavingAttendance = false;
+            // Force re-fetch to ensure sync with server
+            lastAttendanceHash = ''; 
+            fetchAttendance().then(changed => { if(changed) renderSheet(); });
+        }
+
         async function saveAttendance(memberId, dateStr, status, course) {
             let reqCourse = course;
             if (status === 'unchecked' && course === 'ALL') {
@@ -2956,18 +2984,9 @@
             // Re-render immediately
             renderSheet();
 
-            try {
-                await fetch(`${SHEET_API_BASE}/attendance`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ memberId, date: dateStr, status: status || 'unchecked', course: reqCourse }),
-                });
-                // Notify other tabs
-                localStorage.setItem('sejong_attendance_sync', Date.now().toString());
-            } catch (e) {
-                console.error("Save failed", e);
-                alert('저장 실패: ' + e.message + ' \n' + e.stack);
-            }
+            // Queue the request
+            saveQueue.push({ memberId, dateStr, status, course: reqCourse });
+            processSaveQueue();
         }
 
         // ---- Drag Interaction Logic ----
