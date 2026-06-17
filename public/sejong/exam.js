@@ -216,7 +216,15 @@ function renderExamTable() {
                 <td class="col-date"><input type="text" value="${exam.examDate || ''}" onchange="updateExam(${index}, 'examDate', this.value)" placeholder="MM/DD"></td>
                 <td class="col-res-date"><input type="text" value="${exam.resultDate || ''}" onchange="updateExam(${index}, 'resultDate', this.value)" placeholder="MM/DD"></td>
                 <td class="col-subject"><input type="text" value="${exam.subject || ''}" onchange="updateExam(${index}, 'subject', this.value)"></td>
-                <td class="col-name"><input type="text" value="${exam.name || ''}" onchange="updateExam(${index}, 'name', this.value)" style="font-weight: 500;" placeholder="이름 입력"></td>
+                <td class="col-name" style="position: relative; overflow: visible;">
+                    <input type="text" value="${exam.name || ''}" 
+                        onchange="updateExam(${index}, 'name', this.value)" 
+                        onfocus="showStudentDropdown(this, ${index})" 
+                        oninput="filterStudentDropdown(this, ${index})" 
+                        onblur="hideStudentDropdown(${index})"
+                        style="font-weight: 500;" placeholder="이름 입력" autocomplete="off">
+                    <div id="dropdown-${index}" class="autocomplete-dropdown" style="display: none;"></div>
+                </td>
                 <td class="col-time"><input type="text" value="${exam.time || ''}" onchange="updateExam(${index}, 'time', this.value)"></td>
                 <td class="col-exam-num"><input type="text" value="${exam.examNum || ''}" onchange="updateExam(${index}, 'examNum', this.value)"></td>
                 <td class="col-id-pass">
@@ -683,3 +691,80 @@ function applyInlineMonth(type, skipRead = false) {
 document.addEventListener('DOMContentLoaded', () => {
     initInlineMonthPickers();
 });
+
+
+// --- Autocomplete Dropdown Functions ---
+function showStudentDropdown(input, index) {
+    const dropdown = document.getElementById(`dropdown-${index}`);
+    if (!dropdown) return;
+    dropdown.style.display = 'block';
+    populateStudentDropdown(input.value.trim(), index);
+}
+
+function filterStudentDropdown(input, index) {
+    populateStudentDropdown(input.value.trim(), index);
+}
+
+function hideStudentDropdown(index) {
+    setTimeout(() => {
+        const dropdown = document.getElementById(`dropdown-${index}`);
+        if (dropdown) dropdown.style.display = 'none';
+    }, 200);
+}
+
+function populateStudentDropdown(filterStr, index) {
+    const dropdown = document.getElementById(`dropdown-${index}`);
+    if (!dropdown) return;
+    
+    dropdown.innerHTML = '';
+    
+    const sorted = [...examMembers].sort((a,b) => (a.name||'').localeCompare(b.name||''));
+    let count = 0;
+    
+    sorted.forEach(m => {
+        if (filterStr && !m.name.includes(filterStr) && !(m.phone && m.phone.includes(filterStr))) return;
+        
+        const memberCourse = m.course || m.course_select;
+        const courses = memberCourse ? parseCourses(memberCourse) : ['과정 없음'];
+        
+        courses.forEach(course => {
+            count++;
+            const div = document.createElement('div');
+            div.className = 'dropdown-item';
+            div.innerHTML = `
+                <div style="font-weight: 500; font-size: 0.85rem; color: #1e293b;">${m.name}</div>
+                <div style="font-size: 0.75rem; color: #64748b;">${course}</div>
+            `;
+            div.onmousedown = (e) => {
+                e.preventDefault(); // prevent blur
+                selectStudentFromDropdown(index, m, course);
+            };
+            dropdown.appendChild(div);
+        });
+    });
+    
+    if (count === 0) {
+        dropdown.innerHTML = '<div style="padding: 10px; color: #94a3b8; font-size: 0.8rem; text-align: center;">수기 입력 모드</div>';
+    }
+}
+
+function selectStudentFromDropdown(index, member, course) {
+    const genId = generateId(member.name, member.resident_num);
+    const genPw = genId ? genId + '@' : '';
+    let subject = '';
+    if (course && course !== '과정 없음') {
+        subject = course.split('(')[0].replace('기능사', '').trim();
+    }
+    
+    while (exams.length <= index) {
+        exams.push({ examDate: '', resultDate: '', subject: '', name: '', time: '', examNum: '', genId: '', genPw: '', score: '', note: '' });
+    }
+    
+    exams[index].name = member.name;
+    exams[index].subject = subject;
+    exams[index].genId = genId;
+    exams[index].genPw = genPw;
+    
+    saveExams();
+    renderExamTable();
+}
