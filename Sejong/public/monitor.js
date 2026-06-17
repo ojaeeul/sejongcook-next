@@ -137,6 +137,7 @@ async function loadFaceModels() {
         console.error("Face API load error:", e);
     } finally {
         modelsLoading = false;
+        if (shutter) shutter.style.opacity = '0';
     }
 }
 

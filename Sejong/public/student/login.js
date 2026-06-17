@@ -240,7 +240,10 @@ function updateDisplay() { if (inputDisplay) inputDisplay.textContent = currentI
 async function startCamera() {
     try {
         stream = await navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720, focusMode: { ideal: "continuous" } } });
-        if (video) video.srcObject = stream;
+        if (video) {
+            video.srcObject = stream;
+            video.play().catch(e => console.warn("Video play failed:", e));
+        }
     } catch (e) { showStatus("카메라 에러", "red"); }
 }
 
