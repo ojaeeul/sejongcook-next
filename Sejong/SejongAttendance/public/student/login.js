@@ -165,21 +165,29 @@ function determineAttendanceStatus(member) {
 
     if (slots.length === 0) return 'present';
 
-    for (const slotMins of slots) {
-        if (currentMins >= (slotMins - 120) && currentMins <= (slotMins + 120)) {
-            if (currentMins >= slotMins + 5) {
-                return 'late';
-            }
-            const h = Math.floor(slotMins / 60);
-            if (h === 10) return '10';
-            if (h === 12) return '12';
-            if (h === 14 || h === 2) return '2';
-            if (h === 17 || h === 5) return '5';
-            if (h === 19 || h === 7) return '7';
-            return 'present';
+    // Find the closest slot to current time
+    let closestSlot = slots[0];
+    let minDiff = Math.abs(currentMins - slots[0]);
+    
+    for (let i = 1; i < slots.length; i++) {
+        const diff = Math.abs(currentMins - slots[i]);
+        if (diff < minDiff) {
+            minDiff = diff;
+            closestSlot = slots[i];
         }
     }
-    return 'invalid_time';
+
+    // Determine status based on the closest slot, removing the "invalid_time" blockage
+    if (currentMins >= closestSlot + 5) {
+        return 'late';
+    }
+    const h = Math.floor(closestSlot / 60);
+    if (h === 10) return '10';
+    if (h === 12) return '12';
+    if (h === 14 || h === 2) return '2';
+    if (h === 17 || h === 5) return '5';
+    if (h === 19 || h === 7) return '7';
+    return 'present';
 }
 
 async function processAttendance(inputNum, overridePhoto = null) {
