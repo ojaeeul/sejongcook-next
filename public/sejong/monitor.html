@@ -31,7 +31,7 @@
       "keyword": "세종요리, 김포요리학원, 요리사 자격증, 제과제빵"
     }
     </script>
-    <link rel="stylesheet" href="style.css?v=20260618-10">
+    <link rel="stylesheet" href="style.css?v=20260618-11">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -297,14 +297,14 @@
                 justify-content: center !important;
             }
 
-            #workspace.mode-face_only, #workspace.mode-register_camera .kiosk-left,
+            #workspace.mode-face_only .kiosk-left, #workspace.mode-register_camera .kiosk-left,
             #workspace.mode-register .kiosk-left {
                 height: 44dvh !important;
                 padding: 0px;
                 justify-content: flex-end !important;
             }
 
-            #workspace.mode-face_only, #workspace.mode-register_camera .camera-wrapper,
+            #workspace.mode-face_only .camera-wrapper, #workspace.mode-register_camera .camera-wrapper,
             #workspace.mode-register .camera-wrapper {
                 flex: 1;
                 height: 100% !important;
@@ -315,14 +315,14 @@
                 margin: 0 auto !important;
             }
 
-            #workspace.mode-face_only, #workspace.mode-register_camera .kiosk-right,
+            #workspace.mode-face_only .kiosk-right, #workspace.mode-register_camera .kiosk-right,
             #workspace.mode-register .kiosk-right {
                 height: 56dvh !important;
                 padding-top: 15px !important;
                 padding-bottom: 0px;
             }
 
-            #workspace.mode-face_only, #workspace.mode-register_camera #rightHeader {
+            #workspace.mode-face_only #rightHeader, #workspace.mode-register_camera #rightHeader {
                 display: none !important;
             }
 
@@ -650,8 +650,7 @@
                     <button class="kiosk-key" onclick="addNum(0)">0</button>
                     <button id="mainSubmitBtn" class="kiosk-key submit" onclick="submitAttendance()">출석</button>
                     <button id="faceSubmitBtn" class="kiosk-key submit"
-                        style="display: none; background: #059669; font-size: 1.1rem;" onclick="capturePhoto()">얼굴
-                        촬영<br>및 출석</button>
+                        style="display: none; background: #059669; font-size: 1.1rem;" onclick="startFaceScan()">얼굴 등록<br>스캔 시작</button>
                 </div>
 
                 <!-- Face-Only Action Panel -->
@@ -792,7 +791,7 @@
     </style>
 
     <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
-    <script src="monitor.js?v=20260618-10"></script>
+    <script src="monitor.js?v=20260618-11"></script>
     <script>
         // Real-time Clock Implementation
         function updateKioskTime() {

@@ -472,7 +472,7 @@ async function capturePhoto() {
     } finally {
         if (faceSubmitBtn) {
             faceSubmitBtn.disabled = false;
-            faceSubmitBtn.innerHTML = "얼굴 촬영<br>및 출석";
+            faceSubmitBtn.innerHTML = "얼굴 등록<br>스캔 시작";
             faceSubmitBtn.style.background = "#059669";
         }
     }
