@@ -819,6 +819,11 @@ let cameraHealthCheckInterval = null;
 let lastVideoTime = 0;
 
 async function startCamera() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        showStatus("보안 연결(HTTPS) 필요: 카메라를 활성화할 수 없습니다.", "red");
+        console.error("navigator.mediaDevices is undefined. Are you using HTTP instead of HTTPS?");
+        return;
+    }
     try {
         const cameraId = localStorage.getItem('kiosk_camera_id');
         const constraints = { video: { width: 1280, height: 720, focusMode: { ideal: "continuous" } } };
@@ -835,10 +840,10 @@ async function startCamera() {
 
         // 카메라 헬스체크 시작 (검은 화면 멈춤 복구용)
         if (cameraHealthCheckInterval) clearInterval(cameraHealthCheckInterval);
-        lastVideoTime = 0;
+        lastVideoTime = -1;
         cameraHealthCheckInterval = setInterval(async () => {
             if (video && stream && currentMode !== 'home' && currentMode !== 'number') {
-                if (video.currentTime === lastVideoTime) {
+                if (video.currentTime === lastVideoTime && video.currentTime > 0) {
                     // 비디오가 멈췄거나 오류 상태
                     console.warn("Camera frozen detected! Restarting...");
                     stopCamera();
