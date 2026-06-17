@@ -1,29 +1,34 @@
 const fs = require('fs');
-const jsdom = require("jsdom");
-const { JSDOM } = jsdom;
 
-const sharedCalcCode = fs.readFileSync('public/sejong/shared_calc.js', 'utf8');
+// Mock window and global objects
+global.window = global;
+window.sejongCycleRules = { default: 9, custom: [{ keyword: "제과제빵", cycle: 17 }] };
+window.global_makeup_cutoffs = {};
+window.global_attendance_cutoffs = {};
+window.holidaysData = [];
+window.KOREAN_HOLIDAYS_MAP = {};
+window.COURSE_SCHEDULES = {};
+window.GLOBAL_DATA_ADJUSTMENTS = {};
 
-const testScript = `
-    let GLOBAL_DATA_ADJUSTMENTS = {};
-    ${sharedCalcCode}
+// Load shared_calc.js
+const sharedCalcCode = fs.readFileSync('./Sejong/SejongAttendance/public/shared_calc.js', 'utf8');
+eval(sharedCalcCode);
 
-    const member = { id: "123", course: "한식기능사", registeredDate: "2025-05-01" };
-    const attendanceLogs = [
-        { memberId: "123", course: "한식기능사", date: "2026-01-01", status: "present" },
-        { memberId: "123", course: "한식기능사", date: "2026-01-02", status: "present" },
-        { memberId: "123", course: "한식기능사", date: "2026-01-03", status: "present" },
-        { memberId: "123", course: "한식기능사", date: "2026-01-04", status: "present" },
-        { memberId: "123", course: "한식기능사", date: "2026-01-05", status: "present" },
-        { memberId: "123", course: "한식기능사", date: "2026-01-06", status: "present" },
-        { memberId: "123", course: "한식기능사", date: "2026-01-07", status: "present" },
-        { memberId: "123", course: "한식기능사", date: "2026-01-08", status: "present" },
-        { memberId: "123", course: "한식기능사", date: "2026-01-09", status: "present" },
-        { memberId: "123", course: "한식기능사", date: "2026-01-10", status: "present" }
-    ];
+// Load data
+const attendanceData = JSON.parse(fs.readFileSync('./Sejong/SejongAttendance/data/attendance.json', 'utf8'));
+const memberData = JSON.parse(fs.readFileSync('./Sejong/SejongAttendance/data/members.json', 'utf8'));
 
-    const result = window.calculateRedBoxesForMonth(member, 2026, 1, attendanceLogs, "한식기능사", GLOBAL_DATA_ADJUSTMENTS);
-    console.log(result);
-`;
+// Test
+const targetYear = 2026;
+const targetMonth = 6;
+let count = 0;
 
-const dom = new JSDOM(`<body><script>${testScript}</script></body>`, { runScripts: "dangerously" });
+memberData.forEach(m => {
+    if (m.status !== 'registered') return;
+    const result = window.calculateRedBoxesForMonth(m, targetYear, targetMonth, attendanceData, "", {});
+    if (result.redDays && result.redDays.length > 0 && !result.isSimulated) {
+        console.log(`Member ${m.name} (ID: ${m.id}) has redDays in 2026-06:`, result.redDays);
+        count++;
+    }
+});
+console.log('Total members with REAL redDays in 2026-06:', count);
