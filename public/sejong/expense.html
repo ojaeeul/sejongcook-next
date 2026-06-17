@@ -7,7 +7,7 @@
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>지출내역 및 날짜별 매출</title>
-    <link rel="stylesheet" href="style.css?v=20260618-5">
+    <link rel="stylesheet" href="style.css?v=20260618-6">
     <!-- Material Icons for sidebar -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <!-- 손글씨 느낌을 위한 폰트 -->
@@ -542,6 +542,10 @@
                         결재 주기 설정
                     </a>
                     <a href="index.html?filter=archive" id="navArchive" class="nav-item">수료생 보관함</a>
+                    <a href="attendance_manager.html" id="navAttendanceManager" class="nav-item">
+                        <span class="material-icons" style="font-size: 1.2rem; margin-right: 8px;">person_remove</span>
+                        학생별 출석 관리
+                    </a>
                     <a href="index.html?filter=trash" id="navTrash" class="nav-item">휴지통</a>
                     <a href="stats.html" class="nav-item">통계 및 납부</a>
                     <a href="expense.html" class="nav-item active">지출현황</a>
@@ -664,7 +668,7 @@
 
     </div>
 
-    <script src="expense_logic.js?v=20260618-5"></script>
+    <script src="expense_logic.js?v=20260618-6"></script>
     <script>
         // 기존 하드코딩된 contenteditable 부분은 expense_logic.js로 통합됨
     </script>
@@ -763,6 +767,6 @@
         }
 
     </style>
-    <script src="expense_settings.js?v=20260618-5"></script>
+    <script src="expense_settings.js?v=20260618-6"></script>
 </body>
 </html>
