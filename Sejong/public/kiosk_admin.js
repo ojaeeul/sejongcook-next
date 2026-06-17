@@ -5,6 +5,7 @@ function getFetchUrl(endpoint, isPost = false) {
 }
 
 let adminMembers = [];
+let todayAttendance = [];
 let modelsLoaded = false;
 let modelsLoading = false;
 
@@ -45,6 +46,14 @@ async function fetchMembers() {
         const res = await fetch(getFetchUrl('members'));
         const rawMembers = await res.json();
         adminMembers = Array.isArray(rawMembers) ? rawMembers.filter(m => !['delete', 'trash', 'hold', 'completed'].includes(m.status)) : [];
+        
+        const attRes = await fetch(getFetchUrl('attendance'));
+        const rawAtt = await attRes.json();
+        
+        // Use local timezone date (KST)
+        const today = new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
+        todayAttendance = Array.isArray(rawAtt) ? rawAtt.filter(a => a.date === today && a.status !== 'unchecked') : [];
+        
         renderList();
     } catch(e) {
         listEl.innerHTML = '<div style="color:red; text-align:center; padding:40px;">데이터 로딩에 실패했습니다. 관리자에게 문의하세요.</div>';
@@ -70,6 +79,15 @@ function renderList() {
         const item = document.createElement('div');
         item.className = 'member-item';
         
+        
+        const isAttended = todayAttendance.some(a => String(a.memberId) === String(m.id));
+        const attBadge = isAttended 
+            ? `<div style="margin-top:5px;"><span style="display:inline-flex; align-items:center; gap:4px; padding: 3px 8px; border-radius: 4px; background: #dcfce7; color: #166534; font-size: 0.85rem; font-weight: bold;"><span class="material-icons" style="font-size:14px;">login</span> 로그인 (출석완료)</span></div>`
+            : `<div style="margin-top:5px;"><span style="display:inline-flex; align-items:center; gap:4px; padding: 3px 8px; border-radius: 4px; background: #f1f5f9; color: #64748b; font-size: 0.85rem; font-weight: bold;"><span class="material-icons" style="font-size:14px;">logout</span> 로그아웃 (출석 전)</span></div>`;
+        
+        const forceActionBtn = isAttended
+            ? `<button class="btn" style="background:#fef2f2; color:#ef4444; border:1px solid #fca5a5;" onclick="forceLogout('${m.id}', '${m.course}')"><span class="material-icons" style="font-size:18px;">logout</span> 강제 로그아웃</button>`
+            : `<button class="btn" style="background:#f0fdf4; color:#16a34a; border:1px solid #86efac;" onclick="forceLogin('${m.id}', '${m.course}')"><span class="material-icons" style="font-size:18px;">login</span> 강제 로그인</button>`;
         const photoPreview = hasFace && m.photo ? `<img src="${m.photo}" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid #3b82f6; flex-shrink: 0; cursor: pointer;" onclick="previewLargePhoto('${m.photo}', '${m.name}', '${m.id}')">` : `<div style="width: 60px; height: 60px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer;" onclick="previewLargePhoto('', '${m.name}', '${m.id}')"><span class="material-icons" style="color:#94a3b8; font-size: 32px;">person</span></div>`;
 
         const infoHtml = `
@@ -83,6 +101,7 @@ function renderList() {
                     <div style="font-weight:700; font-size: 0.9rem; ${hasFace ? 'color:#059669;' : 'color:#94a3b8;'}">
                         ${hasFace ? '<span class="material-icons" style="vertical-align:middle; font-size:16px;">check_circle</span> 등록 완료' : '<span class="material-icons" style="vertical-align:middle; font-size:16px;">cancel</span> 사진 미등록'}
                     </div>
+                    ${attBadge}
                 </div>
             </div>
         `;
@@ -102,6 +121,8 @@ function renderList() {
                     <span class="material-icons" style="font-size:18px;">add_photo_alternate</span> AI찍기(파일업로드)
                     <input type="file" accept="image/*" style="display:none;" onchange="manualFaceUpload(event, '${m.id}')">
                 </label>
+            
+                ${forceActionBtn}
             </div>
         `;
         
@@ -856,3 +877,40 @@ function toggleFullScreen() {
         }
     }
 }
+
+
+window.forceLogin = async function(memberId, course) {
+    if (!confirm('해당 학생을 오늘 날짜로 강제 출석(로그인) 처리하시겠습니까?')) return;
+    const today = new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
+    try {
+        const res = await fetch(getFetchUrl('attendance', true), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ memberId, date: today, status: 'present', course: course || 'ALL' })
+        });
+        if (res.ok) {
+            localStorage.removeItem('sejong_attendance_sync');
+            fetchMembers();
+        }
+    } catch (e) {
+        alert('처리 중 오류가 발생했습니다.');
+    }
+};
+
+window.forceLogout = async function(memberId, course) {
+    if (!confirm('해당 학생의 오늘 출석 기록을 강제로 삭제(로그아웃) 하시겠습니까?')) return;
+    const today = new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
+    try {
+        const res = await fetch(getFetchUrl('attendance/batch', true), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ memberId, dates: [today], status: 'unchecked', course: 'ALL' })
+        });
+        if (res.ok) {
+            localStorage.removeItem('sejong_attendance_sync');
+            fetchMembers();
+        }
+    } catch (e) {
+        alert('처리 중 오류가 발생했습니다.');
+    }
+};
