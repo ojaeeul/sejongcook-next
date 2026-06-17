@@ -2,12 +2,12 @@
     {
         "examDate": "",
         "resultDate": "",
-        "subject": "한식",
-        "name": "",
+        "subject": "가정요리",
+        "name": "홍길동",
         "time": "",
         "examNum": "",
-        "genId": "",
-        "genPw": "",
+        "genId": "hgd123121",
+        "genPw": "hgd123121@",
         "score": "",
         "note": ""
     }

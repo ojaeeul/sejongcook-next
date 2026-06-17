@@ -233,7 +233,15 @@ function renderExamTable() {
                         <input type="text" value="${exam.genPw || ''}" onchange="updateExam(${index}, 'genPw', this.value)" style="color: #64748b;">
                     </div>
                 </td>
-                <td class="col-score"><input type="text" value="${exam.score || ''}" onchange="updateExam(${index}, 'score', this.value)" class="${getScoreClass(exam.score)}"></td>
+                <td class="col-score" style="position: relative; overflow: visible;">
+                    <input type="text" value="${exam.score || ''}" 
+                        onchange="updateExam(${index}, 'score', this.value)" 
+                        onfocus="showScoreDropdown(this, ${index})" 
+                        oninput="filterScoreDropdown(this, ${index})" 
+                        onblur="hideScoreDropdown(${index})"
+                        class="${getScoreClass(exam.score)}" autocomplete="off" placeholder="점수/결과">
+                    <div id="score-dropdown-${index}" class="autocomplete-dropdown" style="display: none; min-width: 80px; width: 100%; text-align: center; left: 50%; transform: translateX(-50%);"></div>
+                </td>
                 <td class="col-note"><input type="text" value="${exam.note || ''}" onchange="updateExam(${index}, 'note', this.value)"></td>
             `;
             tbody.appendChild(tr);
@@ -866,6 +874,69 @@ function selectStudentFromDropdown(index, member, course) {
     exams[index].genId = genId;
     exams[index].genPw = genPw;
     
+    saveExams();
+    renderExamTable();
+}
+
+// --- Score Autocomplete Dropdown Functions ---
+const SCORE_OPTIONS = ['합격', '불합격', '결시', '실격', '취소'];
+
+function showScoreDropdown(input, index) {
+    const dropdown = document.getElementById(`score-dropdown-${index}`);
+    if (!dropdown) return;
+    dropdown.style.display = 'block';
+    populateScoreDropdown(input.value.trim(), index);
+}
+
+function filterScoreDropdown(input, index) {
+    populateScoreDropdown(input.value.trim(), index);
+}
+
+function hideScoreDropdown(index) {
+    setTimeout(() => {
+        const dropdown = document.getElementById(`score-dropdown-${index}`);
+        if (dropdown) dropdown.style.display = 'none';
+    }, 200);
+}
+
+function populateScoreDropdown(filterStr, index) {
+    const dropdown = document.getElementById(`score-dropdown-${index}`);
+    if (!dropdown) return;
+    
+    dropdown.innerHTML = '';
+    let count = 0;
+    
+    SCORE_OPTIONS.forEach(opt => {
+        if (filterStr && !opt.includes(filterStr)) return;
+        
+        count++;
+        const div = document.createElement('div');
+        div.className = 'dropdown-item';
+        
+        let color = '#1e293b';
+        if (opt === '합격') color = '#059669';
+        if (opt === '불합격' || opt === '실격') color = '#dc2626';
+        if (opt === '결시' || opt === '취소') color = '#64748b';
+        
+        div.innerHTML = `<div style="font-weight: 600; font-size: 0.85rem; color: ${color}; text-align: center;">${opt}</div>`;
+        div.onmousedown = (e) => {
+            e.preventDefault();
+            selectScoreFromDropdown(index, opt);
+        };
+        dropdown.appendChild(div);
+    });
+    
+    if (count === 0) {
+        dropdown.innerHTML = '<div style="padding: 8px; color: #94a3b8; font-size: 0.75rem; text-align: center;">수기 입력<br>(예: 85)</div>';
+    }
+}
+
+function selectScoreFromDropdown(index, value) {
+    while (exams.length <= index) {
+        exams.push({ examDate: '', resultDate: '', subject: '', name: '', time: '', examNum: '', genId: '', genPw: '', score: '', note: '' });
+    }
+    
+    exams[index].score = value;
     saveExams();
     renderExamTable();
 }
