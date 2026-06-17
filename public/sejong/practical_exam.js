@@ -900,6 +900,7 @@ function showStatusDropdown(input, index) {
     const dropdown = document.getElementById(`status-dropdown-${index}`);
     if (!dropdown) return;
     dropdown.style.display = 'block';
+    if (dropdown.parentElement) dropdown.parentElement.style.zIndex = '1000';
     populateStatusDropdown(input.value.trim(), index);
 }
 
@@ -910,7 +911,10 @@ function filterStatusDropdown(input, index) {
 function hideStatusDropdown(index) {
     setTimeout(() => {
         const dropdown = document.getElementById(`status-dropdown-${index}`);
-        if (dropdown) dropdown.style.display = 'none';
+        if (dropdown) {
+            dropdown.style.display = 'none';
+            if (dropdown.parentElement) dropdown.parentElement.style.zIndex = '10';
+        }
     }, 200);
 }
 
