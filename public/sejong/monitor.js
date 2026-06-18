@@ -109,8 +109,9 @@ function switchMode(mode) {
         else if (mode === 'register_camera') {
             setupUI("얼굴 정밀 스캔", "카메라를 응시하세요. 100+ 다중 초점이 분석합니다.", false, true, true);
             if (mirrorSection) mirrorSection.style.opacity = '1';
-            startCamera();
-            startAutoRegistrationLoop();
+            startCamera().then(() => {
+                startAutoRegistrationLoop();
+            });
         }
     }
 }
@@ -832,6 +833,8 @@ async function startCamera() {
         console.error("navigator.mediaDevices is undefined. Are you using HTTP instead of HTTPS?");
         return;
     }
+    if (stream && stream.active) return;
+    
     try {
         const cameraId = localStorage.getItem('kiosk_camera_id');
         const constraints = { video: { width: 1280, height: 720, focusMode: { ideal: "continuous" } } };
