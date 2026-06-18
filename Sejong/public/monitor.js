@@ -1360,7 +1360,7 @@ async function autoRegisterFace() {
         
         let detection = undefined;
         for (let i = 0; i < 3; i++) {
-            const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.4 }))
+            const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.4 }))
                 .withFaceLandmarks()
                 .withFaceDescriptors();
             if (detections && detections.length > 0) {
@@ -1427,7 +1427,7 @@ async function startAutoRegistrationLoop() {
     }
 
     try {
-        const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.4 })).withFaceLandmarks();
+        const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.4 })).withFaceLandmarks();
         const detection = detections && detections.length > 0 ? detections[0] : undefined;
         
         console.log("Registration Loop: detected faces =", detections ? detections.length : 0);
