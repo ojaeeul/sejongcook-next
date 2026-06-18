@@ -875,6 +875,7 @@ function toggleFullScreen() {
     } else {
         if (document.exitFullscreen) {
             document.exitFullscreen();
+        }
     }
 }
 
