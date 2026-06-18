@@ -72,6 +72,7 @@ function switchMode(mode) {
 
     // 화면 전환 시 무조건 루프 정지 (안전 장치)
     if (typeof stopAutoDetectionLoop === 'function') stopAutoDetectionLoop();
+    if (typeof stopAutoRegistrationLoop === 'function') stopAutoRegistrationLoop();
 
     if (mode === 'home') {
         if (homeScreen) homeScreen.style.display = 'flex';
@@ -1356,11 +1357,14 @@ async function autoRegisterFace() {
         const photoDataUrl = capturePrettyFrame();
         
         // Final detection for descriptor
-        const [res, detection] = await Promise.all([
+        const [res, detections] = await Promise.all([
             fetch(getFetchUrl('members') + '&t=' + Date.now()),
-            faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor()
+            faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 }))
+                .withFaceLandmarks()
+                .withFaceDescriptors()
         ]);
-
+        const detection = detections && detections.length > 0 ? detections[0] : undefined;
+        
         const rawMembers = await res.json();
         const members = Array.isArray(rawMembers) ? rawMembers.filter(m => !['delete', 'trash', 'hold', 'completed'].includes(m.status)) : [];
         const member = members.find(m => m.phone && m.phone.replace(/-/g, '').endsWith(currentInput));
@@ -1402,13 +1406,17 @@ async function autoRegisterFace() {
 }
 
 async function startAutoRegistrationLoop() {
-    if (video.paused || video.ended || currentMode !== 'register_camera' || isRegistering) {
+    if (currentMode !== 'register_camera') return; // Exit completely if mode changed
+
+    if (video.paused || video.ended || isRegistering) {
         autoRegistrationLoopId = requestAnimationFrame(startAutoRegistrationLoop);
         return;
     }
 
     try {
-        const detection = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 })).withFaceLandmarks();
+        const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 })).withFaceLandmarks();
+        
+        const detection = detections && detections.length > 0 ? detections[0] : undefined;
         
         drawHyperFocusUI(detection);
 
