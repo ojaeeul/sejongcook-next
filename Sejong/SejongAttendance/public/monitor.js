@@ -1422,7 +1422,7 @@ async function startAutoRegistrationLoop() {
         drawHyperFocusUI(detection);
 
         if (detection) {
-            registerProgress++;
+            registerProgress += 6; // 대폭 가속: 2초(실제로는 0.5초 내외) 이내에 100개 십자초점 스캔 완료 및 자동등록
             if (registerProgress >= 20) { // faster, ~1.5 to 2 seconds of stable detection
                 stopAutoRegistrationLoop(); // Stop loop
                 await autoRegisterFace();
@@ -1430,7 +1430,7 @@ async function startAutoRegistrationLoop() {
             }
         } else {
             // Decay progress if face lost
-            if (registerProgress > 0) registerProgress--;
+            if (registerProgress > 0) registerProgress -= 0.5; // 깜빡여도 덜 리셋되게 감소폭 완화
         }
     } catch (e) {
         console.error("Auto registration loop error:", e);
