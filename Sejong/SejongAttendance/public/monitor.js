@@ -1423,7 +1423,7 @@ async function startAutoRegistrationLoop() {
         drawHyperFocusUI(detection);
 
         if (detection) {
-            registerProgress += 3; // 약 1.5~2초 소요 (목표치 100)
+            registerProgress += 25; // 모바일(초당 3~5프레임)에서도 1~2초 내에 등록되도록 가속 (4번 감지 시 100 도달)
             if (registerProgress >= 100) { 
                 stopAutoRegistrationLoop(); // Stop loop
                 await autoRegisterFace();
