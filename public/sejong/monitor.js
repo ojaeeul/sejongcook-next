@@ -1356,14 +1356,22 @@ async function autoRegisterFace() {
     try {
         const photoDataUrl = capturePrettyFrame();
         
-        // Final detection for descriptor
-        const [res, detections] = await Promise.all([
-            fetch(getFetchUrl('members') + '&t=' + Date.now()),
-            faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.4 }))
+        const fetchPromise = fetch(getFetchUrl('members') + '&t=' + Date.now());
+        
+        let detection = undefined;
+        for (let i = 0; i < 3; i++) {
+            const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.4 }))
                 .withFaceLandmarks()
-                .withFaceDescriptors()
-        ]);
-        const detection = detections && detections.length > 0 ? detections[0] : undefined;
+                .withFaceDescriptors();
+            if (detections && detections.length > 0) {
+                detection = detections[0];
+                break;
+            }
+            // 0.2초 대기 후 재시도 (흔들림 보정)
+            await new Promise(resolve => setTimeout(resolve, 200));
+        }
+        
+        const res = await fetchPromise;
         
         const rawMembers = await res.json();
         const members = Array.isArray(rawMembers) ? rawMembers.filter(m => !['delete', 'trash', 'hold', 'completed'].includes(m.status)) : [];
@@ -1397,6 +1405,10 @@ async function autoRegisterFace() {
         // 🟢 사용자 피드백 반영: 출석 처리는 하지 않음. 순수 등록만 완료!
         showStatus("얼굴 등록 완료! 출석 메뉴에서 별도로 출석해주세요.", "#059669");
         showFaceOverlay(photoDataUrl, member.name);
+        
+        if (window.speakTTS) {
+            speakTTS(member.name + "님 얼굴 등록이 완료되었습니다.", 'browser');
+        }
         
         setTimeout(() => switchMode('home'), 3500);
     } catch (e) {
