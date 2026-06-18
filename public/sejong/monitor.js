@@ -175,40 +175,45 @@ async function submitAttendance() {
     if (mainSubmitBtn) { mainSubmitBtn.disabled = false; mainSubmitBtn.textContent = "출석"; mainSubmitBtn.style.opacity = "1"; }
 }
 
-let autoDetectInterval = null;
+let autoDetectLoopId = null;
 let isAuthenticating = false;
 
-function startAutoDetectionLoop() {
-    if (autoDetectInterval) clearInterval(autoDetectInterval);
-    isAuthenticating = false;
-    autoDetectInterval = setInterval(async () => {
-        if (!modelsLoaded || isAuthenticating || currentMode !== 'face_only' || !video || video.paused || video.videoWidth === 0) return;
+async function startAutoDetectionLoop() {
+    if (currentMode !== 'face_only') return;
 
-        try {
-            // 빠른 추적용 (초점 UI용) - TinyFaceDetector
-            const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 });
-            const detections = await faceapi.detectAllFaces(video, options).withFaceLandmarks();
-            
-            drawMultiFocusUI(detections);
+    if (!modelsLoaded || isAuthenticating || !video || video.paused || video.videoWidth === 0) {
+        autoDetectLoopId = requestAnimationFrame(startAutoDetectionLoop);
+        return;
+    }
 
-            // 안정적으로 감지되면 고정밀 모델(ssdMobilenetv1) 구동하여 출석 체크
-            if (detections.length > 0 && !isAuthenticating) {
-                const box = detections[0].detection.box;
-                if (box.width > 80 && box.height > 80) { // 너무 멀리 있는 얼굴은 무시
-                    isAuthenticating = true;
-                    await processAutoAttendance();
-                }
+    try {
+        // 빠른 추적용 (초점 UI용) - TinyFaceDetector
+        const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 });
+        const detections = await faceapi.detectAllFaces(video, options).withFaceLandmarks();
+        
+        drawMultiFocusUI(detections);
+
+        // 안정적으로 감지되면 고정밀 모델(ssdMobilenetv1) 구동하여 출석 체크
+        if (detections.length > 0 && !isAuthenticating) {
+            const box = detections[0].detection.box;
+            if (box.width > 80 && box.height > 80) { // 너무 멀리 있는 얼굴은 무시
+                isAuthenticating = true;
+                await processAutoAttendance();
             }
-        } catch(e) {
-            console.error("Auto detect error:", e);
         }
-    }, 50); // 초당 20프레임 속도로 초고속 십자선 업데이트
+    } catch(e) {
+        console.error("Auto detect error:", e);
+    }
+
+    if (currentMode === 'face_only' && !isAuthenticating) {
+        autoDetectLoopId = requestAnimationFrame(startAutoDetectionLoop);
+    }
 }
 
 function stopAutoDetectionLoop() {
-    if (autoDetectInterval) {
-        clearInterval(autoDetectInterval);
-        autoDetectInterval = null;
+    if (autoDetectLoopId) {
+        cancelAnimationFrame(autoDetectLoopId);
+        autoDetectLoopId = null;
     }
     const overlayCanvas = document.getElementById('overlayCanvas');
     if (overlayCanvas) {
