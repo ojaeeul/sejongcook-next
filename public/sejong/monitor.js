@@ -1379,6 +1379,7 @@ async function autoRegisterFace() {
             showStatus("얼굴이 명확히 인식되지 않았습니다. 다시 시도해주세요.", "red");
             isRegistering = false;
             registerProgress = 0;
+            autoRegistrationLoopId = requestAnimationFrame(startAutoRegistrationLoop);
             return;
         }
 
