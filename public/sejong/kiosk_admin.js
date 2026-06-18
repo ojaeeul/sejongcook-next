@@ -910,7 +910,6 @@ async function checkForceLoginRules(memberId) {
 
         let hasClassToday = false;
         let allowedDaysSet = new Set();
-        let validTime = false;
 
         for (const c of parsedCourses) {
             if (timetableData[c.name]) {
@@ -919,23 +918,10 @@ async function checkForceLoginRules(memberId) {
                     hasClassToday = true;
                 }
             }
-            
-            if (c.mins > 0) {
-                if (currentMins <= c.mins + 15) {
-                    validTime = true;
-                }
-            } else {
-                validTime = true;
-            }
         }
 
         if (allowedDaysSet.size > 0 && !hasClassToday) {
             alert('규칙에 맞지않아 로그인이 안됩니다.\n(지정된 수업 요일이 아닙니다)');
-            return false;
-        }
-
-        if (parsedCourses.length > 0 && !validTime) {
-            alert('규칙에 맞지않아 로그인이 안됩니다.\n(예약된 수업 시간이 아닙니다)');
             return false;
         }
 
