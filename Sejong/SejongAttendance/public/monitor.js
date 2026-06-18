@@ -1337,12 +1337,12 @@ function drawHyperFocusUI(detection) {
     ctx.fillStyle = "rgba(0,0,0,0.5)";
     ctx.fillRect(box.x, box.y + box.height + 15, box.width, 15);
     ctx.fillStyle = "#4ade80";
-    ctx.fillRect(box.x, box.y + box.height + 15, box.width * (registerProgress / 20), 15);
+    ctx.fillRect(box.x, box.y + box.height + 15, box.width * (Math.min(registerProgress, 100) / 100), 15);
     
     ctx.fillStyle = "#ffffff";
     ctx.font = "bold 16px 'Inter', sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText("AI 고속 스캔: " + Math.round((registerProgress / 20) * 100) + "%", box.x + box.width/2, box.y + box.height + 50);
+    ctx.fillText("AI 고속 스캔: " + Math.min(Math.round(registerProgress), 100) + "%", box.x + box.width/2, box.y + box.height + 50);
 }
 
 async function autoRegisterFace() {
@@ -1422,15 +1422,15 @@ async function startAutoRegistrationLoop() {
         drawHyperFocusUI(detection);
 
         if (detection) {
-            registerProgress += 6; // 대폭 가속: 2초(실제로는 0.5초 내외) 이내에 100개 십자초점 스캔 완료 및 자동등록
-            if (registerProgress >= 20) { // faster, ~1.5 to 2 seconds of stable detection
+            registerProgress += 3; // 약 1.5~2초 소요 (목표치 100)
+            if (registerProgress >= 100) { 
                 stopAutoRegistrationLoop(); // Stop loop
                 await autoRegisterFace();
                 return;
             }
         } else {
             // Decay progress if face lost
-            if (registerProgress > 0) registerProgress -= 0.5; // 깜빡여도 덜 리셋되게 감소폭 완화
+            if (registerProgress > 0) registerProgress -= 1; // 깜빡여도 덜 리셋되게 감소폭 완화
         }
     } catch (e) {
         console.error("Auto registration loop error:", e);
