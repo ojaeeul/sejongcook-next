@@ -175,45 +175,49 @@ async function submitAttendance() {
     if (mainSubmitBtn) { mainSubmitBtn.disabled = false; mainSubmitBtn.textContent = "출석"; mainSubmitBtn.style.opacity = "1"; }
 }
 
-let autoDetectLoopId = null;
-let isAuthenticating = false;
+let autoDetectInterval = null;
+let isProcessingFrame = false;
 
-async function startAutoDetectionLoop() {
-    if (currentMode !== 'face_only') return;
+function startAutoDetectionLoop() {
+    if (autoDetectInterval) clearInterval(autoDetectInterval);
+    isProcessingFrame = false;
+    isAuthenticating = false;
 
-    if (!modelsLoaded || isAuthenticating || !video || video.paused || video.videoWidth === 0) {
-        autoDetectLoopId = requestAnimationFrame(startAutoDetectionLoop);
-        return;
-    }
+    autoDetectInterval = setInterval(async () => {
+        if (!modelsLoaded || isAuthenticating || currentMode !== 'face_only' || !video || video.paused || video.videoWidth === 0) return;
+        if (isProcessingFrame) return;
 
-    try {
-        // 빠른 추적용 (초점 UI용) - TinyFaceDetector
-        const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 });
-        const detections = await faceapi.detectAllFaces(video, options).withFaceLandmarks();
-        
-        drawMultiFocusUI(detections);
+        isProcessingFrame = true;
+        try {
+            const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 });
+            const detections = await faceapi.detectAllFaces(video, options).withFaceLandmarks();
+            
+            drawMultiFocusUI(detections);
 
-        // 안정적으로 감지되면 고정밀 모델(ssdMobilenetv1) 구동하여 출석 체크
-        if (detections.length > 0 && !isAuthenticating) {
-            const box = detections[0].detection.box;
-            if (box.width > 80 && box.height > 80) { // 너무 멀리 있는 얼굴은 무시
-                isAuthenticating = true;
-                await processAutoAttendance();
+            if (detections.length > 0 && !isAuthenticating) {
+                const box = detections[0].detection.box;
+                if (box.width > 80 && box.height > 80) { 
+                    isAuthenticating = true;
+                    await processAutoAttendance();
+                }
             }
+        } catch(e) {
+            console.error("Auto detect error:", e);
+        } finally {
+            isProcessingFrame = false;
         }
-    } catch(e) {
-        console.error("Auto detect error:", e);
-    }
-
-    if (currentMode === 'face_only') {
-        autoDetectLoopId = requestAnimationFrame(startAutoDetectionLoop);
-    }
+    }, 20); // 초고속(50fps) 폴링, 단 겹침 방지 적용으로 부드러움 극대화
 }
 
 function stopAutoDetectionLoop() {
-    if (autoDetectLoopId) {
-        cancelAnimationFrame(autoDetectLoopId);
-        autoDetectLoopId = null;
+    if (autoDetectInterval) {
+        clearInterval(autoDetectInterval);
+        autoDetectInterval = null;
+    }
+    const overlayCanvas = document.getElementById('overlayCanvas');
+    if (overlayCanvas) {
+        const ctx = overlayCanvas.getContext('2d');
+        ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
     }
     const overlayCanvas = document.getElementById('overlayCanvas');
     if (overlayCanvas) {
@@ -1214,26 +1218,55 @@ window.speakTTS = function(text, mode = 'browser') {
 // ---------------------------------------------------------
 // Auto Registration Logic
 // ---------------------------------------------------------
-let autoRegistrationLoopId = null;
-let registerProgress = 0;
-let isRegistering = false;
+let autoRegistrationInterval = null;
+let isRegProcessing = false;
 
-async function startFaceScan() {
-    if (currentInput.length !== 8) {
-        showStatus("먼저 뒷번호 8자리를 입력해주세요.", "red");
-        return;
-    }
-    if (!modelsLoaded) {
-        showStatus("AI 엔진 대기중... 잠시 후 다시 시도해주세요.", "orange");
-        return;
-    }
-    switchMode('register_camera');
+function startAutoRegistrationLoop() {
+    if (autoRegistrationInterval) clearInterval(autoRegistrationInterval);
+    isRegProcessing = false;
+    registerProgress = 0;
+
+    autoRegistrationInterval = setInterval(async () => {
+        if (currentMode !== 'register_camera' || isRegistering || !video || video.paused || video.videoWidth === 0) return;
+        if (isRegProcessing) return;
+
+        isRegProcessing = true;
+        try {
+            const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.4 })).withFaceLandmarks();
+            const detection = detections && detections.length > 0 ? detections[0] : undefined;
+            
+            drawHyperFocusUI(detection);
+
+            if (detection) {
+                registerProgress += 3; // 스캔 이펙트
+                if (registerProgress >= 100) { 
+                    stopAutoRegistrationLoop();
+                    await autoRegisterFace();
+                    return;
+                }
+            } else {
+                if (registerProgress > 0) registerProgress -= 1;
+            }
+        } catch (e) {
+            console.error("Auto registration loop error:", e);
+        } finally {
+            isRegProcessing = false;
+        }
+    }, 20);
 }
 
 function stopAutoRegistrationLoop() {
-    if (autoRegistrationLoopId) {
-        cancelAnimationFrame(autoRegistrationLoopId);
-        autoRegistrationLoopId = null;
+    if (autoRegistrationInterval) {
+        clearInterval(autoRegistrationInterval);
+        autoRegistrationInterval = null;
+    }
+    registerProgress = 0;
+    isRegistering = false;
+    clearCanvas();
+    const overlayCanvas = document.getElementById('overlayCanvas');
+    if (overlayCanvas) {
+        const ctx = overlayCanvas.getContext('2d');
+        ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
     }
     registerProgress = 0;
     isRegistering = false;
