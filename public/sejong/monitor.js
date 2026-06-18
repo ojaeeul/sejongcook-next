@@ -1223,6 +1223,8 @@ window.speakTTS = function(text, mode = 'browser') {
 let registerProgress = 0;
 let isRegistering = false;
 
+let registeringPhone = "";
+
 async function startFaceScan() {
     if (currentInput.length !== 8) {
         showStatus("먼저 뒷번호 8자리를 입력해주세요.", "red");
@@ -1232,6 +1234,7 @@ async function startFaceScan() {
         showStatus("AI 엔진 대기중... 잠시 후 다시 시도해주세요.", "orange");
         return;
     }
+    registeringPhone = currentInput;
     switchMode('register_camera');
 }
 
@@ -1385,7 +1388,7 @@ async function autoRegisterFace() {
         
         const rawMembers = await res.json();
         const members = Array.isArray(rawMembers) ? rawMembers.filter(m => !['delete', 'trash', 'hold', 'completed'].includes(m.status)) : [];
-        const member = members.find(m => m.phone && m.phone.replace(/-/g, '').endsWith(currentInput));
+        const member = members.find(m => m.phone && m.phone.replace(/-/g, '').endsWith(registeringPhone));
 
         if (!member) {
             showStatus("뒷번호 8자리와 일치하는 수강생 대장 회원이 없습니다.", "red");
