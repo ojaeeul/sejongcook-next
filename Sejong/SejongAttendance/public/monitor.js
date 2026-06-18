@@ -1232,21 +1232,36 @@ function stopAutoRegistrationLoop() {
     registerProgress = 0;
     isRegistering = false;
     clearCanvas();
+    const overlayCanvas = document.getElementById('overlayCanvas');
+    if (overlayCanvas) {
+        const ctx = overlayCanvas.getContext('2d');
+        ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+    }
 }
 
 function drawHyperFocusUI(detection) {
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const overlayCanvas = document.getElementById('overlayCanvas');
+    if (!overlayCanvas || !video) return;
+
+    if (overlayCanvas.width !== video.clientWidth) {
+        overlayCanvas.width = video.clientWidth;
+        overlayCanvas.height = video.clientHeight;
+    }
+
+    const ctx = overlayCanvas.getContext('2d');
+    ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+    
     if (!detection) return;
 
     // Rescale to canvas
-    const dims = faceapi.matchDimensions(canvas, video, true);
+    const dims = faceapi.matchDimensions(overlayCanvas, video, true);
     const resized = faceapi.resizeResults(detection, dims);
 
+    const box = resized.detection.box;
     const landmarks = resized.landmarks.positions;
     
-    // Draw cyberpunk 100+ crosshairs
-    ctx.strokeStyle = "rgba(74, 222, 128, 0.4)";
+    // Draw 100+ cyberpunk crosshairs
+    ctx.strokeStyle = "rgba(74, 222, 128, 0.6)";
     ctx.lineWidth = 1;
 
     // Connect some landmarks to create a mesh
@@ -1257,23 +1272,29 @@ function drawHyperFocusUI(detection) {
     }
     ctx.stroke();
 
-    // Draw crosshairs on every landmark point + some random offsets
-    ctx.strokeStyle = "#4ade80"; // Bright green
-    landmarks.forEach(pt => {
-        const x = pt.x;
-        const y = pt.y;
+    // 100+ dynamic crosshairs scanning the face box
+    const numPoints = 120;
+    const cols = 12;
+    const cellW = box.width / cols;
+    const cellH = box.height / (numPoints / cols);
+    for (let i = 0; i < numPoints; i++) {
+        const col = i % cols;
+        const row = Math.floor(i / cols);
+        const jitterX = Math.sin(i * 1.5 + Date.now() * 0.005) * (cellW * 0.5);
+        const jitterY = Math.cos(i * 2.1 + Date.now() * 0.005) * (cellH * 0.5);
+        
+        const px = box.x + col * cellW + cellW * 0.5 + jitterX;
+        const py = box.y + row * cellH + cellH * 0.5 + jitterY;
         
         ctx.beginPath();
-        ctx.moveTo(x - 5, y);
-        ctx.lineTo(x + 5, y);
-        ctx.moveTo(x, y - 5);
-        ctx.lineTo(x, y + 5);
+        ctx.moveTo(px - 4, py); ctx.lineTo(px + 4, py);
+        ctx.moveTo(px, py - 4); ctx.lineTo(px, py + 4);
+        ctx.strokeStyle = '#4ade80'; // Bright green
         ctx.stroke();
-    });
+    }
 
     // Add extra scanning lines across the bounding box
-    const box = resized.detection.box;
-    ctx.strokeStyle = "rgba(74, 222, 128, 0.7)";
+    ctx.strokeStyle = "rgba(74, 222, 128, 0.8)";
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.rect(box.x, box.y, box.width, box.height);
@@ -1291,13 +1312,14 @@ function drawHyperFocusUI(detection) {
 
     // Progress bar at the bottom of the box
     ctx.fillStyle = "rgba(0,0,0,0.5)";
-    ctx.fillRect(box.x, box.y + box.height + 10, box.width, 10);
+    ctx.fillRect(box.x, box.y + box.height + 15, box.width, 15);
     ctx.fillStyle = "#4ade80";
-    ctx.fillRect(box.x, box.y + box.height + 10, box.width * (registerProgress / 30), 10);
+    ctx.fillRect(box.x, box.y + box.height + 15, box.width * (registerProgress / 20), 15);
     
-    ctx.fillStyle = "#4ade80";
-    ctx.font = "16px 'Inter', sans-serif";
-    ctx.fillText("AI 스캔 진행률: " + Math.round((registerProgress / 30) * 100) + "%", box.x, box.y + box.height + 40);
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 16px 'Inter', sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("AI 고속 스캔: " + Math.round((registerProgress / 20) * 100) + "%", box.x + box.width/2, box.y + box.height + 50);
 }
 
 async function autoRegisterFace() {
@@ -1370,7 +1392,7 @@ async function startAutoRegistrationLoop() {
 
         if (detection) {
             registerProgress++;
-            if (registerProgress >= 30) { // ~2 seconds of stable detection
+            if (registerProgress >= 20) { // faster, ~1.5 to 2 seconds of stable detection
                 stopAutoRegistrationLoop(); // Stop loop
                 await autoRegisterFace();
                 return;
