@@ -1440,15 +1440,33 @@ async function autoRegisterFace() {
             body: JSON.stringify(member)
         });
 
-        // 🟢 사용자 피드백 반영: 출석 처리는 하지 않음. 순수 등록만 완료!
-        showStatus("얼굴 등록 완료! 출석 메뉴에서 별도로 출석해주세요.", "#059669");
-        showFaceOverlay(photoDataUrl, member.name);
-        
-        if (window.speakTTS) {
-            speakTTS(member.name + "님 얼굴 등록이 완료되었습니다.", 'browser');
-        }
-        
-        setTimeout(() => switchMode('home'), 3500);
+        // 거대한 등록 성공 팝업 오버레이 추가
+        const regSuccessOverlay = document.createElement('div');
+        regSuccessOverlay.style.position = 'fixed';
+        regSuccessOverlay.style.top = '0';
+        regSuccessOverlay.style.left = '0';
+        regSuccessOverlay.style.width = '100vw';
+        regSuccessOverlay.style.height = '100vh';
+        regSuccessOverlay.style.background = 'rgba(59, 130, 246, 0.95)'; // 진한 파란색 반투명
+        regSuccessOverlay.style.zIndex = '99999';
+        regSuccessOverlay.style.display = 'flex';
+        regSuccessOverlay.style.flexDirection = 'column';
+        regSuccessOverlay.style.alignItems = 'center';
+        regSuccessOverlay.style.justifyContent = 'center';
+        regSuccessOverlay.style.color = 'white';
+        regSuccessOverlay.style.backdropFilter = 'blur(10px)';
+        regSuccessOverlay.innerHTML = `
+            <span class="material-icons" style="font-size: 150px; margin-bottom: 20px; animation: pop 0.5s ease-out;">face</span>
+            <h1 style="font-size: 5rem; font-weight: 900; margin: 0; text-shadow: 2px 2px 10px rgba(0,0,0,0.3);">얼굴 등록 완료!</h1>
+            <p style="font-size: 2.5rem; margin-top: 20px; font-weight: bold;">${member.name}님의 얼굴이 성공적으로 학습되었습니다.</p>
+            <p style="font-size: 1.5rem; margin-top: 10px;">이제 '얼굴 출석' 메뉴를 이용할 수 있습니다.</p>
+        `;
+        document.body.appendChild(regSuccessOverlay);
+
+        setTimeout(() => {
+            if (regSuccessOverlay.parentNode) regSuccessOverlay.parentNode.removeChild(regSuccessOverlay);
+            switchMode('home');
+        }, 3500);
     } catch (e) {
         console.error('Registration Error:', e);
         showStatus(`저장 오류! (${e.message || '통신 실패'})`, "red");
