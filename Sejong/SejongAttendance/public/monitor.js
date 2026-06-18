@@ -182,7 +182,7 @@ function startAutoDetectionLoop() {
     if (autoDetectInterval) clearInterval(autoDetectInterval);
     isAuthenticating = false;
     autoDetectInterval = setInterval(async () => {
-        if (!modelsLoaded || isAuthenticating || currentMode !== 'face_only' || !video || video.paused) return;
+        if (!modelsLoaded || isAuthenticating || currentMode !== 'face_only' || !video || video.paused || video.videoWidth === 0) return;
 
         try {
             // 빠른 추적용 (초점 UI용) - TinyFaceDetector
@@ -1421,7 +1421,7 @@ async function autoRegisterFace() {
 async function startAutoRegistrationLoop() {
     if (currentMode !== 'register_camera') return; // Exit completely if mode changed
 
-    if (video.paused || video.ended || isRegistering) {
+    if (video.paused || video.ended || isRegistering || !video.videoWidth) {
         autoRegistrationLoopId = requestAnimationFrame(startAutoRegistrationLoop);
         return;
     }
