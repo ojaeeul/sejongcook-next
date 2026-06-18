@@ -205,7 +205,7 @@ async function startAutoDetectionLoop() {
         console.error("Auto detect error:", e);
     }
 
-    if (currentMode === 'face_only' && !isAuthenticating) {
+    if (currentMode === 'face_only') {
         autoDetectLoopId = requestAnimationFrame(startAutoDetectionLoop);
     }
 }
