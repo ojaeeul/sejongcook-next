@@ -804,7 +804,32 @@ async function processAttendance(inputNumOrObj, overridePhoto = null) {
                 if (window.speakTTS) speakTTS(ttsMsg, mode);
             }
             
-            setTimeout(() => switchMode('home'), 2500);
+            // 거대한 성공 팝업 오버레이 추가
+            const successOverlay = document.createElement('div');
+            successOverlay.style.position = 'fixed';
+            successOverlay.style.top = '0';
+            successOverlay.style.left = '0';
+            successOverlay.style.width = '100vw';
+            successOverlay.style.height = '100vh';
+            successOverlay.style.background = 'rgba(5, 150, 105, 0.95)'; // 진한 녹색 반투명
+            successOverlay.style.zIndex = '99999';
+            successOverlay.style.display = 'flex';
+            successOverlay.style.flexDirection = 'column';
+            successOverlay.style.alignItems = 'center';
+            successOverlay.style.justifyContent = 'center';
+            successOverlay.style.color = 'white';
+            successOverlay.style.backdropFilter = 'blur(10px)';
+            successOverlay.innerHTML = `
+                <span class="material-icons" style="font-size: 150px; margin-bottom: 20px; animation: pop 0.5s ease-out;">check_circle</span>
+                <h1 style="font-size: 5rem; font-weight: 900; margin: 0; text-shadow: 2px 2px 10px rgba(0,0,0,0.3);">출석 완료!</h1>
+                <p style="font-size: 2.5rem; margin-top: 20px; font-weight: bold;">${member.name}님, 환영합니다.</p>
+            `;
+            document.body.appendChild(successOverlay);
+
+            setTimeout(() => {
+                if (successOverlay.parentNode) successOverlay.parentNode.removeChild(successOverlay);
+                switchMode('home');
+            }, 3000); // 3초 대기 후 홈으로
         }
     } catch (e) {
         console.error(e);
