@@ -980,15 +980,20 @@ window.forceLogin = async function(memberId, course) {
     const isValid = await checkForceLoginRules(memberId);
     if (!isValid) return;
     
+    let finalCourse = 'ALL';
+    if (course && course !== 'undefined' && course !== 'null') {
+        finalCourse = course.split(',').map(c => c.trim().replace(/\([^)]*\)/g, '').trim()).join(', ');
+    }
+
     const today = new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
     try {
         const res = await fetch(getFetchUrl('attendance', true), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ memberId, date: today, status: 'present', course: course || 'ALL' })
+            body: JSON.stringify({ memberId, date: today, status: 'present', course: finalCourse })
         });
         if (res.ok) {
-            localStorage.removeItem('sejong_attendance_sync');
+            localStorage.setItem('sejong_attendance_sync', Date.now().toString());
             fetchMembers();
         }
     } catch (e) {
@@ -1006,7 +1011,7 @@ window.forceLogout = async function(memberId, course) {
             body: JSON.stringify({ memberId, dates: [today], status: 'unchecked', course: 'ALL' })
         });
         if (res.ok) {
-            localStorage.removeItem('sejong_attendance_sync');
+            localStorage.setItem('sejong_attendance_sync', Date.now().toString());
             fetchMembers();
         }
     } catch (e) {
