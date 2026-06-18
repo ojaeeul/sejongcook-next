@@ -111,6 +111,7 @@ function renderList() {
                 <button class="btn btn-danger" onclick="deleteFace('${m.id}')">
                     <span class="material-icons" style="font-size:18px;">delete_sweep</span> 개인 사진 초기화
                 </button>
+                ${forceActionBtn}
             </div>
         ` : `
             <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; margin-top: 10px;">
