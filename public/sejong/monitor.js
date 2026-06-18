@@ -1359,7 +1359,7 @@ async function autoRegisterFace() {
         // Final detection for descriptor
         const [res, detections] = await Promise.all([
             fetch(getFetchUrl('members') + '&t=' + Date.now()),
-            faceapi.detectAllFaces(video, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.5 }))
+            faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.4 }))
                 .withFaceLandmarks()
                 .withFaceDescriptors()
         ]);
@@ -1415,7 +1415,7 @@ async function startAutoRegistrationLoop() {
     }
 
     try {
-        const detections = await faceapi.detectAllFaces(video, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.5 })).withFaceLandmarks();
+        const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.4 })).withFaceLandmarks();
         const detection = detections && detections.length > 0 ? detections[0] : undefined;
         
         console.log("Registration Loop: detected faces =", detections ? detections.length : 0);
