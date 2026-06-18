@@ -1258,19 +1258,40 @@ function drawHyperFocusUI(detection) {
     const resized = faceapi.resizeResults(detection, dims);
 
     const box = resized.detection.box;
-    const landmarks = resized.landmarks.positions;
-    
-    // Draw 100+ cyberpunk crosshairs
-    ctx.strokeStyle = "rgba(74, 222, 128, 0.6)";
-    ctx.lineWidth = 1;
+    const landmarks = resized.landmarks;
 
-    // Connect some landmarks to create a mesh
-    ctx.beginPath();
-    for (let i = 0; i < landmarks.length - 1; i++) {
-        ctx.moveTo(landmarks[i].x, landmarks[i].y);
-        ctx.lineTo(landmarks[i+1].x, landmarks[i+1].y);
-    }
-    ctx.stroke();
+    ctx.strokeStyle = '#4ade80';
+    ctx.lineWidth = 2;
+    ctx.fillStyle = '#4ade80';
+
+    const pointsToTrack = [
+        landmarks.getLeftEye()[0],
+        landmarks.getLeftEye()[3],
+        landmarks.getRightEye()[0],
+        landmarks.getRightEye()[3],
+        landmarks.getNose()[0],
+        landmarks.getNose()[3],
+        landmarks.getMouth()[0],
+        landmarks.getMouth()[6],
+        {x: box.x, y: box.y},
+        {x: box.x + box.width, y: box.y},
+        {x: box.x, y: box.y + box.height},
+        {x: box.x + box.width, y: box.y + box.height}
+    ];
+
+    const drawCrosshair = (x, y, size) => {
+        ctx.beginPath();
+        ctx.moveTo(x - size, y); ctx.lineTo(x + size, y);
+        ctx.moveTo(x, y - size); ctx.lineTo(x, y + size);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(x, y, 2, 0, 2*Math.PI);
+        ctx.fill();
+    };
+
+    pointsToTrack.forEach(p => {
+        if(p) drawCrosshair(p.x, p.y, 8);
+    });
 
     // 100+ dynamic crosshairs scanning the face box
     const numPoints = 120;
@@ -1289,7 +1310,8 @@ function drawHyperFocusUI(detection) {
         ctx.beginPath();
         ctx.moveTo(px - 4, py); ctx.lineTo(px + 4, py);
         ctx.moveTo(px, py - 4); ctx.lineTo(px, py + 4);
-        ctx.strokeStyle = '#4ade80'; // Bright green
+        ctx.strokeStyle = 'rgba(74, 222, 128, 0.6)'; // Bright green
+        ctx.lineWidth = 1;
         ctx.stroke();
     }
 
