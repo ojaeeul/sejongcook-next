@@ -875,13 +875,124 @@ function toggleFullScreen() {
     } else {
         if (document.exitFullscreen) {
             document.exitFullscreen();
-        }
     }
 }
 
+async function checkForceLoginRules(memberId) {
+    const member = adminMembers.find(m => m.id === memberId);
+    if (!member) return true;
+    
+    try {
+        const tRes = await fetch(getFetchUrl('timetable'));
+        const tData = await tRes.json();
+        const timetableData = Object.keys(tData).length > 0 ? tData : {
+            '한식기능사': [1, 3], '양식기능사': [2, 4], '일식기능사': [2, 4], '중식기능사': [2, 4],
+            '제과기능사': [1, 3], '제빵기능사': [2, 4], '제과제빵기능사': [1, 2, 3, 4], '복어기능사': [5],
+            '산업기사': [5], '가정요리': [2, 4], '브런치': [5]
+        };
+
+        const courses = member.course ? member.course.split(',').map(c => c.trim().replace(/\([^)]*\)/g, '').trim()) : [];
+        const times = member.timeSlot ? member.timeSlot.split(',').map(c => c.trim()) : [];
+        
+        let parsedCourses = courses.map((c, idx) => {
+            let tStr = times[idx] || times[0] || "";
+            let mins = -1;
+            if (tStr.includes(':')) {
+                let p = tStr.split(':');
+                mins = parseInt(p[0]) * 60 + parseInt(p[1]);
+            }
+            return { name: c, timeStr: tStr, mins: mins };
+        });
+
+        const today = new Date();
+        const dayOfWeek = today.getDay();
+        const currentMins = today.getHours() * 60 + today.getMinutes();
+
+        let hasClassToday = false;
+        let allowedDaysSet = new Set();
+        let validTime = false;
+
+        for (const c of parsedCourses) {
+            if (timetableData[c.name]) {
+                timetableData[c.name].forEach(d => allowedDaysSet.add(d));
+                if (timetableData[c.name].includes(dayOfWeek)) {
+                    hasClassToday = true;
+                }
+            }
+            
+            if (c.mins > 0) {
+                if (currentMins <= c.mins + 15) {
+                    validTime = true;
+                }
+            } else {
+                validTime = true;
+            }
+        }
+
+        if (allowedDaysSet.size > 0 && !hasClassToday) {
+            alert('규칙에 맞지않아 로그인이 안됩니다.\n(지정된 수업 요일이 아닙니다)');
+            return false;
+        }
+
+        if (parsedCourses.length > 0 && !validTime) {
+            alert('규칙에 맞지않아 로그인이 안됩니다.\n(예약된 수업 시간이 아닙니다)');
+            return false;
+        }
+
+        // 결재 주기 설정 (미납) 체크
+        if (typeof window.calculateRedBoxesForMonth === 'function') {
+            if (typeof window.loadCycleSettings === 'function') await window.loadCycleSettings();
+            
+            const [aRes, pRes] = await Promise.all([
+                fetch(getFetchUrl('attendance')),
+                fetch(getFetchUrl('payments'))
+            ]);
+            const attendanceData = await aRes.json();
+            const paymentsData = await pRes.json();
+            
+            const y = today.getFullYear();
+            const m = today.getMonth() + 1;
+
+            for (const c of parsedCourses) {
+                const stats = window.calculateRedBoxesForMonth(member, y, m, attendanceData, c.name, {});
+                
+                let forcedUnpaidCount = 0;
+                if (stats && stats.eighthDays && stats.eighthDays.length > 0 && stats.hasAnyAttendance && !stats.isSimulated) {
+                    const isPaidBadge = paymentsData.some(p =>
+                        String(p.memberId) === String(member.id) &&
+                        String(p.year) === String(y) &&
+                        String(p.month) === String(m) &&
+                        p.status === 'paid' &&
+                        (!p.course || p.course === 'null' || p.course === 'undefined' || p.course === '' || p.course.includes(c.name) || c.name.includes(p.course))
+                    );
+                    
+                    if (!isPaidBadge) {
+                        stats.eighthDays.forEach(d => {
+                            if (!isNaN(parseInt(d)) && Number(d) > 0) forcedUnpaidCount++;
+                        });
+                    }
+                }
+                
+                if (forcedUnpaidCount > 0) {
+                    alert('규칙에 맞지않아 로그인이 안됩니다.\n(결재 주기가 지났거나 수강료가 미납 상태입니다)');
+                    return false;
+                }
+            }
+        }
+        
+        return true;
+    } catch(e) {
+        console.error("Rule check error:", e);
+        return true; 
+    }
+}
 
 window.forceLogin = async function(memberId, course) {
     if (!confirm('해당 학생을 오늘 날짜로 강제 출석(로그인) 처리하시겠습니까?')) return;
+    
+    const isValid = await checkForceLoginRules(memberId);
+    if (!isValid) return;
+    
     const today = new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
     try {
         const res = await fetch(getFetchUrl('attendance', true), {
