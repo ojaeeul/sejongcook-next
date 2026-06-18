@@ -1415,8 +1415,9 @@ async function startAutoRegistrationLoop() {
 
     try {
         const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 })).withFaceLandmarks();
-        
         const detection = detections && detections.length > 0 ? detections[0] : undefined;
+        
+        console.log("Registration Loop: detected faces =", detections ? detections.length : 0);
         
         drawHyperFocusUI(detection);
 
