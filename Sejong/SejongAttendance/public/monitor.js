@@ -250,7 +250,21 @@ function drawAttendanceFocusUI(detection) {
     const ctx = overlayCanvas.getContext('2d');
     ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
 
-    if (!detection) return; // 신규등록(register_camera)과 완벽하게 동일하게 아무것도 안그림
+    if (!detection) {
+        // 부드러운 스캐닝 가이드 표시 (거슬리지 않게)
+        ctx.strokeStyle = 'rgba(59, 130, 246, 0.5)'; // Blue
+        ctx.lineWidth = 3;
+        ctx.setLineDash([15, 15]);
+        ctx.strokeRect(overlayCanvas.width * 0.15, overlayCanvas.height * 0.15, overlayCanvas.width * 0.7, overlayCanvas.height * 0.7);
+        ctx.setLineDash([]);
+        
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+        ctx.font = 'bold 22px Inter';
+        ctx.textAlign = 'center';
+        ctx.fillText('얼굴을 화면 중앙에 맞춰주세요', overlayCanvas.width / 2, overlayCanvas.height / 2);
+        
+        return;
+    }
 
     const resized = faceapi.resizeResults(detection, dims);
 
@@ -1591,3 +1605,8 @@ function clearCanvas() {
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
+
+// 부팅 시 AI 엔진 즉시 로드 (대기 시간 최소화)
+window.addEventListener('DOMContentLoaded', () => {
+    setTimeout(loadFaceModels, 1000);
+});
