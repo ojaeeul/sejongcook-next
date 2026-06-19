@@ -173,9 +173,9 @@ export default async function RootLayout({
         <AuthProvider>
           <VisitorTracker />
           <Header initialShowAuthLinks={settings.showAuthLinks} />
-          <main style={{ minHeight: '600px' }}>
+          <div id="main-wrapper"><main style={{ minHeight: '600px' }}>
             {children}
-          </main>
+          </main></div>
           <Footer />
           <ScrollNavigator />
         </AuthProvider>
