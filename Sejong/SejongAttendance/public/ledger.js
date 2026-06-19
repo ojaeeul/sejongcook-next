@@ -248,12 +248,19 @@ function getLedgerMonthStats(memberId, targetYear, targetMonth, courseFilter = n
             const memberObj = membersData.find(m => String(m.id) === String(memberId));
             if (memberObj) {
                 const result = window.calculateRedBoxesForMonth(memberObj, targetYear, targetMonth, attendanceData || [], courseFilter, window.GLOBAL_DATA_ADJUSTMENTS || {});
+                if (result && result.allMilestones && result.allMilestones.length > 0) {
+                    const monthMilestones = result.allMilestones.filter(ms => ms.year === targetYear && ms.month === targetMonth);
+                    if (monthMilestones.length > 0) {
+                        return { milestones: monthMilestones, hasAnyAttendance: result.hasAnyAttendance };
+                    }
+                }
+                // fallback to old redDays logic
                 if (result && result.redDays && result.redDays.length > 0) {
                     return { eighthDays: result.redDays, eighthMonth: targetMonth, isSimulated: result.isSimulated, hasAnyAttendance: result.hasAnyAttendance };
                 }
             }
         }
-    return { eighthDays: [], eighthMonth: targetMonth, isSimulated: false, hasAnyAttendance: false };
+    return { eighthDays: [], eighthMonth: targetMonth, isSimulated: false, hasAnyAttendance: false, milestones: [] };
 }
 
 function getAllLedgerMonthStats(memberId, year, month) {
@@ -274,16 +281,28 @@ function getAllLedgerMonthStats(memberId, year, month) {
     courses.forEach(courseName => {
         const stats = getLedgerMonthStats(memberId, year, month, courseName);
         // User Request: 출석 날짜가 없는 수강생은 수강료예정일 표시하지 마시고, 출석이 1개라도 있으면 표시하세요.
-        if (stats.eighthDays && stats.eighthDays.length > 0 && stats.hasAnyAttendance) {
-            stats.eighthDays.forEach(day => {
-                results.push({
-                    course: courseName,
-                    eighthDay: day,
-                    eighthMonth: stats.eighthMonth,
-                    isSimulated: stats.isSimulated,
-                    fee: courseFees[courseName] || courseFees['all'] || 0
+        if (stats.hasAnyAttendance) {
+            if (stats.milestones && stats.milestones.length > 0) {
+                stats.milestones.forEach(ms => {
+                    results.push({
+                        course: courseName,
+                        eighthDay: ms.day,
+                        eighthMonth: ms.month,
+                        isSimulated: !ms.isReal,
+                        fee: courseFees[courseName] || courseFees['all'] || 0
+                    });
                 });
-            });
+            } else if (stats.eighthDays && stats.eighthDays.length > 0) {
+                stats.eighthDays.forEach(day => {
+                    results.push({
+                        course: courseName,
+                        eighthDay: day,
+                        eighthMonth: stats.eighthMonth,
+                        isSimulated: stats.isSimulated,
+                        fee: courseFees[courseName] || courseFees['all'] || 0
+                    });
+                });
+            }
         }
     });
 
@@ -719,9 +738,6 @@ function renderTable(container, title, members, id) {
                     if (!s.eighthDay || isNaN(parseInt(s.eighthDay)) || Number(s.eighthDay) <= 0) return false;
                     
                     if (s.isSimulated) {
-                        if (courseLatestRealMonth[s.course] && month <= courseLatestRealMonth[s.course]) {
-                            return false;
-                        }
                         if (coursesFoundSimulated.has(s.course)) return false;
                         coursesFoundSimulated.add(s.course);
                     }

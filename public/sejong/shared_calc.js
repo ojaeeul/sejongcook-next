@@ -281,8 +281,9 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
     }
 
     let isSimulated = false;
+    const hasRealMilestonesThisMonth = redBoxDates.size > 0;
 
-    if (redBoxDates.size === 0 && currentMC) {
+    if (currentMC) {
         const now = new Date();
         const limit = new Date(now.getFullYear(), now.getMonth() + 2, 0);
         
@@ -358,9 +359,11 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
                 const newSimCycle = getCycle(simTotal);
                 
                 if (newSimCycle > prevSimCycle) {
-                    if (simDate.getFullYear() === targetYear && (simDate.getMonth() + 1) === targetMonth) {
-                        redBoxDates.add(dateStr);
-                        isSimulated = true;
+                    if (!hasRealMilestonesThisMonth) {
+                        if (simDate.getFullYear() === targetYear && (simDate.getMonth() + 1) === targetMonth) {
+                            redBoxDates.add(dateStr);
+                            isSimulated = true;
+                        }
                     }
                     
                     // [중요 수정] 가상 결제일(예정일)을 allMilestones에 명시적으로 추가하여 납부대장(tuition_v3.js)에서 '결제 예정일'로 인식하도록 함
