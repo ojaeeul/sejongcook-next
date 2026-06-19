@@ -280,10 +280,18 @@ function getAllLedgerMonthStats(memberId, year, month) {
 
     courses.forEach(courseName => {
         const stats = getLedgerMonthStats(memberId, year, month, courseName);
-        // User Request: 출석 날짜가 없는 수강생은 수강료예정일 표시하지 마시고, 출석이 1개라도 있으면 표시하세요.
         if (stats.hasAnyAttendance) {
             if (stats.milestones && stats.milestones.length > 0) {
                 stats.milestones.forEach(ms => {
+                    if (!ms.isReal) {
+                        const now = new Date();
+                        const currentRealYear = now.getFullYear();
+                        const currentRealMonth = now.getMonth() + 1;
+                        const monthDiff = (ms.year - currentRealYear) * 12 + (ms.month - currentRealMonth);
+                        if (monthDiff < 0 || monthDiff > 1) {
+                            return; // Skip simulated dates that jump into the past or 2+ months future
+                        }
+                    }
                     results.push({
                         course: courseName,
                         eighthDay: ms.day,
@@ -294,6 +302,15 @@ function getAllLedgerMonthStats(memberId, year, month) {
                 });
             } else if (stats.eighthDays && stats.eighthDays.length > 0) {
                 stats.eighthDays.forEach(day => {
+                    if (stats.isSimulated) {
+                        const now = new Date();
+                        const currentRealYear = now.getFullYear();
+                        const currentRealMonth = now.getMonth() + 1;
+                        const monthDiff = (year - currentRealYear) * 12 + (stats.eighthMonth - currentRealMonth);
+                        if (monthDiff < 0 || monthDiff > 1) {
+                            return; // Skip
+                        }
+                    }
                     results.push({
                         course: courseName,
                         eighthDay: day,
