@@ -194,7 +194,7 @@ function startAutoDetectionLoop() {
         isProcessingFrame = true;
         try {
             // 빠른 추적용 (초점 UI용) - TinyFaceDetector
-            const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.4 });
+            const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.4 });
             const detections = await faceapi.detectAllFaces(video, options).withFaceLandmarks();
             
             drawMultiFocusUI(detections);
@@ -231,9 +231,10 @@ function drawMultiFocusUI(detections) {
     const overlayCanvas = document.getElementById('overlayCanvas');
     if (!overlayCanvas || !video) return;
 
-    if (overlayCanvas.width !== video.clientWidth) {
-        overlayCanvas.width = video.clientWidth;
-        overlayCanvas.height = video.clientHeight;
+    const dims = { width: video.videoWidth, height: video.videoHeight };
+    if (overlayCanvas.width !== dims.width || overlayCanvas.height !== dims.height) {
+        overlayCanvas.width = dims.width;
+        overlayCanvas.height = dims.height;
     }
 
     const ctx = overlayCanvas.getContext('2d');
@@ -242,7 +243,7 @@ function drawMultiFocusUI(detections) {
     if (!detections || detections.length === 0) {
         // 얼굴이 감지되지 않을 때 빨간색 스캐닝 효과 출력
         ctx.strokeStyle = 'rgba(239, 68, 68, 0.6)'; // Red
-        ctx.lineWidth = 1.5;
+        ctx.lineWidth = 2.5;
         
         const scanY = (Date.now() / 15) % overlayCanvas.height;
         ctx.beginPath();
@@ -254,16 +255,15 @@ function drawMultiFocusUI(detections) {
         ctx.fillRect(0, scanY - 20, overlayCanvas.width, 40);
 
         ctx.beginPath();
-        ctx.moveTo(overlayCanvas.width / 2 - 20, overlayCanvas.height / 2);
-        ctx.lineTo(overlayCanvas.width / 2 + 20, overlayCanvas.height / 2);
-        ctx.moveTo(overlayCanvas.width / 2, overlayCanvas.height / 2 - 20);
-        ctx.lineTo(overlayCanvas.width / 2, overlayCanvas.height / 2 + 20);
+        ctx.moveTo(overlayCanvas.width / 2 - 30, overlayCanvas.height / 2);
+        ctx.lineTo(overlayCanvas.width / 2 + 30, overlayCanvas.height / 2);
+        ctx.moveTo(overlayCanvas.width / 2, overlayCanvas.height / 2 - 30);
+        ctx.lineTo(overlayCanvas.width / 2, overlayCanvas.height / 2 + 30);
         ctx.stroke();
 
         return;
     }
 
-    const dims = faceapi.matchDimensions(overlayCanvas, video, true);
     const resizedDetections = faceapi.resizeResults(detections, dims);
 
     ctx.strokeStyle = '#10b981'; // 에메랄드 그린
@@ -1306,9 +1306,10 @@ function drawHyperFocusUI(detection) {
     const overlayCanvas = document.getElementById('overlayCanvas');
     if (!overlayCanvas || !video) return;
 
-    if (overlayCanvas.width !== video.clientWidth) {
-        overlayCanvas.width = video.clientWidth;
-        overlayCanvas.height = video.clientHeight;
+    const dims = { width: video.videoWidth, height: video.videoHeight };
+    if (overlayCanvas.width !== dims.width || overlayCanvas.height !== dims.height) {
+        overlayCanvas.width = dims.width;
+        overlayCanvas.height = dims.height;
     }
 
     const ctx = overlayCanvas.getContext('2d');
@@ -1317,7 +1318,6 @@ function drawHyperFocusUI(detection) {
     if (!detection) return;
 
     // Rescale to canvas
-    const dims = faceapi.matchDimensions(overlayCanvas, video, true);
     const resized = faceapi.resizeResults(detection, dims);
 
     const box = resized.detection.box;
@@ -1422,7 +1422,7 @@ async function autoRegisterFace() {
         
         let detection = undefined;
         for (let i = 0; i < 3; i++) {
-            const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.4 }))
+            const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.4 }))
                 .withFaceLandmarks()
                 .withFaceDescriptors();
             if (detections && detections.length > 0) {
@@ -1512,7 +1512,7 @@ function startAutoRegistrationLoop() {
 
         isRegProcessing = true;
         try {
-            const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.4 })).withFaceLandmarks();
+            const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.4 })).withFaceLandmarks();
             const detection = detections && detections.length > 0 ? detections[0] : undefined;
             
             console.log("Registration Loop: detected faces =", detections ? detections.length : 0);
