@@ -779,7 +779,7 @@
                                     <button onclick="window.print()" style="background: transparent; border: 1px solid #cbd5e1; cursor: pointer; color: #475569; display: flex; align-items: center; gap: 4px; font-size: 0.85rem; font-weight: 600; padding: 6px 12px; border-radius: 6px; transition: all 0.2s;" onmouseover="this.style.background='#f1f5f9'; this.style.borderColor='#94a3b8'; this.style.color='#0f172a'" onmouseout="this.style.background='transparent'; this.style.borderColor='#cbd5e1'; this.style.color='#475569'" title="페이지 인쇄">
                                         <span class="material-icons" style="font-size: 1.1rem;">print</span> 인쇄
                                     </button>
-                                    <button onclick="location.reload()" style="background: transparent; border: 1px solid #cbd5e1; cursor: pointer; color: #475569; display: flex; align-items: center; gap: 4px; font-size: 0.85rem; font-weight: 600; padding: 6px 12px; border-radius: 6px; transition: all 0.2s;" onmouseover="this.style.background='#f1f5f9'; this.style.borderColor='#94a3b8'; this.style.color='#0f172a'" onmouseout="this.style.background='transparent'; this.style.borderColor='#cbd5e1'; this.style.color='#475569'" title="페이지 새로고침">
+                                    <button onclick="window.location.href = window.location.pathname + '?reset=' + new Date().getTime()" style="background: transparent; border: 1px solid #cbd5e1; cursor: pointer; color: #475569; display: flex; align-items: center; gap: 4px; font-size: 0.85rem; font-weight: 600; padding: 6px 12px; border-radius: 6px; transition: all 0.2s;" onmouseover="this.style.background='#f1f5f9'; this.style.borderColor='#94a3b8'; this.style.color='#0f172a'" onmouseout="this.style.background='transparent'; this.style.borderColor='#cbd5e1'; this.style.color='#475569'" title="페이지 새로고침">
                                         <span class="material-icons" style="font-size: 1.1rem;">refresh</span> 페이지 초기화
                                     </button>
                                 </div>
@@ -856,7 +856,7 @@
     </div>
 
     <script src="script.js"></script>
-    <script src="practical_exam.js?v=20260620-27" defer></script>
+    <script src="practical_exam.js?v=20260620-28" defer></script>
 </body>
 
 </html>
