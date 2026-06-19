@@ -993,3 +993,38 @@ function populateCourseFilter() {
         courseSelect.value = currentVal;
     }
 }
+
+function clearCurrentPageData() {
+    if (confirm("⚠️ 현재 화면에 보이는 시험 기록을 모두 삭제하시겠습니까?\n(이 작업은 서버에서도 완전히 삭제되며 되돌릴 수 없습니다!)")) {
+        const trs = document.querySelectorAll('#examTbody tr');
+        let indicesToDelete = [];
+        trs.forEach(tr => {
+            const dblclickAttr = tr.getAttribute('ondblclick');
+            if (dblclickAttr && dblclickAttr.startsWith('deleteExam(')) {
+                const idxStr = dblclickAttr.replace('deleteExam(', '').replace(')', '');
+                const idx = parseInt(idxStr, 10);
+                if (!isNaN(idx)) {
+                    indicesToDelete.push(idx);
+                }
+            }
+        });
+        
+        indicesToDelete.sort((a, b) => b - a);
+        
+        let deletedCount = 0;
+        indicesToDelete.forEach(idx => {
+            if (idx < exams.length && (exams[idx].name || exams[idx].subject || exams[idx].examDate || exams[idx].score)) {
+                exams.splice(idx, 1);
+                deletedCount++;
+            }
+        });
+        
+        if (deletedCount > 0) {
+            saveExams();
+            renderExamTable();
+            alert(deletedCount + "개의 기록이 성공적으로 삭제되었습니다.");
+        } else {
+            alert("삭제할 기록이 없습니다.");
+        }
+    }
+}
