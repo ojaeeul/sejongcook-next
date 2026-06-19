@@ -642,7 +642,8 @@ function promptMultipleCoursesVoice(courses, memberName) {
         courses.sort((a, b) => a.mins - b.mins);
         const courseNames = courses.map(c => {
             let name = c.name.replace(/\([^)]*\)/g, '').trim();
-            return name.replace(/(기능사|산업기사)$/, '').trim();
+            let short = name.replace(/(기능사|산업기사)$/, '').trim();
+            return short || name;
         });
         const courseStrs = courses.map((c, i) => {
             const timeStr = formatMins(c.mins);
@@ -711,6 +712,7 @@ function promptMultipleCoursesVoice(courses, memberName) {
                 
                 let cleanName = c.name.replace(/\([^)]*\)/g, '').trim();
                 let shortName = cleanName.replace(/(기능사|산업기사)$/, '').trim();
+                if (!shortName) shortName = cleanName;
                 btn.innerText = `${shortName}`;
                 btn.onclick = () => {
                     if (window.speakTTS) window.speakTTS(`${cleanName} 출석합니다.`, 'browser');
@@ -931,7 +933,8 @@ async function processAttendance(inputNumOrObj, overridePhoto = null) {
                 }
             }
             
-            return true;
+            // 시간표가 아예 비어있으면 전체 허용, 시간표가 하나라도 설정되어 있다면 해당 없는 과목은 해당 요일 아님(false) 처리
+            return Object.keys(cachedTimetable).length === 0;
         });
 
         if (allCourses.length > 0 && availableCourses.length === 0) {
