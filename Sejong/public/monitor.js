@@ -196,7 +196,7 @@ function startAutoDetectionLoop() {
         isProcessingFrame = true;
         try {
             if (!modelsLoaded) {
-                drawHyperFocusUI(undefined);
+                drawAttendanceFocusUI(undefined);
                 isProcessingFrame = false;
                 return;
             }
@@ -205,7 +205,7 @@ function startAutoDetectionLoop() {
             const detections = await faceapi.detectAllFaces(video, options).withFaceLandmarks();
             const detection = detections && detections.length > 0 ? detections[0] : undefined;
             
-            drawHyperFocusUI(detection);
+            drawAttendanceFocusUI(detection);
 
             if (detection) {
                 attendanceProgress += 3;
@@ -250,29 +250,7 @@ function drawAttendanceFocusUI(detection) {
     const ctx = overlayCanvas.getContext('2d');
     ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
 
-    if (!detection) {
-        // 얼굴이 감지되지 않을 때 빨간색 스캐닝 효과 출력
-        ctx.strokeStyle = 'rgba(239, 68, 68, 0.6)'; // Red
-        ctx.lineWidth = 2.5;
-        
-        const scanY = (Date.now() / 15) % overlayCanvas.height;
-        ctx.beginPath();
-        ctx.moveTo(0, scanY);
-        ctx.lineTo(overlayCanvas.width, scanY);
-        ctx.stroke();
-
-        ctx.fillStyle = 'rgba(239, 68, 68, 0.2)';
-        ctx.fillRect(0, scanY - 20, overlayCanvas.width, 40);
-
-        ctx.beginPath();
-        ctx.moveTo(overlayCanvas.width / 2 - 30, overlayCanvas.height / 2);
-        ctx.lineTo(overlayCanvas.width / 2 + 30, overlayCanvas.height / 2);
-        ctx.moveTo(overlayCanvas.width / 2, overlayCanvas.height / 2 - 30);
-        ctx.lineTo(overlayCanvas.width / 2, overlayCanvas.height / 2 + 30);
-        ctx.stroke();
-
-        return;
-    }
+    if (!detection) return; // 신규등록(register_camera)과 완벽하게 동일하게 아무것도 안그림
 
     const resized = faceapi.resizeResults(detection, dims);
 
