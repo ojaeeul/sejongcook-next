@@ -5,7 +5,8 @@ let totalOverall = 0;
 let selectedYear = null;
 let selectedMonth = null;
 
-document.addEventListener('DOMContentLoaded', async () => {
+
+async function loadExpenseData() {
     try {
         const res = await fetch(`/api/sejong/expense?year=all&t=${Date.now()}`);
         if (!res.ok) throw new Error('Failed to fetch expenses');
@@ -19,12 +20,36 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderTotalOverall();
         renderYearList();
         
+        // If there was a selected year, re-render its month list if still exists
+        if (selectedYear && groupedData[selectedYear]) {
+            renderMonthList();
+            // If there was a selected month, re-render its day list
+            if (selectedMonth && groupedData[selectedYear].months[selectedMonth]) {
+                renderDayList();
+            } else {
+                clearDayList();
+            }
+        }
+        
     } catch (e) {
         console.error("Failed to load expenses:", e);
         document.getElementById('totalExpenseAmount').innerText = "데이터 로딩 실패";
         document.getElementById('tier-year-list').innerHTML = `<div class="empty-state"><span class="material-icons">error_outline</span><span>데이터를 불러올 수 없습니다.</span></div>`;
     }
+}
+
+document.addEventListener('DOMContentLoaded', loadExpenseData);
+
+// When user returns to this tab, auto refresh data
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+        loadExpenseData();
+    }
 });
+
+// Also on focus just to be safe
+window.addEventListener('focus', loadExpenseData);
+
 
 function processExpenseDataArray(dataArray) {
     totalOverall = 0;
