@@ -195,23 +195,20 @@ function startAutoDetectionLoop() {
 
         isProcessingFrame = true;
         try {
-            // 엔진 로딩 중일 때도 빨간색 스캐닝 UI는 즉시 작동하도록 처리 (UX 개선)
             if (!modelsLoaded) {
-                drawAttendanceFocusUI(undefined);
+                drawHyperFocusUI(undefined);
                 isProcessingFrame = false;
                 return;
             }
 
-            // 빠른 추적용 (초점 UI용) - TinyFaceDetector
             const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.4 });
             const detections = await faceapi.detectAllFaces(video, options).withFaceLandmarks();
             const detection = detections && detections.length > 0 ? detections[0] : undefined;
             
-            drawAttendanceFocusUI(detection);
+            drawHyperFocusUI(detection);
 
-            // 안정적으로 100% 감지되면 고정밀 모델(ssdMobilenetv1) 구동하여 출석 체크
             if (detection) {
-                attendanceProgress += 3; // 스캔 속도
+                attendanceProgress += 3;
                 if (attendanceProgress >= 100) {
                     isAuthenticating = true;
                     await processAutoAttendance();
@@ -995,6 +992,43 @@ function showStatus(msg, color) {
     if (scanStatusText) {
         scanStatusText.textContent = msg;
         scanStatusText.style.color = color;
+    }
+
+    // 풀스크린(카메라 전용) 모드일 때 메시지를 화면 정중앙에 크게 띄움
+    if (currentMode === 'face_only' || currentMode === 'register_camera') {
+        let overlay = document.getElementById('floatingStatusOverlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'floatingStatusOverlay';
+            overlay.style.position = 'absolute';
+            overlay.style.bottom = '20%';
+            overlay.style.left = '50%';
+            overlay.style.transform = 'translateX(-50%)';
+            overlay.style.padding = '20px 40px';
+            overlay.style.borderRadius = '30px';
+            overlay.style.fontSize = '2.5rem';
+            overlay.style.fontWeight = 'bold';
+            overlay.style.zIndex = '9999';
+            overlay.style.boxShadow = '0 10px 30px rgba(0,0,0,0.5)';
+            overlay.style.transition = 'opacity 0.3s';
+            overlay.style.textAlign = 'center';
+            const cameraFrame = document.querySelector('.camera-frame');
+            if (cameraFrame) {
+                cameraFrame.appendChild(overlay);
+            } else {
+                document.body.appendChild(overlay);
+            }
+        }
+        overlay.textContent = msg;
+        overlay.style.color = 'white';
+        overlay.style.background = color === 'red' ? 'rgba(239, 68, 68, 0.95)' : 
+                                   (color === '#059669' || color === '#3b82f6' ? 'rgba(5, 150, 105, 0.95)' : 'rgba(0,0,0,0.85)');
+        overlay.style.opacity = '1';
+        
+        if (window.statusOverlayTimeout) clearTimeout(window.statusOverlayTimeout);
+        window.statusOverlayTimeout = setTimeout(() => {
+            if (overlay) overlay.style.opacity = '0';
+        }, 3000);
     }
 }
 
