@@ -66,6 +66,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         currentPage = parseInt(savedPage, 10);
     }
 
+    populateCourseFilter();
     renderExamTable();
 
     document.getElementById('btnAddNew').addEventListener('click', openStudentModal);
@@ -92,6 +93,7 @@ function toggleViewAllPages() {
 }
 
 function renderExamTable() {
+    populateCourseFilter(); // Update dropdown options
     const tbody = document.getElementById('examTbody');
     if (!tbody) return;
     
@@ -134,7 +136,12 @@ function renderExamTable() {
         const realDataWithIndex = displayExams.slice(0, lastRealIndex + 1).map((e, i) => ({ ...e, originalIndex: i }));
         
         // APPLY FILTERS BEFORE PAGINATION
+        const courseFilter = document.getElementById('courseFilter') ? document.getElementById('courseFilter').value : 'ALL';
+        
         const filteredData = realDataWithIndex.filter(exam => {
+            if (courseFilter !== 'ALL') {
+                if (!exam.subject || exam.subject !== courseFilter) return false;
+            }
             if (searchStr && (!exam.name || !exam.name.toLowerCase().includes(searchStr))) return false;
             
             // Exam Date Filtering
@@ -153,6 +160,7 @@ function renderExamTable() {
             return true;
         });
         
+        window.isViewAllPages = true; // Always view all pages with this new layout
         const rowsPerPage = window.isViewAllPages ? Math.max(filteredData.length, 15) : 15;
         let totalPages = Math.ceil(filteredData.length / rowsPerPage);
         if (totalPages === 0) totalPages = 1;
@@ -958,4 +966,35 @@ function selectStatusFromDropdown(index, value) {
     exams[index].status = value;
     saveExams();
     renderExamTable();
+}
+
+
+function filterListByCourse() {
+    window.isViewAllPages = true; // Automatically view all when filtering
+    renderExamTable();
+}
+
+function populateCourseFilter() {
+    const courseSelect = document.getElementById('courseFilter');
+    if (!courseSelect) return;
+    
+    const courseSet = new Set();
+    exams.forEach(e => {
+        if (e.subject) courseSet.add(e.subject);
+    });
+    
+    const currentVal = courseSelect.value;
+    courseSelect.innerHTML = '<option value="ALL">전체보기</option>';
+    
+    const sortedCourses = Array.from(courseSet).sort();
+    sortedCourses.forEach(c => {
+        const option = document.createElement('option');
+        option.value = c;
+        option.textContent = c;
+        courseSelect.appendChild(option);
+    });
+    
+    if (sortedCourses.includes(currentVal)) {
+        courseSelect.value = currentVal;
+    }
 }

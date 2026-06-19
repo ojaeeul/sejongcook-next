@@ -686,7 +686,9 @@
     </style>
                         <div style="flex: 1; display: flex; gap: 5px; flex-direction: column;">
                             <div style="display: flex; gap: 5px; width: 100%; align-items: stretch;">
-                                <button class="mp-btn" style="width: auto; height: auto; padding: 0 10px; font-size: 0.7rem; font-weight: 600; white-space: nowrap; color: #1e293b; background: white; border: 1px solid #e2e8f0; border-radius: 6px;" onclick="toggleViewAllPages()" id="viewAllPagesBtn">페이지 전체보기</button>
+                                <select id="courseFilter" onchange="filterListByCourse()" class="mp-btn" style="width: auto; height: auto; padding: 5px 10px; font-size: 0.8rem; font-weight: 600; white-space: nowrap; color: #1e293b; background: white; border: 1px solid #e2e8f0; border-radius: 6px; cursor: pointer; outline: none;">
+    <option value="ALL">전체보기</option>
+</select>
                                 <!-- Exam Date Picker -->
                                 <div class="inline-picker-container" title="시험일 검색">
                                     <div class="inline-picker-label">
@@ -827,7 +829,7 @@
     </div>
 
     <script src="script.js"></script>
-    <script src="exam.js?v=20260620-12" defer></script>
+    <script src="exam.js?v=20260620-13" defer></script>
 </body>
 
 </html>
