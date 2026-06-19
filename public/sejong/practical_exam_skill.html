@@ -770,21 +770,23 @@
                         <button class="page-btn" onclick="prevPage()" style="padding: 10px 20px; border: none; background: #3b82f6; color: white; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 500; transition: background 0.2s;">◀ 이전 장</button>
                         <span class="pageIndicator" style="font-size: 1.1rem; font-weight: 600; color: #1e293b; min-width: 100px; text-align: center;">1 / 1 페이지</span>
                         <button class="page-btn" onclick="nextPage()" style="padding: 10px 20px; border: none; background: #3b82f6; color: white; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 500; transition: background 0.2s;">다음 장 ▶</button>
-                        <select class="rowsPerPageSelect print-hide" onchange="changeRowsPerPage(this.value)" class="print-hide" style="margin-left: 20px; padding: 8px 12px; border-radius: 8px; border: 1px solid #cbd5e1; outline: none; font-size: 0.95rem; font-weight: 600; color: #475569; cursor: pointer; background-color: #f8fafc;">
-                            <option value="10">10개씩 보기</option>
-                            <option value="15" selected>15개씩 보기</option>
-                            <option value="20">20개씩 보기</option>
-                            <option value="25">25개씩 보기</option>
-                            <option value="30">30개씩 보기</option>
-                            <option value="50">50개씩 보기</option>
-                        </select>
+                        
 
                     </div>
                     <div class="notebook-container" id="notebookContainer">
                         <div class="notebook-page">
                             <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 10px; padding-left: 5px; padding-right: 5px;">
                                 <div style="text-align: left; font-size: 1.5rem; font-weight: 800; color: #f59e0b; line-height: 1;">실기시험</div>
-                                <div class="print-hide" style="display: flex; gap: 8px;">
+                                <div class="print-hide" style="display: flex; gap: 8px; align-items: center;">
+
+                                    <select class="rowsPerPageSelect print-hide" onchange="changeRowsPerPage(this.value)" style="width: auto; padding: 4px 8px; border-radius: 6px; border: 1px solid #cbd5e1; outline: none; font-size: 0.85rem; font-weight: 600; color: #475569; cursor: pointer; background-color: transparent; transition: all 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
+                                        <option value="10">10개 보기</option>
+                                        <option value="15" selected>15개 보기</option>
+                                        <option value="20">20개 보기</option>
+                                        <option value="25">25개 보기</option>
+                                        <option value="30">30개 보기</option>
+                                        <option value="50">50개 보기</option>
+                                    </select>
                                     <button onclick="window.print()" style="background: transparent; border: 1px solid #cbd5e1; cursor: pointer; color: #475569; display: flex; align-items: center; gap: 4px; font-size: 0.85rem; font-weight: 600; padding: 6px 12px; border-radius: 6px; transition: all 0.2s;" onmouseover="this.style.background='#f1f5f9'; this.style.borderColor='#94a3b8'; this.style.color='#0f172a'" onmouseout="this.style.background='transparent'; this.style.borderColor='#cbd5e1'; this.style.color='#475569'" title="페이지 인쇄">
                                         <span class="material-icons" style="font-size: 1.1rem;">print</span> 인쇄
                                     </button>
@@ -824,14 +826,7 @@
                         <button class="page-btn" onclick="prevPage()" style="padding: 10px 20px; border: none; background: #3b82f6; color: white; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 500; transition: background 0.2s;">◀ 이전 장</button>
                         <span class="pageIndicator" style="font-size: 1.1rem; font-weight: 600; color: #1e293b; min-width: 100px; text-align: center;">1 / 1 페이지</span>
                         <button class="page-btn" onclick="nextPage()" style="padding: 10px 20px; border: none; background: #3b82f6; color: white; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 500; transition: background 0.2s;">다음 장 ▶</button>
-                        <select class="rowsPerPageSelect print-hide" onchange="changeRowsPerPage(this.value)" class="print-hide" style="margin-left: 20px; padding: 8px 12px; border-radius: 8px; border: 1px solid #cbd5e1; outline: none; font-size: 0.95rem; font-weight: 600; color: #475569; cursor: pointer; background-color: #f8fafc;">
-                            <option value="10">10개씩 보기</option>
-                            <option value="15" selected>15개씩 보기</option>
-                            <option value="20">20개씩 보기</option>
-                            <option value="25">25개씩 보기</option>
-                            <option value="30">30개씩 보기</option>
-                            <option value="50">50개씩 보기</option>
-                        </select>
+                        
 
                     </div>
                 </div>
@@ -874,7 +869,7 @@
     </div>
 
     <script src="script.js"></script>
-    <script src="practical_exam.js?v=20260620-30" defer></script>
+    <script src="practical_exam.js?v=20260620-31" defer></script>
 </body>
 
 </html>
