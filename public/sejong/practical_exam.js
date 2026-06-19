@@ -160,8 +160,9 @@ function renderExamTable() {
             return true;
         });
         
-        window.isViewAllPages = true; // Always view all pages with this new layout
-        const rowsPerPage = window.isViewAllPages ? Math.max(filteredData.length, 15) : 15;
+                const rowsSelect = document.querySelector(".rowsPerPageSelect");
+        const rowsPerPage = rowsSelect ? parseInt(rowsSelect.value, 10) : 15;
+        window.isViewAllPages = false; // Disable view all pages so pagination works
         let totalPages = Math.ceil(filteredData.length / rowsPerPage);
         if (totalPages === 0) totalPages = 1;
         
@@ -1027,4 +1028,10 @@ function clearCurrentPageData() {
             alert("삭제할 기록이 없습니다.");
         }
     }
+}
+
+function changeRowsPerPage(val) {
+    document.querySelectorAll(".rowsPerPageSelect").forEach(s => s.value = val);
+    currentPage = 1;
+    renderExamTable();
 }
