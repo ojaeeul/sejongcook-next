@@ -190,11 +190,12 @@ function startAutoDetectionLoop() {
     attendanceProgress = 0;
 
     autoDetectInterval = setInterval(async () => {
-        if (currentMode !== 'face_only' || isAuthenticating || !video || video.paused || video.videoWidth === 0) return;
+        if (currentMode !== 'face_only' || isAuthenticating || !video) return;
         if (isProcessingFrame) return;
 
         isProcessingFrame = true;
         try {
+            if (statusMsg) statusMsg.textContent = "루프 진입 성공 (비디오 상태: " + (video.paused ? "paused" : "playing") + ", 너비: " + video.videoWidth + ")";
             if (!modelsLoaded) {
                 if (statusMsg) statusMsg.textContent = "AI 엔진 로딩 중... (UI 표시 시도)";
                 try {
@@ -253,7 +254,7 @@ function drawFaceScannerUI(detection, currentProgress) {
     const overlayCanvas = document.getElementById('overlayCanvas');
     if (!overlayCanvas || !video) return;
 
-    const dims = { width: video.videoWidth, height: video.videoHeight };
+    const dims = { width: video.videoWidth || 640, height: video.videoHeight || 480 };
     if (overlayCanvas.width !== dims.width || overlayCanvas.height !== dims.height) {
         overlayCanvas.width = dims.width;
         overlayCanvas.height = dims.height;
