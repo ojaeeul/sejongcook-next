@@ -12,12 +12,12 @@
     <meta name="keywords" content="세종요리, 김포요리, 세종요리학원, 김포요리학원, 요리학원, 출석관리, 수강생관리, 요리자격증">
     <meta property="og:title" content="세종요리제과학원 월간 출석부">
     <meta property="og:description" content="수강생들의 출석 현황을 한눈에 확인하세요.">
-    <link rel="stylesheet" href="style.css?v=20260620-5">
+    <link rel="stylesheet" href="style.css?v=20260620-6">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="shared_calc.js?v=20260620-5"></script>
-    <script src="script.js?v=20260620-5" defer></script>
+    <script src="shared_calc.js?v=20260620-6"></script>
+    <script src="script.js?v=20260620-6" defer></script>
     <style>
         .sheet-container {
             background: white;
@@ -2127,21 +2127,7 @@
                     return nameA.localeCompare(nameB, 'ko-KR');
                 });
 
-                // Update Headcount
-                const uniqueHeadcount = new Set(filteredRows.map(r => r.member.id)).size;
-                const hcSpan = document.getElementById('currentHeadcount');
-                if (hcSpan) {
-                    hcSpan.textContent = `(총 ${uniqueHeadcount}명)`;
-                }
-                window.lastRenderedMembers = [...new Set(filteredRows.map(r => r.member.id))];
-
-                // Body
-                // Body - Fixed 20 Rows
-                const tbody = document.getElementById('sheetBody');
-                tbody.innerHTML = '';
-
                 // [신규 - 전체 동기화] 현재 학원에 등록된 모든 과정/모든 학생에 대해 (필터 무관) 실제 레드박스 예정일 계산 및 동기화 저장
-                // (기존에는 상위 20명만 렌더링되어 다른 학생 데이터가 누락되는 문제 해결)
                 if (typeof window.calculateRedBoxesForMonth === 'function') {
                     allCourseRows.forEach(row => {
                         const m = row.member;
@@ -2159,6 +2145,31 @@
                     });
                 }
                 localStorage.setItem('sejong_ledger_sync', JSON.stringify(window.ledgerSyncData));
+
+                // 3. Filter by Payment Students if checked
+                const showOnlyPaymentStudents = document.getElementById('showOnlyPaymentStudents') && document.getElementById('showOnlyPaymentStudents').checked;
+                if (showOnlyPaymentStudents) {
+                    filteredRows = filteredRows.filter(r => {
+                        const m = r.member;
+                        const rowCourseNameScope = r.courseName;
+                        if (!m || !m.id) return false;
+                        const syncKeyNow = `${m.id}_${currentYear}_${currentMonth}_${rowCourseNameScope || 'all'}`;
+                        return window.ledgerSyncData[syncKeyNow] && window.ledgerSyncData[syncKeyNow].length > 0;
+                    });
+                }
+
+                // Update Headcount
+                const uniqueHeadcount = new Set(filteredRows.map(r => r.member.id)).size;
+                const hcSpan = document.getElementById('currentHeadcount');
+                if (hcSpan) {
+                    hcSpan.textContent = `(총 ${uniqueHeadcount}명)`;
+                }
+                window.lastRenderedMembers = [...new Set(filteredRows.map(r => r.member.id))];
+
+                // Body
+                // Body - Fixed 20 Rows
+                const tbody = document.getElementById('sheetBody');
+                tbody.innerHTML = '';
 
                 const renderedArrows = new Set(); // memberId_date
                 const membersWithRedBox = new Set();
