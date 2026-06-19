@@ -282,7 +282,7 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
 
     let isSimulated = false;
 
-    if (redBoxDates.size === 0 && currentMC && hasAnyAttendance) {
+    if (redBoxDates.size === 0 && currentMC) {
         const now = new Date();
         const limit = new Date(now.getFullYear(), now.getMonth() + 2, 0);
         
@@ -291,9 +291,14 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
         let lastRecordDateObj = null;
         if (uniqueLogs.length > 0) {
             lastRecordDateObj = new Date(uniqueLogs[uniqueLogs.length - 1].date);
+        } else if (displayStartDate) {
+            // [수정] 출석 기록이 없어도 등록일/시작일이 있으면 그 날짜부터 시뮬레이션 시작
+            lastRecordDateObj = new Date(displayStartDate);
+            // 시작일 당일부터 카운트할 수 있도록 -1일 해줌
+            lastRecordDateObj.setDate(lastRecordDateObj.getDate() - 1);
         }
         
-        if (lastRecordDateObj && lastRecordDateObj > simDate) {
+        if (lastRecordDateObj && lastRecordDateObj >= simDate) {
             simDate = new Date(lastRecordDateObj.getTime() + 86400000);
         }
 
@@ -317,7 +322,7 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
             let coursesToCheck = [];
             
             if (courseFilter) {
-                coursesToCheck = [courseFilter.replace(/\([^)]*\)/g, '').trim()];
+                coursesToCheck = String(courseFilter).split(',').map(c => c.replace(/\([^)]*\)/g, '').trim()).filter(c => c && !c.includes('[삭제]'));
             } else if (member.course) {
                 coursesToCheck = String(member.course).split(',').map(c => c.replace(/\([^)]*\)/g, '').trim()).filter(c => c && !c.includes('[삭제]'));
             }
