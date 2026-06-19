@@ -12,12 +12,12 @@
     <meta name="keywords" content="세종요리, 김포요리, 세종요리학원, 김포요리학원, 요리학원, 출석관리, 수강생관리, 요리자격증">
     <meta property="og:title" content="세종요리제과학원 월간 출석부">
     <meta property="og:description" content="수강생들의 출석 현황을 한눈에 확인하세요.">
-    <link rel="stylesheet" href="style.css?v=20260619-54">
+    <link rel="stylesheet" href="style.css?v=20260620-0">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="shared_calc.js?v=20260619-54"></script>
-    <script src="script.js?v=20260619-54" defer></script>
+    <script src="shared_calc.js?v=20260620-0"></script>
+    <script src="script.js?v=20260620-0" defer></script>
     <style>
         .sheet-container {
             background: white;
@@ -1605,6 +1605,7 @@
         // --- [신규 기믹] 수강료 납부대장의 '예정일' 사전 계산 로직 (sheet.html 이식) ---
         function getSheetSimulatedScheduledDate(memberId, year, month, courseFilter = null) {
             if (!attendanceData) return { scheduledDays: [], isSimulated: false, hasAnyAttendance: false };
+            const member = window.membersData ? window.membersData.find(m => String(m.id) === String(memberId)) : undefined;
             let memberRecords = attendanceData.filter(a => String(a.memberId) === String(memberId));
 
             // 객체화 보정 (sheet.js 용)
@@ -1691,7 +1692,8 @@
 
             const getCycle = (val) => {
                 let vRaw = Math.round(val * 10);
-                let limits = window.getCourseLimits(courseFilter || "");
+                // member 객체가 scope에 있다면 type을 넘김
+                let limits = window.getCourseLimits(courseFilter || "", typeof member !== 'undefined' ? member.type : undefined);
                 let triggerRaw = Math.round(limits.trigger * 10);
                 let limitRaw = Math.round(limits.limit * 10);
 
@@ -2390,7 +2392,7 @@
                             // [수정] 월 시작 시점의 Net 주기를 먼저 계산하여 문턱값(threshold)을 정확히 판정
                             const getCycle = (val) => {
                                 let vRaw = Math.round(val * 10);
-                                let limits = window.getCourseLimits(effectiveCourseName);
+                                let limits = window.getCourseLimits(effectiveCourseName, typeof m !== 'undefined' ? m.type : undefined);
                                 let triggerRaw = Math.round(limits.trigger * 10);
                                 let limitRaw = Math.round(limits.limit * 10);
 
@@ -2471,7 +2473,7 @@
                             // 2. 재고출석 (진행률) 계산 (수강생 규칙 적용)
                             let vRaw = Math.round(runningTotal * 10);
                             
-                            let limits = window.getCourseLimits(effectiveCourseName);
+                            let limits = window.getCourseLimits(effectiveCourseName, typeof m !== 'undefined' ? m.type : undefined);
                             let limit = limits.limit;
                             let trigger = limits.trigger;
                             let limitRaw = Math.round(limit * 10);

@@ -119,7 +119,7 @@ for (let targetMonth = 1; targetMonth <= 12; targetMonth++) {
             let runningTotal = currentMC.carryFromPrev;
             const getCycle = (val) => {
                 let vRaw = Math.round(val * 10);
-                let limits = window.getCourseLimits(effectiveCourseName);
+                let limits = window.getCourseLimits(effectiveCourseName, typeof m !== 'undefined' ? m.type : undefined);
                 let triggerRaw = Math.round(limits.trigger * 10);
                 let limitRaw = Math.round(limits.limit * 10);
                 if (vRaw < triggerRaw) return 0;

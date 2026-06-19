@@ -35,12 +35,12 @@ window.loadCycleSettings = async function() {
     }
 };
 
-window.getCourseCycleLength = function(courseNameScope) {
-    let limits = window.getCourseLimits(courseNameScope);
+window.getCourseCycleLength = function(courseNameScope, memberType) {
+    let limits = window.getCourseLimits(courseNameScope, memberType);
     return limits.trigger; // Backward compatibility
 };
 
-window.getCourseLimits = function(courseNameScope) {
+window.getCourseLimits = function(courseNameScope, memberType) {
     let safeCourseKey = (courseNameScope || '').replace(/\s/g, '');
     
     // 1. 재고출석 커트라인 관리 (Limit 직접 설정, 우선순위 1)
@@ -152,7 +152,7 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
     
     const getCycle = (val) => {
         let vRaw = Math.round(val * 10);
-        let limits = window.getCourseLimits(courseFilter || String(member.course));
+        let limits = window.getCourseLimits(courseFilter || String(member.course), member.type);
         
         let firstLimit = Math.round(limits.trigger * 10);
         let step = Math.round(limits.limit * 10);
@@ -398,6 +398,6 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
         isSimulated: isSimulated,
         allMilestones: allMilestones,
         scheduledDate: finalScheduledDate,
-        currentCount: { count: carryOverP, target: window.getCourseCycleLength(courseFilter || String(member.course)) }
+        currentCount: { count: carryOverP, target: window.getCourseCycleLength(courseFilter || String(member.course), member.type) }
     };
 };

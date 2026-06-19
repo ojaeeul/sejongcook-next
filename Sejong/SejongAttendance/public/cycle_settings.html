@@ -213,6 +213,12 @@
             if (!cycleRules.custom.find(r => r.keyword === "제과제빵")) {
                 cycleRules.custom.push({ keyword: "제과제빵", cycle: 17 });
             }
+            if (!cycleRules.custom.find(r => r.keyword === "일식기능사")) {
+                cycleRules.custom.push({ keyword: "일식기능사", cycle: 10, cycle_student: 9, group: 'custom' });
+            }
+            if (!cycleRules.custom.find(r => r.keyword === "중식기능사")) {
+                cycleRules.custom.push({ keyword: "중식기능사", cycle: 10, cycle_student: 9, group: 'custom' });
+            }
             
             renderUI();
         } catch (e) {
@@ -352,8 +358,10 @@
                             <div class="chip custom-chip" style="margin:0; box-shadow:none;">
                                 ${rule.keyword}
                             </div>
-                            <div style="color:#475569; font-size:1.1rem; font-weight: 500;">
-                                출석 <input type="number" value="${rule.cycle}" class="cycle-input" onchange="updateCustomCycle('${escKeyword}', this.value)" min="1" style="width: 70px; padding: 6px; text-align: center; border: 1px solid #cbd5e1; border-radius: 6px; margin: 0 8px; font-weight: bold;"> 회
+                            <div style="color:#475569; font-size:1.0rem; font-weight: 500;">
+                                일반 <input type="number" value="${rule.cycle}" class="cycle-input" onchange="updateCustomCycle('${escKeyword}', this.value, 'general')" min="1" style="width: 55px; padding: 6px; text-align: center; border: 1px solid #cbd5e1; border-radius: 6px; margin: 0 4px; font-weight: bold;">회 
+                                <span style="color:#cbd5e1;">|</span>
+                                학생 <input type="number" value="${rule.cycle_student !== undefined ? rule.cycle_student : rule.cycle}" class="cycle-input" onchange="updateCustomCycle('${escKeyword}', this.value, 'student')" min="1" style="width: 55px; padding: 6px; text-align: center; border: 1px solid #cbd5e1; border-radius: 6px; margin: 0 4px; font-weight: bold;">회
                             </div>
                         </div>
                         <button class="delete-btn" onclick="quickMove('${escKeyword}', 'auto')" title="원래 자리로 복귀" style="background:#dcfce7; color:#166534; border:1px solid #bbf7d0; padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px;">
@@ -457,11 +465,14 @@
         renderUI();
     }
     
-    function updateCustomCycle(keyword, val) {
+    function updateCustomCycle(keyword, val, type = 'general') {
         let cycle = parseInt(val);
         if (isNaN(cycle) || cycle <= 0) cycle = 1;
         const rule = cycleRules.custom.find(r => r.keyword === keyword);
-        if (rule) rule.cycle = cycle;
+        if (rule) {
+            if (type === 'student') rule.cycle_student = cycle;
+            else rule.cycle = cycle;
+        }
     }
 
     async function saveCycleSettings() {

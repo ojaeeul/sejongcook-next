@@ -104,7 +104,7 @@ for (let targetMonth = 1; targetMonth <= 12; targetMonth++) {
             let totalCombined = Math.round((carryOverP + manualMakeup + attendances) * 10) / 10;
             let vRaw = Math.round(totalCombined * 10);
             
-            let limits = window.getCourseLimits(effectiveCourseName);
+            let limits = window.getCourseLimits(effectiveCourseName, typeof m !== 'undefined' ? m.type : undefined);
             let triggerRaw = Math.round(limits.trigger * 10);
             let limitRaw = Math.round(limits.limit * 10);
             let cycle = 0;
