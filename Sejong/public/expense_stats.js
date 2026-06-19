@@ -82,7 +82,7 @@ function processExpenseDataArray(dataArray) {
             
             let amountText = aCol.textContent.trim();
             let descText = descCol.textContent.trim();
-            if(!amountText || !descText) return;
+            if(!amountText && !descText) return;
             
             let match = dText.match(/^(\d+)\/(\d+)/);
             if(match) {
