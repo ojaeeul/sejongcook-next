@@ -957,19 +957,23 @@ async function processAttendance(inputNumOrObj, overridePhoto = null) {
         }
 
         const today = todayStrForCheck;
-        let finalStatus = 'present';
+        
+        // 각각의 과정마다 개별적으로 출석(또는 지각) 기록을 생성
+        let postSuccess = true;
         for (const tc of targetCourses) {
+            let finalStatus = 'present';
             if (currentMins > tc.mins) finalStatus = 'late';
+            
+            const postRes = await fetch(getFetchUrl('attendance', true), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ memberId: member.id, date: today, status: finalStatus, course: tc.name })
+            });
+            
+            if (!postRes.ok) postSuccess = false;
         }
-        const finalCourseStr = targetCourses.map(c => c.name).join(', ');
 
-        const postRes = await fetch(getFetchUrl('attendance', true), {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ memberId: member.id, date: today, status: finalStatus, course: finalCourseStr })
-        });
-
-        if (postRes.ok) {
+        if (postSuccess) {
             showStatus(`${member.name}님, 등원 완료!`, "#3b82f6");
             showFaceOverlay(overridePhoto || member.photo, member.name);
             

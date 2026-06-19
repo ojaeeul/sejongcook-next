@@ -82,14 +82,25 @@ function renderList() {
         item.className = 'member-item';
         
         
-        const isAttended = todayAttendance.some(a => String(a.memberId) === String(m.id));
-        const attBadge = isAttended 
-            ? `<div style="margin-top:5px;"><span style="display:inline-flex; align-items:center; gap:4px; padding: 3px 8px; border-radius: 4px; background: #dcfce7; color: #166534; font-size: 0.85rem; font-weight: bold;"><span class="material-icons" style="font-size:14px;">login</span> 로그인 (출석완료)</span></div>`
-            : `<div style="margin-top:5px;"><span style="display:inline-flex; align-items:center; gap:4px; padding: 3px 8px; border-radius: 4px; background: #f1f5f9; color: #64748b; font-size: 0.85rem; font-weight: bold;"><span class="material-icons" style="font-size:14px;">logout</span> 로그아웃 (출석 전)</span></div>`;
-        
-        const forceActionBtn = isAttended
-            ? `<button class="btn" style="background:#fef2f2; color:#ef4444; border:1px solid #fca5a5;" onclick="forceLogout('${m.id}', '${m.course}')"><span class="material-icons" style="font-size:18px;">logout</span> 강제 로그아웃</button>`
-            : `<button class="btn" style="background:#f0fdf4; color:#16a34a; border:1px solid #86efac;" onclick="forceLogin('${m.id}', '${m.course}')"><span class="material-icons" style="font-size:18px;">login</span> 강제 로그인</button>`;
+        const courses = m.course ? m.course.split(',').map(c => c.trim().replace(/\([^)]*\)/g, '').trim()).filter(c => c) : ['기본'];
+        let attBadge = '';
+        let forceActionBtn = '';
+
+        courses.forEach(cName => {
+            const isAttendedForCourse = todayAttendance.some(a => {
+                if (String(a.memberId) !== String(m.id)) return false;
+                const aCourse = a.course || 'ALL';
+                return aCourse === 'ALL' || aCourse.includes(cName) || cName.includes(aCourse);
+            });
+            
+            if (isAttendedForCourse) {
+                attBadge += `<div style="margin-top:5px;"><span style="display:inline-flex; align-items:center; gap:4px; padding: 3px 8px; border-radius: 4px; background: #dcfce7; color: #166534; font-size: 0.85rem; font-weight: bold;"><span class="material-icons" style="font-size:14px;">login</span> [${cName}] 출석완료</span></div>`;
+                forceActionBtn += `<button class="btn" style="background:#fef2f2; color:#ef4444; border:1px solid #fca5a5; margin-right:5px; margin-bottom:5px;" onclick="forceLogout('${m.id}', '${cName}')"><span class="material-icons" style="font-size:18px;">logout</span> ${cName} 로그아웃</button>`;
+            } else {
+                attBadge += `<div style="margin-top:5px;"><span style="display:inline-flex; align-items:center; gap:4px; padding: 3px 8px; border-radius: 4px; background: #f1f5f9; color: #64748b; font-size: 0.85rem; font-weight: bold;"><span class="material-icons" style="font-size:14px;">logout</span> [${cName}] 출석 전</span></div>`;
+                forceActionBtn += `<button class="btn" style="background:#f0fdf4; color:#16a34a; border:1px solid #86efac; margin-right:5px; margin-bottom:5px;" onclick="forceLogin('${m.id}', '${cName}')"><span class="material-icons" style="font-size:18px;">login</span> ${cName} 로그인</button>`;
+            }
+        });
         const photoPreview = hasFace && m.photo ? `<img src="${m.photo}" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid #3b82f6; flex-shrink: 0; cursor: pointer;" onclick="previewLargePhoto('${m.photo}', '${m.name}', '${m.id}')">` : `<div style="width: 60px; height: 60px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer;" onclick="previewLargePhoto('', '${m.name}', '${m.id}')"><span class="material-icons" style="color:#94a3b8; font-size: 32px;">person</span></div>`;
 
         const infoHtml = `
@@ -1007,10 +1018,11 @@ window.forceLogout = async function(memberId, course) {
     if (!confirm('해당 학생의 오늘 출석 기록을 강제로 삭제(로그아웃) 하시겠습니까?')) return;
     const today = new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
     try {
+        const finalCourse = course && course !== 'undefined' && course !== 'null' ? course : 'ALL';
         const res = await fetch(getFetchUrl('attendance/batch', true), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ memberId, dates: [today], status: 'unchecked', course: 'ALL' })
+            body: JSON.stringify({ memberId, dates: [today], status: 'unchecked', course: finalCourse })
         });
         if (res.ok) {
             localStorage.setItem('sejong_attendance_sync', Date.now().toString());
