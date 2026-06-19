@@ -181,11 +181,13 @@ async function submitAttendance() {
 let autoDetectInterval = null;
 let isAuthenticating = false;
 let isProcessingFrame = false;
+let attendanceProgress = 0;
 
 function startAutoDetectionLoop() {
     if (autoDetectInterval) clearInterval(autoDetectInterval);
     isAuthenticating = false;
     isProcessingFrame = false;
+    attendanceProgress = 0;
 
     autoDetectInterval = setInterval(async () => {
         if (!modelsLoaded || isAuthenticating || currentMode !== 'face_only' || !video || video.paused || video.videoWidth === 0) return;
@@ -196,16 +198,25 @@ function startAutoDetectionLoop() {
             // 빠른 추적용 (초점 UI용) - TinyFaceDetector
             const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.4 });
             const detections = await faceapi.detectAllFaces(video, options).withFaceLandmarks();
+            const detection = detections && detections.length > 0 ? detections[0] : undefined;
             
-            drawMultiFocusUI(detections);
+            drawAttendanceFocusUI(detection);
 
-            // 안정적으로 감지되면 고정밀 모델(ssdMobilenetv1) 구동하여 출석 체크
-            if (detections.length > 0 && !isAuthenticating) {
-                const box = detections[0].detection.box;
+            // 안정적으로 100% 감지되면 고정밀 모델(ssdMobilenetv1) 구동하여 출석 체크
+            if (detection) {
+                const box = detection.detection.box;
                 if (box.width > 80 && box.height > 80) { // 너무 멀리 있는 얼굴은 무시
-                    isAuthenticating = true;
-                    await processAutoAttendance();
+                    attendanceProgress += 4; // 스캔 속도
+                    if (attendanceProgress >= 100) {
+                        isAuthenticating = true;
+                        await processAutoAttendance();
+                        attendanceProgress = 0; // 초기화
+                    }
+                } else {
+                    if (attendanceProgress > 0) attendanceProgress -= 1;
                 }
+            } else {
+                if (attendanceProgress > 0) attendanceProgress -= 1;
             }
         } catch(e) {
             console.error("Auto detect error:", e);
@@ -227,7 +238,7 @@ function stopAutoDetectionLoop() {
     }
 }
 
-function drawMultiFocusUI(detections) {
+function drawAttendanceFocusUI(detection) {
     const overlayCanvas = document.getElementById('overlayCanvas');
     if (!overlayCanvas || !video) return;
 
@@ -240,7 +251,7 @@ function drawMultiFocusUI(detections) {
     const ctx = overlayCanvas.getContext('2d');
     ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
 
-    if (!detections || detections.length === 0) {
+    if (!detection) {
         // 얼굴이 감지되지 않을 때 빨간색 스캐닝 효과 출력
         ctx.strokeStyle = 'rgba(239, 68, 68, 0.6)'; // Red
         ctx.lineWidth = 2.5;
@@ -264,75 +275,93 @@ function drawMultiFocusUI(detections) {
         return;
     }
 
-    const resizedDetections = faceapi.resizeResults(detections, dims);
+    const resized = faceapi.resizeResults(detection, dims);
 
-    ctx.strokeStyle = '#10b981'; // 에메랄드 그린
+    const box = resized.detection.box;
+    const landmarks = resized.landmarks;
+
+    ctx.strokeStyle = '#4ade80';
     ctx.lineWidth = 2;
-    ctx.fillStyle = '#10b981';
+    ctx.fillStyle = '#4ade80';
 
-    resizedDetections.forEach(det => {
-        const box = det.detection.box;
-        const landmarks = det.landmarks;
-        
-        // 다중 십자 타겟팅 포인트들 (얼굴 윤곽, 눈, 코, 입)
-        const pointsToTrack = [
-            landmarks.getLeftEye()[0],
-            landmarks.getLeftEye()[3],
-            landmarks.getRightEye()[0],
-            landmarks.getRightEye()[3],
-            landmarks.getNose()[0],
-            landmarks.getNose()[3],
-            landmarks.getMouth()[0],
-            landmarks.getMouth()[6],
-            {x: box.x, y: box.y},
-            {x: box.x + box.width, y: box.y},
-            {x: box.x, y: box.y + box.height},
-            {x: box.x + box.width, y: box.y + box.height}
-        ];
+    const pointsToTrack = [
+        landmarks.getLeftEye()[0],
+        landmarks.getLeftEye()[3],
+        landmarks.getRightEye()[0],
+        landmarks.getRightEye()[3],
+        landmarks.getNose()[0],
+        landmarks.getNose()[3],
+        landmarks.getMouth()[0],
+        landmarks.getMouth()[6],
+        {x: box.x, y: box.y},
+        {x: box.x + box.width, y: box.y},
+        {x: box.x, y: box.y + box.height},
+        {x: box.x + box.width, y: box.y + box.height}
+    ];
 
-        const drawCrosshair = (x, y, size) => {
-            ctx.beginPath();
-            ctx.moveTo(x - size, y); ctx.lineTo(x + size, y);
-            ctx.moveTo(x, y - size); ctx.lineTo(x, y + size);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.arc(x, y, 2, 0, 2*Math.PI);
-            ctx.fill();
-        };
-
-        pointsToTrack.forEach(p => {
-            if(p) drawCrosshair(p.x, p.y, 8);
-        });
-        
-        // 100개의 다중 십자 타겟팅 (얼굴 안쪽 영역을 스캔하는 이펙트)
-        const numPoints = 100;
-        const cols = 10;
-        const cellW = box.width / cols;
-        const cellH = box.height / (numPoints / cols);
-        for (let i = 0; i < numPoints; i++) {
-            const col = i % cols;
-            const row = Math.floor(i / cols);
-            // 약간의 지터(떨림) 효과를 주어 실제로 스캔하는 느낌 부여
-            const jitterX = Math.sin(i * 1.5 + Date.now() * 0.005) * (cellW * 0.5);
-            const jitterY = Math.cos(i * 2.1 + Date.now() * 0.005) * (cellH * 0.5);
-            
-            const px = box.x + col * cellW + cellW * 0.5 + jitterX;
-            const py = box.y + row * cellH + cellH * 0.5 + jitterY;
-            
-            ctx.beginPath();
-            ctx.moveTo(px - 3, py); ctx.lineTo(px + 3, py);
-            ctx.moveTo(px, py - 3); ctx.lineTo(px, py + 3);
-            ctx.strokeStyle = 'rgba(16, 185, 129, 0.4)';
-            ctx.lineWidth = 1;
-            ctx.stroke();
-        }
-
-        // 큰 타겟 윤곽선 박스
+    const drawCrosshair = (x, y, size) => {
         ctx.beginPath();
-        ctx.rect(box.x, box.y, box.width, box.height);
-        ctx.strokeStyle = 'rgba(16, 185, 129, 0.4)';
+        ctx.moveTo(x - size, y); ctx.lineTo(x + size, y);
+        ctx.moveTo(x, y - size); ctx.lineTo(x, y + size);
         ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(x, y, 2, 0, 2*Math.PI);
+        ctx.fill();
+    };
+
+    pointsToTrack.forEach(p => {
+        if(p) drawCrosshair(p.x, p.y, 8);
     });
+
+    // 100+ dynamic crosshairs scanning the face box
+    const numPoints = 120;
+    const cols = 12;
+    const cellW = box.width / cols;
+    const cellH = box.height / (numPoints / cols);
+    for (let i = 0; i < numPoints; i++) {
+        const col = i % cols;
+        const row = Math.floor(i / cols);
+        const jitterX = Math.sin(i * 1.5 + Date.now() * 0.005) * (cellW * 0.5);
+        const jitterY = Math.cos(i * 2.1 + Date.now() * 0.005) * (cellH * 0.5);
+        
+        const px = box.x + col * cellW + cellW * 0.5 + jitterX;
+        const py = box.y + row * cellH + cellH * 0.5 + jitterY;
+        
+        ctx.beginPath();
+        ctx.moveTo(px - 4, py); ctx.lineTo(px + 4, py);
+        ctx.moveTo(px, py - 4); ctx.lineTo(px, py + 4);
+        ctx.strokeStyle = 'rgba(74, 222, 128, 0.6)'; // Bright green
+        ctx.lineWidth = 1;
+        ctx.stroke();
+    }
+
+    // Add extra scanning lines across the bounding box
+    ctx.strokeStyle = "rgba(74, 222, 128, 0.8)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.rect(box.x, box.y, box.width, box.height);
+    ctx.stroke();
+    
+    // Scanning laser
+    const time = Date.now();
+    const scanY = box.y + ((time / 10) % box.height);
+    ctx.strokeStyle = "#22c55e";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(box.x, scanY);
+    ctx.lineTo(box.x + box.width, scanY);
+    ctx.stroke();
+
+    // Progress bar at the bottom of the box
+    ctx.fillStyle = "rgba(0,0,0,0.5)";
+    ctx.fillRect(box.x, box.y + box.height + 15, box.width, 15);
+    ctx.fillStyle = "#4ade80";
+    ctx.fillRect(box.x, box.y + box.height + 15, box.width * (Math.min(attendanceProgress, 100) / 100), 15);
+    
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 16px 'Inter', sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("AI 고속 스캔: " + Math.min(Math.round(attendanceProgress), 100) + "%", box.x + box.width/2, box.y + box.height + 50);
 }
 
 async function processAutoAttendance() {
