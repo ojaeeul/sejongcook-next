@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>세종요리제과학원 - 제과제빵시험 관리</title>
+    <title>세종요리제과학원 - 조리시험 관리</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -446,8 +446,8 @@
                 </div>
                                 <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">국가시험</div>
                 <div class="nav-sub-menu show">
-                    <a href="exam.html" id="navExam" class="nav-item active">제과제빵시험</a>
-                    <a href="practical_exam.html" id="navPracticalExam" class="nav-item">조리시험</a>
+                    <a href="exam.html" id="navExam" class="nav-item">제과제빵시험</a>
+                    <a href="practical_exam.html" id="navPracticalExam" class="nav-item active">조리시험</a>
                 </div>
                 <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">수강료</div>
                 <div class="nav-sub-menu show">
@@ -597,13 +597,13 @@
                     <span class="material-icons">menu</span>
                 </button>
                 <div class="page-title-container" style="display: flex; align-items: center; gap: 20px;">
-                    <h1 class="page-title-text" style="margin: 0;">제과제빵시험</h1>
+                    <h1 class="page-title-text" style="margin: 0;">조리시험</h1>
                     <div style="display: flex; gap: 10px;">
-                        <a href="exam.html" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 6px 16px; border-radius: 8px; background: #3b82f6; color: white; font-weight: 600; font-size: 0.9rem; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3); transition: transform 0.2s, box-shadow 0.2s; white-space: nowrap; line-height: 1;" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 6px rgba(59, 130, 246, 0.4)'" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 4px rgba(59, 130, 246, 0.3)'">
-                            <span class="material-icons" style="font-size: 1.2rem; line-height: 1;">restaurant</span> 조리
+                        <a href="practical_exam.html" class="mp-btn" style="text-decoration: none; display: inline-flex; align-items: center; gap: 5px; padding: 6px 16px; border-radius: 8px; background: #3b82f6; color: white; font-weight: 600; font-size: 0.9rem; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 6px rgba(59, 130, 246, 0.4)'" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 4px rgba(59, 130, 246, 0.3)'">
+                            <span class="material-icons" style="font-size: 1.1rem;">edit</span> 필기
                         </a>
-                        <a href="exam.html" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 6px 16px; border-radius: 8px; background: #f59e0b; color: white; font-weight: 600; font-size: 0.9rem; box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3); transition: transform 0.2s, box-shadow 0.2s; white-space: nowrap; line-height: 1;" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 6px rgba(245, 158, 11, 0.4)'" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 4px rgba(245, 158, 11, 0.3)'">
-                            <span class="material-icons" style="font-size: 1.2rem; line-height: 1;">bakery_dining</span> 제과제빵
+                        <a href="practical_exam_skill.html" class="mp-btn" style="text-decoration: none; display: inline-flex; align-items: center; gap: 5px; padding: 6px 16px; border-radius: 8px; background: #f59e0b; color: white; font-weight: 600; font-size: 0.9rem; box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 6px rgba(245, 158, 11, 0.4)'" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 4px rgba(245, 158, 11, 0.3)'">
+                            <span class="material-icons" style="font-size: 1.1rem;">restaurant</span> 실기
                         </a>
                     </div>
                 </div>
@@ -695,8 +695,8 @@
                         <div style="flex: 1; display: flex; gap: 5px; flex-direction: column;">
                             <div style="display: flex; gap: 5px; width: 100%; align-items: stretch;">
                                 <select id="courseFilter" onchange="filterListByCourse()" class="mp-btn" style="width: auto; height: auto; padding: 5px 10px; font-size: 0.8rem; font-weight: 600; white-space: nowrap; color: #1e293b; background: white; border: 1px solid #e2e8f0; border-radius: 6px; cursor: pointer; outline: none;">
-    <option value="ALL">전체보기</option>
-</select>
+                                    <option value="ALL">전체보기</option>
+                                </select>
                                 <!-- Exam Date Picker -->
                                 <div class="inline-picker-container" title="시험일 검색">
                                     <div class="inline-picker-label">
@@ -770,7 +770,7 @@
                                     <tr>
                                         <th class="col-date" style="padding-top: 4px; padding-bottom: 4px; vertical-align: bottom;">
                                             <div id="tableHeaderExamYear" style="font-size: 0.75rem; color: #64748b; font-weight: 500; height: 14px; display: flex; align-items: flex-end; justify-content: center; margin-bottom: 2px;"></div>
-                                            시험일
+                                            <div style="font-size: 0.85rem; color: #f59e0b; font-weight: bold; margin-bottom: 2px;">실기시험</div>시험일
                                         </th>
                                         <th class="col-res-date" style="padding-top: 4px; padding-bottom: 4px; vertical-align: bottom;">
                                             <div id="tableHeaderResultYear" style="font-size: 0.75rem; color: #64748b; font-weight: 500; height: 14px; display: flex; align-items: flex-end; justify-content: center; margin-bottom: 2px;"></div>
@@ -837,7 +837,7 @@
     </div>
 
     <script src="script.js"></script>
-    <script src="exam.js?v=20260620-18" defer></script>
+    <script src="practical_exam.js?v=20260620-18" defer></script>
 </body>
 
 </html>
