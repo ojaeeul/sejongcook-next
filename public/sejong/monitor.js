@@ -190,11 +190,18 @@ function startAutoDetectionLoop() {
     attendanceProgress = 0;
 
     autoDetectInterval = setInterval(async () => {
-        if (!modelsLoaded || isAuthenticating || currentMode !== 'face_only' || !video || video.paused || video.videoWidth === 0) return;
+        if (currentMode !== 'face_only' || isAuthenticating || !video || video.paused || video.videoWidth === 0) return;
         if (isProcessingFrame) return;
 
         isProcessingFrame = true;
         try {
+            // 엔진 로딩 중일 때도 빨간색 스캐닝 UI는 즉시 작동하도록 처리 (UX 개선)
+            if (!modelsLoaded) {
+                drawAttendanceFocusUI(undefined);
+                isProcessingFrame = false;
+                return;
+            }
+
             // 빠른 추적용 (초점 UI용) - TinyFaceDetector
             const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.4 });
             const detections = await faceapi.detectAllFaces(video, options).withFaceLandmarks();
@@ -1541,6 +1548,13 @@ function startAutoRegistrationLoop() {
 
         isRegProcessing = true;
         try {
+            // 엔진 로딩 중일 때도 빨간색 스캐닝 UI 즉시 작동
+            if (!modelsLoaded) {
+                drawHyperFocusUI(undefined);
+                isRegProcessing = false;
+                return;
+            }
+
             const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.4 })).withFaceLandmarks();
             const detection = detections && detections.length > 0 ? detections[0] : undefined;
             
