@@ -362,11 +362,27 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
                         redBoxDates.add(dateStr);
                         isSimulated = true;
                     }
+                    
+                    // [중요 수정] 가상 결제일(예정일)을 allMilestones에 명시적으로 추가하여 납부대장(tuition_v3.js)에서 '결제 예정일'로 인식하도록 함
+                    allMilestones.push({ 
+                        year: simDate.getFullYear(), 
+                        month: simDate.getMonth() + 1, 
+                        day: simDate.getDate(), 
+                        isReal: false 
+                    });
+                    
                     break; 
                 }
             }
             simDate.setDate(simDate.getDate() + 1);
         }
+    }
+
+    // [중요 수정] scheduledDate 명시적 반환
+    let finalScheduledDate = null;
+    const futureMilestone = allMilestones.find(ms => !ms.isReal || new Date(ms.year, ms.month - 1, ms.day) > new Date());
+    if (futureMilestone) {
+        finalScheduledDate = futureMilestone;
     }
 
     const actualRedDays = Array.from(redBoxDates).map(d => parseInt(d.split('-')[2], 10));
@@ -378,6 +394,7 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
         hasAnyAttendance: hasAnyAttendance,
         isSimulated: isSimulated,
         allMilestones: allMilestones,
+        scheduledDate: finalScheduledDate,
         currentCount: { count: carryOverP, target: window.getCourseCycleLength(courseFilter || String(member.course)) }
     };
 };
