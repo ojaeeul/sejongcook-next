@@ -828,7 +828,7 @@ async function processAttendance(inputNumOrObj, overridePhoto = null) {
 
         const timetableCheck = await checkTimetableAllowed(member);
         if (timetableCheck && typeof timetableCheck === 'object' && !timetableCheck.allowed) {
-            let msg = localStorage.getItem('kiosk_invalid_day_msg') || "{name}님, {days}요일에 수강이 가능합니다.";
+            let msg = localStorage.getItem('kiosk_invalid_day_msg') || "{name}님, 오늘은 수강 요일이 아닙니다.";
             msg = msg.replace(/{name}/g, member.name || '');
             msg = msg.replace(/{days}/g, timetableCheck.allowedDaysStr || '지정된');
             
@@ -886,12 +886,12 @@ async function processAttendance(inputNumOrObj, overridePhoto = null) {
 
         const currentMins = new Date().getHours() * 60 + new Date().getMinutes();
         
-        let validCourses = availableCourses; // Removed 1시간 제한 규칙
+        // 1시간 제한 규칙 복구 (수업 시작 1시간 이후에는 출석 불가)
+        let validCourses = availableCourses.filter(c => currentMins <= c.mins + 60);
 
         if (validCourses.length === 0) {
-            // This case won't be hit usually since availableCourses=0 is caught above, 
-            // but kept for safety.
-            let msg = localStorage.getItem('kiosk_invalid_time_msg') || "{name}님, {time}에 수강이 가능합니다.";
+            // 이 시간에 가능한 수업이 없는 경우
+            let msg = localStorage.getItem('kiosk_invalid_time_msg') || "{name}님, {time} 수업 시간 1시간 이내에만 출석이 가능합니다.";
             msg = msg.replace(/{name}/g, member.name || '');
             msg = msg.replace(/{time}/g, member.timeSlot || '예약된 시간');
             
