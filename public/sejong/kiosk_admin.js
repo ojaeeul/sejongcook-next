@@ -1,6 +1,8 @@
 // API Base
 function getFetchUrl(endpoint, isPost = false) {
-    const url = `/api/sejong/${endpoint}`;
+    const isLocal = window.location.protocol === 'file:';
+    const baseUrl = isLocal ? 'https://sejongcook.co.kr/api/sejong' : '/api/sejong';
+    const url = `${baseUrl}/${endpoint}`;
     return isPost ? url : url + (url.includes('?') ? '&' : '?') + `t=${Date.now()}`;
 }
 
