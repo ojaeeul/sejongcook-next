@@ -3497,9 +3497,6 @@ label {
     scrollbar-width: none;
 }
 
-.print-hide {
-    display: none !important;
-}
 
 @media print {
     .print-hide {
