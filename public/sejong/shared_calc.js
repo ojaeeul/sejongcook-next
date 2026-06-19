@@ -286,7 +286,7 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
         const now = new Date();
         const limit = new Date(now.getFullYear(), now.getMonth() + 2, 0);
         
-        let simDate = new Date(currentMC.year, currentMC.month - 1, 1);
+        let simDate = null;
         
         let lastRecordDateObj = null;
         if (uniqueLogs.length > 0) {
@@ -298,8 +298,11 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
             lastRecordDateObj.setDate(lastRecordDateObj.getDate() - 1);
         }
         
-        if (lastRecordDateObj && lastRecordDateObj >= simDate) {
+        if (lastRecordDateObj) {
             simDate = new Date(lastRecordDateObj.getTime() + 86400000);
+        } else {
+            // Fallback
+            simDate = new Date(currentMC.year, currentMC.month - 1, 1);
         }
 
         let simTotal = runningTotal;
