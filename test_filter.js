@@ -1,17 +1,21 @@
-const currentFilterDate = "2026-02-15 to 2026-02-21";
-let dStart, dEnd;
-const parts = currentFilterDate.split(' to ');
-dStart = new Date(parts[0]);
-dStart.setHours(0, 0, 0, 0);
-dEnd = new Date(parts[1]);
-dEnd.setHours(23, 59, 59, 999);
-console.log(dStart, dEnd);
+const adminMembers = [
+    { name: "홍길동", phone: "010-1234-5678", course: "한식기능사" },
+    { name: "김철수", phone: "010-0000-0000", course: "양식기능사, 중식기능사" }
+];
 
-const currentYear = 2026;
-const sMonth = 2;
-const eighthDay = 16;
-const schedDate = new Date(currentYear, sMonth - 1, eighthDay);
-let isMatch = false;
+const searchTerm = "홍";
+const courseFilter = "ALL";
 
-if (schedDate >= dStart && schedDate <= dEnd) isMatch = true;
-console.log(isMatch);
+const filtered = adminMembers.filter(m => {
+    const matchName = (m.name || '').toLowerCase().includes(searchTerm) || (m.phone || '').includes(searchTerm);
+    if(!matchName) return false;
+    
+    if(courseFilter !== 'ALL') {
+        if(!m.course) return false;
+        const cList = m.course.split(',').map(c => c.trim().replace(/\([^)]*\)/g, '').trim()).filter(c=>c);
+        if(!cList.includes(courseFilter)) return false;
+    }
+    return true;
+});
+
+console.log("Filtered result:", filtered);

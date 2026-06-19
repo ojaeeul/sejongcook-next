@@ -86,18 +86,21 @@ function populateCourseFilter() {
 
 function renderList() {
     const listEl = document.getElementById('memberList');
-    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
     listEl.innerHTML = '';
     
     const courseFilter = document.getElementById('courseFilter') ? document.getElementById('courseFilter').value : 'ALL';
     
     const filtered = adminMembers.filter(m => {
-        const matchName = (m.name || '').toLowerCase().includes(searchTerm) || (m.phone || '').includes(searchTerm);
+        const nameStr = String(m.name || '').toLowerCase();
+        const phoneStr = String(m.phone || '');
+        const matchName = nameStr.includes(searchTerm) || phoneStr.includes(searchTerm);
         if(!matchName) return false;
         
         if(courseFilter !== 'ALL') {
             if(!m.course) return false;
-            const cList = m.course.split(',').map(c => c.trim().replace(/\([^)]*\)/g, '').trim()).filter(c=>c);
+            const courseStr = String(m.course);
+            const cList = courseStr.split(',').map(c => c.trim().replace(/\([^)]*\)/g, '').trim()).filter(c=>c);
             if(!cList.includes(courseFilter)) return false;
         }
         return true;
@@ -123,8 +126,9 @@ function renderList() {
             
             const isAttendedForCourse = todayAttendance.some(a => {
                 if (String(a.memberId) !== String(m.id)) return false;
-                const aCourse = a.course || 'ALL';
-                return aCourse === 'ALL' || aCourse.includes(cName) || cName.includes(aCourse);
+                const aCourse = String(a.course || 'ALL');
+                const cNameStr = String(cName);
+                return aCourse === 'ALL' || aCourse.includes(cNameStr) || cNameStr.includes(aCourse);
             });
             
             let badge = '';
