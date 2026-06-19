@@ -569,6 +569,29 @@
                 });
                 
                 if (saveRes.ok) {
+                    // [Sync] Update timetable
+                    try {
+                        const ttRes = await fetch(`/api/sejong/timetable?t=${Date.now()}`);
+                        const ttData = await ttRes.json();
+                        let newTimetable = {};
+                        let changed = false;
+                        settingsObj.courses.forEach(c => {
+                            newTimetable[c] = ttData[c] || [];
+                            if (!ttData[c]) changed = true;
+                        });
+                        if (Object.keys(ttData).length !== settingsObj.courses.length) changed = true;
+                        
+                        if (changed) {
+                            await fetch("/api/sejong/timetable", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify(newTimetable)
+                            });
+                        }
+                    } catch(e) {
+                        console.error("Timetable sync failed", e);
+                    }
+
                     alert("설정이 성공적으로 저장되었습니다!");
                 } else {
                     alert("설정 저장에 실패했습니다.");

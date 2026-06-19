@@ -446,6 +446,31 @@
             });
             if (res.ok) {
                 timetableData = newTimetable;
+                
+                // [Sync] Update settings.courses
+                try {
+                    const settingsRes = await fetch(`${SHEET_API_BASE}/settings?t=${Date.now()}`);
+                    const data = await settingsRes.json();
+                    let settingsObj = Array.isArray(data) && data.length > 0 ? data[0] : (data.key === "settings" ? data.value : data);
+                    if (settingsObj) {
+                        const newCourses = Object.keys(newTimetable);
+                        if (JSON.stringify(settingsObj.courses) !== JSON.stringify(newCourses)) {
+                            settingsObj.courses = newCourses;
+                            if(!settingsObj.courseFees) settingsObj.courseFees = {};
+                            newCourses.forEach(c => {
+                                if(settingsObj.courseFees[c] === undefined) settingsObj.courseFees[c] = 200000;
+                            });
+                            await fetch(`${SHEET_API_BASE}/settings`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify([settingsObj])
+                            });
+                        }
+                    }
+                } catch(e) {
+                    console.error("Sync failed", e);
+                }
+
                 // [즉각 동기화] 다른 탭에 설정 변경 알림
                 localStorage.setItem('sejong_timetable_sync', Date.now());
                 alert('설정이 성공적으로 저장되었습니다.');
