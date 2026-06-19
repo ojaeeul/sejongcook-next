@@ -211,16 +211,11 @@ function startAutoDetectionLoop() {
 
             // 안정적으로 100% 감지되면 고정밀 모델(ssdMobilenetv1) 구동하여 출석 체크
             if (detection) {
-                const box = detection.detection.box;
-                if (box.width > 80 && box.height > 80) { // 너무 멀리 있는 얼굴은 무시
-                    attendanceProgress += 4; // 스캔 속도
-                    if (attendanceProgress >= 100) {
-                        isAuthenticating = true;
-                        await processAutoAttendance();
-                        attendanceProgress = 0; // 초기화
-                    }
-                } else {
-                    if (attendanceProgress > 0) attendanceProgress -= 1;
+                attendanceProgress += 3; // 스캔 속도
+                if (attendanceProgress >= 100) {
+                    isAuthenticating = true;
+                    await processAutoAttendance();
+                    attendanceProgress = 0; // 초기화
                 }
             } else {
                 if (attendanceProgress > 0) attendanceProgress -= 1;
