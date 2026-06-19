@@ -640,7 +640,10 @@ function promptMultipleCoursesVoice(courses, memberName) {
         }
 
         courses.sort((a, b) => a.mins - b.mins);
-        const courseNames = courses.map(c => c.name.replace(/\([^)]*\)/g, '').trim());
+        const courseNames = courses.map(c => {
+            let name = c.name.replace(/\([^)]*\)/g, '').trim();
+            return name.replace(/(기능사|산업기사)$/, '').trim();
+        });
         const courseStrs = courses.map((c, i) => {
             const timeStr = formatMins(c.mins);
             return timeStr ? `${courseNames[i]} ${timeStr}` : courseNames[i];
@@ -682,8 +685,8 @@ function promptMultipleCoursesVoice(courses, memberName) {
             
             // "모두 참석" 버튼 추가
             const btnBoth = document.createElement('button');
-            btnBoth.style = `flex:1; font-size:2rem; padding:25px; border:none; border-radius:15px; color:white; font-weight:bold; cursor:pointer; transition:transform 0.2s; margin: 0 10px; background: linear-gradient(135deg, #ec4899, #be185d); box-shadow: 0 10px 15px -3px rgba(236, 72, 153, 0.5);`;
-            btnBoth.innerText = `모두 참석`;
+            btnBoth.style = `flex:1; font-size:1.4rem; padding:15px 10px; border:none; border-radius:12px; color:white; font-weight:bold; cursor:pointer; transition:transform 0.2s; margin: 0 5px; min-width:80px; background: linear-gradient(135deg, #ec4899, #be185d); box-shadow: 0 4px 6px rgba(236, 72, 153, 0.5);`;
+            btnBoth.innerText = `모두`;
             btnBoth.onclick = () => {
                 if (window.speakTTS) window.speakTTS('모든 수업 출석합니다.', 'browser');
                 finish(courses);
@@ -692,7 +695,7 @@ function promptMultipleCoursesVoice(courses, memberName) {
 
             courses.forEach((c, idx) => {
                 const btn = document.createElement('button');
-                btn.style = `flex:1; font-size:2rem; padding:25px; border:none; border-radius:15px; color:white; font-weight:bold; cursor:pointer; transition:transform 0.2s; margin: 0 10px;`;
+                btn.style = `flex:1; font-size:1.4rem; padding:15px 10px; border:none; border-radius:12px; color:white; font-weight:bold; cursor:pointer; transition:transform 0.2s; margin: 0 5px; min-width:80px;`;
                 if (idx === 0) {
                     btn.style.background = `linear-gradient(135deg, #3b82f6, #2563eb)`;
                     btn.style.boxShadow = `0 10px 15px -3px rgba(59, 130, 246, 0.5)`;
@@ -706,8 +709,9 @@ function promptMultipleCoursesVoice(courses, memberName) {
                     btn.style.background = `#334155`;
                 }
                 
-                const cleanName = c.name.replace(/\([^)]*\)/g, '').trim();
-                btn.innerText = `${cleanName}`;
+                let cleanName = c.name.replace(/\([^)]*\)/g, '').trim();
+                let shortName = cleanName.replace(/(기능사|산업기사)$/, '').trim();
+                btn.innerText = `${shortName}`;
                 btn.onclick = () => {
                     if (window.speakTTS) window.speakTTS(`${cleanName} 출석합니다.`, 'browser');
                     finish([c]);
@@ -915,6 +919,18 @@ async function processAttendance(inputNumOrObj, overridePhoto = null) {
             } else if (cachedTimetable[cleanNameNoSpace]) {
                 return cachedTimetable[cleanNameNoSpace].includes(dayOfWeek);
             }
+            
+            // "기능사" 등 접미사 제거 후 매칭 시도
+            const shortName = cleanName.replace(/(기능사|산업기사)$/, '').trim();
+            if (cachedTimetable[shortName]) return cachedTimetable[shortName].includes(dayOfWeek);
+            
+            // 부분 일치 매칭 (예: "한식" 설정이 "한식기능사"에 적용되도록)
+            for (const key of Object.keys(cachedTimetable)) {
+                if (cleanName.includes(key) || key.includes(cleanName)) {
+                    return cachedTimetable[key].includes(dayOfWeek);
+                }
+            }
+            
             return true;
         });
 
