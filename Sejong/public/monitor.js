@@ -196,7 +196,12 @@ function startAutoDetectionLoop() {
         isProcessingFrame = true;
         try {
             if (!modelsLoaded) {
-                drawFaceScannerUI(undefined, 0);
+                if (statusMsg) statusMsg.textContent = "AI 엔진 로딩 중... (UI 표시 시도)";
+                try {
+                    drawFaceScannerUI(undefined, 0);
+                } catch (e) {
+                    if (statusMsg) statusMsg.textContent = "UI 그리기 에러: " + e.message;
+                }
                 isProcessingFrame = false;
                 return;
             }
@@ -205,7 +210,14 @@ function startAutoDetectionLoop() {
             const detections = await faceapi.detectAllFaces(video, options).withFaceLandmarks();
             const detection = detections && detections.length > 0 ? detections[0] : undefined;
             
-            drawFaceScannerUI(detection, attendanceProgress);
+            if (statusMsg && !isAuthenticating) {
+                statusMsg.textContent = detection ? "얼굴 감지 됨! UI 그리는 중..." : "얼굴 탐색 중... (UI 표시 시도)";
+            }
+            try {
+                drawFaceScannerUI(detection, attendanceProgress);
+            } catch (e) {
+                if (statusMsg) statusMsg.textContent = "UI 그리기 에러2: " + e.message;
+            }
 
             if (detection) {
                 attendanceProgress += 3;
