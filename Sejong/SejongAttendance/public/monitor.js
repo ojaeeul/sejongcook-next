@@ -620,6 +620,14 @@ function determineAttendanceStatus(member) {
     return 'invalid_time';
 }
 
+function formatMins(mins) {
+    if (mins === 0) return '';
+    let h = Math.floor(mins / 60);
+    let m = mins % 60;
+    if (m === 0) return `${h}시`;
+    return `${h}시 ${m}분`;
+}
+
 function promptMultipleCoursesVoice(courses, memberName) {
     return new Promise((resolve) => {
         const overlay = document.getElementById('voicePromptOverlay');
@@ -633,13 +641,17 @@ function promptMultipleCoursesVoice(courses, memberName) {
 
         courses.sort((a, b) => a.mins - b.mins);
         const courseNames = courses.map(c => c.name.replace(/\([^)]*\)/g, '').trim());
-        const joinedNames = courseNames.join(', ');
+        const courseStrs = courses.map((c, i) => {
+            const timeStr = formatMins(c.mins);
+            return timeStr ? `${courseNames[i]} ${timeStr}` : courseNames[i];
+        });
+        const joinedNames = courseStrs.join(', ');
 
         const titleEl = overlay.querySelector('h1');
         const subEl = document.getElementById('voicePromptSub');
         
-        const questionText = `${memberName || '회원'}님, 오늘 ${joinedNames} 수업이 있습니다. 출석할 과정명을 말씀해주세요.`;
-        const examples = `(예: ${courseNames.join(', ')} 중 하나)`;
+        const questionText = `${memberName || '회원'}님, 오늘 ${joinedNames} 수업이 있습니다. 모두 참석하시겠습니까?`;
+        const examples = `(예: 네, 모두, ${courseNames.join(', ')} 중 하나)`;
 
         if (titleEl) titleEl.innerText = "출석할 과정을 선택해주세요";
         if (subEl) {
@@ -667,6 +679,17 @@ function promptMultipleCoursesVoice(courses, memberName) {
 
         if (btnContainer) {
             btnContainer.innerHTML = '';
+            
+            // "모두 참석" 버튼 추가
+            const btnBoth = document.createElement('button');
+            btnBoth.style = `flex:1; font-size:2rem; padding:25px; border:none; border-radius:15px; color:white; font-weight:bold; cursor:pointer; transition:transform 0.2s; margin: 0 10px; background: linear-gradient(135deg, #ec4899, #be185d); box-shadow: 0 10px 15px -3px rgba(236, 72, 153, 0.5);`;
+            btnBoth.innerText = `모두 참석`;
+            btnBoth.onclick = () => {
+                if (window.speakTTS) window.speakTTS('모든 수업 출석합니다.', 'browser');
+                finish(courses);
+            };
+            btnContainer.appendChild(btnBoth);
+
             courses.forEach((c, idx) => {
                 const btn = document.createElement('button');
                 btn.style = `flex:1; font-size:2rem; padding:25px; border:none; border-radius:15px; color:white; font-weight:bold; cursor:pointer; transition:transform 0.2s; margin: 0 10px;`;
@@ -714,6 +737,15 @@ function promptMultipleCoursesVoice(courses, memberName) {
                     let transcript = e.results[0][0].transcript.trim().replace(/\s+/g, '').toLowerCase();
                     console.log("STT Result:", transcript);
                     
+                    const bothKeywords = ['네', '예', '모두', '둘다', '둘 다', '전부', '다'];
+                    const isBoth = bothKeywords.some(kw => transcript === kw || transcript.includes(kw));
+
+                    if (isBoth) {
+                        if (window.speakTTS) window.speakTTS('모든 수업 출석합니다.', 'browser');
+                        finish(courses);
+                        return;
+                    }
+
                     let matchedCourse = null;
                     let matchedCleanName = "";
                     
@@ -872,10 +904,22 @@ async function processAttendance(inputNumOrObj, overridePhoto = null) {
             return { name: c, mins: mins };
         });
 
-        let availableCourses = parsedCourses.filter(c => !checkedInCourses.includes(c.name));
+        const dayOfWeek = new Date().getDay();
+        let availableCourses = parsedCourses.filter(c => {
+            if (checkedInCourses.includes(c.name)) return false;
+            
+            const cleanName = c.name.replace(/\([^)]*\)/g, '').trim();
+            const cleanNameNoSpace = cleanName.replace(/\s/g, '');
+            if (cachedTimetable[cleanName]) {
+                return cachedTimetable[cleanName].includes(dayOfWeek);
+            } else if (cachedTimetable[cleanNameNoSpace]) {
+                return cachedTimetable[cleanNameNoSpace].includes(dayOfWeek);
+            }
+            return true;
+        });
 
         if (allCourses.length > 0 && availableCourses.length === 0) {
-            const msg = `${member.name}님, 이미 모든 수업에 출석 처리되어 있습니다.`;
+            const msg = `${member.name}님, 이미 오늘 예정된 모든 수업에 출석하셨습니다.`;
             showStatus(msg, "orange");
             if (localStorage.getItem('kiosk_voice_enabled') !== 'false' && window.speakTTS) {
                 speakTTS(msg, 'browser');
@@ -886,8 +930,8 @@ async function processAttendance(inputNumOrObj, overridePhoto = null) {
 
         const currentMins = new Date().getHours() * 60 + new Date().getMinutes();
         
-        // 1시간 제한 규칙 복구 (수업 시작 1시간 이후에는 출석 불가)
-        let validCourses = availableCourses.filter(c => currentMins <= c.mins + 60);
+        // 시간 제한 규칙 제거: 당일 수업은 시간에 구애받지 않고 출석 가능 (단, 지났으면 지각 체크)
+        let validCourses = availableCourses;
 
         if (validCourses.length === 0) {
             // 이 시간에 가능한 수업이 없는 경우
