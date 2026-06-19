@@ -977,7 +977,7 @@ async function checkForceLoginRules(memberId) {
                 }
                 
                 if (forcedUnpaidCount > 0) {
-                    alert('규칙에 맞지않아 로그인이 안됩니다.\n(결재 주기가 지났거나 수강료가 미납 상태입니다)');
+                    await customAlert('규칙에 맞지않아 로그인이 안됩니다.\\n(결재 주기가 지났거나 수강료가 미납 상태입니다)');
                     return false;
                 }
             }
@@ -990,8 +990,43 @@ async function checkForceLoginRules(memberId) {
     }
 }
 
+window.customAlert = function(msg) {
+    return new Promise(resolve => {
+        const modalHtml = `
+            <div id="customAlertModal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:flex; justify-content:center; align-items:center; z-index:999999;">
+                <div style="background:white; padding:25px; border-radius:12px; width:90%; max-width:400px; text-align:center; box-shadow:0 10px 25px rgba(0,0,0,0.2);">
+                    <div style="font-size:1.1rem; color:#0f172a; margin-bottom:20px; word-break:keep-all; line-height:1.5;">${msg}</div>
+                    <button id="btnAlertOk" style="padding:10px 20px; border-radius:8px; border:none; background:#3b82f6; color:white; font-weight:bold; cursor:pointer; width:100%;">확인</button>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        document.getElementById('btnAlertOk').onclick = () => { document.getElementById('customAlertModal').remove(); resolve(); };
+    });
+};
+
+window.customConfirm = function(msg) {
+    return new Promise(resolve => {
+        const modalHtml = `
+            <div id="customConfirmModal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:flex; justify-content:center; align-items:center; z-index:999999;">
+                <div style="background:white; padding:25px; border-radius:12px; width:90%; max-width:400px; text-align:center; box-shadow:0 10px 25px rgba(0,0,0,0.2);">
+                    <div style="font-size:1.1rem; color:#0f172a; margin-bottom:20px; word-break:keep-all; line-height:1.5;">${msg}</div>
+                    <div style="display:flex; justify-content:center; gap:10px;">
+                        <button id="btnConfirmYes" style="flex:1; padding:10px; border-radius:8px; border:none; background:#ef4444; color:white; font-weight:bold; cursor:pointer;">예</button>
+                        <button id="btnConfirmNo" style="flex:1; padding:10px; border-radius:8px; border:none; background:#e2e8f0; color:#475569; font-weight:bold; cursor:pointer;">아니오</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        document.getElementById('btnConfirmYes').onclick = () => { document.getElementById('customConfirmModal').remove(); resolve(true); };
+        document.getElementById('btnConfirmNo').onclick = () => { document.getElementById('customConfirmModal').remove(); resolve(false); };
+    });
+};
+
 window.forceLogin = async function(memberId, course) {
-    if (!confirm('해당 학생을 오늘 날짜로 강제 출석(로그인) 처리하시겠습니까?')) return;
+    const isOk = await customConfirm('해당 학생을 오늘 날짜로 강제 출석(로그인) 처리하시겠습니까?');
+    if (!isOk) return;
     
     const isValid = await checkForceLoginRules(memberId);
     if (!isValid) return;
@@ -1013,15 +1048,16 @@ window.forceLogin = async function(memberId, course) {
             fetchMembers();
         } else {
             const errData = await res.json().catch(()=>({}));
-            alert('로그인 처리 실패: ' + (errData.error || res.statusText));
+            await customAlert('로그인 처리 실패: ' + (errData.error || res.statusText));
         }
     } catch (e) {
-        alert('처리 중 오류가 발생했습니다: ' + e.message);
+        await customAlert('처리 중 오류가 발생했습니다: ' + e.message);
     }
 };
 
 window.forceLogout = async function(memberId, course) {
-    if (!confirm('해당 학생의 오늘 출석 기록을 강제로 삭제(로그아웃) 하시겠습니까?')) return;
+    const isOk = await customConfirm('해당 학생의 오늘 출석 기록을 강제로 삭제(로그아웃) 하시겠습니까?');
+    if (!isOk) return;
     const today = new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
     try {
         const finalCourse = course && course !== 'undefined' && course !== 'null' ? course : 'ALL';
@@ -1035,9 +1071,9 @@ window.forceLogout = async function(memberId, course) {
             fetchMembers();
         } else {
             const errData = await res.json().catch(()=>({}));
-            alert('로그아웃 처리 실패: ' + (errData.error || res.statusText));
+            await customAlert('로그아웃 처리 실패: ' + (errData.error || res.statusText));
         }
     } catch (e) {
-        alert('처리 중 오류가 발생했습니다: ' + e.message);
+        await customAlert('처리 중 오류가 발생했습니다: ' + e.message);
     }
 };
