@@ -11,22 +11,54 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Invalid data' }, { status: 400 });
         }
 
-        // Delete existing logs for the member/course on these dates
-        let delQuery = supabase.from('attendance')
-            .delete()
-            .eq('memberId', memberId)
-            .in('date', dates);
-
         if (course === 'ALL') {
-            // Delete all
+            const { error: delErr } = await supabase.from('attendance')
+                .delete()
+                .eq('memberId', memberId)
+                .in('date', dates);
+            if (delErr) throw delErr;
         } else if (course) {
-            delQuery = delQuery.eq('course', course);
+            // Handle specific course deletion, including cases where old records have comma-separated courses
+            const { data: rows } = await supabase.from('attendance')
+                .select('*')
+                .eq('memberId', memberId)
+                .in('date', dates);
+            
+            if (rows) {
+                for (const row of rows) {
+                    const rowCourse = row.course || '';
+                    if (rowCourse === course) {
+                        await supabase.from('attendance')
+                            .delete()
+                            .eq('memberId', memberId)
+                            .eq('date', row.date)
+                            .eq('course', rowCourse);
+                    } else if (rowCourse.includes(course)) {
+                        const cList = rowCourse.split(',').map((c: string) => c.trim()).filter((c: string) => c !== course);
+                        if (cList.length > 0) {
+                            await supabase.from('attendance')
+                                .update({ course: cList.join(', ') })
+                                .eq('memberId', memberId)
+                                .eq('date', row.date)
+                                .eq('course', rowCourse);
+                        } else {
+                            await supabase.from('attendance')
+                                .delete()
+                                .eq('memberId', memberId)
+                                .eq('date', row.date)
+                                .eq('course', rowCourse);
+                        }
+                    }
+                }
+            }
         } else {
-            delQuery = delQuery.is('course', null);
+            const { error: delErr } = await supabase.from('attendance')
+                .delete()
+                .eq('memberId', memberId)
+                .in('date', dates)
+                .is('course', null);
+            if (delErr) throw delErr;
         }
-
-        const { error: delErr } = await delQuery;
-        if (delErr) throw delErr;
 
         // Add new logs if status is not 'unchecked'
         if (status !== 'unchecked') {

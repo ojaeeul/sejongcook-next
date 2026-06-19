@@ -349,7 +349,25 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 if course_str == 'ALL':
                     logs = [l for l in logs if not (str(l['memberId']) == memberId_str and l['date'] in dates)]
                 else:
-                    logs = [l for l in logs if not (str(l['memberId']) == memberId_str and l['date'] in dates and (l.get('course') or '') == course_str)]
+                    new_logs = []
+                    for l in logs:
+                        if str(l['memberId']) == memberId_str and l['date'] in dates:
+                            c_val = l.get('course') or ''
+                            if c_val == course_str:
+                                pass # delete
+                            elif course_str in c_val:
+                                c_list = [c.strip() for c in c_val.split(',')]
+                                c_list = [c for c in c_list if c != course_str]
+                                if len(c_list) > 0:
+                                    l['course'] = ', '.join(c_list)
+                                    new_logs.append(l)
+                                else:
+                                    pass # delete
+                            else:
+                                new_logs.append(l)
+                        else:
+                            new_logs.append(l)
+                    logs = new_logs
             else:
                 for d in dates:
                      existing_idx = -1
