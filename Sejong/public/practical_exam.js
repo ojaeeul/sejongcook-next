@@ -161,7 +161,14 @@ function renderExamTable() {
         });
         
                 const rowsSelect = document.querySelector(".rowsPerPageSelect");
-        const rowsPerPage = rowsSelect ? parseInt(rowsSelect.value, 10) : 15;
+        
+        // Restore from localStorage if available
+        const savedRows = localStorage.getItem('examRowsPerPage');
+        if (savedRows && rowsSelect) {
+            document.querySelectorAll(".rowsPerPageSelect").forEach(s => s.value = savedRows);
+        }
+        
+        const rowsPerPage = rowsSelect ? parseInt(rowsSelect.value, 10) : (savedRows ? parseInt(savedRows, 10) : 15);
         window.isViewAllPages = false; // Disable view all pages so pagination works
         let totalPages = Math.ceil(filteredData.length / rowsPerPage);
         if (totalPages === 0) totalPages = 1;
@@ -1031,6 +1038,7 @@ function clearCurrentPageData() {
 }
 
 function changeRowsPerPage(val) {
+    localStorage.setItem('examRowsPerPage', val);
     document.querySelectorAll(".rowsPerPageSelect").forEach(s => s.value = val);
     currentPage = 1;
     renderExamTable();
