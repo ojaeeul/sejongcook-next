@@ -194,7 +194,7 @@ function startAutoDetectionLoop() {
         isProcessingFrame = true;
         try {
             // 빠른 추적용 (초점 UI용) - TinyFaceDetector
-            const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 });
+            const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.4 });
             const detections = await faceapi.detectAllFaces(video, options).withFaceLandmarks();
             
             drawMultiFocusUI(detections);
@@ -239,7 +239,29 @@ function drawMultiFocusUI(detections) {
     const ctx = overlayCanvas.getContext('2d');
     ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
 
-    if (!detections || detections.length === 0) return;
+    if (!detections || detections.length === 0) {
+        // 얼굴이 감지되지 않을 때 빨간색 스캐닝 효과 출력
+        ctx.strokeStyle = 'rgba(239, 68, 68, 0.6)'; // Red
+        ctx.lineWidth = 1.5;
+        
+        const scanY = (Date.now() / 15) % overlayCanvas.height;
+        ctx.beginPath();
+        ctx.moveTo(0, scanY);
+        ctx.lineTo(overlayCanvas.width, scanY);
+        ctx.stroke();
+
+        ctx.fillStyle = 'rgba(239, 68, 68, 0.2)';
+        ctx.fillRect(0, scanY - 20, overlayCanvas.width, 40);
+
+        ctx.beginPath();
+        ctx.moveTo(overlayCanvas.width / 2 - 20, overlayCanvas.height / 2);
+        ctx.lineTo(overlayCanvas.width / 2 + 20, overlayCanvas.height / 2);
+        ctx.moveTo(overlayCanvas.width / 2, overlayCanvas.height / 2 - 20);
+        ctx.lineTo(overlayCanvas.width / 2, overlayCanvas.height / 2 + 20);
+        ctx.stroke();
+
+        return;
+    }
 
     const dims = faceapi.matchDimensions(overlayCanvas, video, true);
     const resizedDetections = faceapi.resizeResults(detections, dims);
