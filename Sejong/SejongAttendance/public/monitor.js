@@ -620,14 +620,13 @@ function determineAttendanceStatus(member) {
     return 'invalid_time';
 }
 
-function promptMultipleCoursesVoice(courses) {
+function promptMultipleCoursesVoice(courses, memberName) {
     return new Promise((resolve) => {
         const overlay = document.getElementById('voicePromptOverlay');
-        const btnBoth = document.getElementById('btnVoiceBoth');
-        const btnOne = document.getElementById('btnVoiceOne');
         const indicator = document.getElementById('voiceRecognitionIndicator');
+        const btnContainer = document.getElementById('voicePromptBtnContainer');
         
-        if (!overlay) {
+        if (!overlay || !btnContainer) {
             resolve([courses[0]]);
             return;
         }
@@ -639,28 +638,20 @@ function promptMultipleCoursesVoice(courses) {
         const titleEl = overlay.querySelector('h1');
         const subEl = document.getElementById('voicePromptSub');
         
-        const questionText = `${joinedNames} 모든 수업에 출석하시겠습니까?`;
-        const bothExamples = `(예: 네, 모두, 다, 참석, 출석, 두 수업 모두, 둘 다, 두개, 투, ok, 좋아, 둘다ok, ${courseNames.join('')})`;
-        const oneExamples = `(예: 지금, 하나만, 한 개만, 한 개, 원, 일, ${courseNames[0]}만)`;
+        const questionText = `${memberName || '회원'}님, 오늘 ${joinedNames} 수업이 있습니다. 출석할 과정명을 말씀해주세요.`;
+        const examples = `(예: ${courseNames.join(', ')} 중 하나)`;
 
-        if (titleEl) titleEl.innerText = "오늘 여러 개의 수업이 있습니다";
+        if (titleEl) titleEl.innerText = "출석할 과정을 선택해주세요";
         if (subEl) {
             subEl.innerHTML = `${questionText}<br>
             <span style="font-size:1.4rem; color:#cbd5e1; display:block; margin-top:15px; line-height:1.6;">
-                <b style="color:#60a5fa;">전체 출석:</b> ${bothExamples}<br>
-                <b style="color:#f472b6;">하나만 출석:</b> ${oneExamples}
+                <b style="color:#60a5fa;">음성 답변 예시:</b> ${examples}
             </span>`;
         }
         if (indicator) {
             indicator.innerHTML = `<span class="material-icons" style="vertical-align: middle; animation: pulse 1s infinite;">mic</span> 듣고 있습니다...`;
         }
         
-        btnBoth.innerText = `모두 출석`;
-        btnOne.innerText = `${courseNames[0]}만 출석`;
-
-        overlay.style.display = 'flex';
-        indicator.style.display = 'block';
-
         let recognition = null;
         let resolved = false;
 
@@ -674,17 +665,39 @@ function promptMultipleCoursesVoice(courses) {
             resolve(result);
         };
 
-        btnBoth.onclick = () => {
-            if (window.speakTTS) window.speakTTS('모든 수업 출석으로 처리합니다.', 'browser');
-            finish(courses);
-        };
-        btnOne.onclick = () => {
-            if (window.speakTTS) window.speakTTS('지금 수업만 출석으로 처리합니다.', 'browser');
-            finish([courses[0]]);
-        };
+        if (btnContainer) {
+            btnContainer.innerHTML = '';
+            courses.forEach((c, idx) => {
+                const btn = document.createElement('button');
+                btn.style = `flex:1; font-size:2rem; padding:25px; border:none; border-radius:15px; color:white; font-weight:bold; cursor:pointer; transition:transform 0.2s; margin: 0 10px;`;
+                if (idx === 0) {
+                    btn.style.background = `linear-gradient(135deg, #3b82f6, #2563eb)`;
+                    btn.style.boxShadow = `0 10px 15px -3px rgba(59, 130, 246, 0.5)`;
+                } else if (idx === 1) {
+                    btn.style.background = `linear-gradient(135deg, #10b981, #059669)`;
+                    btn.style.boxShadow = `0 10px 15px -3px rgba(16, 185, 129, 0.5)`;
+                } else if (idx === 2) {
+                    btn.style.background = `linear-gradient(135deg, #f59e0b, #d97706)`;
+                    btn.style.boxShadow = `0 10px 15px -3px rgba(245, 158, 11, 0.5)`;
+                } else {
+                    btn.style.background = `#334155`;
+                }
+                
+                const cleanName = c.name.replace(/\([^)]*\)/g, '').trim();
+                btn.innerText = `${cleanName}`;
+                btn.onclick = () => {
+                    if (window.speakTTS) window.speakTTS(`${cleanName} 출석합니다.`, 'browser');
+                    finish([c]);
+                };
+                btnContainer.appendChild(btn);
+            });
+        }
+
+        overlay.style.display = 'flex';
+        if (indicator) indicator.style.display = 'block';
 
         if (window.speakTTS) {
-            window.speakTTS(questionText + " 모두 출석하시려면 모두, 지금 수업만 출석하시려면 하나만 이라고 말씀해주세요.", 'browser');
+            window.speakTTS(questionText, 'browser');
         }
 
         setTimeout(() => {
@@ -701,26 +714,41 @@ function promptMultipleCoursesVoice(courses) {
                     let transcript = e.results[0][0].transcript.trim().replace(/\s+/g, '').toLowerCase();
                     console.log("STT Result:", transcript);
                     
-                    const bothKeywords = ['모두', '전부', '두', '네', '다', '참석', '출석', '둘다', '두개', '투', 'ok', '오케이', '좋아', '둘다ok', courseNames.join('').replace(/\s+/g,'')];
-                    const isBoth = bothKeywords.some(kw => transcript.includes(kw));
+                    let matchedCourse = null;
+                    let matchedCleanName = "";
                     
-                    const oneKeywords = ['하나', '지금', '첫', '아니', '한개', '원', '일', courseNames[0].replace(/\s+/g,'')];
-                    const isOne = oneKeywords.some(kw => transcript.includes(kw));
+                    for (let i = 0; i < courses.length; i++) {
+                        const cleanName = courses[i].name.replace(/\([^)]*\)/g, '').trim();
+                        if (transcript.includes(cleanName.replace(/\s+/g, ''))) {
+                            matchedCourse = courses[i];
+                            matchedCleanName = cleanName;
+                            break;
+                        }
+                    }
                     
-                    if (isBoth) {
-                        if (window.speakTTS) window.speakTTS('모든 수업 출석으로 처리합니다.', 'browser');
-                        finish(courses);
-                    } else if (isOne) {
-                        if (window.speakTTS) window.speakTTS('지금 수업만 출석으로 처리합니다.', 'browser');
-                        finish([courses[0]]);
+                    if (!matchedCourse) {
+                        for (let i = 0; i < courses.length; i++) {
+                            const cleanName = courses[i].name.replace(/\([^)]*\)/g, '').trim();
+                            const shortName = cleanName.replace(/기능사|산업기사|수업/g, ''); 
+                            if (shortName.length >= 2 && transcript.includes(shortName)) {
+                                matchedCourse = courses[i];
+                                matchedCleanName = cleanName;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (matchedCourse) {
+                        if (window.speakTTS) window.speakTTS(`${matchedCleanName} 출석합니다.`, 'browser');
+                        finish([matchedCourse]);
                     } else {
-                        if (window.speakTTS) window.speakTTS('잘 인식하지 못했습니다. 화면의 버튼을 눌러주세요.', 'browser');
+                        if (window.speakTTS) window.speakTTS('과정명을 정확히 인식하지 못했습니다. 화면의 버튼을 눌러주세요.', 'browser');
                     }
                 };
                 recognition.onerror = (e) => { console.log("STT Error:", e.error); };
                 try { recognition.start(); } catch(e){}
             }
-        }, 4500);
+        }, 5500); // 5.5 seconds to let the TTS finish speaking first
         
         setTimeout(() => {
             if (!resolved) finish([courses[0]]);
@@ -876,7 +904,7 @@ async function processAttendance(inputNumOrObj, overridePhoto = null) {
 
         let targetCourses = validCourses;
         if (validCourses.length > 1) {
-            targetCourses = await promptMultipleCoursesVoice(validCourses);
+            targetCourses = await promptMultipleCoursesVoice(validCourses, member.name);
             if (!targetCourses || targetCourses.length === 0) {
                 showStatus("출석 처리가 취소되었습니다.", "orange");
                 setTimeout(() => switchMode('home'), 2500);
