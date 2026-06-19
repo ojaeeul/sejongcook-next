@@ -221,3 +221,11 @@ function renderDayList() {
         listEl.appendChild(groupEl);
     });
 }
+
+// Real-time synchronization across tabs
+const expenseChannel = new BroadcastChannel('expense_sync');
+expenseChannel.onmessage = (event) => {
+    if (event.data.action === 'updated') {
+        loadExpenseData();
+    }
+};

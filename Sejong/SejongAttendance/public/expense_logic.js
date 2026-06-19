@@ -1,3 +1,5 @@
+
+const expenseChannel = new BroadcastChannel('expense_sync');
 const EXPENSE_API_URL = '/api/sejong/expense';
 
 // 과정 분류
@@ -239,6 +241,7 @@ async function saveNotebookData() {
             body: JSON.stringify(payload)
         });
         console.log("Notebook auto-saved");
+        expenseChannel.postMessage({ action: "updated" });
     } catch (e) {
         console.error("Failed to save notebook:", e);
     }
@@ -1100,5 +1103,14 @@ window.alignAllDates = function(isAuto = false) {
     
     if (!isAuto) {
         setTimeout(() => alert("날짜별 정렬 및 줄 맞춤이 완료되었습니다!"), 100);
+    }
+};
+
+// Listen for updates from other tabs
+expenseChannel.onmessage = async (event) => {
+    if (event.data.action === 'updated' && event.data.source !== 'expense_logic_self') {
+        // Only reload if we are not the ones who just saved it
+        // Actually, broadcast channel doesn't send to the sender tab, so we are safe!
+        await loadNotebookData();
     }
 };
