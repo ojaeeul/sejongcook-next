@@ -738,9 +738,9 @@ function promptMultipleCoursesVoice(courses, memberName) {
         if (titleEl) titleEl.innerText = "출석할 과정을 터치해주세요";
         if (subEl) {
             subEl.innerHTML = `${memberName || '회원'}님, 오늘 예정된 수업이 2개 이상입니다.<br>
-            <span style="font-size:1.1rem; color:#fbbf24; display:block; margin-top:15px; line-height:1.4; font-weight:bold;">
-                <span class="material-icons" style="vertical-align: middle; margin-right:5px; font-size:1.2rem;">touch_app</span>
-                화면을 위아래로 스크롤하여 손가락으로 직접 터치해주세요.
+            <span style="font-size:0.95rem; color:#fbbf24; display:block; margin-top:10px; line-height:1.3; font-weight:bold;">
+                <span class="material-icons" style="vertical-align: middle; margin-right:3px; font-size:1.1rem;">touch_app</span>
+                화면을 위아래로 스크롤하여 과정을 확인 후 직접 터치하세요.
             </span>`;
         }
         
@@ -763,7 +763,7 @@ function promptMultipleCoursesVoice(courses, memberName) {
             
             // "모두 참석" 버튼 추가
             const btnBoth = document.createElement('button');
-            btnBoth.style = `width:100%; font-size:1.3rem; padding:15px 10px; border:none; border-radius:12px; color:white; font-weight:bold; cursor:pointer; transition:transform 0.2s; background: linear-gradient(135deg, #ec4899, #be185d); box-shadow: 0 4px 10px rgba(236, 72, 153, 0.4); margin-bottom: 5px;`;
+            btnBoth.style = `width:100%; font-size:1.1rem; padding:12px 10px; border:none; border-radius:10px; color:white; font-weight:bold; cursor:pointer; transition:transform 0.2s; background: linear-gradient(135deg, #ec4899, #be185d); box-shadow: 0 4px 10px rgba(236, 72, 153, 0.4); margin-bottom: 5px;`;
             btnBoth.innerText = `모든 수업 동시 출석`;
             btnBoth.onclick = () => {
                 if (window.speakTTS) window.speakTTS('모든 수업 출석합니다.', 'browser');
@@ -773,7 +773,7 @@ function promptMultipleCoursesVoice(courses, memberName) {
 
             courses.forEach((c, idx) => {
                 const btn = document.createElement('button');
-                btn.style = `width:100%; font-size:1.2rem; padding:15px 10px; border:none; border-radius:12px; color:white; font-weight:bold; cursor:pointer; transition:transform 0.2s; margin-bottom: 5px; text-align:center; word-break: keep-all;`;
+                btn.style = `width:100%; font-size:1.0rem; padding:12px 10px; border:none; border-radius:10px; color:white; font-weight:bold; cursor:pointer; transition:transform 0.2s; margin-bottom: 5px; text-align:center; word-break: keep-all;`;
                 if (idx === 0) {
                     btn.style.background = `linear-gradient(135deg, #3b82f6, #2563eb)`;
                     btn.style.boxShadow = `0 4px 10px rgba(59, 130, 246, 0.4)`;
