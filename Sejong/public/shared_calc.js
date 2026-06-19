@@ -25,9 +25,11 @@ window.loadCycleSettings = async function() {
             }
             if (data && data.makeupCutoffs) {
                 window.global_makeup_cutoffs = data.makeupCutoffs;
+                window.global_makeup_cutoffs_student = data.makeupCutoffs_student || {};
             }
             if (data && data.attendanceCutoffs) {
                 window.global_attendance_cutoffs = data.attendanceCutoffs;
+                window.global_attendance_cutoffs_student = data.attendanceCutoffs_student || {};
             }
         }
     } catch(e) {
@@ -46,6 +48,9 @@ window.getCourseLimits = function(courseNameScope, memberType) {
     // 1. 재고출석 커트라인 관리 (Limit 직접 설정, 우선순위 1)
     if (window.global_makeup_cutoffs && window.global_makeup_cutoffs[safeCourseKey] !== undefined) {
         let limit = parseFloat(window.global_makeup_cutoffs[safeCourseKey]);
+        if (memberType === 'student' && window.global_makeup_cutoffs_student && window.global_makeup_cutoffs_student[safeCourseKey] !== undefined) {
+            limit = parseFloat(window.global_makeup_cutoffs_student[safeCourseKey]);
+        }
         return { limit: limit, trigger: limit + 1.0 };
     }
     
@@ -56,7 +61,11 @@ window.getCourseLimits = function(courseNameScope, memberType) {
         let matched = false;
         for (const rule of window.sejongCycleRules.custom) {
             if (courseNameScope && courseNameScope.includes(rule.keyword)) {
-                trigger = rule.cycle;
+                if (memberType === 'student' && rule.cycle_student !== undefined) {
+                    trigger = rule.cycle_student;
+                } else {
+                    trigger = rule.cycle;
+                }
                 matched = true;
                 break;
             }

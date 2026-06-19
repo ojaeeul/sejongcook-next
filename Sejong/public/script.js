@@ -12,6 +12,8 @@ window.global_course_options = [];
 window.global_time_options = [];
 window.global_makeup_cutoffs = {};
 window.global_attendance_cutoffs = {};
+window.global_makeup_cutoffs_student = {};
+window.global_attendance_cutoffs_student = {};
 
 // 백엔드에서 설정값을 불러와 전역 옵션을 갱신하고 데이타리스트 재생성
 async function loadGlobalCourseTimeSettings() {
@@ -24,6 +26,8 @@ async function loadGlobalCourseTimeSettings() {
             if (settings.times && settings.times.length > 0) global_time_options = settings.times;
             if (settings.makeupCutoffs) global_makeup_cutoffs = settings.makeupCutoffs;
             if (settings.attendanceCutoffs) global_attendance_cutoffs = settings.attendanceCutoffs;
+            if (settings.makeupCutoffs_student) global_makeup_cutoffs_student = settings.makeupCutoffs_student;
+            if (settings.attendanceCutoffs_student) global_attendance_cutoffs_student = settings.attendanceCutoffs_student;
         }
     } catch(e) {
         console.error("Failed to load global settings", e);
