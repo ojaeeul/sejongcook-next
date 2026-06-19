@@ -97,11 +97,11 @@ function renderList() {
 
             if (isAttendedForCourse) {
                 badge = `<span style="display:inline-flex; align-items:center; gap:3px; color:#166534; font-size: 0.75rem; font-weight: bold;"><span class="material-icons" style="font-size:13px;">login</span> [${cName}] 출석완료</span>`;
-                btn = `<button class="btn" style="background:#fef2f2; color:#ef4444; border:1px solid #fca5a5; padding: 4px 8px; font-size: 0.75rem; min-height: auto; line-height: 1;" onclick="forceLogout('${m.id}', '${cName}')"><span class="material-icons" style="font-size:13px; vertical-align:middle; margin-right:2px;">logout</span> 로그아웃</button>`;
+                btn = `<button class="btn" style="position:relative; z-index:10; cursor:pointer; pointer-events:auto; background:#fef2f2; color:#ef4444; border:1px solid #fca5a5; padding: 4px 8px; font-size: 0.75rem; min-height: auto; line-height: 1;" onclick="forceLogout('${m.id}', '${cName}')"><span class="material-icons" style="font-size:13px; vertical-align:middle; margin-right:2px;">logout</span> 로그아웃</button>`;
                 courseRowsHtml += `<div style="display:flex; align-items:center; justify-content:space-between; background:#dcfce7; padding:5px 8px; border-radius:4px; border:1px solid #bbf7d0;">${badge}${btn}</div>`;
             } else {
                 badge = `<span style="display:inline-flex; align-items:center; gap:3px; color:#475569; font-size: 0.75rem; font-weight: bold;"><span class="material-icons" style="font-size:13px;">logout</span> [${cName}] 출석 전</span>`;
-                btn = `<button class="btn" style="background:#f0fdf4; color:#16a34a; border:1px solid #86efac; padding: 4px 8px; font-size: 0.75rem; min-height: auto; line-height: 1;" onclick="forceLogin('${m.id}', '${cName}')"><span class="material-icons" style="font-size:13px; vertical-align:middle; margin-right:2px;">login</span> 로그인</button>`;
+                btn = `<button class="btn" style="position:relative; z-index:10; cursor:pointer; pointer-events:auto; background:#f0fdf4; color:#16a34a; border:1px solid #86efac; padding: 4px 8px; font-size: 0.75rem; min-height: auto; line-height: 1;" onclick="forceLogin('${m.id}', '${cName}')"><span class="material-icons" style="font-size:13px; vertical-align:middle; margin-right:2px;">login</span> 로그인</button>`;
                 courseRowsHtml += `<div style="display:flex; align-items:center; justify-content:space-between; background:#f1f5f9; padding:5px 8px; border-radius:4px; border:1px solid #e2e8f0;">${badge}${btn}</div>`;
             }
         });
