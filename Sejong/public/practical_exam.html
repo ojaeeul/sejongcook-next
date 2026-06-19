@@ -773,7 +773,12 @@
                     </div>
                     <div class="notebook-container" id="notebookContainer">
                         <div class="notebook-page">
-                            <div style="text-align: left; font-size: 1.5rem; font-weight: 800; color: #3b82f6; margin-bottom: 10px; padding-left: 5px;">필기시험</div>
+                            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 10px; padding-left: 5px; padding-right: 5px;">
+                                <div style="text-align: left; font-size: 1.5rem; font-weight: 800; color: #3b82f6; line-height: 1;">필기시험</div>
+                                <button onclick="location.reload()" style="background: transparent; border: 1px solid #cbd5e1; cursor: pointer; color: #475569; display: flex; align-items: center; gap: 4px; font-size: 0.85rem; font-weight: 600; padding: 6px 12px; border-radius: 6px; transition: all 0.2s;" onmouseover="this.style.background='#f1f5f9'; this.style.borderColor='#94a3b8'; this.style.color='#0f172a'" onmouseout="this.style.background='transparent'; this.style.borderColor='#cbd5e1'; this.style.color='#475569'" title="페이지 새로고침">
+                                    <span class="material-icons" style="font-size: 1.1rem;">refresh</span> 페이지 초기화
+                                </button>
+                            </div>
                             <table class="exam-table" id="examTable">
                                 <thead>
                                     <tr>
@@ -846,7 +851,7 @@
     </div>
 
     <script src="script.js"></script>
-    <script src="practical_exam.js?v=20260620-24" defer></script>
+    <script src="practical_exam.js?v=20260620-25" defer></script>
 </body>
 
 </html>
