@@ -1011,9 +1011,12 @@ window.forceLogin = async function(memberId, course) {
         if (res.ok) {
             localStorage.setItem('sejong_attendance_sync', Date.now().toString());
             fetchMembers();
+        } else {
+            const errData = await res.json().catch(()=>({}));
+            alert('로그인 처리 실패: ' + (errData.error || res.statusText));
         }
     } catch (e) {
-        alert('처리 중 오류가 발생했습니다.');
+        alert('처리 중 오류가 발생했습니다: ' + e.message);
     }
 };
 
@@ -1030,8 +1033,11 @@ window.forceLogout = async function(memberId, course) {
         if (res.ok) {
             localStorage.setItem('sejong_attendance_sync', Date.now().toString());
             fetchMembers();
+        } else {
+            const errData = await res.json().catch(()=>({}));
+            alert('로그아웃 처리 실패: ' + (errData.error || res.statusText));
         }
     } catch (e) {
-        alert('처리 중 오류가 발생했습니다.');
+        alert('처리 중 오류가 발생했습니다: ' + e.message);
     }
 };
