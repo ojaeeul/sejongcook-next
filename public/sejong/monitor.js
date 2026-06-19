@@ -186,56 +186,28 @@ let attendanceProgress = 0;
 function startAutoDetectionLoop() {
     if (autoDetectInterval) clearInterval(autoDetectInterval);
     isAuthenticating = false;
-    isProcessingFrame = false;
-    attendanceProgress = 0;
-
     autoDetectInterval = setInterval(async () => {
-        if (currentMode !== 'face_only' || isAuthenticating || !video) return;
-        if (isProcessingFrame) return;
+        if (!modelsLoaded || isAuthenticating || currentMode !== 'face_only' || !video || video.paused) return;
 
-        isProcessingFrame = true;
         try {
-            if (statusMsg) statusMsg.textContent = "루프 진입 성공 (비디오 상태: " + (video.paused ? "paused" : "playing") + ", 너비: " + video.videoWidth + ")";
-            if (!modelsLoaded) {
-                if (statusMsg) statusMsg.textContent = "AI 엔진 로딩 중... (UI 표시 시도)";
-                try {
-                    drawFaceScannerUI(undefined, 0);
-                } catch (e) {
-                    if (statusMsg) statusMsg.textContent = "UI 그리기 에러: " + e.message;
-                }
-                isProcessingFrame = false;
-                return;
-            }
-
-            const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.4 });
+            // 빠른 추적용 (초점 UI용) - TinyFaceDetector
+            const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 });
             const detections = await faceapi.detectAllFaces(video, options).withFaceLandmarks();
-            const detection = detections && detections.length > 0 ? detections[0] : undefined;
             
-            if (statusMsg && !isAuthenticating) {
-                statusMsg.textContent = detection ? "얼굴 감지 됨! UI 그리는 중..." : "얼굴 탐색 중... (UI 표시 시도)";
-            }
-            try {
-                drawFaceScannerUI(detection, attendanceProgress);
-            } catch (e) {
-                if (statusMsg) statusMsg.textContent = "UI 그리기 에러2: " + e.message;
-            }
+            drawMultiFocusUI(detections);
 
-            if (detection) {
-                attendanceProgress += 3;
-                if (attendanceProgress >= 100) {
+            // 안정적으로 감지되면 고정밀 모델(ssdMobilenetv1) 구동하여 출석 체크
+            if (detections.length > 0 && !isAuthenticating) {
+                const box = detections[0].detection.box;
+                if (box.width > 80 && box.height > 80) { // 너무 멀리 있는 얼굴은 무시
                     isAuthenticating = true;
                     await processAutoAttendance();
-                    attendanceProgress = 0; // 초기화
                 }
-            } else {
-                if (attendanceProgress > 0) attendanceProgress -= 1;
             }
         } catch(e) {
             console.error("Auto detect error:", e);
-        } finally {
-            isProcessingFrame = false;
         }
-    }, 20); // 초당 50프레임 속도, 프레임 오버랩 방지
+    }, 50); // 초당 20프레임 속도로 초고속 십자선 업데이트
 }
 
 function stopAutoDetectionLoop() {
@@ -248,6 +220,92 @@ function stopAutoDetectionLoop() {
         const ctx = overlayCanvas.getContext('2d');
         ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
     }
+}
+
+function drawMultiFocusUI(detections) {
+    const overlayCanvas = document.getElementById('overlayCanvas');
+    if (!overlayCanvas || !video) return;
+
+    if (overlayCanvas.width !== video.clientWidth) {
+        overlayCanvas.width = video.clientWidth;
+        overlayCanvas.height = video.clientHeight;
+    }
+
+    const ctx = overlayCanvas.getContext('2d');
+    ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+
+    if (!detections || detections.length === 0) return;
+
+    const dims = faceapi.matchDimensions(overlayCanvas, video, true);
+    const resizedDetections = faceapi.resizeResults(detections, dims);
+
+    ctx.strokeStyle = '#10b981'; // 에메랄드 그린
+    ctx.lineWidth = 2;
+    ctx.fillStyle = '#10b981';
+
+    resizedDetections.forEach(det => {
+        const box = det.detection.box;
+        const landmarks = det.landmarks;
+        
+        // 다중 십자 타겟팅 포인트들 (얼굴 윤곽, 눈, 코, 입)
+        const pointsToTrack = [
+            landmarks.getLeftEye()[0],
+            landmarks.getLeftEye()[3],
+            landmarks.getRightEye()[0],
+            landmarks.getRightEye()[3],
+            landmarks.getNose()[0],
+            landmarks.getNose()[3],
+            landmarks.getMouth()[0],
+            landmarks.getMouth()[6],
+            {x: box.x, y: box.y},
+            {x: box.x + box.width, y: box.y},
+            {x: box.x, y: box.y + box.height},
+            {x: box.x + box.width, y: box.y + box.height}
+        ];
+
+        const drawCrosshair = (x, y, size) => {
+            ctx.beginPath();
+            ctx.moveTo(x - size, y); ctx.lineTo(x + size, y);
+            ctx.moveTo(x, y - size); ctx.lineTo(x, y + size);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(x, y, 2, 0, 2*Math.PI);
+            ctx.fill();
+        };
+
+        pointsToTrack.forEach(p => {
+            if(p) drawCrosshair(p.x, p.y, 8);
+        });
+        
+        // 100개의 다중 십자 타겟팅 (얼굴 안쪽 영역을 스캔하는 이펙트)
+        const numPoints = 100;
+        const cols = 10;
+        const cellW = box.width / cols;
+        const cellH = box.height / (numPoints / cols);
+        for (let i = 0; i < numPoints; i++) {
+            const col = i % cols;
+            const row = Math.floor(i / cols);
+            // 약간의 지터(떨림) 효과를 주어 실제로 스캔하는 느낌 부여
+            const jitterX = Math.sin(i * 1.5 + Date.now() * 0.005) * (cellW * 0.5);
+            const jitterY = Math.cos(i * 2.1 + Date.now() * 0.005) * (cellH * 0.5);
+            
+            const px = box.x + col * cellW + cellW * 0.5 + jitterX;
+            const py = box.y + row * cellH + cellH * 0.5 + jitterY;
+            
+            ctx.beginPath();
+            ctx.moveTo(px - 3, py); ctx.lineTo(px + 3, py);
+            ctx.moveTo(px, py - 3); ctx.lineTo(px, py + 3);
+            ctx.strokeStyle = 'rgba(16, 185, 129, 0.4)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+
+        // 큰 타겟 윤곽선 박스
+        ctx.beginPath();
+        ctx.rect(box.x, box.y, box.width, box.height);
+        ctx.strokeStyle = 'rgba(16, 185, 129, 0.4)';
+        ctx.stroke();
+    });
 }
 
 function drawFaceScannerUI(detection, currentProgress) {
