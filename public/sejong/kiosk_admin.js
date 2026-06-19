@@ -56,10 +56,32 @@ async function fetchMembers() {
         const today = new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
         todayAttendance = Array.isArray(rawAtt) ? rawAtt.filter(a => a.date === today && a.status !== 'unchecked') : [];
         
+        populateCourseFilter();
         renderList();
     } catch(e) {
         listEl.innerHTML = '<div style="color:red; text-align:center; padding:40px;">데이터 로딩에 실패했습니다. 관리자에게 문의하세요.</div>';
     }
+}
+
+function populateCourseFilter() {
+    const courseSet = new Set();
+    adminMembers.forEach(m => {
+        if(m.course) {
+            const cList = m.course.split(',').map(c => c.trim().replace(/\([^)]*\)/g, '').trim()).filter(c=>c);
+            cList.forEach(c => courseSet.add(c));
+        }
+    });
+    const select = document.getElementById('courseFilter');
+    if(!select) return;
+    const currentVal = select.value;
+    select.innerHTML = '<option value="ALL">전체보기 (과정 선택)</option>';
+    Array.from(courseSet).sort().forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c;
+        opt.textContent = c;
+        select.appendChild(opt);
+    });
+    select.value = currentVal || 'ALL';
 }
 
 function renderList() {
@@ -67,8 +89,18 @@ function renderList() {
     const searchTerm = document.getElementById('searchInput').value.toLowerCase();
     listEl.innerHTML = '';
     
+    const courseFilter = document.getElementById('courseFilter') ? document.getElementById('courseFilter').value : 'ALL';
+    
     const filtered = adminMembers.filter(m => {
-        return (m.name || '').toLowerCase().includes(searchTerm) || (m.phone || '').includes(searchTerm);
+        const matchName = (m.name || '').toLowerCase().includes(searchTerm) || (m.phone || '').includes(searchTerm);
+        if(!matchName) return false;
+        
+        if(courseFilter !== 'ALL') {
+            if(!m.course) return false;
+            const cList = m.course.split(',').map(c => c.trim().replace(/\([^)]*\)/g, '').trim()).filter(c=>c);
+            if(!cList.includes(courseFilter)) return false;
+        }
+        return true;
     });
     
     if (filtered.length === 0) {
@@ -86,6 +118,9 @@ function renderList() {
         let courseRowsHtml = '<div style="margin-top: 10px; display: flex; flex-direction: column; gap: 6px; width: 100%;">';
 
         courses.forEach(cName => {
+            const courseFilterVal = document.getElementById('courseFilter') ? document.getElementById('courseFilter').value : 'ALL';
+            if (courseFilterVal !== 'ALL' && cName !== courseFilterVal) return;
+            
             const isAttendedForCourse = todayAttendance.some(a => {
                 if (String(a.memberId) !== String(m.id)) return false;
                 const aCourse = a.course || 'ALL';
@@ -116,15 +151,11 @@ function renderList() {
                     <div style="font-weight:700; font-size:1.1rem; color:#0f172a; margin-bottom:4px;">
                         ${m.name} <span style="font-size:0.85rem; color:#64748b; font-weight:400;">(${m.phone || '번호없음'})</span>
                     </div>
-                    <div style="font-size:0.9rem; color:#2563eb; margin-bottom:4px; cursor:pointer; font-weight:bold; display:inline-flex; align-items:center; gap:4px; padding:4px 8px; background:#eff6ff; border-radius:6px; border:1px solid #bfdbfe;" onclick="const el = document.getElementById('courses-${m.id}'); if(el.style.display==='none'){el.style.display='flex';}else{el.style.display='none';}">
-                        <span class="material-icons" style="font-size:16px;">expand_more</span> ${m.course || '과목 없음'}
-                    </div>
-                    <div style="font-weight:700; font-size: 0.8rem; ${hasFace ? 'color:#059669;' : 'color:#94a3b8;'} margin-top:4px;">
+                    <div style="font-size:0.8rem; color:#475569; margin-bottom:4px;">${m.course || '과목 없음'}</div>
+                    <div style="font-weight:700; font-size: 0.8rem; ${hasFace ? 'color:#059669;' : 'color:#94a3b8;'}">
                         ${hasFace ? '<span class="material-icons" style="vertical-align:middle; font-size:14px;">check_circle</span> 등록 완료' : '<span class="material-icons" style="vertical-align:middle; font-size:14px;">cancel</span> 사진 미등록'}
                     </div>
-                    <div id="courses-${m.id}" style="display:none; width:100%;">
-                        ${courseRowsHtml}
-                    </div>
+                    ${courseRowsHtml}
                 </div>
             </div>
         `;
