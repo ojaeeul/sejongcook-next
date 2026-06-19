@@ -1057,42 +1057,7 @@ function showStatus(msg, color) {
         scanStatusText.style.color = color;
     }
 
-    // 풀스크린(카메라 전용) 모드일 때 메시지를 화면 정중앙에 크게 띄움
-    if (currentMode === 'face_only' || currentMode === 'register_camera') {
-        let overlay = document.getElementById('floatingStatusOverlay');
-        if (!overlay) {
-            overlay = document.createElement('div');
-            overlay.id = 'floatingStatusOverlay';
-            overlay.style.position = 'absolute';
-            overlay.style.bottom = '20%';
-            overlay.style.left = '50%';
-            overlay.style.transform = 'translateX(-50%)';
-            overlay.style.padding = '20px 40px';
-            overlay.style.borderRadius = '30px';
-            overlay.style.fontSize = '2.5rem';
-            overlay.style.fontWeight = 'bold';
-            overlay.style.zIndex = '9999';
-            overlay.style.boxShadow = '0 10px 30px rgba(0,0,0,0.5)';
-            overlay.style.transition = 'opacity 0.3s';
-            overlay.style.textAlign = 'center';
-            const cameraFrame = document.querySelector('.camera-frame');
-            if (cameraFrame) {
-                cameraFrame.appendChild(overlay);
-            } else {
-                document.body.appendChild(overlay);
-            }
-        }
-        overlay.textContent = msg;
-        overlay.style.color = 'white';
-        overlay.style.background = color === 'red' ? 'rgba(239, 68, 68, 0.95)' : 
-                                   (color === '#059669' || color === '#3b82f6' ? 'rgba(5, 150, 105, 0.95)' : 'rgba(0,0,0,0.85)');
-        overlay.style.opacity = '1';
-        
-        if (window.statusOverlayTimeout) clearTimeout(window.statusOverlayTimeout);
-        window.statusOverlayTimeout = setTimeout(() => {
-            if (overlay) overlay.style.opacity = '0';
-        }, 3000);
-    }
+    // (거대하고 거슬리는 빨간색 팝업 박스 삭제됨)
 }
 
 function updateKioskTime() {
