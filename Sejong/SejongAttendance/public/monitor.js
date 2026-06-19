@@ -196,7 +196,7 @@ function startAutoDetectionLoop() {
         isProcessingFrame = true;
         try {
             if (!modelsLoaded) {
-                drawAttendanceFocusUI(undefined);
+                drawFaceScannerUI(undefined, 0);
                 isProcessingFrame = false;
                 return;
             }
