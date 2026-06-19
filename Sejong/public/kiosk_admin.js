@@ -83,8 +83,7 @@ function renderList() {
         
         
         const courses = m.course ? m.course.split(',').map(c => c.trim().replace(/\([^)]*\)/g, '').trim()).filter(c => c) : ['기본'];
-        let attBadge = '';
-        let forceActionBtn = '';
+        let courseRowsHtml = '<div style="margin-top: 10px; display: flex; flex-direction: column; gap: 6px; width: 100%;">';
 
         courses.forEach(cName => {
             const isAttendedForCourse = todayAttendance.some(a => {
@@ -93,50 +92,54 @@ function renderList() {
                 return aCourse === 'ALL' || aCourse.includes(cName) || cName.includes(aCourse);
             });
             
+            let badge = '';
+            let btn = '';
+
             if (isAttendedForCourse) {
-                attBadge += `<div style="margin-top:5px;"><span style="display:inline-flex; align-items:center; gap:4px; padding: 3px 8px; border-radius: 4px; background: #dcfce7; color: #166534; font-size: 0.85rem; font-weight: bold;"><span class="material-icons" style="font-size:14px;">login</span> [${cName}] 출석완료</span></div>`;
-                forceActionBtn += `<button class="btn" style="background:#fef2f2; color:#ef4444; border:1px solid #fca5a5; margin-right:5px; margin-bottom:5px;" onclick="forceLogout('${m.id}', '${cName}')"><span class="material-icons" style="font-size:18px;">logout</span> ${cName} 로그아웃</button>`;
+                badge = `<span style="display:inline-flex; align-items:center; gap:3px; color:#166534; font-size: 0.75rem; font-weight: bold;"><span class="material-icons" style="font-size:13px;">login</span> [${cName}] 출석완료</span>`;
+                btn = `<button class="btn" style="background:#fef2f2; color:#ef4444; border:1px solid #fca5a5; padding: 4px 8px; font-size: 0.75rem; min-height: auto; line-height: 1;" onclick="forceLogout('${m.id}', '${cName}')"><span class="material-icons" style="font-size:13px; vertical-align:middle; margin-right:2px;">logout</span> 로그아웃</button>`;
+                courseRowsHtml += `<div style="display:flex; align-items:center; justify-content:space-between; background:#dcfce7; padding:5px 8px; border-radius:4px; border:1px solid #bbf7d0;">${badge}${btn}</div>`;
             } else {
-                attBadge += `<div style="margin-top:5px;"><span style="display:inline-flex; align-items:center; gap:4px; padding: 3px 8px; border-radius: 4px; background: #f1f5f9; color: #64748b; font-size: 0.85rem; font-weight: bold;"><span class="material-icons" style="font-size:14px;">logout</span> [${cName}] 출석 전</span></div>`;
-                forceActionBtn += `<button class="btn" style="background:#f0fdf4; color:#16a34a; border:1px solid #86efac; margin-right:5px; margin-bottom:5px;" onclick="forceLogin('${m.id}', '${cName}')"><span class="material-icons" style="font-size:18px;">login</span> ${cName} 로그인</button>`;
+                badge = `<span style="display:inline-flex; align-items:center; gap:3px; color:#475569; font-size: 0.75rem; font-weight: bold;"><span class="material-icons" style="font-size:13px;">logout</span> [${cName}] 출석 전</span>`;
+                btn = `<button class="btn" style="background:#f0fdf4; color:#16a34a; border:1px solid #86efac; padding: 4px 8px; font-size: 0.75rem; min-height: auto; line-height: 1;" onclick="forceLogin('${m.id}', '${cName}')"><span class="material-icons" style="font-size:13px; vertical-align:middle; margin-right:2px;">login</span> 로그인</button>`;
+                courseRowsHtml += `<div style="display:flex; align-items:center; justify-content:space-between; background:#f1f5f9; padding:5px 8px; border-radius:4px; border:1px solid #e2e8f0;">${badge}${btn}</div>`;
             }
         });
+        courseRowsHtml += '</div>';
+
         const photoPreview = hasFace && m.photo ? `<img src="${m.photo}" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid #3b82f6; flex-shrink: 0; cursor: pointer;" onclick="previewLargePhoto('${m.photo}', '${m.name}', '${m.id}')">` : `<div style="width: 60px; height: 60px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer;" onclick="previewLargePhoto('', '${m.name}', '${m.id}')"><span class="material-icons" style="color:#94a3b8; font-size: 32px;">person</span></div>`;
 
         const infoHtml = `
-            <div style="display: flex; gap: 15px; align-items: center;">
+            <div style="display: flex; gap: 15px; align-items: flex-start;">
                 ${photoPreview}
-                <div>
-                    <div style="font-weight:700; font-size:1.15rem; color:#0f172a; margin-bottom:4px;">
-                        ${m.name} <span style="font-size:0.95rem; color:#64748b; font-weight:400;">(${m.phone || '번호없음'})</span>
+                <div style="flex: 1; width: 100%;">
+                    <div style="font-weight:700; font-size:1.1rem; color:#0f172a; margin-bottom:4px;">
+                        ${m.name} <span style="font-size:0.85rem; color:#64748b; font-weight:400;">(${m.phone || '번호없음'})</span>
                     </div>
-                    <div style="font-size:0.9rem; color:#475569; margin-bottom:4px;">${m.course || '과목 없음'}</div>
-                    <div style="font-weight:700; font-size: 0.9rem; ${hasFace ? 'color:#059669;' : 'color:#94a3b8;'}">
-                        ${hasFace ? '<span class="material-icons" style="vertical-align:middle; font-size:16px;">check_circle</span> 등록 완료' : '<span class="material-icons" style="vertical-align:middle; font-size:16px;">cancel</span> 사진 미등록'}
+                    <div style="font-size:0.8rem; color:#475569; margin-bottom:4px;">${m.course || '과목 없음'}</div>
+                    <div style="font-weight:700; font-size: 0.8rem; ${hasFace ? 'color:#059669;' : 'color:#94a3b8;'}">
+                        ${hasFace ? '<span class="material-icons" style="vertical-align:middle; font-size:14px;">check_circle</span> 등록 완료' : '<span class="material-icons" style="vertical-align:middle; font-size:14px;">cancel</span> 사진 미등록'}
                     </div>
-                    ${attBadge}
+                    ${courseRowsHtml}
                 </div>
             </div>
         `;
         
         const actionHtml = hasFace ? `
-            <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; margin-top: 10px;">
-                <button class="btn btn-danger" onclick="deleteFace('${m.id}')">
-                    <span class="material-icons" style="font-size:18px;">delete_sweep</span> 개인 사진 초기화
+            <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; margin-top: 10px; border-top: 1px solid #e2e8f0; padding-top: 10px;">
+                <button class="btn btn-danger" style="padding: 5px 10px; font-size: 0.8rem;" onclick="deleteFace('${m.id}')">
+                    <span class="material-icons" style="font-size:16px;">delete_sweep</span> 개인 사진 초기화
                 </button>
-                ${forceActionBtn}
             </div>
         ` : `
-            <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; margin-top: 10px;">
-                <button class="btn btn-primary" onclick="openWebcamCapture('${m.id}')" style="background:#3b82f6;">
-                    <span class="material-icons" style="font-size:18px;">photo_camera</span> AI 얼굴 촬영
+            <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; margin-top: 10px; border-top: 1px solid #e2e8f0; padding-top: 10px;">
+                <button class="btn btn-primary" style="background:#3b82f6; padding: 5px 10px; font-size: 0.8rem;" onclick="openWebcamCapture('${m.id}')">
+                    <span class="material-icons" style="font-size:16px;">photo_camera</span> AI 얼굴 촬영
                 </button>
-                <label class="btn btn-primary" style="cursor:pointer; background:#10b981; border-color:#059669;">
-                    <span class="material-icons" style="font-size:18px;">add_photo_alternate</span> AI찍기(파일업로드)
+                <label class="btn btn-primary" style="cursor:pointer; background:#10b981; border-color:#059669; padding: 5px 10px; font-size: 0.8rem;">
+                    <span class="material-icons" style="font-size:16px;">add_photo_alternate</span> AI찍기(업로드)
                     <input type="file" accept="image/*" style="display:none;" onchange="manualFaceUpload(event, '${m.id}')">
                 </label>
-            
-                ${forceActionBtn}
             </div>
         `;
         
