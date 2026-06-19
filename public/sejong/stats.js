@@ -223,6 +223,18 @@ function updateDashboard() {
     if(document.getElementById('ageStudent')) document.getElementById('ageStudent').innerText = students;
     if(document.getElementById('ageChild')) document.getElementById('ageChild').innerText = children;
     
+    // Vehicles & Missed Calls
+    let vehicle1 = 0;
+    let vehicle2 = 0;
+    activeMembers.forEach(m => {
+        const note = m.notes || m.note || '';
+        if (note.includes('1호차')) vehicle1++;
+        if (note.includes('2호차')) vehicle2++;
+    });
+    if(document.getElementById('dashVehicle1')) document.getElementById('dashVehicle1').innerText = vehicle1;
+    if(document.getElementById('dashVehicle2')) document.getElementById('dashVehicle2').innerText = vehicle2;
+    if(document.getElementById('dashMissed')) document.getElementById('dashMissed').innerText = '준비 중';
+    
     // Absent
     const absentCount = Math.max(0, activeMembers.length - uniquePeriodAttenders.size);
     if(document.getElementById('dashAbsent')) document.getElementById('dashAbsent').innerText = absentCount;

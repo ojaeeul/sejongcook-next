@@ -125,12 +125,12 @@
                             <div style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: #3b82f6; font-size: 2rem; cursor: pointer; font-weight: bold;" class="material-icons">chevron_right</div>
                             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; padding: 0 40px;">
                                 <!-- Row 1 -->
-                                <div class="daily-card">
+                                <div class="daily-card" style="cursor: pointer; transition: transform 0.2s;" onclick="location.href='stat_details.html?type=payment'" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'" title="클릭하여 상세 납부 통계 보기">
                                     <div class="d-title">납부현황</div>
                                     <div class="d-val" id="dashPayment">-</div>
                                     <div class="d-badges"><span class="bg-green">누적 <span id="dashPaymentAcc">-</span></span></div>
                                 </div>
-                                <div class="daily-card">
+                                <div class="daily-card" style="cursor: pointer; transition: transform 0.2s;" onclick="location.href='stat_details.html?type=unpaid'" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'" title="클릭하여 상세 미납 통계 보기">
                                     <div class="d-title">미납현황</div>
                                     <div class="d-val" id="dashUnpaid" style="font-size:1.5rem; margin-top:10px;">-</div>
                                     <div class="d-badges"><span class="bg-green">누적 <span id="dashUnpaidAcc">-</span></span></div>
@@ -142,12 +142,12 @@
                                     <div class="d-badges"><span class="bg-green">당월 누적 <span id="dashExpenseAcc">0원</span></span></div>
                                 </div>
                                 <!-- Row 2 -->
-                                <div class="daily-card">
+                                <div class="daily-card" style="cursor: pointer; transition: transform 0.2s;" onclick="location.href='stat_details.html?type=students'" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'" title="클릭하여 수강생 명단 보기">
                                     <div class="d-title">학생수</div>
                                     <div class="d-val" id="dashStudents">-</div>
                                     <div class="d-badges"><span class="bg-green">신규 <span id="dashStudentsNew">-</span></span><span class="bg-red">퇴원 <span id="dashStudentsLeave">-</span></span></div>
                                 </div>
-                                <div class="daily-card">
+                                <div class="daily-card" style="cursor: pointer; transition: transform 0.2s;" onclick="location.href='stat_details.html?type=courses'" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'" title="클릭하여 강좌별 상세 보기">
                                     <div class="d-title">강좌수</div>
                                     <div class="d-val" id="dashCourses">-</div>
                                     <div class="d-badges"><span class="bg-green">신규 -</span><span class="bg-red">종료 -</span></div>
@@ -169,16 +169,16 @@
                                     <div class="d-val" id="dashAbsent">-</div>
                                     <div class="d-badges"><span class="bg-purple" id="dashConsultation">상담 -</span><span class="bg-purple" id="dashMakeup">보강 -</span><span class="bg-orange" id="dashExtension">연장 -</span></div>
                                 </div>
-                                <div class="daily-card">
+                                <div class="daily-card" style="cursor: pointer; transition: transform 0.2s;" onclick="location.href='stat_details.html?type=missed_calls'" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'" title="클릭하여 부재중 전화 보기">
                                     <div class="d-title">부재중 전화</div>
-                                    <div class="d-val">-</div>
-                                    <div class="d-badges"><span class="bg-green">수신 -</span><span class="bg-red">발신 -</span></div>
+                                    <div class="d-val" id="dashMissed">-</div>
+                                    <div class="d-badges"><span class="bg-green">수신 <span id="dashMissedIn">-</span></span><span class="bg-red">발신 <span id="dashMissedOut">-</span></span></div>
                                 </div>
-                                <div class="daily-card">
+                                <div class="daily-card" style="cursor: pointer; transition: transform 0.2s;" onclick="location.href='stat_details.html?type=vehicles'" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'" title="클릭하여 차량별 인원 보기">
                                     <div class="d-title">차량 호차별 인원</div>
-                                    <div class="d-val" style="display:flex; justify-content: space-around; width:100%;">
-                                        <div style="text-align:center;"><span style="font-size:2rem; font-weight:700;">-</span><div style="font-size:0.8rem; color:#94a3b8; margin-top:5px; font-weight:600;">1호차</div></div>
-                                        <div style="text-align:center;"><span style="font-size:2rem; font-weight:700;">-</span><div style="font-size:0.8rem; color:#94a3b8; margin-top:5px; font-weight:600;">2호차</div></div>
+                                    <div style="display:flex; justify-content:space-around; align-items:center; height:100%; margin-top:5px;">
+                                        <div style="text-align:center;"><span style="font-size:2rem; font-weight:700;" id="dashVehicle1">-</span><div style="font-size:0.8rem; color:#94a3b8; margin-top:5px; font-weight:600;">1호차</div></div>
+                                        <div style="text-align:center;"><span style="font-size:2rem; font-weight:700;" id="dashVehicle2">-</span><div style="font-size:0.8rem; color:#94a3b8; margin-top:5px; font-weight:600;">2호차</div></div>
                                     </div>
                                 </div>
                             </div>
@@ -366,7 +366,7 @@
 
     <!-- Load Chart.js from CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="stats.js?v=20260620-37"></script>
+    <script src="stats.js?v=20260620-38"></script>
     <script>
         // Set Date to today
         const d = new Date();
