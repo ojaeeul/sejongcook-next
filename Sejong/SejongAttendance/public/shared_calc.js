@@ -314,13 +314,31 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
             const dayOfWeek = simDate.getDay();
 
             let isValidDay = false;
+            let coursesToCheck = [];
+            
             if (courseFilter) {
-                const cleanFilter = courseFilter.replace(/\([^)]*\)/g, '').trim();
-                const schedule = window.COURSE_SCHEDULES ? window.COURSE_SCHEDULES[cleanFilter] : null;
-                if (schedule) {
-                    if (schedule.includes(dayOfWeek)) isValidDay = true;
-                } else {
+                coursesToCheck = [courseFilter.replace(/\([^)]*\)/g, '').trim()];
+            } else if (member.course) {
+                coursesToCheck = String(member.course).split(',').map(c => c.replace(/\([^)]*\)/g, '').trim()).filter(c => c && !c.includes('[삭제]'));
+            }
+
+            if (coursesToCheck.length > 0) {
+                let allowedDays = new Set();
+                let hasFallback = false;
+                
+                coursesToCheck.forEach(c => {
+                    const schedule = window.COURSE_SCHEDULES ? window.COURSE_SCHEDULES[c] : null;
+                    if (schedule && Array.isArray(schedule)) {
+                        schedule.forEach(d => allowedDays.add(Number(d)));
+                    } else {
+                        hasFallback = true;
+                    }
+                });
+
+                if (hasFallback) {
                     if (dayOfWeek !== 0) isValidDay = true;
+                } else {
+                    if (allowedDays.has(dayOfWeek)) isValidDay = true;
                 }
             } else {
                 if (dayOfWeek !== 0) isValidDay = true;

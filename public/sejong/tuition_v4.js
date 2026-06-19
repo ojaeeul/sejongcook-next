@@ -335,6 +335,7 @@ async function loadData() {
 
         if (timetableData && Object.keys(timetableData).length > 0) {
             COURSE_SCHEDULES = { ...COURSE_SCHEDULES, ...timetableData };
+            window.COURSE_SCHEDULES = COURSE_SCHEDULES;
         }
         const rawSettings = await sRes.json();
         const settings = Array.isArray(rawSettings) ? rawSettings[0] : rawSettings;

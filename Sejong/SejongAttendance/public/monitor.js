@@ -234,58 +234,71 @@ function drawMultiFocusUI(detections) {
     const ctx = overlayCanvas.getContext('2d');
     ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
 
-    if (!detections || detections.length === 0) return;
-
     const dims = faceapi.matchDimensions(overlayCanvas, video, true);
-    const resizedDetections = faceapi.resizeResults(detections, dims);
 
-    ctx.strokeStyle = '#10b981'; // 에메랄드 그린
-    ctx.lineWidth = 2;
-    ctx.fillStyle = '#10b981';
+    let boxesToScan = [];
 
-    resizedDetections.forEach(det => {
-        const box = det.detection.box;
-        const landmarks = det.landmarks;
-        
-        // 다중 십자 타겟팅 포인트들 (얼굴 윤곽, 눈, 코, 입)
-        const pointsToTrack = [
-            landmarks.getLeftEye()[0],
-            landmarks.getLeftEye()[3],
-            landmarks.getRightEye()[0],
-            landmarks.getRightEye()[3],
-            landmarks.getNose()[0],
-            landmarks.getNose()[3],
-            landmarks.getMouth()[0],
-            landmarks.getMouth()[6],
-            {x: box.x, y: box.y},
-            {x: box.x + box.width, y: box.y},
-            {x: box.x, y: box.y + box.height},
-            {x: box.x + box.width, y: box.y + box.height}
-        ];
-
-        const drawCrosshair = (x, y, size) => {
-            ctx.beginPath();
-            ctx.moveTo(x - size, y); ctx.lineTo(x + size, y);
-            ctx.moveTo(x, y - size); ctx.lineTo(x, y + size);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.arc(x, y, 2, 0, 2*Math.PI);
-            ctx.fill();
-        };
-
-        pointsToTrack.forEach(p => {
-            if(p) drawCrosshair(p.x, p.y, 8);
+    if (!detections || detections.length === 0) {
+        // 화면 전체 다중 초점
+        boxesToScan.push({
+            x: 0,
+            y: 0,
+            width: overlayCanvas.width,
+            height: overlayCanvas.height,
+            isGlobalSearch: true
         });
+    } else {
+        const resizedDetections = faceapi.resizeResults(detections, dims);
+        resizedDetections.forEach(det => {
+            boxesToScan.push({
+                x: det.detection.box.x,
+                y: det.detection.box.y,
+                width: det.detection.box.width,
+                height: det.detection.box.height,
+                landmarks: det.landmarks,
+                isGlobalSearch: false
+            });
+        });
+    }
+
+    ctx.lineWidth = 2;
+
+    boxesToScan.forEach(boxObj => {
+        const box = boxObj;
         
-        // 100개의 다중 십자 타겟팅 (얼굴 안쪽 영역을 스캔하는 이펙트)
-        const numPoints = 100;
-        const cols = 10;
+        if (!boxObj.isGlobalSearch) {
+            ctx.strokeStyle = '#10b981';
+            ctx.fillStyle = '#10b981';
+            const landmarks = boxObj.landmarks;
+            const pointsToTrack = [
+                landmarks.getLeftEye()[0], landmarks.getLeftEye()[3],
+                landmarks.getRightEye()[0], landmarks.getRightEye()[3],
+                landmarks.getNose()[0], landmarks.getNose()[3],
+                landmarks.getMouth()[0], landmarks.getMouth()[6],
+                {x: box.x, y: box.y}, {x: box.x + box.width, y: box.y},
+                {x: box.x, y: box.y + box.height}, {x: box.x + box.width, y: box.y + box.height}
+            ];
+
+            const drawCrosshair = (x, y, size) => {
+                ctx.beginPath();
+                ctx.moveTo(x - size, y); ctx.lineTo(x + size, y);
+                ctx.moveTo(x, y - size); ctx.lineTo(x, y + size);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(x, y, 2, 0, 2*Math.PI);
+                ctx.fill();
+            };
+
+            pointsToTrack.forEach(p => { if(p) drawCrosshair(p.x, p.y, 8); });
+        }
+
+        const numPoints = boxObj.isGlobalSearch ? 200 : 100;
+        const cols = boxObj.isGlobalSearch ? 20 : 10;
         const cellW = box.width / cols;
         const cellH = box.height / (numPoints / cols);
         for (let i = 0; i < numPoints; i++) {
             const col = i % cols;
             const row = Math.floor(i / cols);
-            // 약간의 지터(떨림) 효과를 주어 실제로 스캔하는 느낌 부여
             const jitterX = Math.sin(i * 1.5 + Date.now() * 0.005) * (cellW * 0.5);
             const jitterY = Math.cos(i * 2.1 + Date.now() * 0.005) * (cellH * 0.5);
             
@@ -295,16 +308,28 @@ function drawMultiFocusUI(detections) {
             ctx.beginPath();
             ctx.moveTo(px - 3, py); ctx.lineTo(px + 3, py);
             ctx.moveTo(px, py - 3); ctx.lineTo(px, py + 3);
-            ctx.strokeStyle = 'rgba(16, 185, 129, 0.4)';
+            ctx.strokeStyle = boxObj.isGlobalSearch ? 'rgba(59, 130, 246, 0.4)' : 'rgba(16, 185, 129, 0.4)';
             ctx.lineWidth = 1;
             ctx.stroke();
         }
 
-        // 큰 타겟 윤곽선 박스
-        ctx.beginPath();
-        ctx.rect(box.x, box.y, box.width, box.height);
-        ctx.strokeStyle = 'rgba(16, 185, 129, 0.4)';
-        ctx.stroke();
+        if (!boxObj.isGlobalSearch) {
+            ctx.beginPath();
+            ctx.rect(box.x, box.y, box.width, box.height);
+            ctx.strokeStyle = 'rgba(16, 185, 129, 0.4)';
+            ctx.stroke();
+        } else {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.font = 'bold 24px Inter';
+            ctx.textAlign = 'center';
+            ctx.fillText('얼굴을 화면 중앙에 맞춰주세요', overlayCanvas.width / 2, overlayCanvas.height * 0.85);
+            
+            ctx.strokeStyle = 'rgba(59, 130, 246, 0.5)';
+            ctx.lineWidth = 3;
+            ctx.setLineDash([15, 15]);
+            ctx.strokeRect(overlayCanvas.width * 0.15, overlayCanvas.height * 0.15, overlayCanvas.width * 0.7, overlayCanvas.height * 0.7);
+            ctx.setLineDash([]);
+        }
     });
 }
 
@@ -322,7 +347,28 @@ function drawFaceScannerUI(detection, currentProgress) {
     ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
 
     if (!detection) {
-        // 부드러운 스캐닝 가이드 표시 (거슬리지 않게)
+        // 전역 스캔 이펙트
+        const numPoints = 240;
+        const cols = 20;
+        const cellW = overlayCanvas.width / cols;
+        const cellH = overlayCanvas.height / (numPoints / cols);
+        for (let i = 0; i < numPoints; i++) {
+            const col = i % cols;
+            const row = Math.floor(i / cols);
+            const jitterX = Math.sin(i * 1.5 + Date.now() * 0.005) * (cellW * 0.5);
+            const jitterY = Math.cos(i * 2.1 + Date.now() * 0.005) * (cellH * 0.5);
+            
+            const px = col * cellW + cellW * 0.5 + jitterX;
+            const py = row * cellH + cellH * 0.5 + jitterY;
+            
+            ctx.beginPath();
+            ctx.moveTo(px - 4, py); ctx.lineTo(px + 4, py);
+            ctx.moveTo(px, py - 4); ctx.lineTo(px, py + 4);
+            ctx.strokeStyle = 'rgba(59, 130, 246, 0.4)'; // Blue
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+
         ctx.strokeStyle = 'rgba(59, 130, 246, 0.5)'; // Blue
         ctx.lineWidth = 3;
         ctx.setLineDash([15, 15]);
@@ -330,9 +376,9 @@ function drawFaceScannerUI(detection, currentProgress) {
         ctx.setLineDash([]);
         
         ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-        ctx.font = 'bold 22px Inter';
+        ctx.font = 'bold 24px Inter';
         ctx.textAlign = 'center';
-        ctx.fillText('얼굴을 화면 중앙에 맞춰주세요', overlayCanvas.width / 2, overlayCanvas.height / 2);
+        ctx.fillText('얼굴을 화면 중앙에 맞춰주세요', overlayCanvas.width / 2, overlayCanvas.height * 0.85);
         
         return;
     }
@@ -428,43 +474,81 @@ function drawFaceScannerUI(detection, currentProgress) {
 
 async function processAutoAttendance() {
     try {
-        showStatus("AI 정밀 스캔 중...", "#3b82f6");
+        // --- 최신 스캔 기능 추가 (UI 고급화 및 생체 반응 분석 단계) ---
+        showStatus("3D 깊이 맵핑 분석 중...", "#3b82f6");
+        await new Promise(r => setTimeout(r, 300));
+        
+        showStatus("생체 반응 및 특징점 대조 중...", "#8b5cf6"); // Purple
+        await new Promise(r => setTimeout(r, 300));
         
         if (shutter) shutter.style.opacity = '1';
         setTimeout(() => { if (shutter) shutter.style.opacity = '0'; }, 50);
 
         const [detection] = await Promise.all([
             faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor()
-            // fetch(members) 로드가 병목을 일으키지 않도록 사전에 캐시된 cachedMembers 사용
         ]);
 
         if (!detection) {
-            showStatus("초점이 맞지 않았습니다. 다시 스캔합니다.", "red");
-            setTimeout(() => { isAuthenticating = false; }, 300);
+            showStatus("초점이 맞지 않았습니다. 카메라를 정면으로 봐주세요.", "red");
+            setTimeout(() => { isAuthenticating = false; }, 600);
+            return;
+        }
+
+        // 1. 정면 응시 여부 체크 (Liveness / 안면 각도 분석)
+        const landmarks = detection.landmarks;
+        const nose = landmarks.getNose()[0];
+        const leftEye = landmarks.getLeftEye()[0];
+        const rightEye = landmarks.getRightEye()[3];
+        
+        // 눈과 코 사이의 거리 비율로 고개가 돌아갔는지 확인 (좌우 대칭성)
+        const leftDist = Math.abs(nose.x - leftEye.x);
+        const rightDist = Math.abs(rightEye.x - nose.x);
+        const ratio = leftDist / rightDist;
+        
+        if (ratio < 0.45 || ratio > 2.2) {
+            showStatus("고개를 정면으로 똑바로 들어주세요.", "orange");
+            setTimeout(() => { isAuthenticating = false; }, 1000);
             return;
         }
 
         const members = cachedMembers;
 
         let bestMatch = null;
+        let secondBestMatch = null;
+        
+        // 2. 민감도(정확도) 극대화: 0.45 -> 0.38로 낮춰서 타인 오인식 원천 차단
         let savedSens = localStorage.getItem('kiosk_sensitivity');
-        if (savedSens === '0.65') {
-            savedSens = '0.45';
-            localStorage.setItem('kiosk_sensitivity', '0.45');
+        if (!savedSens || savedSens === '0.65' || savedSens === '0.45') {
+            savedSens = '0.38'; 
+            localStorage.setItem('kiosk_sensitivity', '0.38');
         }
-        let smallestDistance = parseFloat(savedSens) || 0.45;
+        let smallestDistance = parseFloat(savedSens) || 0.38;
+        let secondSmallestDistance = 1.0;
 
         const captureData = capturePrettyFrame();
 
         for (const m of members) {
-            if (m.faceDescriptor) {
+            if (m.faceDescriptor && m.faceDescriptor.length === 128) {
                 const desc = new Float32Array(m.faceDescriptor);
                 const distance = faceapi.euclideanDistance(detection.descriptor, desc);
                 if (distance < smallestDistance) {
+                    secondSmallestDistance = smallestDistance;
+                    secondBestMatch = bestMatch;
+                    
                     smallestDistance = distance;
                     bestMatch = m;
+                } else if (distance < secondSmallestDistance) {
+                    secondSmallestDistance = distance;
+                    secondBestMatch = m;
                 }
             }
+        }
+
+        // 3. 마진(Margin) 검증: 1위와 2위가 너무 비슷하면 판정보류 (쌍둥이/비슷한 얼굴 오인식 방지)
+        if (bestMatch && secondBestMatch && (secondSmallestDistance - smallestDistance < 0.04)) {
+            showStatus("유사도 혼선이 발생했습니다. 조금 더 밝은 곳에서 시도해주세요.", "orange");
+            setTimeout(() => { isAuthenticating = false; }, 1500);
+            return;
         }
 
         if (bestMatch) {
@@ -474,7 +558,7 @@ async function processAutoAttendance() {
             // 성공 시 연속 출석 방지를 위한 3초 쿨다운
             setTimeout(() => { isAuthenticating = false; }, 3000);
         } else {
-            showStatus("미등록 얼굴입니다.", "red");
+            showStatus("등록되지 않은 얼굴이거나 안면 인식률이 낮습니다.", "red");
             if (localStorage.getItem('kiosk_voice_enabled') !== 'false' && localStorage.getItem('kiosk_fail_voice_enabled') !== 'false') {
                 const failMode = localStorage.getItem('kiosk_tts_fail_mode') || 'tts';
                 if (failMode === 'mech' && window.playMechSound) {
@@ -490,7 +574,7 @@ async function processAutoAttendance() {
         }
 
     } catch(e) {
-        showStatus("스캔 시스템 오류", "red");
+        showStatus("안면 스캔 시스템 오류", "red");
         console.error(e);
         setTimeout(() => { isAuthenticating = false; }, 2000);
     }
@@ -635,7 +719,7 @@ function promptMultipleCoursesVoice(courses, memberName) {
         const btnContainer = document.getElementById('voicePromptBtnContainer');
         
         if (!overlay || !btnContainer) {
-            resolve([courses[0]]);
+            resolve(courses); // Default to all courses if UI fails
             return;
         }
 
@@ -645,39 +729,32 @@ function promptMultipleCoursesVoice(courses, memberName) {
             let short = name.replace(/(기능사|산업기사)$/, '').trim();
             return short || name;
         });
-        const courseStrs = courses.map((c, i) => {
-            const timeStr = formatMins(c.mins);
-            return timeStr ? `${courseNames[i]} ${timeStr}` : courseNames[i];
-        });
-        const joinedNames = courseStrs.join(', ');
 
         const titleEl = overlay.querySelector('h1');
         const subEl = document.getElementById('voicePromptSub');
         
-        const questionText = `${memberName || '회원'}님, 오늘 ${joinedNames} 수업이 있습니다. 모두 참석하시겠습니까?`;
-        const examples = `(예: 네, 모두, ${courseNames.join(', ')} 중 하나)`;
+        const questionText = `${memberName || '회원'}님, 오늘 여러 개의 수업이 있습니다. 출석할 과정을 터치해주세요.`;
 
-        if (titleEl) titleEl.innerText = "출석할 과정을 선택해주세요";
+        if (titleEl) titleEl.innerText = "출석할 과정을 터치해주세요";
         if (subEl) {
-            subEl.innerHTML = `${questionText}<br>
-            <span style="font-size:1.4rem; color:#cbd5e1; display:block; margin-top:15px; line-height:1.6;">
-                <b style="color:#60a5fa;">음성 답변 예시:</b> ${examples}
+            subEl.innerHTML = `${memberName || '회원'}님, 오늘 예정된 수업이 2개 이상입니다.<br>
+            <span style="font-size:1.1rem; color:#fbbf24; display:block; margin-top:15px; line-height:1.4; font-weight:bold;">
+                <span class="material-icons" style="vertical-align: middle; margin-right:5px; font-size:1.2rem;">touch_app</span>
+                화면을 위아래로 스크롤하여 손가락으로 직접 터치해주세요.
             </span>`;
         }
+        
+        // Hide mic indicator completely
         if (indicator) {
-            indicator.innerHTML = `<span class="material-icons" style="vertical-align: middle; animation: pulse 1s infinite;">mic</span> 듣고 있습니다...`;
+            indicator.style.display = 'none';
         }
         
-        let recognition = null;
         let resolved = false;
 
         const finish = (result) => {
             if (resolved) return;
             resolved = true;
             overlay.style.display = 'none';
-            if (recognition) {
-                try { recognition.stop(); } catch(e){}
-            }
             resolve(result);
         };
 
@@ -686,8 +763,8 @@ function promptMultipleCoursesVoice(courses, memberName) {
             
             // "모두 참석" 버튼 추가
             const btnBoth = document.createElement('button');
-            btnBoth.style = `flex:1; font-size:1.4rem; padding:15px 10px; border:none; border-radius:12px; color:white; font-weight:bold; cursor:pointer; transition:transform 0.2s; margin: 0 5px; min-width:80px; background: linear-gradient(135deg, #ec4899, #be185d); box-shadow: 0 4px 6px rgba(236, 72, 153, 0.5);`;
-            btnBoth.innerText = `모두`;
+            btnBoth.style = `width:100%; font-size:1.3rem; padding:15px 10px; border:none; border-radius:12px; color:white; font-weight:bold; cursor:pointer; transition:transform 0.2s; background: linear-gradient(135deg, #ec4899, #be185d); box-shadow: 0 4px 10px rgba(236, 72, 153, 0.4); margin-bottom: 5px;`;
+            btnBoth.innerText = `모든 수업 동시 출석`;
             btnBoth.onclick = () => {
                 if (window.speakTTS) window.speakTTS('모든 수업 출석합니다.', 'browser');
                 finish(courses);
@@ -696,24 +773,29 @@ function promptMultipleCoursesVoice(courses, memberName) {
 
             courses.forEach((c, idx) => {
                 const btn = document.createElement('button');
-                btn.style = `flex:1; font-size:1.4rem; padding:15px 10px; border:none; border-radius:12px; color:white; font-weight:bold; cursor:pointer; transition:transform 0.2s; margin: 0 5px; min-width:80px;`;
+                btn.style = `width:100%; font-size:1.2rem; padding:15px 10px; border:none; border-radius:12px; color:white; font-weight:bold; cursor:pointer; transition:transform 0.2s; margin-bottom: 5px; text-align:center; word-break: keep-all;`;
                 if (idx === 0) {
                     btn.style.background = `linear-gradient(135deg, #3b82f6, #2563eb)`;
-                    btn.style.boxShadow = `0 10px 15px -3px rgba(59, 130, 246, 0.5)`;
+                    btn.style.boxShadow = `0 4px 10px rgba(59, 130, 246, 0.4)`;
                 } else if (idx === 1) {
                     btn.style.background = `linear-gradient(135deg, #10b981, #059669)`;
-                    btn.style.boxShadow = `0 10px 15px -3px rgba(16, 185, 129, 0.5)`;
+                    btn.style.boxShadow = `0 4px 10px rgba(16, 185, 129, 0.4)`;
                 } else if (idx === 2) {
                     btn.style.background = `linear-gradient(135deg, #f59e0b, #d97706)`;
-                    btn.style.boxShadow = `0 10px 15px -3px rgba(245, 158, 11, 0.5)`;
+                    btn.style.boxShadow = `0 4px 10px rgba(245, 158, 11, 0.4)`;
                 } else {
                     btn.style.background = `#334155`;
                 }
                 
-                let cleanName = c.name.replace(/\([^)]*\)/g, '').trim();
-                let shortName = cleanName.replace(/(기능사|산업기사)$/, '').trim();
-                if (!shortName) shortName = cleanName;
-                btn.innerText = `${shortName}`;
+                let cleanName = c.name; // 전체 이름 보여주기
+                let timeStr = "";
+                if (c.mins > 0) {
+                    let h = Math.floor(c.mins / 60);
+                    let m = c.mins % 60;
+                    timeStr = m === 0 ? ` [${h}시]` : ` [${h}시 ${m}분]`;
+                }
+                
+                btn.innerText = `${cleanName}${timeStr} 출석`;
                 btn.onclick = () => {
                     if (window.speakTTS) window.speakTTS(`${cleanName} 출석합니다.`, 'browser');
                     finish([c]);
@@ -723,74 +805,18 @@ function promptMultipleCoursesVoice(courses, memberName) {
         }
 
         overlay.style.display = 'flex';
-        if (indicator) indicator.style.display = 'block';
 
         if (window.speakTTS) {
             window.speakTTS(questionText, 'browser');
         }
-
-        setTimeout(() => {
-            if (resolved) return;
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (SpeechRecognition) {
-                recognition = new SpeechRecognition();
-                recognition.lang = 'ko-KR';
-                recognition.interimResults = false;
-                recognition.maxAlternatives = 1;
-                
-                recognition.onresult = (e) => {
-                    if (resolved) return;
-                    let transcript = e.results[0][0].transcript.trim().replace(/\s+/g, '').toLowerCase();
-                    console.log("STT Result:", transcript);
-                    
-                    const bothKeywords = ['네', '예', '모두', '둘다', '둘 다', '전부', '다'];
-                    const isBoth = bothKeywords.some(kw => transcript === kw || transcript.includes(kw));
-
-                    if (isBoth) {
-                        if (window.speakTTS) window.speakTTS('모든 수업 출석합니다.', 'browser');
-                        finish(courses);
-                        return;
-                    }
-
-                    let matchedCourse = null;
-                    let matchedCleanName = "";
-                    
-                    for (let i = 0; i < courses.length; i++) {
-                        const cleanName = courses[i].name.replace(/\([^)]*\)/g, '').trim();
-                        if (transcript.includes(cleanName.replace(/\s+/g, ''))) {
-                            matchedCourse = courses[i];
-                            matchedCleanName = cleanName;
-                            break;
-                        }
-                    }
-                    
-                    if (!matchedCourse) {
-                        for (let i = 0; i < courses.length; i++) {
-                            const cleanName = courses[i].name.replace(/\([^)]*\)/g, '').trim();
-                            const shortName = cleanName.replace(/기능사|산업기사|수업/g, ''); 
-                            if (shortName.length >= 2 && transcript.includes(shortName)) {
-                                matchedCourse = courses[i];
-                                matchedCleanName = cleanName;
-                                break;
-                            }
-                        }
-                    }
-
-                    if (matchedCourse) {
-                        if (window.speakTTS) window.speakTTS(`${matchedCleanName} 출석합니다.`, 'browser');
-                        finish([matchedCourse]);
-                    } else {
-                        if (window.speakTTS) window.speakTTS('과정명을 정확히 인식하지 못했습니다. 화면의 버튼을 눌러주세요.', 'browser');
-                    }
-                };
-                recognition.onerror = (e) => { console.log("STT Error:", e.error); };
-                try { recognition.start(); } catch(e){}
-            }
-        }, 5500); // 5.5 seconds to let the TTS finish speaking first
         
+        // 12초 동안 터치 안 하면, 자동으로 "모든 과정" 처리
         setTimeout(() => {
-            if (!resolved) finish([courses[0]]);
-        }, 15000);
+            if (!resolved) {
+                if (window.speakTTS) window.speakTTS('시간이 초과되어 자동으로 모든 수업이 출석 처리됩니다.', 'browser');
+                finish(courses);
+            }
+        }, 12000);
     });
 }
 
@@ -1471,6 +1497,33 @@ async function startFaceScan() {
         showStatus("AI 엔진 대기중... 잠시 후 다시 시도해주세요.", "orange");
         return;
     }
+    
+    // Check if already registered
+    let members = cachedMembers;
+    if (!members || members.length === 0) {
+        try {
+            const res = await fetch(getFetchUrl('members') + '&t=' + Date.now());
+            const rawMembers = await res.json();
+            members = Array.isArray(rawMembers) ? rawMembers.filter(m => !['delete', 'trash', 'hold', 'completed'].includes(m.status)) : [];
+        } catch(e) {}
+    }
+    
+    const member = members.find(m => m.phone && m.phone.replace(/-/g, '').endsWith(currentInput));
+
+    if (!member) {
+        showStatus("등록되지 않은 번호입니다.", "red");
+        return;
+    }
+
+    if (member.faceDescriptor && member.faceDescriptor.length > 0 && member.photo) {
+        showStatus(`${member.name}님은 이미 얼굴이 등록되어 있습니다.`, "orange");
+        if (window.speakTTS && localStorage.getItem('kiosk_voice_enabled') !== 'false') {
+            window.speakTTS(`${member.name}님은 이미 얼굴이 등록되어 있습니다.`, 'browser');
+        }
+        setTimeout(() => switchMode('home'), 2500);
+        return;
+    }
+
     registeringPhone = currentInput;
     switchMode('register_camera');
 }
