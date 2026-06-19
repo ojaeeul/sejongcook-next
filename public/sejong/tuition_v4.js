@@ -627,7 +627,11 @@ function renderTable() {
                         // 미납(unpaid) 또는 예약(future) 밀스톤
                         // 핵심: 실제 도장(출석 횟수)이 타겟에 도달했을 때만 미납 청구(핑크 날짜 박스 및 미납 표시)를 발생시킵니다!
                         const msDateObj = new Date(ms.year, ms.month - 1, ms.day);
-                        if (remainingForLoop >= targetCount || msDateObj <= today) {
+                        
+                        // [중요 수정] 가상 결제일(isReal: false)은 날짜가 지났어도 실제 출석 횟수가 도달하지 않았으면 절대 미납으로 처리하지 않음
+                        const isActualOverdue = remainingForLoop >= targetCount || (ms.isReal !== false && msDateObj <= today);
+                        
+                        if (isActualOverdue) {
                             if (ms.year === window.currentState.year && ms.month === window.currentState.month) {
                                 isDueThisMonth = true;
                                 imminentCourses.push({
