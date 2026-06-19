@@ -1102,7 +1102,7 @@ window.speakTTS = function(text, forceMode = null) {
     const style = localStorage.getItem('kiosk_tts_style') || '1';
     let pitch = 1.0, rate = 1.0;
     switch(style) {
-        case '1': pitch = 1.25; rate = 1.45; break;
+        case '1': pitch = 1.25; rate = 1.0; break;
         case '2': pitch = 1.2; rate = 1.1; break;
         case '3': pitch = 0.9; rate = 0.9; break;
         case '4': pitch = 1.3; rate = 1.3; break;
@@ -1326,7 +1326,7 @@ window.speakTTS = function(text, mode = 'browser') {
     const style = localStorage.getItem('kiosk_tts_style') || '1';
     let pitch = 1.0, rate = 1.0;
     switch(style) {
-        case '1': pitch = 1.25; rate = 1.45; break;
+        case '1': pitch = 1.25; rate = 1.0; break;
         case '2': pitch = 1.2; rate = 1.1; break;
         case '3': pitch = 0.9; rate = 0.9; break;
         case '4': pitch = 1.3; rate = 1.3; break;
