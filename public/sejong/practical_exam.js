@@ -978,15 +978,10 @@ function populateCourseFilter() {
     const courseSelect = document.getElementById('courseFilter');
     if (!courseSelect) return;
     
-    const courseSet = new Set();
-    exams.forEach(e => {
-        if (e.subject) courseSet.add(e.subject);
-    });
-    
     const currentVal = courseSelect.value;
+    const sortedCourses = ['한식기능사', '양식기능사', '일식기능사', '중식기능사', '복어기능사', '산업기사', '기능장', '기타'];
     courseSelect.innerHTML = '<option value="ALL">전체보기</option>';
     
-    const sortedCourses = Array.from(courseSet).sort();
     sortedCourses.forEach(c => {
         const option = document.createElement('option');
         option.value = c;
