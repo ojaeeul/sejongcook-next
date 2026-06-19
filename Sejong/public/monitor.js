@@ -800,7 +800,7 @@ async function processAttendance(inputNumOrObj, overridePhoto = null) {
 
         const timetableCheck = await checkTimetableAllowed(member);
         if (timetableCheck && typeof timetableCheck === 'object' && !timetableCheck.allowed) {
-            let msg = localStorage.getItem('kiosk_invalid_day_msg') || "{days}요일에 수강이 가능합니다.";
+            let msg = localStorage.getItem('kiosk_invalid_day_msg') || "{name}님, {days}요일에 수강이 가능합니다.";
             msg = msg.replace(/{name}/g, member.name || '');
             msg = msg.replace(/{days}/g, timetableCheck.allowedDaysStr || '지정된');
             
@@ -847,7 +847,7 @@ async function processAttendance(inputNumOrObj, overridePhoto = null) {
         let availableCourses = parsedCourses.filter(c => !checkedInCourses.includes(c.name));
 
         if (allCourses.length > 0 && availableCourses.length === 0) {
-            const msg = "이미 모든 수업에 로그인되어 있습니다.";
+            const msg = `${member.name}님, 이미 모든 수업에 출석 처리되어 있습니다.`;
             showStatus(msg, "orange");
             if (localStorage.getItem('kiosk_voice_enabled') !== 'false' && window.speakTTS) {
                 speakTTS(msg, 'browser');
@@ -863,7 +863,7 @@ async function processAttendance(inputNumOrObj, overridePhoto = null) {
         if (validCourses.length === 0) {
             // This case won't be hit usually since availableCourses=0 is caught above, 
             // but kept for safety.
-            let msg = localStorage.getItem('kiosk_invalid_time_msg') || "{time}에 로그인 해야 합니다.";
+            let msg = localStorage.getItem('kiosk_invalid_time_msg') || "{name}님, {time}에 수강이 가능합니다.";
             msg = msg.replace(/{name}/g, member.name || '');
             msg = msg.replace(/{time}/g, member.timeSlot || '예약된 시간');
             
