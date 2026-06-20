@@ -119,8 +119,11 @@
 
                     <!-- Daily Dashboard (Moved to Top) -->
                     <div class="form-group" style="margin-bottom: 30px;">
-                        <span class="section-label" style="display: block; font-weight: 600; color: #475569; margin-bottom: 15px;">일자별 학원 종합 현황 대시보드</span>
-                        <div style="background: #f4f7fc; border-radius: 12px; padding: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); position: relative;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; cursor: pointer; user-select: none;" onclick="const c = document.getElementById('dailyDashboardContent'); const i = document.getElementById('dailyDashboardIcon'); if(c.style.display==='none'){c.style.display='block'; i.innerText='expand_less';}else{c.style.display='none'; i.innerText='expand_more';}">
+                            <span class="section-label" style="font-weight: 600; color: #475569;">일자별 학원 종합 현황 대시보드</span>
+                            <span class="material-icons" id="dailyDashboardIcon" style="color: #64748b;">expand_less</span>
+                        </div>
+                        <div id="dailyDashboardContent" style="background: #f4f7fc; border-radius: 12px; padding: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); position: relative;">
                             <div style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #3b82f6; font-size: 2rem; cursor: pointer; font-weight: bold;" class="material-icons">chevron_left</div>
                             <div style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: #3b82f6; font-size: 2rem; cursor: pointer; font-weight: bold;" class="material-icons">chevron_right</div>
                             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; padding: 0 40px;">
@@ -367,8 +370,8 @@
 
     <!-- Load Chart.js from CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="shared_calc.js?v=20260621-15"></script>
-    <script src="stats.js?v=20260621-15"></script>
+    <script src="shared_calc.js?v=20260621-16"></script>
+    <script src="stats.js?v=20260621-16"></script>
     <script>
         // Set Date to today
         const d = new Date();
