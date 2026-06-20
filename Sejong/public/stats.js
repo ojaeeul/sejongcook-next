@@ -17,9 +17,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         if(typeof window.loadCycleSettings === 'function') await window.loadCycleSettings();
         const [mRes, pRes, aRes, eRes, sRes] = await Promise.all([
-            fetch(`${API_BASE}/members?t=${Date.now()}`),
-            fetch(`${API_BASE}/payments?t=${Date.now()}`),
-            fetch(`${API_BASE}/attendance?t=${Date.now()}`),
+            fetch(`${API_BASE}/members?t=${Date.now()}`).catch(() => ({ok: false})),
+            fetch(`${API_BASE}/payments?t=${Date.now()}`).catch(() => ({ok: false})),
+            fetch(`${API_BASE}/attendance?t=${Date.now()}`).catch(() => ({ok: false})),
             fetch(`${API_BASE}/expense?year=all&t=${Date.now()}`).catch(() => ({ok: false})),
             fetch(`${API_BASE}/settings?t=${Date.now()}`).catch(() => ({ok: false}))
         ]);
@@ -30,8 +30,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         let rawSettings = { courseFees: {} };
         if (sRes && sRes.ok) {
-            const parsed = await sRes.json();
-            rawSettings = Array.isArray(parsed) ? parsed[0] : parsed;
+            try {
+                const parsed = await sRes.json();
+                rawSettings = Array.isArray(parsed) ? parsed[0] : parsed;
+            } catch (e) {
+                console.error("Settings parsing error:", e);
+            }
         }
         window.courseFees = rawSettings && rawSettings.courseFees ? rawSettings.courseFees : {};
         
