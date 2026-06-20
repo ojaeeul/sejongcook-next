@@ -166,7 +166,6 @@
                                 <div class="daily-card" style="cursor: pointer; transition: transform 0.2s;" onclick="location.href='attendance_stats.html'" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'" title="클릭하여 결석자 상세 보기">
                                     <div class="d-title" style="display:flex; justify-content:space-between; align-items:center;">
                                         <span>결석자 (출석현황)</span>
-                                        <button class="btn btn-secondary" style="padding: 2px 8px; font-size: 0.75rem; height: auto;" onclick="event.stopPropagation(); location.href='attendance_stats.html'">상세보기</button>
                                     </div>
                                     <div class="d-val" id="dashAbsent">-</div>
                                     <div class="d-badges"><span class="bg-purple" id="dashConsultation">상담 -</span><span class="bg-purple" id="dashMakeup">보강 -</span><span class="bg-orange" id="dashExtension">연장 -</span></div>
@@ -368,8 +367,8 @@
 
     <!-- Load Chart.js from CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="shared_calc.js?v=20260621-9"></script>
-    <script src="stats.js?v=20260621-9"></script>
+    <script src="shared_calc.js?v=20260621-10"></script>
+    <script src="stats.js?v=20260621-10"></script>
     <script>
         // Set Date to today
         const d = new Date();

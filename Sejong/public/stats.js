@@ -371,19 +371,36 @@ function updateDashboard() {
     const absentCount = Math.max(0, activeMembers.length - uniquePeriodAttenders.size);
     if(document.getElementById('dashAbsent')) document.getElementById('dashAbsent').innerText = absentCount;
 
-    let consultationCount = 0;
-    let makeupCount = 0;
+    let presentCount = uniquePeriodAttenders.size;
+    let earlyLeaveCount = 0;
     let extensionCount = 0;
+    
+    // Count early leaves and extensions for today (or the selected period)
     attendanceInPeriod.forEach(a => {
         const st = a.status || '';
-        if (st === '상담' || st.includes('consultation')) consultationCount++;
-        else if (st === '보강' || st.includes('makeup')) makeupCount++;
+        if (st === '조퇴' || st.includes('early')) earlyLeaveCount++;
         else if (st === 'extension' || st.includes('연장') || st === '연' || st === 'E') extensionCount++;
     });
 
-    if(document.getElementById('dashConsultation')) document.getElementById('dashConsultation').innerText = `상담 ${consultationCount}`;
-    if(document.getElementById('dashMakeup')) document.getElementById('dashMakeup').innerText = `보강 ${makeupCount}`;
-    if(document.getElementById('dashExtension')) document.getElementById('dashExtension').innerText = `연장 ${extensionCount}`;
+    const elConsultation = document.getElementById('dashConsultation');
+    const elMakeup = document.getElementById('dashMakeup');
+    const elExtension = document.getElementById('dashExtension');
+
+    if (elConsultation) {
+        elConsultation.innerText = `출석 ${presentCount}`;
+        elConsultation.style.display = 'inline-block';
+    }
+    
+    if (elMakeup) {
+        elMakeup.innerText = `조퇴 ${earlyLeaveCount}`;
+        elMakeup.style.display = earlyLeaveCount > 0 ? 'inline-block' : 'none';
+        elMakeup.className = 'bg-red'; // change to red for early leave
+    }
+    
+    if (elExtension) {
+        elExtension.innerText = `연장 ${extensionCount}`;
+        elExtension.style.display = extensionCount > 0 ? 'inline-block' : 'none';
+    }
 
     // Update Tab 3: Comprehensive
     if(document.getElementById('compTotalMembers')) document.getElementById('compTotalMembers').innerText = activeMembers.length;
