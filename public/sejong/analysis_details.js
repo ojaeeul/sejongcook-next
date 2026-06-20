@@ -159,8 +159,26 @@ function applyFilters() {
             if (year !== 'all' && y !== year) return;
             if (month !== 'all' && parseInt(m) !== parseInt(month)) return;
             
-            const localTarget = Object.keys(revMap).find(k => revMap[k] === type) || type;
-            const isMatch = a.status === revMap[attTarget] || a.status === type || rawStatusMap[a.status] === attTarget;
+            const strStatus = String(a.status || '');
+            const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(strStatus);
+            
+            const isPresentMatch = a.status === 'present' || strStatus.startsWith('O') || strStatus.startsWith('o') || strStatus.startsWith('O^') || strStatus.startsWith('o^') || isNumericPresent || strStatus === '출석';
+            const isLateMatch = a.status === 'late' || a.status === 'tardy' || strStatus.includes('지각') || strStatus.includes('△');
+            const isAbsentMatch = a.status === 'absent' || strStatus.startsWith('X') || strStatus.includes('결석');
+            const isEarlyMatch = a.status === 'early' || strStatus.includes('조퇴') || strStatus === 'early_leave';
+            const isMakeupMatch = a.status === 'makeup' || strStatus.includes('보강') || strStatus.includes('첫') || strStatus.includes('종료') || strStatus === '[' || strStatus === ']';
+            const isConsultMatch = a.status === 'consult' || strStatus.includes('상담');
+            const isExtensionMatch = a.status === 'extension' || strStatus.startsWith('연') || strStatus.includes('연장') || strStatus.startsWith('E');
+
+            let isMatch = false;
+            if (type === 'present' && isPresentMatch) isMatch = true;
+            else if (type === 'late' && isLateMatch) isMatch = true;
+            else if (type === 'absent' && isAbsentMatch) isMatch = true;
+            else if (type === 'early_leave' && isEarlyMatch) isMatch = true;
+            else if (type === 'makeup' && isMakeupMatch) isMatch = true;
+            else if (type === 'consult' && isConsultMatch) isMatch = true;
+            else if (type === 'extension' && isExtensionMatch) isMatch = true;
+            else if (a.status === type || rawStatusMap[a.status] === attTarget) isMatch = true;
 
             if (isMatch) {
                 const member = globalMembers.find(mm => mm.id === a.memberId);
