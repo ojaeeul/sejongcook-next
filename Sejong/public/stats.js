@@ -150,8 +150,8 @@ function updateDashboard() {
     let periodUnpaid = 0; // 당일 미납 (선택기간 내 결제일 도래)
     let totalUnpaid = 0;  // 당월 누적 미납 (선택한 월 기준)
     
-    const todayYear = startObj.getFullYear();
-    const todayMonth = startObj.getMonth() + 1;
+    const selectedYear = startObj.getFullYear();
+    const selectedMonth = startObj.getMonth() + 1;
     const DEFAULT_PRICE = 200000;
 
     activeMembers.forEach(m => {
@@ -174,7 +174,7 @@ function updateDashboard() {
             const courseFee = window.courseFees[courseNameOnly] || window.courseFees['all'] || DEFAULT_PRICE;
             
             if (typeof window.calculateRedBoxesForMonth === 'function') {
-                const stats = window.calculateRedBoxesForMonth(m, todayYear, todayMonth, window.globalAttendance, courseNameOnly, {});
+                const stats = window.calculateRedBoxesForMonth(m, selectedYear, selectedMonth, window.globalAttendance, courseNameOnly, {});
                 
                 if (stats && stats.allMilestones) {
                     let currentProgressObj = stats.currentCount || { count: 0, target: 9 };
@@ -198,7 +198,7 @@ function updateDashboard() {
                             
                             if (isActualOverdue) {
                                 // 당월 누적 미납 (선택한 월 기준)
-                                if (ms.year === todayYear && ms.month === todayMonth) {
+                                if (ms.year === selectedYear && ms.month === selectedMonth) {
                                     totalUnpaid += courseFee;
                                 }
                                 
