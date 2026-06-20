@@ -286,8 +286,8 @@ function getAllLedgerMonthStats(memberId, year, month) {
 
     courses.forEach(courseName => {
         const stats = getLedgerMonthStats(memberId, year, month, courseName);
-        // User Request (Reverted): 이제 가상/예정 내역을 모두 표시하기 위해 조건 해제
-        if (true) {
+        // User Request: 출석 날짜가 없는 수강생은 수강료예정일 표시하지 마시고, 출석이 1개라도 있으면 표시하세요.
+        if (stats.hasAnyAttendance) {
             if (stats.milestones && stats.milestones.length > 0) {
                 stats.milestones.forEach(ms => {
                     results.push({
@@ -574,12 +574,12 @@ function renderTable(container, title, members, id) {
                     <span style="font-weight: 900; font-size: 0.85rem; color: #000;">${m.name || ''}</span>
                 </div>
                 <div style="font-size: 0.7rem; color: #64748b;">${m.phone || ''}</div>
-                <div style="margin-top: 4px; display: flex; flex-direction: column; gap: 4px; padding-bottom: 2px;">
+                <div style="margin-top: 4px; display: flex; flex-direction: column; gap: 2px;">
                     ${(() => {
-                        const courses = (m.course || '').split(',').map(c => c.trim()).filter(c => c && !c.includes('[삭제]'));
-                        if (courses.length === 0) return `<div style="height: 38px;"></div>`;
+                        const courses = (m.course || '').split(',').map(c => c.trim());
                         return courses.map(c => {
-                            return `<div style="height: 38px; font-size: 0.6rem; color: #1d4ed8; background: #eff6ff; padding: 2px 4px; border-radius: 4px; display: flex; align-items: center; justify-content: center; text-align: center; line-height: 1.1; overflow: hidden; word-break: keep-all;">${c}</div>`;
+                            if (!c || c.includes('[삭제]')) return '';
+                            return `<div style="font-size: 0.6rem; color: #1d4ed8; background: #eff6ff; padding: 1px 3px; border-radius: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${c}</div>`;
                         }).join('');
                     })()}
                 </div>
@@ -598,62 +598,41 @@ function renderTable(container, title, members, id) {
 
         const paid = paymentsData.filter(p => String(p.memberId) === String(m.id) && String(p.year) === String(currentYear) && String(p.month) === String(currentMonth) && p.status === 'paid');
 
-        const activeCourses = (m.course || '').split(',').map(c => c.trim()).filter(c => c && !c.includes('[삭제]'));
-        const slotsCount = Math.max(1, activeCourses.length);
-
         for (let day = 1; day <= daysInMonth; day++) {
-            let cellHTML = `<div style="display: flex; flex-direction: column; gap: 4px; height: 100%; min-height: ${(slotsCount * 38) + ((slotsCount - 1) * 4)}px;">`;
+            let cellHTML = '';
             
-            for (let slot = 0; slot < slotsCount; slot++) {
-                const c = activeCourses[slot] || '';
-                
-                let bg = '#ffffff';
-                const dayOfWeek = new Date(currentYear, currentMonth - 1, day).getDay();
-                const dateStr = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                const isHolidayInSys = holidaysData.find(h => h.date === dateStr);
-                const isNationalHoliday = !!(typeof KOREAN_HOLIDAYS_MAP !== 'undefined' && KOREAN_HOLIDAYS_MAP[dateStr]);
-                const isHoliday = isHolidayInSys || isNationalHoliday;
-
-                if (dayOfWeek === 0 || isHoliday) {
-                    bg = '#f1f5f9';
-                } else if (c) {
-                    const cleanCourseName = c.replace(/\([^)]*\)/g, '').trim();
-                    let allowedDays = window.COURSE_SCHEDULES && window.COURSE_SCHEDULES[cleanCourseName];
-                    if (allowedDays && !allowedDays.includes(dayOfWeek)) {
-                        bg = '#f1f5f9';
-                    }
-                }
-
-                let slotHTML = `<div style="height: 38px; background: ${bg}; position: relative; border-radius: 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; padding: 1px;">`;
-
-                const cleanC = c.split('(')[0].trim();
-                const matchC = (targetCourse) => {
-                    if (!targetCourse || targetCourse === 'null' || targetCourse === 'undefined' || targetCourse === '') return false;
-                    return targetCourse.split('(')[0].trim() === cleanC;
-                };
-
-                const matchingExpected = schedules.filter(s => parseInt(s.eighthDay) === day && (matchC(s.course) || (!s.course && slot === 0)));
-                const matchingPaid = paid.filter(p => new Date(p.updatedAt).getDate() === day && (matchC(p.course) || (!p.course && slot === 0) || p.course === 'null' || p.course === 'undefined' || p.course === ''));
-
-                matchingExpected.forEach(s => {
+            // Expected
+            const expectedToday = schedules.filter(s => parseInt(s.eighthDay) === day);
+            if (expectedToday.length > 0) {
+                expectedToday.forEach(s => {
                     const feeColor = s.isSimulated ? '#3b82f6' : '#d946ef';
-                    slotHTML += `<div style="font-size: 0.55rem; font-weight: 800; color: ${feeColor}; line-height: 1.1;">${s.fee / 10000}만</div>`;
+                    cellHTML += `
+                    <div style="font-size: 0.6rem; font-weight: 800; display: flex; flex-direction: column; align-items: center; background: #f8fafc; border: 1px solid ${feeColor}; border-radius: 4px; padding: 2px; margin-bottom: 2px;">
+                        <div style="color: ${feeColor};">${s.fee / 10000}만</div>
+                        <div style="font-size: 0.55rem; color: #64748b; line-height: 1;">${(s.course || '').replace('기능사', '')}</div>
+                    </div>`;
                 });
-                
-                let uniquePaid = [...matchingPaid];
-                if (uniquePaid.length > 1) {
-                    const hasCourse = uniquePaid.find(up => up.course && up.course !== 'null' && up.course !== 'undefined' && up.course !== '');
-                    if (hasCourse) uniquePaid = [hasCourse];
-                    else uniquePaid = [uniquePaid[0]];
+            }
+
+            // Actual
+            const paidToday = paid.filter(p => new Date(p.updatedAt).getDate() === day);
+            if (paidToday.length > 0) {
+                let uniquePaid = [...paidToday];
+                if (uniquePaid.length > 1 && uniquePaid.some(up => !up.course || up.course === 'null' || up.course === 'undefined' || up.course === '')) {
+                    uniquePaid = uniquePaid.filter(up => up.course && up.course !== 'null' && up.course !== 'undefined' && up.course !== '');
+                    if (uniquePaid.length === 0) uniquePaid = [paidToday[0]];
                 }
                 
                 uniquePaid.forEach(p => {
-                    slotHTML += `<div style="font-size: 0.55rem; font-weight: 800; color: #059669; background: #ecfdf5; padding: 1px 2px; border-radius: 2px; line-height: 1.1; margin-top: 1px;">${p.amount / 10000}만(실)</div>`;
+                    cellHTML += `
+                    <div style="font-size: 0.6rem; font-weight: 800; display: flex; flex-direction: column; align-items: center; background: #ecfdf5; border: 1px solid #059669; border-radius: 4px; padding: 2px; margin-bottom: 2px;">
+                        <div style="color: #059669;">${p.amount / 10000}만(실)</div>
+                        ${p.course && p.course !== 'null' && p.course !== 'undefined' ? `<div style="font-size: 0.55rem; color: #047857; line-height: 1;">${p.course.replace('기능사', '')}</div>` : ''}
+                    </div>`;
                 });
-                cellHTML += slotHTML + `</div>`;
             }
 
-            html += `<td style="vertical-align: top; border-right: 1px dotted #cbd5e1; padding: 4px 2px;">${cellHTML}</div></td>`;
+            html += `<td style="vertical-align: top; text-align: center; border-right: 1px dotted #cbd5e1; padding: 2px;">${cellHTML}</td>`;
         }
 
         html += `</tr>`;
