@@ -286,8 +286,8 @@ function getAllLedgerMonthStats(memberId, year, month) {
 
     courses.forEach(courseName => {
         const stats = getLedgerMonthStats(memberId, year, month, courseName);
-        // User Request: 출석 날짜가 없는 수강생은 수강료예정일 표시하지 마시고, 출석이 1개라도 있으면 표시하세요.
-        if (stats.hasAnyAttendance) {
+        // 가상 결제(예정) 내역을 항상 표시하도록 조건 완화
+        if (true) {
             if (stats.milestones && stats.milestones.length > 0) {
                 stats.milestones.forEach(ms => {
                     results.push({
