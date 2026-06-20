@@ -608,34 +608,29 @@ function renderAttendanceChart(attendance, startObj, endObj) {
         labels.push(`${d.getMonth()+1}/${d.getDate()}`);
         data.push(dayMap[dStr] ? dayMap[dStr].size : 0);
     }
-
     const ctx2d = ctx.getContext('2d');
     
-    // Create a beautiful modern vertical gradient for the fill
+    // Create a beautiful cylinder-like vertical gradient for the bars
     const gradientFill = ctx2d.createLinearGradient(0, 0, 0, 300);
-    gradientFill.addColorStop(0, 'rgba(139, 92, 246, 0.6)'); // Solid purple at the top
-    gradientFill.addColorStop(1, 'rgba(139, 92, 246, 0.0)'); // Fades to transparent at the bottom
+    gradientFill.addColorStop(0, 'rgba(167, 139, 250, 1)'); // Lighter purple top
+    gradientFill.addColorStop(0.5, 'rgba(124, 58, 237, 0.9)'); // Deep purple middle
+    gradientFill.addColorStop(1, 'rgba(91, 33, 182, 0.7)'); // Dark purple bottom
 
     attendanceChartInstance = new Chart(ctx2d, {
-        type: 'line',
+        type: 'bar',
         data: {
             labels: labels,
             datasets: [{
                 label: '출석 수 (명)',
                 data: data,
-                borderColor: '#8b5cf6',
                 backgroundColor: gradientFill,
-                borderWidth: 4, // Thicker line
-                fill: true,
-                tension: 0.4, // Smooth curves
-                pointBackgroundColor: '#ffffff',
-                pointBorderColor: '#8b5cf6',
-                pointBorderWidth: 3,
-                pointRadius: 5,
-                pointHoverRadius: 8,
-                pointHoverBackgroundColor: '#8b5cf6',
-                pointHoverBorderColor: '#ffffff',
-                pointHoverBorderWidth: 3
+                borderColor: 'rgba(255, 255, 255, 0.4)', // Slight glass reflection on edges
+                borderWidth: { top: 2, right: 0, bottom: 0, left: 0 },
+                borderRadius: 8, // Rounded top to look like a cylinder
+                borderSkipped: false,
+                barPercentage: 0.6,
+                categoryPercentage: 0.8,
+                hoverBackgroundColor: '#8b5cf6'
             }]
         },
         plugins: [{
@@ -643,11 +638,11 @@ function renderAttendanceChart(attendance, startObj, endObj) {
             beforeDatasetDraw: function(chart) {
                 const ctx = chart.ctx;
                 ctx.save();
-                // 3D Glowing Drop Shadow for the line
-                ctx.shadowColor = 'rgba(139, 92, 246, 0.4)';
-                ctx.shadowBlur = 15;
-                ctx.shadowOffsetX = 0;
-                ctx.shadowOffsetY = 8;
+                // 3D Drop Shadow for the bars to stand out from the background
+                ctx.shadowColor = 'rgba(109, 40, 217, 0.5)';
+                ctx.shadowBlur = 10;
+                ctx.shadowOffsetX = 3;
+                ctx.shadowOffsetY = 5;
             },
             afterDatasetDraw: function(chart) {
                 chart.ctx.restore();
@@ -659,13 +654,14 @@ function renderAttendanceChart(attendance, startObj, endObj) {
             plugins: { 
                 legend: { display: false },
                 tooltip: {
-                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
                     titleColor: '#1e293b',
                     bodyColor: '#1e293b',
                     borderColor: '#e2e8f0',
                     borderWidth: 1,
-                    padding: 10,
-                    boxPadding: 4,
+                    padding: 12,
+                    boxPadding: 6,
+                    cornerRadius: 8,
                     usePointStyle: true,
                     titleFont: { size: 13, weight: 'bold' }
                 }
@@ -679,7 +675,7 @@ function renderAttendanceChart(attendance, startObj, endObj) {
                     beginAtZero: true,
                     ticks: { stepSize: 1, font: { weight: '600' }, color: '#64748b' },
                     border: { display: false },
-                    grid: { color: '#f1f5f9' }
+                    grid: { color: '#f8fafc', lineWidth: 1 }
                 }
             }
         }
