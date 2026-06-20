@@ -197,7 +197,7 @@ function processData() {
                                     
                                     parsedData[yearStr].children[monthStr].children[dayStr].items.push({
                                         name: `${m.name} (${courseNameOnly})`,
-                                        subText: m.phone || '연락처 없음',
+                                        subText: `결제일: ${ms.year}년 ${ms.month}월 ${ms.day}일 | ${m.phone || '연락처 없음'}`,
                                         amount: uAmt
                                     });
                                 }
@@ -380,7 +380,7 @@ function renderTier3(key1, key2) {
             
             let itemsHtml = dayNode.items.map(item => `
                 <div class="day-item">
-                    <div class="day-item-name">${item.name}</div>
+                    <div class="day-item-name">${item.name} <span class="sub-badge">${item.subText}</span></div>
                     <div class="day-item-amount">${item.amount.toLocaleString()}원</div>
                 </div>
             `).join('');
