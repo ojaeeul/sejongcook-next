@@ -16,17 +16,26 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     try {
         if(typeof window.loadCycleSettings === 'function') await window.loadCycleSettings();
-        const [mRes, pRes, aRes, eRes] = await Promise.all([
+        const [mRes, pRes, aRes, eRes, sRes] = await Promise.all([
             fetch(`${API_BASE}/members?t=${Date.now()}`),
             fetch(`${API_BASE}/payments?t=${Date.now()}`),
             fetch(`${API_BASE}/attendance?t=${Date.now()}`),
-            fetch(`${API_BASE}/expense?year=all&t=${Date.now()}`).catch(() => ({ok: false}))
+            fetch(`${API_BASE}/expense?year=all&t=${Date.now()}`).catch(() => ({ok: false})),
+            fetch(`${API_BASE}/settings?t=${Date.now()}`).catch(() => ({ok: false}))
         ]);
 
         globalMembers = await mRes.json();
         globalPayments = await pRes.json();
         globalAttendance = await aRes.json();
         
+        if (sRes && sRes.ok) {
+            try {
+                const rawSettings = await sRes.json();
+                const settings = Array.isArray(rawSettings) ? rawSettings[0] : rawSettings;
+                window.courseFees = settings && settings.courseFees ? settings.courseFees : {};
+            } catch(e) {}
+        }
+
         let globalExpenses = [];
         if (eRes && eRes.ok) {
             try { 
@@ -140,15 +149,71 @@ function updateDashboard() {
     });
 
     // Unpaid calculations
-    let periodUnpaid = 0;
-    let totalUnpaid = 0;
+    let periodUnpaid = 0; // 당일(선택기간) 미납
+    let totalUnpaid = 0;  // 현재 달 누적 미납 (선택한 날짜의 월 기준)
+    const now = new Date();
+    const todayYear = startObj.getFullYear();
+    const todayMonth = startObj.getMonth() + 1;
+    const DEFAULT_PRICE = 200000;
+
     activeMembers.forEach(m => {
-        const uAmt = parseInt(m.unpaid_amount) || 0;
-        if (uAmt > 0) {
-            totalUnpaid += uAmt;
-            // Simplified: if there's unpaid, assume some for period for dashboard effect
-            periodUnpaid += uAmt;
+        let myCourses = (m.course || '').split(',').map(c => c.trim()).filter(c => c !== '');
+        
+        const hasJeggwa = myCourses.some(c => c.includes('제과') && !c.includes('제과제빵'));
+        const hasJeppang = myCourses.some(c => c.includes('제빵') && !c.includes('제과제빵'));
+        if (hasJeggwa && hasJeppang) {
+            myCourses = myCourses.filter(c => !c.includes('제과') && !c.includes('제빵'));
+            myCourses.push('제과제빵기능사');
         }
+        if (myCourses.some(c => c.includes('제과') && !c.includes('제과제빵')) && myCourses.some(c => c.includes('제빵') && !c.includes('제과제빵'))) {
+            myCourses = myCourses.filter(c => !c.includes('제과') && !c.includes('제빵'));
+            myCourses.push('제과제빵기능사');
+        }
+        if (myCourses.length === 0) myCourses.push('');
+
+        myCourses.forEach(fullCourse => {
+            const courseNameOnly = fullCourse ? fullCourse.split('(')[0].trim() : '';
+            const courseFee = (window.courseFees && window.courseFees[courseNameOnly]) || (window.courseFees && window.courseFees['all']) || DEFAULT_PRICE;
+            
+            if (typeof window.calculateRedBoxesForMonth === 'function') {
+                const stats = window.calculateRedBoxesForMonth(m, todayYear, todayMonth, globalAttendance, courseNameOnly, {});
+                
+                if (stats && stats.allMilestones) {
+                    let currentProgressObj = stats.currentCount || { count: 0, target: 9 };
+                    let remainingForLoop = currentProgressObj.count;
+                    const isDualBakeryLocal = (courseNameOnly && courseNameOnly.replace(/\s/g, '').includes('제과제빵')) || (!courseNameOnly && m.course && m.course.replace(/\s/g, '').includes('제과제빵'));
+                    const firstTargetCount = isDualBakeryLocal ? 17 : 9;
+                    const subTargetCount = isDualBakeryLocal ? 16 : 8;
+                    let isFirstCycleForThisCourse = true;
+                    const normalizeCourse = (c) => (!c || c === 'null') ? null : String(c).trim();
+
+                    stats.allMilestones.forEach(ms => {
+                        let currentTargetCount = isFirstCycleForThisCourse ? firstTargetCount : subTargetCount;
+                        const msPayment = globalPayments.find(p => p.memberId == m.id && p.year == ms.year && p.month == ms.month && normalizeCourse(p.course) === normalizeCourse(courseNameOnly) && p.status !== 'delete');
+                        
+                        if (msPayment && msPayment.status === 'paid') {
+                            remainingForLoop -= currentTargetCount;
+                            isFirstCycleForThisCourse = false;
+                        } else {
+                            const msDateObj = new Date(ms.year, ms.month - 1, ms.day);
+                            const isActualOverdue = remainingForLoop >= currentTargetCount || (ms.isReal !== false && msDateObj <= now);
+                            
+                            if (isActualOverdue) {
+                                // 누적 미납: 과거부터 지금까지 발생한 모든 미납의 총합
+                                totalUnpaid += courseFee;
+                                
+                                // 기간 미납 (선택한 기간 내에 결제일이 있는 경우)
+                                if (msDateObj >= startObj && msDateObj <= endObj) {
+                                    periodUnpaid += courseFee;
+                                }
+                            }
+                            remainingForLoop -= currentTargetCount;
+                            isFirstCycleForThisCourse = false;
+                        }
+                    });
+                }
+            }
+        });
     });
 
     // Expenses calculations (Always Today & This Month)
