@@ -263,9 +263,21 @@ function processData() {
                 courses.forEach(c => {
                     if(!parsedData[ageGroup].children[c]) parsedData[ageGroup].children[c] = { total: 0, items: [] };
                     parsedData[ageGroup].children[c].total += 1;
+                    
+                    let remarks = '';
+                    if (m.type === 'student') {
+                        const schoolName = m.school || '';
+                        const schoolLevel = m.school_level ? `(${m.school_level})` : '';
+                        const gradeStrExt = m.grade ? `${m.grade}학년` : '';
+                        remarks = `${schoolName} ${schoolLevel} ${gradeStrExt}`.trim();
+                    } else {
+                        remarks = m.job || '';
+                    }
+                    if (!remarks) remarks = '비고 없음';
+
                     parsedData[ageGroup].children[c].items.push({
                         name: m.name,
-                        subText: m.school || m.job || '',
+                        subText: `비고: ${remarks} | 연락처: ${m.phone || '없음'}`,
                         amountText: ''
                     });
                 });
@@ -321,9 +333,20 @@ function processData() {
                 if (!parsedData[gradeType].children[c]) parsedData[gradeType].children[c] = { total: 0, items: [] };
                 parsedData[gradeType].children[c].total++;
                 
+                let remarks = '';
+                if (m.type === 'student') {
+                    const schoolName = m.school || '';
+                    const schoolLevel = m.school_level ? `(${m.school_level})` : '';
+                    const gradeStrExt = m.grade ? `${m.grade}학년` : '';
+                    remarks = `${schoolName} ${schoolLevel} ${gradeStrExt}`.trim();
+                } else {
+                    remarks = m.job || '';
+                }
+                if (!remarks) remarks = '비고 없음';
+
                 parsedData[gradeType].children[c].items.push({
                     name: m.name,
-                    subText: `소속: ${m.school || m.job || '정보 없음'} | 연락처: ${m.phone || '없음'}`,
+                    subText: `비고: ${remarks} | 연락처: ${m.phone || '없음'}`,
                     amount: 1
                 });
             });
