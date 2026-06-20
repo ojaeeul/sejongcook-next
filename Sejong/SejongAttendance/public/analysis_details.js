@@ -149,12 +149,24 @@ function applyFilters() {
         let totalAtt = 0;
         const trendMap = {};
 
+        // Deduplicate attendance data just like sheet.html (by date and course)
+        const uniqueAttMap = new Map();
         const revMap = { '출석': 'present', '지각': 'late', '결석': 'absent', '조퇴': 'early', '보강': 'makeup', '상담': 'consult', '연장': 'extension' };
         const rawStatusMap = { 'present':'출석', 'late':'지각', 'absent':'결석', 'early':'조퇴', 'makeup':'보강', 'consult':'상담', 'extension':'연장' };
 
         globalAttendance.forEach(a => {
             if (!a.date) return;
-            const [y, m, d] = a.date.split('-');
+            const dStr = a.date.includes('T') ? a.date.split('T')[0] : a.date;
+            const key = `${a.memberId}_${dStr}_${a.course || ''}`;
+            // Let later records overwrite earlier ones, identical to sheet.html Map.set behavior
+            uniqueAttMap.set(key, a);
+        });
+
+        const deduplicatedAttendance = Array.from(uniqueAttMap.values());
+
+        deduplicatedAttendance.forEach(a => {
+            if (!a.date) return;
+            const [y, m, d] = (a.date.includes('T') ? a.date.split('T')[0] : a.date).split('-');
             
             if (year !== 'all' && y !== year) return;
             if (month !== 'all' && parseInt(m) !== parseInt(month)) return;
