@@ -213,25 +213,56 @@ function processData() {
         document.getElementById('overallValue').innerText = overallValue.toLocaleString() + '원';
     }
     else if (type === 'students') {
-        overallValue = activeMembers.length;
-        
-        activeMembers.forEach(m => {
-            const ageGroup = '총인원';
+        const baseMembers = globalMembers.filter(m => !['trash', 'delete'].includes(m.status));
+        const today = new Date();
+        const thisYear = today.getFullYear();
+        const thisMonth = today.getMonth() + 1;
+
+        parsedData['총인원'] = { total: 0, children: {} };
+        parsedData['신규인원'] = { total: 0, children: {} };
+        parsedData['종강인원'] = { total: 0, children: {} };
+
+        baseMembers.forEach(m => {
+            let groups = [];
+            
+            if (!['completed', 'trash', 'delete'].includes(m.status)) {
+                groups.push('총인원');
+                
+                let isNew = false;
+                if (m.registeredDate) {
+                    const rDate = new Date(m.registeredDate);
+                    if (rDate.getFullYear() === thisYear && rDate.getMonth() + 1 === thisMonth) isNew = true;
+                } else if (m.start_date) {
+                    const sDate = new Date(m.start_date);
+                    if (sDate.getFullYear() === thisYear && sDate.getMonth() + 1 === thisMonth) isNew = true;
+                }
+                
+                if (isNew) groups.push('신규인원');
+            }
+
+            if (m.status === 'completed') {
+                groups.push('종강인원');
+            }
+
             const courses = m.course ? m.course.split(',').map(c => c.split('(')[0].trim()).filter(c=>c) : ['미지정'];
             
-            if(!parsedData[ageGroup]) parsedData[ageGroup] = { total: 0, children: {} };
-            parsedData[ageGroup].total += 1;
-            
-            courses.forEach(c => {
-                if(!parsedData[ageGroup].children[c]) parsedData[ageGroup].children[c] = { total: 0, items: [] };
-                parsedData[ageGroup].children[c].total += 1;
-                parsedData[ageGroup].children[c].items.push({
-                    name: m.name,
-                    subText: m.school || m.job || '',
-                    amountText: '' // No amount for students
+            groups.forEach(ageGroup => {
+                parsedData[ageGroup].total += 1;
+                
+                courses.forEach(c => {
+                    if(!parsedData[ageGroup].children[c]) parsedData[ageGroup].children[c] = { total: 0, items: [] };
+                    parsedData[ageGroup].children[c].total += 1;
+                    parsedData[ageGroup].children[c].items.push({
+                        name: m.name,
+                        subText: m.school || m.job || '',
+                        amountText: ''
+                    });
                 });
             });
         });
+
+        // Remove empty groups to keep the UI clean if preferred, or leave them. Let's leave them.
+        overallValue = parsedData['총인원'].total;
         document.getElementById('overallValue').innerText = overallValue + '명';
     }
     else if (type === 'courses') {
