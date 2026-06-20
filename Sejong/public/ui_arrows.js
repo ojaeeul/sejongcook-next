@@ -1,10 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Only apply if there is a monthSelect
     const monthSelect = document.getElementById('monthSelect');
     if (!monthSelect) return;
     if (monthSelect.dataset.arrowsAdded) return;
 
-    // Optional: delay execution slightly to let other scripts populate or style the select
     setTimeout(() => {
         const wrapper = document.createElement('div');
         wrapper.style.display = 'inline-flex';
@@ -12,24 +10,21 @@ document.addEventListener('DOMContentLoaded', () => {
         wrapper.style.border = '1px solid #cbd5e1';
         wrapper.style.borderRadius = '6px';
         wrapper.style.background = '#fff';
-        wrapper.style.height = '36px'; // default form-select height
+        wrapper.style.height = '36px'; 
         
         monthSelect.parentNode.insertBefore(wrapper, monthSelect);
         
-        const oldWidth = window.getComputedStyle(monthSelect).width;
-        if (oldWidth && oldWidth !== 'auto') {
-            wrapper.style.width = oldWidth;
-            monthSelect.style.flex = '1';
-        }
-
         monthSelect.style.border = 'none';
         monthSelect.style.outline = 'none';
         monthSelect.style.boxShadow = 'none';
         monthSelect.style.height = '100%';
         monthSelect.style.background = 'transparent';
         monthSelect.style.paddingLeft = '6px';
-        monthSelect.style.paddingRight = '20px';
+        monthSelect.style.paddingRight = '12px';
         monthSelect.style.margin = '0';
+        monthSelect.style.width = '75px'; // 넓이를 넉넉하게 고정
+        monthSelect.style.minWidth = '75px';
+        monthSelect.style.textAlign = 'center';
         
         const leftBtn = document.createElement('button');
         leftBtn.innerHTML = '<span class="material-icons" style="font-size: 1.1rem; line-height:1;">chevron_left</span>';
