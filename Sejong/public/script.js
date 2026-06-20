@@ -648,6 +648,7 @@ function openEditModal(memberId) {
 
         // Split remarks or just load existing fields if they exist
         editForm.school.value = member.school || '';
+        editForm.school_level.value = member.school_level || '';
         editForm.grade.value = member.grade || '';
         editForm.job.value = member.job || '';
         editForm.notes.value = member.notes || '';
@@ -742,6 +743,7 @@ async function handleEditSubmit(e) {
         data.job = '';
     } else {
         data.school = '';
+        data.school_level = '';
         data.grade = '';
     }
 
