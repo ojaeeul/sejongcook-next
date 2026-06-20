@@ -615,8 +615,12 @@ function renderTable(container, title, members, id) {
                 
                 if (isHolidayInSys || isNationalHoliday || dayOfWeek === 0) {
                     slotBg = '#f1f5f9'; // 휴일 회색
-                } else if (c && window.COURSE_SCHEDULES && window.COURSE_SCHEDULES[c]) {
-                    if (!window.COURSE_SCHEDULES[c].includes(dayOfWeek)) {
+                } else {
+                    let schedule = null;
+                    if (c && window.COURSE_SCHEDULES) {
+                        schedule = window.COURSE_SCHEDULES[c] || window.COURSE_SCHEDULES[c.split('(')[0].trim()];
+                    }
+                    if (schedule && !schedule.includes(dayOfWeek)) {
                         slotBg = '#f1f5f9'; // 수업 없는 요일 회색
                     }
                 }
@@ -664,7 +668,7 @@ function renderTable(container, title, members, id) {
             cellHTML += `</div>`;
 
             const isToday = (currentYear === new Date().getFullYear() && currentMonth === new Date().getMonth() + 1 && day === new Date().getDate());
-            const todayStyle = isToday ? 'border-right: 2px solid #fbbf24; border-left: 2px solid #fbbf24;' : 'border-right: 1px dotted #cbd5e1;';
+            const todayStyle = isToday ? 'border-right: 1px dotted #cbd5e1; background: #fef9c333;' : 'border-right: 1px dotted #cbd5e1;';
 
             html += `<td style="vertical-align: top; text-align: center; ${todayStyle} padding: 2px;">${cellHTML}</td>`;
         }
