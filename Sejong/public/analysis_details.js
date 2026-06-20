@@ -182,11 +182,40 @@ function applyFilters() {
 
             if (isMatch) {
                 const member = globalMembers.find(mm => mm.id === a.memberId);
-                if (!course || course === 'all' || (member && member.course && member.course.includes(course)) || (a.course && a.course.includes(course))) {
-                    totalAtt++;
+                if (!member) return;
+                if (member.status === 'delete' || member.status === 'archive') return;
+
+                let mCourses = (member.course || '').split(',').map(c => c.trim()).filter(c => c !== '');
+                const hasJeggwa = mCourses.some(c => c.includes('제과') && !c.includes('제과제빵'));
+                const hasJeppang = mCourses.some(c => c.includes('제빵') && !c.includes('제과제빵'));
+                if (hasJeggwa && hasJeppang) {
+                    mCourses = mCourses.filter(c => !c.includes('제과') && !c.includes('제빵'));
+                    mCourses.push('제과제빵기능사');
+                }
+                if (mCourses.length === 0) mCourses = ['']; 
+
+                let matchCount = 0;
+                mCourses.forEach(cFull => {
+                    let cName = cFull.replace(/\([^)]*\)/g, '').trim();
+                    let rowMatchesFilter = false;
+                    if (!course || course === 'all') rowMatchesFilter = true;
+                    else if (cName.replace(/\s/g, '').includes(course.replace(/\s/g, ''))) rowMatchesFilter = true;
+
+                    if (rowMatchesFilter) {
+                        let logAppliesToRow = true;
+                        if (a.course) {
+                            const aClean = a.course.replace(/\([^)]*\)/g, '').trim();
+                            if (aClean !== cName) logAppliesToRow = false;
+                        }
+                        if (logAppliesToRow) matchCount++;
+                    }
+                });
+
+                if (matchCount > 0) {
+                    totalAtt += matchCount;
                     const mStr = `${y}-${m.padStart(2,'0')}`;
-                    trendMap[mStr] = (trendMap[mStr]||0) + 1;
-                    dataForTable.push([a.date, member ? member.name : a.memberId, attTarget]);
+                    trendMap[mStr] = (trendMap[mStr]||0) + matchCount;
+                    dataForTable.push([a.date, `${member.name}${matchCount > 1 ? ' (' + matchCount + '과목)' : ''}`, attTarget]);
                 }
             }
         });
