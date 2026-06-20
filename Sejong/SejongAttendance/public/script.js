@@ -1525,6 +1525,13 @@ window.handleStatusChange = async function (e, memberId) {
 // Fixed Update Status Function (Appended)
 async function updateMemberStatus(member, status) {
     member.status = status;
+    if (status === 'completed' && !member.completedDate) {
+        const d = new Date();
+        const yy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        member.completedDate = `${yy}-${mm}-${dd}`;
+    }
     try {
         await fetch(getFetchUrl('members', true), {
             method: 'POST',

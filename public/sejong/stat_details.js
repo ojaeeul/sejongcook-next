@@ -241,7 +241,12 @@ function processData() {
             }
 
             if (m.status === 'completed') {
-                groups.push('종강인원');
+                let isCompletedThisMonth = false;
+                if (m.completedDate) {
+                    const cDate = new Date(m.completedDate);
+                    if (cDate.getFullYear() === thisYear && cDate.getMonth() + 1 === thisMonth) isCompletedThisMonth = true;
+                }
+                if (isCompletedThisMonth) groups.push('종강인원');
             }
 
             const courses = m.course ? m.course.split(',').map(c => c.split('(')[0].trim()).filter(c=>c) : ['미지정'];
