@@ -255,11 +255,20 @@
 
                                     <!-- Section 1: Growth -->
                                     <div style="background: white; border-radius: 12px; padding: 20px; margin-bottom: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
-                                        <h3 style="margin: 0 0 20px 0; font-size: 1.1rem; font-weight: 700; color: #1e293b; cursor: pointer; display: flex; justify-content: space-between; align-items: center;" onclick="const c1 = document.getElementById('sec1-content'); const i1 = document.getElementById('sec1-icon'); if(c1.style.display==='none'){c1.style.display='block'; i1.innerText='expand_less';}else{c1.style.display='none'; i1.innerText='expand_more';}">
+                                        <h3 style="margin: 0 0 20px 0; font-size: 1.1rem; font-weight: 700; color: #1e293b; cursor: pointer; user-select: none; display: flex; justify-content: space-between; align-items: center;" onclick="const c1 = document.getElementById('sec1-content'); const i1 = document.getElementById('sec1-icon'); if(c1.style.display==='none'){c1.style.display='block'; i1.innerText='expand_less'; localStorage.setItem('sec1State', 'open');}else{c1.style.display='none'; i1.innerText='expand_more'; localStorage.setItem('sec1State', 'closed');}">
                                             <span>전년 대비 학원 성장율 분석 집계표 제공</span>
                                             <span id="sec1-icon" class="material-icons" style="color:#94a3b8; transition: transform 0.3s;">expand_less</span>
                                         </h3>
                                         <div id="sec1-content" style="background: #f4f7fc; border-radius: 12px; padding: 25px; display: block;">
+                                            <script>
+                                                (function(){
+                                                    const state = localStorage.getItem('sec1State');
+                                                    if (state === 'closed') {
+                                                        document.getElementById('sec1-content').style.display = 'none';
+                                                        document.getElementById('sec1-icon').innerText = 'expand_more';
+                                                    }
+                                                })();
+                                            </script>
                                             <div style="display: flex; gap: 15px; margin-bottom: 25px; overflow-x: auto;" id="monthBtnContainer">
                                                 <!-- JS populated -->
                                             </div>
@@ -274,11 +283,20 @@
 
                                     <!-- Section 2: Comprehensive -->
                                     <div style="background: white; border-radius: 12px; padding: 20px; margin-bottom: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
-                                        <h3 style="margin: 0 0 20px 0; font-size: 1.1rem; font-weight: 700; color: #1e293b; cursor: pointer; display: flex; justify-content: space-between; align-items: center;" onclick="const c2 = document.getElementById('sec2-content'); const i2 = document.getElementById('sec2-icon'); if(c2.style.display==='none'){c2.style.display='block'; i2.innerText='expand_less';}else{c2.style.display='none'; i2.innerText='expand_more';}">
+                                        <h3 style="margin: 0 0 20px 0; font-size: 1.1rem; font-weight: 700; color: #1e293b; cursor: pointer; user-select: none; display: flex; justify-content: space-between; align-items: center;" onclick="const c2 = document.getElementById('sec2-content'); const i2 = document.getElementById('sec2-icon'); if(c2.style.display==='none'){c2.style.display='block'; i2.innerText='expand_less'; localStorage.setItem('sec2State', 'open');}else{c2.style.display='none'; i2.innerText='expand_more'; localStorage.setItem('sec2State', 'closed');}">
                                             <span>기간별 / 강사별 분석 종합 집계표 제공</span>
                                             <span id="sec2-icon" class="material-icons" style="color:#94a3b8; transition: transform 0.3s;">expand_less</span>
                                         </h3>
                                         <div id="sec2-content" style="background: #f4f7fc; border-radius: 12px; padding: 25px; display: block;">
+                                            <script>
+                                                (function(){
+                                                    const state = localStorage.getItem('sec2State');
+                                                    if (state === 'closed') {
+                                                        document.getElementById('sec2-content').style.display = 'none';
+                                                        document.getElementById('sec2-icon').innerText = 'expand_more';
+                                                    }
+                                                })();
+                                            </script>
                                             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
                                                 <!-- 강좌, 인원 -->
                                                 <div>
@@ -379,8 +397,8 @@
 
     <!-- Load Chart.js from CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="shared_calc.js?v=20260621-17"></script>
-    <script src="stats.js?v=20260621-17"></script>
+    <script src="shared_calc.js?v=20260621-18"></script>
+    <script src="stats.js?v=20260621-18"></script>
     <script>
         // Set Date to today
         const d = new Date();
