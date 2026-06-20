@@ -304,24 +304,32 @@ function processData() {
             const school = m.school || '';
             const gradeStr = m.grade || '';
             
-            if (m.age && parseInt(m.age) < 14) {
-                gradeType = '초등학생';
-            } else if (m.age && parseInt(m.age) < 17) {
-                gradeType = '중학생';
-            } else if (m.age && parseInt(m.age) < 20) {
-                gradeType = '고등학생';
-            } else if (school.includes('초등') || gradeStr.includes('초등') || gradeStr.includes('초')) {
-                gradeType = '초등학생';
-            } else if (school.includes('중학교') || school.includes('중등') || gradeStr.includes('중등') || gradeStr.includes('중')) {
-                gradeType = '중학생';
-            } else if (school.includes('고등') || school.includes('고교') || gradeStr.includes('고등') || gradeStr.includes('고')) {
-                gradeType = '고등학생';
-            } else if (school.includes('대학') || gradeStr.includes('대학') || school.includes('대')) {
-                gradeType = '대학생';
-            } else if (m.type === 'general') {
+            if (m.type === 'general') {
                 gradeType = '일반인';
             } else {
-                gradeType = '일반인'; 
+                const schoolLevel = (m.school_level || '').trim();
+                
+                if (schoolLevel === '초등' || school.includes('초등학교') || school.includes('초등') || school.match(/초$/)) {
+                    gradeType = '초등학생';
+                } else if (schoolLevel === '중등' || school.includes('중학교') || school.includes('중등') || school.match(/중$/)) {
+                    gradeType = '중학생';
+                } else if (schoolLevel === '고등' || school.includes('고등학교') || school.includes('고등') || school.includes('고교') || school.match(/고$/)) {
+                    gradeType = '고등학생';
+                } else if (schoolLevel === '대학' || school.includes('대학교') || school.includes('대학') || school.match(/대$/) || school.match(/대학원$/)) {
+                    gradeType = '대학생';
+                } else {
+                    // Fallback to age if school name is ambiguous (e.g. 검정고시, 대안학교) or missing
+                    if (m.age) {
+                        const ageNum = parseInt(m.age);
+                        if (ageNum < 14) gradeType = '초등학생';
+                        else if (ageNum < 17) gradeType = '중학생';
+                        else if (ageNum < 20) gradeType = '고등학생';
+                        else gradeType = '대학생';
+                    } else {
+                        // If everything fails, assume 일반인 for safety to prevent crash
+                        gradeType = '일반인'; 
+                    }
+                }
             }
             
             const courses = m.course ? m.course.split(',').map(c => c.split('(')[0].trim()).filter(c=>c) : ['미지정'];
