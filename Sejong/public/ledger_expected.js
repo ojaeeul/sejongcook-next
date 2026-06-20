@@ -569,12 +569,14 @@ function renderTable(container, title, members, id) {
         const rowId = `row-${id}-${m.id}`;
         html += `<tr id="${rowId}" style="border-bottom: 1px solid #0f172a; ${isTarget ? 'background: #fffbeb;' : ''}">
             <td style="text-align: center; font-weight: 700; border-right: 1.5px solid #0f172a;">${idx + 1}</td>
-            <td style="padding: 6px 4px; border-right: 1.5px solid #0f172a; width: 105px; max-width: 105px; overflow: hidden;">
-                <div style="display: flex; align-items: center; gap: 2px;">
-                    <span style="font-weight: 900; font-size: 0.85rem; color: #000;">${m.name || ''}</span>
+            <td style="padding: 0; border-right: 1.5px solid #0f172a; width: 105px; max-width: 105px; overflow: hidden; vertical-align: top;">
+                <div style="height: 36px; padding: 4px; display: flex; flex-direction: column; justify-content: center; box-sizing: border-box; border-bottom: 1px solid #e2e8f0;">
+                    <div style="display: flex; align-items: center; gap: 2px;">
+                        <span style="font-weight: 900; font-size: 0.85rem; color: #000; line-height: 1;">${m.name || ''}</span>
+                    </div>
+                    <div style="font-size: 0.65rem; color: #64748b; line-height: 1; margin-top: 2px;">${m.phone || ''}</div>
                 </div>
-                <div style="font-size: 0.7rem; color: #64748b;">${m.phone || ''}</div>
-                <div style="margin-top: 4px; display: flex; flex-direction: column; gap: 0px; padding-bottom: 2px;">
+                <div style="display: flex; flex-direction: column; gap: 0px; padding: 2px 4px 2px 4px;">
                     ${(() => {
                         const courses = (m.course || '').split(',').map(c => c.trim()).filter(c => c && !c.includes('[삭제]'));
                         if (courses.length === 0) return `<div style="height: 38px;"></div>`;
@@ -602,7 +604,10 @@ function renderTable(container, title, members, id) {
         const slotsCount = Math.max(1, activeCourses.length);
 
         for (let day = 1; day <= daysInMonth; day++) {
-            let cellHTML = `<div style="display: flex; flex-direction: column; gap: 0px; height: 100%; min-height: ${(slotsCount * 38) + (slotsCount * 2)}px;">`;
+            let cellHTML = `
+                <div style="height: 36px; border-bottom: 1px solid #e2e8f0; box-sizing: border-box;"></div>
+                <div style="display: flex; flex-direction: column; gap: 0px; height: 100%; min-height: ${(slotsCount * 38) + (slotsCount * 2)}px; padding: 2px;">
+            `;
             
             for (let slot = 0; slot < slotsCount; slot++) {
                 const c = activeCourses[slot] || '';
@@ -670,7 +675,7 @@ function renderTable(container, title, members, id) {
             const isToday = (currentYear === new Date().getFullYear() && currentMonth === new Date().getMonth() + 1 && day === new Date().getDate());
             const todayStyle = isToday ? 'border-right: 1px dotted #cbd5e1; background: #fef9c333;' : 'border-right: 1px dotted #cbd5e1;';
 
-            html += `<td style="vertical-align: top; text-align: center; ${todayStyle} padding: 2px;">${cellHTML}</td>`;
+            html += `<td style="vertical-align: top; text-align: center; ${todayStyle} padding: 0;">${cellHTML}</td>`;
         }
 
         html += `</tr>`;
