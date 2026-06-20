@@ -54,9 +54,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('overallIconBox').style.background = curConfig.color + '20';
     document.title = `${curConfig.title} - 세종요리`;
 
-    document.getElementById('tier1Title').innerText = '1단계: ' + curConfig.t1Label;
-    document.getElementById('tier2Title').innerText = '2단계: ' + curConfig.t2Label;
-    document.getElementById('tier3Title').innerText = '3단계: ' + curConfig.t3Label;
+    document.getElementById('tier1Title').innerText = curConfig.t1Label;
+    document.getElementById('tier2Title').innerText = curConfig.t2Label;
+    document.getElementById('tier3Title').innerText = curConfig.t3Label;
     document.getElementById('tier2EmptyMsg').innerText = curConfig.t2Empty;
     document.getElementById('tier3EmptyMsg').innerText = curConfig.t3Empty;
 
