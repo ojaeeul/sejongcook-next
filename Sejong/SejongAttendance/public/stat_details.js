@@ -301,37 +301,42 @@ function processData() {
         baseMembers.forEach(m => {
             let gradeType = '일반인'; // Default
             
-            const school = m.school || '';
-            const gradeStr = m.grade || '';
+            let remarks = '';
+            if (m.type === 'student') {
+                const schoolName = m.school || '';
+                const schoolLevel = m.school_level ? `(${m.school_level})` : '';
+                const gradeStrExt = m.grade ? `${m.grade}학년` : '';
+                remarks = `${schoolName} ${schoolLevel} ${gradeStrExt}`.trim();
+            } else {
+                remarks = m.job || '';
+            }
+            if (!remarks) remarks = '비고 없음';
             
-            if (m.type === 'general') {
+            // VERY robust classification based on the actual text displayed
+            if (remarks.includes('초등') || remarks.match(/초(\s|[0-9]학년|$)/)) {
+                gradeType = '초등학생';
+            } else if (remarks.includes('중등') || remarks.includes('중학교') || remarks.match(/중(\s|[0-9]학년|$)/)) {
+                gradeType = '중학생';
+            } else if (remarks.includes('고등') || remarks.includes('고교') || remarks.includes('고등학교') || remarks.match(/고(\s|[0-9]학년|$)/)) {
+                gradeType = '고등학생';
+            } else if (remarks.includes('대학') || remarks.match(/대(\s|[0-9]학년|$)/)) {
+                gradeType = '대학생';
+            } else if (m.type === 'general') {
+                // Only if no student keywords are found do we respect the general type
                 gradeType = '일반인';
             } else {
-                const schoolLevel = (m.school_level || '').trim();
-                
-                if (schoolLevel === '초등' || school.includes('초등학교') || school.includes('초등') || school.match(/초$/)) {
-                    gradeType = '초등학생';
-                } else if (schoolLevel === '중등' || school.includes('중학교') || school.includes('중등') || school.match(/중$/)) {
-                    gradeType = '중학생';
-                } else if (schoolLevel === '고등' || school.includes('고등학교') || school.includes('고등') || school.includes('고교') || school.match(/고$/)) {
-                    gradeType = '고등학생';
-                } else if (schoolLevel === '대학' || school.includes('대학교') || school.includes('대학') || school.match(/대$/) || school.match(/대학원$/)) {
-                    gradeType = '대학생';
+                // If it's a student but has no identifiable school name, try age
+                if (m.age) {
+                    const ageNum = parseInt(m.age);
+                    if (ageNum < 14) gradeType = '초등학생';
+                    else if (ageNum < 17) gradeType = '중학생';
+                    else if (ageNum < 20) gradeType = '고등학생';
+                    else gradeType = '대학생';
                 } else {
-                    // Fallback to age if school name is ambiguous (e.g. 검정고시, 대안학교) or missing
-                    if (m.age) {
-                        const ageNum = parseInt(m.age);
-                        if (ageNum < 14) gradeType = '초등학생';
-                        else if (ageNum < 17) gradeType = '중학생';
-                        else if (ageNum < 20) gradeType = '고등학생';
-                        else gradeType = '대학생';
-                    } else {
-                        // If everything fails, assume 일반인 for safety to prevent crash
-                        gradeType = '일반인'; 
-                    }
+                    gradeType = '일반인';
                 }
             }
-            
+
             const courses = m.course ? m.course.split(',').map(c => c.split('(')[0].trim()).filter(c=>c) : ['미지정'];
             courses.forEach(c => {
                 overallValue++;
@@ -341,17 +346,6 @@ function processData() {
                 if (!parsedData[gradeType].children[c]) parsedData[gradeType].children[c] = { total: 0, items: [] };
                 parsedData[gradeType].children[c].total++;
                 
-                let remarks = '';
-                if (m.type === 'student') {
-                    const schoolName = m.school || '';
-                    const schoolLevel = m.school_level ? `(${m.school_level})` : '';
-                    const gradeStrExt = m.grade ? `${m.grade}학년` : '';
-                    remarks = `${schoolName} ${schoolLevel} ${gradeStrExt}`.trim();
-                } else {
-                    remarks = m.job || '';
-                }
-                if (!remarks) remarks = '비고 없음';
-
                 parsedData[gradeType].children[c].items.push({
                     name: m.name,
                     subText: `비고: ${remarks} | 연락처: ${m.phone || '없음'}`,
