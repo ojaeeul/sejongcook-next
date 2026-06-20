@@ -148,6 +148,7 @@ function applyFilters() {
 
         let totalAtt = 0;
         const trendMap = {};
+        const cMap = {};
 
         // Deduplicate attendance data just like sheet.html (by date and course)
         const uniqueAttMap = new Map();
@@ -219,7 +220,10 @@ function applyFilters() {
                             const aClean = a.course.replace(/\([^)]*\)/g, '').trim();
                             if (aClean !== cName) logAppliesToRow = false;
                         }
-                        if (logAppliesToRow) matchCount++;
+                        if (logAppliesToRow) {
+                            matchCount++;
+                            cMap[cName] = (cMap[cName] || 0) + 1;
+                        }
                     }
                 });
 
@@ -231,6 +235,9 @@ function applyFilters() {
                 }
             }
         });
+
+        subChartData.labels = Object.keys(cMap);
+        subChartData.values = Object.values(cMap);
 
         kpiData = [
             { 
@@ -251,6 +258,7 @@ function applyFilters() {
     else if (category === 'revenue') {
         let totalRev = 0;
         let trendMap = {};
+        let cMap = {};
 
         filteredPayments.forEach(p => {
             if (p.status !== 'delete') {
@@ -271,11 +279,17 @@ function applyFilters() {
                         trendMap[mStr] = (trendMap[mStr]||0) + amt;
 
                         const mem = globalMembers.find(m => m.id === p.memberId);
+                        const cName = p.course || (mem && mem.course ? mem.course.split(',')[0].trim() : '미지정');
+                        cMap[cName] = (cMap[cName] || 0) + amt;
+
                         dataForTable.push([`${py}-${pm.padStart(2,'0')}`, mem ? mem.name : p.memberId, p.course || '-', amt.toLocaleString()+'원']);
                     }
                 }
             }
         });
+
+        subChartData.labels = Object.keys(cMap);
+        subChartData.values = Object.values(cMap);
 
         kpiData = [
             { label: '총 매출액', value: (totalRev / 10000).toLocaleString(), unit: '만 원', icon: 'payments' }
