@@ -609,7 +609,14 @@ function renderAttendanceChart(attendance, startObj, endObj) {
         data.push(dayMap[dStr] ? dayMap[dStr].size : 0);
     }
 
-    attendanceChartInstance = new Chart(ctx.getContext('2d'), {
+    const ctx2d = ctx.getContext('2d');
+    
+    // Create a beautiful modern vertical gradient for the fill
+    const gradientFill = ctx2d.createLinearGradient(0, 0, 0, 300);
+    gradientFill.addColorStop(0, 'rgba(139, 92, 246, 0.6)'); // Solid purple at the top
+    gradientFill.addColorStop(1, 'rgba(139, 92, 246, 0.0)'); // Fades to transparent at the bottom
+
+    attendanceChartInstance = new Chart(ctx2d, {
         type: 'line',
         data: {
             labels: labels,
@@ -617,25 +624,62 @@ function renderAttendanceChart(attendance, startObj, endObj) {
                 label: '출석 수 (명)',
                 data: data,
                 borderColor: '#8b5cf6',
-                backgroundColor: 'rgba(139, 92, 246, 0.1)',
-                borderWidth: 3,
+                backgroundColor: gradientFill,
+                borderWidth: 4, // Thicker line
                 fill: true,
-                tension: 0.4,
+                tension: 0.4, // Smooth curves
                 pointBackgroundColor: '#ffffff',
                 pointBorderColor: '#8b5cf6',
-                pointBorderWidth: 2,
-                pointRadius: 4,
-                pointHoverRadius: 6
+                pointBorderWidth: 3,
+                pointRadius: 5,
+                pointHoverRadius: 8,
+                pointHoverBackgroundColor: '#8b5cf6',
+                pointHoverBorderColor: '#ffffff',
+                pointHoverBorderWidth: 3
             }]
         },
+        plugins: [{
+            id: 'glowShadow',
+            beforeDatasetDraw: function(chart) {
+                const ctx = chart.ctx;
+                ctx.save();
+                // 3D Glowing Drop Shadow for the line
+                ctx.shadowColor = 'rgba(139, 92, 246, 0.4)';
+                ctx.shadowBlur = 15;
+                ctx.shadowOffsetX = 0;
+                ctx.shadowOffsetY = 8;
+            },
+            afterDatasetDraw: function(chart) {
+                chart.ctx.restore();
+            }
+        }],
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
+            plugins: { 
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    titleColor: '#1e293b',
+                    bodyColor: '#1e293b',
+                    borderColor: '#e2e8f0',
+                    borderWidth: 1,
+                    padding: 10,
+                    boxPadding: 4,
+                    usePointStyle: true,
+                    titleFont: { size: 13, weight: 'bold' }
+                }
+            },
             scales: {
+                x: {
+                    grid: { display: false, drawBorder: false },
+                    ticks: { font: { weight: '600' }, color: '#64748b' }
+                },
                 y: {
                     beginAtZero: true,
-                    ticks: { stepSize: 1 }
+                    ticks: { stepSize: 1, font: { weight: '600' }, color: '#64748b' },
+                    border: { display: false },
+                    grid: { color: '#f1f5f9' }
                 }
             }
         }
