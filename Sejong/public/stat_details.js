@@ -277,7 +277,8 @@ function processData() {
         document.getElementById('overallValue').innerText = overallValue + '명';
     }
     else if (type === 'grades') {
-        const baseMembers = globalMembers.filter(m => !['trash', 'delete'].includes(m.status));
+        // Only include active members to match the student register (exclude completed, hold, trash, delete)
+        const baseMembers = globalMembers.filter(m => !['completed', 'hold', 'trash', 'delete'].includes(m.status));
         
         parsedData['일반인'] = { total: 0, children: {} };
         parsedData['대학생'] = { total: 0, children: {} };
