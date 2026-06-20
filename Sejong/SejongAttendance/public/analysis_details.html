@@ -15,7 +15,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <script src="script.js" defer></script>
-    <script src="analysis_details.js?v=20260621-14" defer></script>
+    <script src="analysis_details.js?v=20260621-15" defer></script>
 
     <style>
         /* Modern Dashboard Styles */
@@ -79,26 +79,97 @@
     </style>
 </head>
 <body>
-    
-    <div id="loadingOverlay">
-        <div class="spinner"></div>
-        <h2 style="color: #334155;">데이터를 분석 중입니다...</h2>
-    </div>
-
-    <!-- Main Navigation Bar -->
-    <header class="top-header" style="background: white; border-bottom: 1px solid #e2e8f0; padding: 15px 30px;">
-        <div class="header-actions" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-            <div style="font-size: 1.2rem; font-weight: 800; color: #1e293b; display: flex; align-items: center; gap: 10px;">
-                <span class="material-icons" style="color: #3b82f6;">pie_chart</span>
-                세종요리제과학원 분석 시스템
+    <div class="app-container">
+        <!-- Mobile Sidebar Overlay -->
+        <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="brand-logo">
+                <span class="logo-text">세종요리</span>
             </div>
-            <button class="btn btn-secondary" onclick="location.href='stats.html'" style="background: #f1f5f9; color: #475569; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; transition: 0.2s;">
-                <span class="material-icons" style="font-size: 1.1rem; vertical-align: middle; margin-right: 5px;">arrow_back</span> 대시보드 복귀
-            </button>
-        </div>
-    </header>
+            <nav class="sidebar-nav">
+                <a href="app.html" id="navMobileApp" class="nav-item" target="_blank" style="color: #4ade80; font-weight: bold; background: rgba(74, 222, 128, 0.1);">📱 모바일 앱 다운로드</a>
+                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">수강 관리</div>
+                <div class="nav-sub-menu show">
+                    <a href="register.html" id="navRegister" class="nav-item">수강생 등록</a>
+                    <a href="index.html" id="navIndex" class="nav-item">수강생 대장</a>
+                    <a href="phonebook.html" id="navPhoneBook" class="nav-item">전화번호부</a>
+                    <a href="sheet.html" id="navSheet" class="nav-item">월간 출석부</a>
+                </div>
+                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">국가시험</div>
+                <div class="nav-sub-menu show">
+                    <a href="exam.html" id="navExam" class="nav-item">제과제빵시험</a>
+                    <a href="practical_exam.html" id="navPracticalExam" class="nav-item">조리시험</a>
+                </div>
+                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">수강료</div>
+                <div class="nav-sub-menu show">
+                    <a href="tuition.html" class="nav-item">수강료 관리</a>
+                    <a href="ledger.html" class="nav-item">수강료 납부대장</a>
+                    <a href="paid_list.html" class="nav-item">납부완료 명단</a>
+                </div>
+                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">소통</div>
+                <div class="nav-sub-menu show">
+                    <a href="notice.html" class="nav-item">학원 공지</a>
+                    <a href="feed.html" class="nav-item">피드 관리</a>
+                    <a href="wagashi.html" class="nav-item">학원 홍보</a>
+                </div>
+                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">기타</div>
+                <div class="nav-sub-menu show">
+                    <a href="class_days_admin.html" id="navClassDaysAdmin" class="nav-item">
+                        <span class="material-icons" style="font-size: 1.2rem; margin-right: 8px;">settings</span>
+                        수업 요일 설정
+                    </a>
+                    <a href="course_time_admin.html" id="navCourseTimeAdmin" class="nav-item">
+                        <span class="material-icons" style="font-size: 1.2rem; margin-right: 8px;">list_alt</span>
+                        과목/시간 설정
+                    </a>
+                    <a href="cycle_settings.html" id="navCycleSettings" class="nav-item">
+                        <span class="material-icons" style="font-size: 1.2rem; margin-right: 8px;">tune</span>
+                        결재 주기 설정
+                    </a>
+                    <a href="index.html?filter=archive" id="navArchive" class="nav-item">수료생 보관함</a>
+                    <a href="attendance_manager.html" id="navAttendanceManager" class="nav-item">
+                        <span class="material-icons" style="font-size: 1.2rem; margin-right: 8px;">person_remove</span>
+                        학생별 출석 관리
+                    </a>
+                    <a href="index.html?filter=trash" id="navTrash" class="nav-item">휴지통</a>
+                    <a href="stats.html" class="nav-item highlight">통계 및 납부</a>
+                    <a href="expense.html" class="nav-item">지출현황</a>
+                </div>
+                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">학원문자</div>
+                <div class="nav-sub-menu show">
+                    <a href="attendance_daily.html" id="navDailyAttendance" class="nav-item">일일 출석부</a>
+                    <a href="sms.html" id="navSms" class="nav-item">문자 발송</a>
+                </div>
+                <a href="monitor.html" target="_blank" class="nav-item highlight">키오스크 모니터</a>
+                <a href="kiosk_admin.html" id="navKioskAdmin" class="nav-item">키오스크 설정</a>
+            </nav>
+        </aside>
 
-    <main class="dashboard-container">
+        <main class="main-wrapper">
+            <div id="loadingOverlay">
+                <div class="spinner"></div>
+                <h2 style="color: #334155;">데이터를 분석 중입니다...</h2>
+            </div>
+
+            <!-- Main Navigation Bar -->
+            <header class="top-header" style="background: white; border-bottom: 1px solid #e2e8f0; padding: 15px 30px;">
+                <button class="hamburger-btn" onclick="toggleSidebar()">
+                    <span>MENU</span>
+                    <span class="material-icons">menu</span>
+                </button>
+                <div class="header-actions" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                    <div style="font-size: 1.2rem; font-weight: 800; color: #1e293b; display: flex; align-items: center; gap: 10px;">
+                        <span class="material-icons" style="color: #3b82f6;">pie_chart</span>
+                        세종요리제과학원 분석 시스템
+                    </div>
+                    <button class="btn btn-secondary" onclick="location.href='stats.html'" style="background: #f1f5f9; color: #475569; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; transition: 0.2s;">
+                        <span class="material-icons" style="font-size: 1.1rem; vertical-align: middle; margin-right: 5px;">arrow_back</span> 대시보드 복귀
+                    </button>
+                </div>
+            </header>
+
+            <div class="dashboard-container">
         
         <div class="header-row">
             <div class="header-title">
@@ -179,7 +250,7 @@
             </div>
         </div>
 
-    </main>
+    </div></main></div>
 
 </body>
 </html>
