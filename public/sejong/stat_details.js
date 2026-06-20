@@ -220,7 +220,7 @@ function processData() {
 
         parsedData['총인원'] = { total: 0, children: {} };
         parsedData['신규인원'] = { total: 0, children: {} };
-        parsedData['종강인원'] = { total: 0, children: {} };
+        parsedData['수료수강자'] = { total: 0, children: {} };
 
         baseMembers.forEach(m => {
             let groups = [];
@@ -246,7 +246,7 @@ function processData() {
                     const cDate = new Date(m.completedDate);
                     if (cDate.getFullYear() === thisYear && cDate.getMonth() + 1 === thisMonth) isCompletedThisMonth = true;
                 }
-                if (isCompletedThisMonth) groups.push('종강인원');
+                if (isCompletedThisMonth) groups.push('수료수강자');
             }
 
             const courses = m.course ? m.course.split(',').map(c => c.split('(')[0].trim()).filter(c=>c) : ['미지정'];

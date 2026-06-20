@@ -261,9 +261,35 @@ function updateDashboard() {
     if(document.getElementById('dashExpense')) document.getElementById('dashExpense').innerText = todayExpense.toLocaleString() + '원';
     if(document.getElementById('dashExpenseAcc')) document.getElementById('dashExpenseAcc').innerText = thisMonthExpense.toLocaleString() + '원';
 
+    let dashNewCount = 0;
+    let dashLeaveCount = 0;
+    
+    globalMembers.forEach(m => {
+        if (m.status === 'completed') {
+            if (m.completedDate) {
+                const cDate = new Date(m.completedDate);
+                if (cDate.getFullYear() === selectedYear && cDate.getMonth() + 1 === selectedMonth) {
+                    dashLeaveCount++;
+                }
+            }
+        } else if (!['trash', 'delete'].includes(m.status)) {
+            let isNew = false;
+            if (m.registeredDate) {
+                const rDate = new Date(m.registeredDate);
+                if (rDate.getFullYear() === selectedYear && rDate.getMonth() + 1 === selectedMonth) isNew = true;
+            } else if (m.start_date) {
+                const sDate = new Date(m.start_date);
+                if (sDate.getFullYear() === selectedYear && sDate.getMonth() + 1 === selectedMonth) isNew = true;
+            }
+            if (isNew) {
+                dashNewCount++;
+            }
+        }
+    });
+
     if(document.getElementById('dashStudents')) document.getElementById('dashStudents').innerText = activeMembers.length;
-    if(document.getElementById('dashStudentsNew')) document.getElementById('dashStudentsNew').innerText = Math.max(0, Math.floor(activeMembers.length * 0.05)); // mock new
-    if(document.getElementById('dashStudentsLeave')) document.getElementById('dashStudentsLeave').innerText = Math.max(0, Math.floor(activeMembers.length * 0.02)); // mock leave
+    if(document.getElementById('dashStudentsNew')) document.getElementById('dashStudentsNew').innerText = dashNewCount;
+    if(document.getElementById('dashStudentsLeave')) document.getElementById('dashStudentsLeave').innerText = dashLeaveCount;
     
     const courseSet = new Set();
     let adults = 0;

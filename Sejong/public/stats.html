@@ -145,7 +145,7 @@
                                 <div class="daily-card" style="cursor: pointer; transition: transform 0.2s;" onclick="location.href='stat_details.html?type=students'" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'" title="클릭하여 수강생 명단 보기">
                                     <div class="d-title">학생수</div>
                                     <div class="d-val" id="dashStudents">-</div>
-                                    <div class="d-badges"><span class="bg-green">신규 <span id="dashStudentsNew">-</span></span><span class="bg-red">퇴원 <span id="dashStudentsLeave">-</span></span></div>
+                                    <div class="d-badges"><span class="bg-green">신규 <span id="dashStudentsNew">-</span></span><span class="bg-red">수료 <span id="dashStudentsLeave">-</span></span></div>
                                 </div>
                                 <div class="daily-card" style="cursor: pointer; transition: transform 0.2s;" onclick="location.href='stat_details.html?type=courses'" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'" title="클릭하여 강좌별 상세 보기">
                                     <div class="d-title">강좌수</div>
@@ -273,7 +273,7 @@
                                                     <div style="background: white; border-radius: 12px; padding: 25px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                                                         <div class="comp-box box-blue">현원</div>
                                                         <div class="comp-box box-blue">신규</div>
-                                                        <div class="comp-box box-blue">퇴원</div>
+                                                        <div class="comp-box box-blue">수료</div>
                                                         <div class="comp-box box-blue">대기</div>
                                                         <div class="comp-box box-blue">전입</div>
                                                         <div class="comp-box box-blue">전출</div>
@@ -366,8 +366,8 @@
 
     <!-- Load Chart.js from CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="shared_calc.js?v=20260620-56"></script>
-    <script src="stats.js?v=20260620-56"></script>
+    <script src="shared_calc.js?v=20260620-57"></script>
+    <script src="stats.js?v=20260620-57"></script>
     <script>
         // Set Date to today
         const d = new Date();
