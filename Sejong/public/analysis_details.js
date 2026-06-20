@@ -110,7 +110,7 @@ function applyFilters() {
             
             kpiData = [
                 { label: '총 현원수', value: targeted.length, unit: '명', icon: 'groups' },
-                { label: '이번 달 신규', value: targeted.filter(m => m.registrationDate && m.registrationDate.startsWith(`${year}-${String(new Date().getMonth()+1).padStart(2,'0')}`)).length, unit: '명', icon: 'fiber_new' }
+                { label: '이번 달 신규', value: targeted.filter(m => m.registeredDate && m.registeredDate.startsWith(`${year}-${String(new Date().getMonth()+1).padStart(2,'0')}`)).length, unit: '명', icon: 'fiber_new' }
             ];
 
             // SubChart: Course breakdown
@@ -122,7 +122,7 @@ function applyFilters() {
             subChartData.labels = Object.keys(cMap);
             subChartData.values = Object.values(cMap);
 
-            dataForTable = targeted.map(m => [m.name, m.school || '-', m.grade || '-', m.course || '-', m.registrationDate || '-']);
+            dataForTable = targeted.map(m => [m.name, m.school || '-', m.grade || '-', m.course || '-', m.registeredDate || '-']);
             renderTable(['이름', '학교', '학년', '과목', '등록일'], dataForTable);
         }
         else if (type === 'completed') {
@@ -149,28 +149,28 @@ function applyFilters() {
         let totalAtt = 0;
         const trendMap = {};
 
-        // Loop globalAttendance roughly (Needs to match actual structure, normally { year: { month: { date: { memberId: status } } } })
-        // Let's do a simplified mock aggregation for visual purposes if structure is complex
-        Object.keys(globalAttendance).forEach(y => {
-            if(year !== 'all' && y !== year) return;
-            Object.keys(globalAttendance[y]).forEach(m => {
-                if(month !== 'all' && m != month) return;
-                Object.keys(globalAttendance[y][m]).forEach(d => {
-                    const dayData = globalAttendance[y][m][d];
-                    Object.keys(dayData).forEach(uid => {
-                        if (dayData[uid] === attTarget) {
-                            totalAtt++;
-                            const mStr = `${y}-${String(m).padStart(2,'0')}`;
-                            trendMap[mStr] = (trendMap[mStr]||0) + 1;
-                            
-                            const member = globalMembers.find(mm => mm.id === uid);
-                            if (!course || course === 'all' || (member && member.course && member.course.includes(course))) {
-                                dataForTable.push([`${y}-${m}-${d}`, member ? member.name : uid, attTarget]);
-                            }
-                        }
-                    });
-                });
-            });
+        const revMap = { '출석': 'present', '지각': 'late', '결석': 'absent', '조퇴': 'early', '보강': 'makeup', '상담': 'consult', '연장': 'extension' };
+        const rawStatusMap = { 'present':'출석', 'late':'지각', 'absent':'결석', 'early':'조퇴', 'makeup':'보강', 'consult':'상담', 'extension':'연장' };
+
+        globalAttendance.forEach(a => {
+            if (!a.date) return;
+            const [y, m, d] = a.date.split('-');
+            
+            if (year !== 'all' && y !== year) return;
+            if (month !== 'all' && parseInt(m) !== parseInt(month)) return;
+            
+            const localTarget = Object.keys(revMap).find(k => revMap[k] === type) || type;
+            const isMatch = a.status === revMap[attTarget] || a.status === type || rawStatusMap[a.status] === attTarget;
+
+            if (isMatch) {
+                const member = globalMembers.find(mm => mm.id === a.memberId);
+                if (!course || course === 'all' || (member && member.course && member.course.includes(course)) || (a.course && a.course.includes(course))) {
+                    totalAtt++;
+                    const mStr = `${y}-${m.padStart(2,'0')}`;
+                    trendMap[mStr] = (trendMap[mStr]||0) + 1;
+                    dataForTable.push([a.date, member ? member.name : a.memberId, attTarget]);
+                }
+            }
         });
 
         kpiData = [
@@ -189,18 +189,24 @@ function applyFilters() {
 
         filteredPayments.forEach(p => {
             if (p.status !== 'delete') {
-                // If type is period revenue, sum up all paids
-                if (type === 'period_revenue' && p.status === 'paid') {
+                let match = false;
+                if (type === 'period_revenue' && p.status === 'enrolled') match = true;
+                if (type === 'sales_date_paid' && p.status === 'enrolled') match = true;
+                if (type === 'payment_date_paid' && p.status === 'enrolled') match = true;
+                if (type === 'sales_date_unpaid' && p.status === 'unpaid') match = true;
+                if (type === 'total_unpaid' && p.status === 'unpaid') match = true;
+
+                if (match) {
                     const py = String(p.year);
                     const pm = String(p.month);
-                    if ((year === 'all' || py === year) && (month === 'all' || pm === month)) {
+                    if ((year === 'all' || py === year) && (month === 'all' || parseInt(pm) === parseInt(month))) {
                         const amt = p.amount || 200000;
                         totalRev += amt;
                         const mStr = `${py}-${pm.padStart(2,'0')}`;
                         trendMap[mStr] = (trendMap[mStr]||0) + amt;
 
                         const mem = globalMembers.find(m => m.id === p.memberId);
-                        dataForTable.push([`${py}-${pm}-${p.day||'01'}`, mem ? mem.name : p.memberId, p.course || '-', amt.toLocaleString()+'원']);
+                        dataForTable.push([`${py}-${pm.padStart(2,'0')}`, mem ? mem.name : p.memberId, p.course || '-', amt.toLocaleString()+'원']);
                     }
                 }
             }
