@@ -537,7 +537,7 @@ function renderTier3(key1, key2) {
         let itemsHtml = node.items.map(item => `
             <div class="day-item">
                 <div class="day-item-name">${item.name} <span class="sub-badge">${item.subText}</span></div>
-                <div class="day-item-amount">${item.amount !== undefined ? (item.amount === '' ? '' : item.amount.toLocaleString() + '원') : item.amountText}</div>
+                <div class="day-item-amount">${item.amount !== undefined ? (item.amount === '' ? '' : item.amount.toLocaleString() + '명') : item.amountText}</div>
             </div>
         `).join('');
         
