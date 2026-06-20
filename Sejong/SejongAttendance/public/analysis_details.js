@@ -190,9 +190,9 @@ function applyFilters() {
         filteredPayments.forEach(p => {
             if (p.status !== 'delete') {
                 let match = false;
-                if (type === 'period_revenue' && p.status === 'enrolled') match = true;
-                if (type === 'sales_date_paid' && p.status === 'enrolled') match = true;
-                if (type === 'payment_date_paid' && p.status === 'enrolled') match = true;
+                if (type === 'period_revenue' && p.status === 'paid') match = true;
+                if (type === 'sales_date_paid' && p.status === 'paid') match = true;
+                if (type === 'payment_date_paid' && p.status === 'paid') match = true;
                 if (type === 'sales_date_unpaid' && p.status === 'unpaid') match = true;
                 if (type === 'total_unpaid' && p.status === 'unpaid') match = true;
 
