@@ -147,13 +147,9 @@ function updateDashboard() {
         }
     });
 
-    // Unpaid calculations
     let periodUnpaid = 0; // 당일 미납 (선택기간 내 결제일 도래)
     let totalUnpaid = 0;  // 당월 누적 미납 (선택한 월 기준)
     
-    const startObj = new Date(startDateStr);
-    const endObj = new Date(endDateStr);
-    const now = new Date();
     const todayYear = startObj.getFullYear();
     const todayMonth = startObj.getMonth() + 1;
     const DEFAULT_PRICE = 200000;
@@ -198,7 +194,7 @@ function updateDashboard() {
                             isFirstCycleForThisCourse = false;
                         } else {
                             const msDateObj = new Date(ms.year, ms.month - 1, ms.day);
-                            const isActualOverdue = remainingForLoop >= currentTargetCount || (ms.isReal !== false && msDateObj <= now);
+                            const isActualOverdue = remainingForLoop >= currentTargetCount || (ms.isReal !== false && msDateObj <= new Date());
                             
                             if (isActualOverdue) {
                                 // 당월 누적 미납 (선택한 월 기준)
