@@ -19,7 +19,7 @@ const config = {
     students: {
         title: '학생수 상세 현황', icon: 'groups', color: '#3b82f6',
         overallTitle: '전체 활성 수강생',
-        t1Label: '연령대/구분', t2Label: '수강 과목', t3Label: '해당 학생 명단',
+        t1Label: '총인원', t2Label: '수강 과목', t3Label: '해당 학생 명단',
         t2Empty: '구분을 먼저 선택해주세요.', t3Empty: '과목을 먼저 선택해주세요.'
     },
     courses: {
@@ -216,7 +216,7 @@ function processData() {
         overallValue = activeMembers.length;
         
         activeMembers.forEach(m => {
-            const ageGroup = getAgeGroup(m.age);
+            const ageGroup = '총인원';
             const courses = m.course ? m.course.split(',').map(c => c.split('(')[0].trim()).filter(c=>c) : ['미지정'];
             
             if(!parsedData[ageGroup]) parsedData[ageGroup] = { total: 0, children: {} };
