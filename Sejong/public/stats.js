@@ -174,7 +174,7 @@ function updateDashboard() {
             const courseFee = window.courseFees[courseNameOnly] || window.courseFees['all'] || DEFAULT_PRICE;
             
             if (typeof window.calculateRedBoxesForMonth === 'function') {
-                const stats = window.calculateRedBoxesForMonth(m, selectedYear, selectedMonth, window.globalAttendance, courseNameOnly, {});
+                const stats = window.calculateRedBoxesForMonth(m, selectedYear, selectedMonth, globalAttendance, courseNameOnly, {});
                 
                 if (stats && stats.allMilestones) {
                     let currentProgressObj = stats.currentCount || { count: 0, target: 9 };
