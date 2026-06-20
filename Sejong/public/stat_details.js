@@ -417,8 +417,21 @@ function renderTier1() {
     const list = document.getElementById('tier1List');
     list.innerHTML = '';
     
-    // Sort keys descending
-    const keys = Object.keys(parsedData).sort((a,b) => (b>a ? 1 : -1));
+    // Custom sort order for grades, default descending for others
+    let keys = Object.keys(parsedData);
+    if (new URLSearchParams(window.location.search).get('type') === 'grades') {
+        const gradeOrder = ['일반인', '대학생', '고등학생', '중학생', '초등학생'];
+        keys.sort((a, b) => {
+            const indexA = gradeOrder.indexOf(a);
+            const indexB = gradeOrder.indexOf(b);
+            if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+            if (indexA !== -1) return -1;
+            if (indexB !== -1) return 1;
+            return b > a ? 1 : -1;
+        });
+    } else {
+        keys.sort((a,b) => (b>a ? 1 : -1));
+    }
     
     if(keys.length === 0) {
         list.innerHTML = `<div class="empty-state"><span class="material-icons">inbox</span><span>데이터가 없습니다.</span></div>`;
