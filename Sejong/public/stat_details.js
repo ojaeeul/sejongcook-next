@@ -75,6 +75,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const rawSettings = await sRes.json();
             const settings = Array.isArray(rawSettings) ? rawSettings[0] : rawSettings;
             window.courseFees = settings && settings.courseFees ? settings.courseFees : {};
+            if(typeof window.loadCycleSettings === 'function') await window.loadCycleSettings();
             processData();
         } else {
             const [mRes, pRes] = await Promise.all([
