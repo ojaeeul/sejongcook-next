@@ -1036,26 +1036,56 @@ window.toggleMemberType = function () {
         }
     }
 };
-// Sidebar Toggle Logic
+// Sidebar Toggle Logic with localStorage persistence
 window.toggleNavSub = function (el) {
     const isAlreadyActive = el.classList.contains('active');
+    const categoryName = el.textContent.trim();
+    let expandedCategories = JSON.parse(localStorage.getItem('expandedNavCategories') || '["수강 관리", "국가시험", "수강료", "소통", "기타", "학원문자"]');
 
-    // Toggle current one
     if (!isAlreadyActive) {
         el.classList.add('active');
         const subMenu = el.nextElementSibling;
         if (subMenu && subMenu.classList.contains('nav-sub-menu')) {
             subMenu.classList.add('show');
         }
+        if (!expandedCategories.includes(categoryName)) {
+            expandedCategories.push(categoryName);
+        }
     } else {
-        // If already active, close it
         el.classList.remove('active');
         const subMenu = el.nextElementSibling;
         if (subMenu && subMenu.classList.contains('nav-sub-menu')) {
             subMenu.classList.remove('show');
         }
+        expandedCategories = expandedCategories.filter(name => name !== categoryName);
     }
+    localStorage.setItem('expandedNavCategories', JSON.stringify(expandedCategories));
 };
+
+// Initialize sidebar state on load
+document.addEventListener('DOMContentLoaded', () => {
+    try {
+        const savedState = localStorage.getItem('expandedNavCategories');
+        if (savedState) {
+            const expandedCategories = JSON.parse(savedState);
+            document.querySelectorAll('.nav-category.toggle-category').forEach(el => {
+                const categoryName = el.textContent.trim();
+                const subMenu = el.nextElementSibling;
+                if (expandedCategories.includes(categoryName)) {
+                    el.classList.add('active');
+                    if (subMenu && subMenu.classList.contains('nav-sub-menu')) {
+                        subMenu.classList.add('show');
+                    }
+                } else {
+                    el.classList.remove('active');
+                    if (subMenu && subMenu.classList.contains('nav-sub-menu')) {
+                        subMenu.classList.remove('show');
+                    }
+                }
+            });
+        }
+    } catch(e) {}
+});
 
 // Exam Board Logic
 let examData = null;
