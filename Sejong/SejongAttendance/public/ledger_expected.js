@@ -547,8 +547,16 @@ function renderTable(container, title, members, id) {
                         <th style="border-right: 1.5px solid #0f172a; font-size: 0.75rem; text-align: left; padding: 10px 5px;">회원정보/과정</th>
                         ${Array.from({ length: daysInMonth }, (_, i) => {
                             const day = i + 1;
-                            const isWeekend = new Date(currentYear, currentMonth - 1, day).getDay() === 0 || new Date(currentYear, currentMonth - 1, day).getDay() === 6;
-                            const color = isWeekend ? '#ef4444' : '#0f172a';
+                            const dateObj = new Date(currentYear, currentMonth - 1, day);
+                            const dayOfWeek = dateObj.getDay();
+                            const dateStr = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                            const isHoliday = !!(typeof KOREAN_HOLIDAYS_MAP !== 'undefined' && KOREAN_HOLIDAYS_MAP[dateStr]);
+                            let color = '#0f172a';
+                            if (dayOfWeek === 0 || isHoliday) {
+                                color = '#ef4444';
+                            } else if (dayOfWeek === 6) {
+                                color = '#2563eb';
+                            }
                             return `<th style="border-right: 1px solid #cbd5e1; padding: 4px 2px; font-size:0.75rem; font-weight:800; color: ${color};">${day}일</th>`;
                         }).join('')}
                     </tr>
