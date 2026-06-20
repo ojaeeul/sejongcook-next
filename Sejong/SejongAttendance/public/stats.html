@@ -154,10 +154,12 @@
                                 </div>
                                 <div class="daily-card" style="cursor: pointer; transition: transform 0.2s;" onclick="location.href='stat_details.html?type=grades'" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'" title="클릭하여 학년별 상세 보기">
                                     <div class="d-title">학년별</div>
-                                    <div class="d-val" style="display:flex; justify-content: space-around; width:100%;">
-                                        <div style="text-align:center;"><span id="ageAdult" style="font-size:2rem; font-weight:700;">-</span><div style="font-size:0.8rem; color:#94a3b8; margin-top:5px; font-weight:600;">고등/일반</div></div>
-                                        <div style="text-align:center;"><span id="ageStudent" style="font-size:2rem; font-weight:700;">-</span><div style="font-size:0.8rem; color:#94a3b8; margin-top:5px; font-weight:600;">중등</div></div>
-                                        <div style="text-align:center;"><span id="ageChild" style="font-size:2rem; font-weight:700;">-</span><div style="font-size:0.8rem; color:#94a3b8; margin-top:5px; font-weight:600;">초등</div></div>
+                                    <div class="d-val" id="dashGradesContainer" style="display:flex; justify-content: space-around; width:100%;">
+                                        <div id="gradeGeneralBox" style="text-align:center; display:none;"><span id="ageGeneral" style="font-size:2rem; font-weight:700;">-</span><div style="font-size:0.8rem; color:#94a3b8; margin-top:5px; font-weight:600;">일반</div></div>
+                                        <div id="gradeUnivBox" style="text-align:center; display:none;"><span id="ageUniv" style="font-size:2rem; font-weight:700;">-</span><div style="font-size:0.8rem; color:#94a3b8; margin-top:5px; font-weight:600;">대학</div></div>
+                                        <div id="gradeHighBox" style="text-align:center; display:none;"><span id="ageHigh" style="font-size:2rem; font-weight:700;">-</span><div style="font-size:0.8rem; color:#94a3b8; margin-top:5px; font-weight:600;">고등</div></div>
+                                        <div id="gradeMiddleBox" style="text-align:center; display:none;"><span id="ageMiddle" style="font-size:2rem; font-weight:700;">-</span><div style="font-size:0.8rem; color:#94a3b8; margin-top:5px; font-weight:600;">중등</div></div>
+                                        <div id="gradeElemBox" style="text-align:center; display:none;"><span id="ageElem" style="font-size:2rem; font-weight:700;">-</span><div style="font-size:0.8rem; color:#94a3b8; margin-top:5px; font-weight:600;">초등</div></div>
                                     </div>
                                 </div>
                                 <!-- Row 3 -->
@@ -366,8 +368,8 @@
 
     <!-- Load Chart.js from CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="shared_calc.js?v=20260621-6"></script>
-    <script src="stats.js?v=20260621-6"></script>
+    <script src="shared_calc.js?v=20260621-7"></script>
+    <script src="stats.js?v=20260621-7"></script>
     <script>
         // Set Date to today
         const d = new Date();

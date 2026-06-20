@@ -297,44 +297,63 @@ function updateDashboard() {
     
     const courseSet = new Set();
     let adults = 0;
-    let students = 0;
-    let children = 0;
+    let grades = { '일반': 0, '대학': 0, '고등': 0, '중등': 0, '초등': 0 };
+    
     activeMembers.forEach(m => {
         if (m.course) {
             m.course.split(',').forEach(c => courseSet.add(c.split('(')[0].trim()));
         }
         
-        let gradeType = '고등/일반';
-        if (m.age) {
-            const ageNum = parseInt(m.age);
-            if (ageNum < 14) gradeType = '초등';
-            else if (ageNum < 17) gradeType = '중등';
-            else gradeType = '고등/일반';
+        let remarks = '';
+        if (m.type === 'student') {
+            const schoolName = m.school || '';
+            const schoolLevel = m.school_level ? `(${m.school_level})` : '';
+            const gradeStrExt = m.grade ? `${m.grade}학년` : '';
+            remarks = `${schoolName} ${schoolLevel} ${gradeStrExt}`.trim();
         } else {
-            const school = m.school || '';
-            const gradeStr = m.grade || '';
-            if (school.includes('초등') || gradeStr.includes('초등') || gradeStr.includes('초')) {
-                gradeType = '초등';
-            } else if (school.includes('중학교') || school.includes('중등') || gradeStr.includes('중등') || gradeStr.includes('중')) {
-                gradeType = '중등';
-            } else if (school.includes('고등') || school.includes('고교') || gradeStr.includes('고등') || gradeStr.includes('고')) {
-                gradeType = '고등/일반';
-            } else if (m.type === 'general') {
-                gradeType = '고등/일반';
+            remarks = m.job || '';
+        }
+        
+        let gradeType = '일반';
+        if (remarks.includes('초등') || remarks.match(/초(\s|[0-9]학년|$)/)) {
+            gradeType = '초등';
+        } else if (remarks.includes('중등') || remarks.includes('중학교') || remarks.match(/중(\s|[0-9]학년|$)/)) {
+            gradeType = '중등';
+        } else if (remarks.includes('고등') || remarks.includes('고교') || remarks.includes('고등학교') || remarks.match(/고(\s|[0-9]학년|$)/)) {
+            gradeType = '고등';
+        } else if (remarks.includes('대학') || remarks.match(/대(\s|[0-9]학년|$)/)) {
+            gradeType = '대학';
+        } else if (m.type === 'general') {
+            gradeType = '일반';
+        } else {
+            if (m.age) {
+                const ageNum = parseInt(m.age);
+                if (ageNum < 14) gradeType = '초등';
+                else if (ageNum < 17) gradeType = '중등';
+                else if (ageNum < 20) gradeType = '고등';
+                else gradeType = '대학';
             } else {
-                gradeType = '고등/일반'; // Default
+                gradeType = '일반';
             }
         }
         
-        if (gradeType === '고등/일반') adults++;
-        else if (gradeType === '중등') students++;
-        else children++;
+        grades[gradeType]++;
     });
     
     if(document.getElementById('dashCourses')) document.getElementById('dashCourses').innerText = courseSet.size;
-    if(document.getElementById('ageAdult')) document.getElementById('ageAdult').innerText = adults;
-    if(document.getElementById('ageStudent')) document.getElementById('ageStudent').innerText = students;
-    if(document.getElementById('ageChild')) document.getElementById('ageChild').innerText = children;
+    
+    // Hide or show based on count > 0
+    const updateGradeBox = (id, boxId, count) => {
+        if (document.getElementById(id) && document.getElementById(boxId)) {
+            document.getElementById(id).innerText = count;
+            document.getElementById(boxId).style.display = count > 0 ? 'block' : 'none';
+        }
+    };
+    updateGradeBox('ageGeneral', 'gradeGeneralBox', grades['일반']);
+    updateGradeBox('ageUniv', 'gradeUnivBox', grades['대학']);
+    updateGradeBox('ageHigh', 'gradeHighBox', grades['고등']);
+    updateGradeBox('ageMiddle', 'gradeMiddleBox', grades['중등']);
+    updateGradeBox('ageElem', 'gradeElemBox', grades['초등']);
     
     // Vehicles & Missed Calls
     let vehicle1 = 0;
