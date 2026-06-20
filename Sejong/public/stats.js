@@ -608,74 +608,33 @@ function renderAttendanceChart(attendance, startObj, endObj) {
         labels.push(`${d.getMonth()+1}/${d.getDate()}`);
         data.push(dayMap[dStr] ? dayMap[dStr].size : 0);
     }
-    const ctx2d = ctx.getContext('2d');
-    
-    // Create a beautiful cylinder-like vertical gradient for the bars
-    const gradientFill = ctx2d.createLinearGradient(0, 0, 0, 300);
-    gradientFill.addColorStop(0, 'rgba(167, 139, 250, 1)'); // Lighter purple top
-    gradientFill.addColorStop(0.5, 'rgba(124, 58, 237, 0.9)'); // Deep purple middle
-    gradientFill.addColorStop(1, 'rgba(91, 33, 182, 0.7)'); // Dark purple bottom
-
-    attendanceChartInstance = new Chart(ctx2d, {
-        type: 'bar',
+    attendanceChartInstance = new Chart(ctx.getContext('2d'), {
+        type: 'line',
         data: {
             labels: labels,
             datasets: [{
                 label: '출석 수 (명)',
                 data: data,
-                backgroundColor: gradientFill,
-                borderColor: 'rgba(255, 255, 255, 0.4)', // Slight glass reflection on edges
-                borderWidth: { top: 2, right: 0, bottom: 0, left: 0 },
-                borderRadius: 8, // Rounded top to look like a cylinder
-                borderSkipped: false,
-                barPercentage: 0.6,
-                categoryPercentage: 0.8,
-                hoverBackgroundColor: '#8b5cf6'
+                borderColor: '#8b5cf6',
+                backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: '#ffffff',
+                pointBorderColor: '#8b5cf6',
+                pointBorderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 6
             }]
         },
-        plugins: [{
-            id: 'glowShadow',
-            beforeDatasetDraw: function(chart) {
-                const ctx = chart.ctx;
-                ctx.save();
-                // 3D Drop Shadow for the bars to stand out from the background
-                ctx.shadowColor = 'rgba(109, 40, 217, 0.5)';
-                ctx.shadowBlur = 10;
-                ctx.shadowOffsetX = 3;
-                ctx.shadowOffsetY = 5;
-            },
-            afterDatasetDraw: function(chart) {
-                chart.ctx.restore();
-            }
-        }],
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { 
-                legend: { display: false },
-                tooltip: {
-                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                    titleColor: '#1e293b',
-                    bodyColor: '#1e293b',
-                    borderColor: '#e2e8f0',
-                    borderWidth: 1,
-                    padding: 12,
-                    boxPadding: 6,
-                    cornerRadius: 8,
-                    usePointStyle: true,
-                    titleFont: { size: 13, weight: 'bold' }
-                }
-            },
+            plugins: { legend: { display: false } },
             scales: {
-                x: {
-                    grid: { display: false, drawBorder: false },
-                    ticks: { font: { weight: '600' }, color: '#64748b' }
-                },
                 y: {
                     beginAtZero: true,
-                    ticks: { stepSize: 1, font: { weight: '600' }, color: '#64748b' },
-                    border: { display: false },
-                    grid: { color: '#f8fafc', lineWidth: 1 }
+                    ticks: { stepSize: 1 }
                 }
             }
         }
