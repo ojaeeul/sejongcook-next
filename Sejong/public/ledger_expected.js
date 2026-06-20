@@ -574,12 +574,12 @@ function renderTable(container, title, members, id) {
                     <span style="font-weight: 900; font-size: 0.85rem; color: #000;">${m.name || ''}</span>
                 </div>
                 <div style="font-size: 0.7rem; color: #64748b;">${m.phone || ''}</div>
-                <div style="margin-top: 4px; display: flex; flex-direction: column; gap: 2px;">
+                <div style="margin-top: 4px; display: flex; flex-direction: column; gap: 0px; padding-bottom: 2px;">
                     ${(() => {
-                        const courses = (m.course || '').split(',').map(c => c.trim());
+                        const courses = (m.course || '').split(',').map(c => c.trim()).filter(c => c && !c.includes('[삭제]'));
+                        if (courses.length === 0) return `<div style="height: 38px;"></div>`;
                         return courses.map(c => {
-                            if (!c || c.includes('[삭제]')) return '';
-                            return `<div style="font-size: 0.6rem; color: #1d4ed8; background: #eff6ff; padding: 1px 3px; border-radius: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${c}</div>`;
+                            return `<div style="height: 38px; font-size: 0.6rem; color: #1d4ed8; background: #eff6ff; padding: 2px 4px; border-radius: 2px; display: flex; align-items: center; justify-content: center; text-align: center; line-height: 1.1; overflow: hidden; word-break: keep-all; margin-bottom: 2px;">${c}</div>`;
                         }).join('');
                     })()}
                 </div>
@@ -598,41 +598,75 @@ function renderTable(container, title, members, id) {
 
         const paid = paymentsData.filter(p => String(p.memberId) === String(m.id) && String(p.year) === String(currentYear) && String(p.month) === String(currentMonth) && p.status === 'paid');
 
-        for (let day = 1; day <= daysInMonth; day++) {
-            let cellHTML = '';
-            
-            // Expected
-            const expectedToday = schedules.filter(s => parseInt(s.eighthDay) === day);
-            if (expectedToday.length > 0) {
-                expectedToday.forEach(s => {
-                    const feeColor = s.isSimulated ? '#3b82f6' : '#d946ef';
-                    cellHTML += `
-                    <div style="font-size: 0.6rem; font-weight: 800; display: flex; flex-direction: column; align-items: center; background: #f8fafc; border: 1px solid ${feeColor}; border-radius: 4px; padding: 2px; margin-bottom: 2px;">
-                        <div style="color: ${feeColor};">${s.fee / 10000}만</div>
-                        <div style="font-size: 0.55rem; color: #64748b; line-height: 1;">${(s.course || '').replace('기능사', '')}</div>
-                    </div>`;
-                });
-            }
+        const activeCourses = (m.course || '').split(',').map(c => c.trim()).filter(c => c && !c.includes('[삭제]'));
+        const slotsCount = Math.max(1, activeCourses.length);
 
-            // Actual
-            const paidToday = paid.filter(p => new Date(p.updatedAt).getDate() === day);
-            if (paidToday.length > 0) {
-                let uniquePaid = [...paidToday];
-                if (uniquePaid.length > 1 && uniquePaid.some(up => !up.course || up.course === 'null' || up.course === 'undefined' || up.course === '')) {
-                    uniquePaid = uniquePaid.filter(up => up.course && up.course !== 'null' && up.course !== 'undefined' && up.course !== '');
-                    if (uniquePaid.length === 0) uniquePaid = [paidToday[0]];
+        for (let day = 1; day <= daysInMonth; day++) {
+            let cellHTML = `<div style="display: flex; flex-direction: column; gap: 0px; height: 100%; min-height: ${(slotsCount * 38) + (slotsCount * 2)}px;">`;
+            
+            for (let slot = 0; slot < slotsCount; slot++) {
+                const c = activeCourses[slot] || '';
+                
+                let slotBg = '#ffffff';
+                const dayOfWeek = new Date(currentYear, currentMonth - 1, day).getDay();
+                const dateStr = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const isHolidayInSys = holidaysData.find(h => h.date === dateStr);
+                const isNationalHoliday = !!KOREAN_HOLIDAYS_MAP[dateStr];
+                
+                if (isHolidayInSys || isNationalHoliday || dayOfWeek === 0) {
+                    slotBg = '#f1f5f9'; // 휴일 회색
+                } else if (c && window.COURSE_SCHEDULES && window.COURSE_SCHEDULES[c]) {
+                    if (!window.COURSE_SCHEDULES[c].includes(dayOfWeek)) {
+                        slotBg = '#f1f5f9'; // 수업 없는 요일 회색
+                    }
+                }
+
+                // Expected
+                const expectedToday = schedules.filter(s => parseInt(s.eighthDay) === day && (!s.course || s.course.includes(c) || c.includes(s.course) || activeCourses.length === 0));
+                
+                // Actual 
+                const matchC = c.split('(')[0].trim();
+                const paidToday = paid.filter(p => {
+                    const pdDay = new Date(p.updatedAt || p.date).getDate();
+                    if (pdDay !== day) return false;
+                    const pCourse = p.course ? p.course.split('(')[0].trim() : '';
+                    return pCourse === matchC || !c || pCourse.includes(matchC) || matchC.includes(pCourse);
+                });
+
+                let slotContent = '';
+                
+                if (expectedToday.length > 0) {
+                    expectedToday.forEach(s => {
+                        const feeColor = s.isSimulated ? '#3b82f6' : '#d946ef';
+                        slotContent += `
+                        <div style="font-size: 0.6rem; font-weight: 800; display: flex; flex-direction: column; align-items: center; background: #f8fafc; border: 1px solid ${feeColor}; border-radius: 4px; padding: 2px;">
+                            <div style="color: ${feeColor};">${s.fee / 10000}만</div>
+                        </div>`;
+                    });
                 }
                 
-                uniquePaid.forEach(p => {
-                    cellHTML += `
-                    <div style="font-size: 0.6rem; font-weight: 800; display: flex; flex-direction: column; align-items: center; background: #ecfdf5; border: 1px solid #059669; border-radius: 4px; padding: 2px; margin-bottom: 2px;">
-                        <div style="color: #059669;">${p.amount / 10000}만(실)</div>
-                        ${p.course && p.course !== 'null' && p.course !== 'undefined' ? `<div style="font-size: 0.55rem; color: #047857; line-height: 1;">${p.course.replace('기능사', '')}</div>` : ''}
-                    </div>`;
-                });
+                if (paidToday.length > 0) {
+                    let uniquePaid = [...paidToday];
+                    uniquePaid.forEach(p => {
+                        const amt = p.amount ? (p.amount / 10000) + '만(실)' : '완료(실)';
+                        slotContent += `
+                        <div style="font-size: 0.6rem; font-weight: 800; display: flex; flex-direction: column; align-items: center; background: #ecfdf5; border: 1px solid #059669; border-radius: 4px; padding: 2px;">
+                            <div style="color: #059669;">${amt}</div>
+                        </div>`;
+                    });
+                }
+                
+                cellHTML += `
+                <div style="flex: 1; min-height: 38px; display: flex; flex-direction: column; justify-content: center; align-items: center; background: ${slotBg}; border-radius: 0px; padding: 1px; margin-bottom: 2px;">
+                    ${slotContent}
+                </div>`;
             }
+            cellHTML += `</div>`;
 
-            html += `<td style="vertical-align: top; text-align: center; border-right: 1px dotted #cbd5e1; padding: 2px;">${cellHTML}</td>`;
+            const isToday = (currentYear === new Date().getFullYear() && currentMonth === new Date().getMonth() + 1 && day === new Date().getDate());
+            const todayStyle = isToday ? 'border-right: 2px solid #fbbf24; border-left: 2px solid #fbbf24;' : 'border-right: 1px dotted #cbd5e1;';
+
+            html += `<td style="vertical-align: top; text-align: center; ${todayStyle} padding: 2px;">${cellHTML}</td>`;
         }
 
         html += `</tr>`;
