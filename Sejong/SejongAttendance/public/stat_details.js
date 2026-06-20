@@ -13,8 +13,8 @@ const config = {
     unpaid: {
         title: '미납자 상세 조회', icon: 'warning', color: '#f43f5e',
         overallTitle: '전체 미납액 합계',
-        t1Label: '연령대/구분', t2Label: '과정 선택', t3Label: '미납자 목록',
-        t2Empty: '구분을 먼저 선택해주세요.', t3Empty: '과정을 먼저 선택해주세요.'
+        t1Label: '연도 선택', t2Label: '월 선택', t3Label: '미납자 목록',
+        t2Empty: '연도를 먼저 선택해주세요.', t3Empty: '월을 먼저 선택해주세요.'
     },
     students: {
         title: '학생수 상세 현황', icon: 'groups', color: '#3b82f6',
@@ -62,12 +62,27 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Load Data
     try {
-        const [mRes, pRes] = await Promise.all([
-            fetch(`/api/sejong/members?t=${Date.now()}`),
-            fetch(`/api/sejong/payments?t=${Date.now()}`)
-        ]);
-        globalMembers = await mRes.json();
-        globalPayments = await pRes.json();
+        if (type === 'unpaid') {
+            const [mRes, pRes, aRes, sRes] = await Promise.all([
+                fetch(`/api/sejong/members?t=${Date.now()}`),
+                fetch(`/api/sejong/payments?t=${Date.now()}`),
+                fetch(`/api/sejong/attendance?t=${Date.now()}`),
+                fetch(`/api/sejong/settings?t=${Date.now()}`)
+            ]);
+            globalMembers = await mRes.json();
+            globalPayments = await pRes.json();
+            window.attendanceData = await aRes.json();
+            const rawSettings = await sRes.json();
+            const settings = Array.isArray(rawSettings) ? rawSettings[0] : rawSettings;
+            window.courseFees = settings && settings.courseFees ? settings.courseFees : {};
+        } else {
+            const [mRes, pRes] = await Promise.all([
+                fetch(`/api/sejong/members?t=${Date.now()}`),
+                fetch(`/api/sejong/payments?t=${Date.now()}`)
+            ]);
+            globalMembers = await mRes.json();
+            globalPayments = await pRes.json();
+        }
         
         processData();
     } catch(e) {
@@ -116,26 +131,78 @@ function processData() {
         document.getElementById('overallValue').innerText = overallValue.toLocaleString() + '원';
     } 
     else if (type === 'unpaid') {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const DEFAULT_PRICE = 200000;
+        
         activeMembers.forEach(m => {
-            const uAmt = parseInt(m.unpaid_amount) || 0;
-            if (uAmt > 0) {
-                overallValue += uAmt;
-                
-                const ageGroup = getAgeGroup(m.age);
-                const firstCourse = m.course ? m.course.split(',')[0].split('(')[0].trim() : '미지정';
-                
-                if(!parsedData[ageGroup]) parsedData[ageGroup] = { total: 0, children: {} };
-                parsedData[ageGroup].total += uAmt;
-                
-                if(!parsedData[ageGroup].children[firstCourse]) parsedData[ageGroup].children[firstCourse] = { total: 0, items: [] };
-                parsedData[ageGroup].children[firstCourse].total += uAmt;
-                
-                parsedData[ageGroup].children[firstCourse].items.push({
-                    name: m.name,
-                    subText: m.phone || '연락처 없음',
-                    amount: uAmt
-                });
+            let myCourses = (m.course || '').split(',').map(c => c.trim()).filter(c => c !== '');
+            
+            const hasJeggwa = myCourses.some(c => c.includes('제과') && !c.includes('제과제빵'));
+            const hasJeppang = myCourses.some(c => c.includes('제빵') && !c.includes('제과제빵'));
+            if (hasJeggwa && hasJeppang) {
+                myCourses = myCourses.filter(c => !c.includes('제과') && !c.includes('제빵'));
+                myCourses.push('제과제빵기능사');
             }
+            if (myCourses.some(c => c.includes('제과') && !c.includes('제과제빵')) && myCourses.some(c => c.includes('제빵') && !c.includes('제과제빵'))) {
+                myCourses = myCourses.filter(c => !c.includes('제과') && !c.includes('제빵'));
+                myCourses.push('제과제빵기능사');
+            }
+            if (myCourses.length === 0) myCourses.push('');
+
+            myCourses.forEach(fullCourse => {
+                const courseNameOnly = fullCourse ? fullCourse.split('(')[0].trim() : '';
+                const courseFee = window.courseFees[courseNameOnly] || window.courseFees['all'] || DEFAULT_PRICE;
+                
+                if (typeof window.calculateRedBoxesForMonth === 'function') {
+                    const stats = window.calculateRedBoxesForMonth(m, today.getFullYear(), today.getMonth()+1, window.attendanceData, courseNameOnly, {});
+                    
+                    if (stats && stats.allMilestones) {
+                        let currentProgressObj = stats.currentCount || { count: 0, target: 9 };
+                        let remainingForLoop = currentProgressObj.count;
+                        const isDualBakeryLocal = (courseNameOnly && courseNameOnly.replace(/\s/g, '').includes('제과제빵')) || (!courseNameOnly && m.course && m.course.replace(/\s/g, '').includes('제과제빵'));
+                        const firstTargetCount = isDualBakeryLocal ? 17 : 9;
+                        const subTargetCount = isDualBakeryLocal ? 16 : 8;
+                        let isFirstCycleForThisCourse = true;
+                        const normalizeCourse = (c) => (!c || c === 'null') ? null : String(c).trim();
+
+                        stats.allMilestones.forEach(ms => {
+                            let currentTargetCount = isFirstCycleForThisCourse ? firstTargetCount : subTargetCount;
+                            const msPayment = globalPayments.find(p => p.memberId == m.id && p.year == ms.year && p.month == ms.month && normalizeCourse(p.course) === normalizeCourse(courseNameOnly) && p.status !== 'delete');
+                            
+                            if (msPayment && msPayment.status === 'paid') {
+                                remainingForLoop -= currentTargetCount;
+                                isFirstCycleForThisCourse = false;
+                            } else {
+                                const msDateObj = new Date(ms.year, ms.month - 1, ms.day);
+                                const isActualOverdue = remainingForLoop >= currentTargetCount || (ms.isReal !== false && msDateObj <= today);
+                                
+                                if (isActualOverdue) {
+                                    const yearStr = ms.year + '년';
+                                    const monthStr = ms.month + '월';
+                                    const uAmt = courseFee;
+                                    
+                                    overallValue += uAmt;
+                                    
+                                    if(!parsedData[yearStr]) parsedData[yearStr] = { total: 0, children: {} };
+                                    parsedData[yearStr].total += uAmt;
+                                    
+                                    if(!parsedData[yearStr].children[monthStr]) parsedData[yearStr].children[monthStr] = { total: 0, items: [] };
+                                    parsedData[yearStr].children[monthStr].total += uAmt;
+                                    
+                                    parsedData[yearStr].children[monthStr].items.push({
+                                        name: `${m.name} (${courseNameOnly})`,
+                                        subText: m.phone || '연락처 없음',
+                                        amount: uAmt
+                                    });
+                                }
+                                remainingForLoop -= currentTargetCount;
+                                isFirstCycleForThisCourse = false;
+                            }
+                        });
+                    }
+                }
+            });
         });
         document.getElementById('overallValue').innerText = overallValue.toLocaleString() + '원';
     }
