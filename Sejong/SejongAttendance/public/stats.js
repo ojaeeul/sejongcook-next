@@ -299,14 +299,32 @@ function updateDashboard() {
         if (m.course) {
             m.course.split(',').forEach(c => courseSet.add(c.split('(')[0].trim()));
         }
+        
+        let gradeType = '고등/일반';
         if (m.age) {
             const ageNum = parseInt(m.age);
-            if (ageNum >= 20) adults++;
-            else if (ageNum >= 14) students++;
-            else children++;
+            if (ageNum < 14) gradeType = '초등';
+            else if (ageNum < 17) gradeType = '중등';
+            else gradeType = '고등/일반';
         } else {
-            adults++; // default to adult
+            const school = m.school || '';
+            const gradeStr = m.grade || '';
+            if (school.includes('초등') || gradeStr.includes('초등') || gradeStr.includes('초')) {
+                gradeType = '초등';
+            } else if (school.includes('중학교') || school.includes('중등') || gradeStr.includes('중등') || gradeStr.includes('중')) {
+                gradeType = '중등';
+            } else if (school.includes('고등') || school.includes('고교') || gradeStr.includes('고등') || gradeStr.includes('고')) {
+                gradeType = '고등/일반';
+            } else if (m.type === 'general') {
+                gradeType = '고등/일반';
+            } else {
+                gradeType = '고등/일반'; // Default
+            }
         }
+        
+        if (gradeType === '고등/일반') adults++;
+        else if (gradeType === '중등') students++;
+        else children++;
     });
     
     if(document.getElementById('dashCourses')) document.getElementById('dashCourses').innerText = courseSet.size;
