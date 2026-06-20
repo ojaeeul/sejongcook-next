@@ -272,36 +272,36 @@
                                                 <div>
                                                     <h4 style="text-align:center; color: #334155; margin-top: 0; margin-bottom: 20px; font-weight: 700;">강좌, 인원 정보 분석</h4>
                                                     <div style="background: white; border-radius: 12px; padding: 25px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                                                        <div class="comp-box box-blue">현원</div>
-                                                        <div class="comp-box box-blue">신규</div>
-                                                        <div class="comp-box box-blue">수료</div>
-                                                        <div class="comp-box box-blue">대기</div>
-                                                        <div class="comp-box box-blue">전입</div>
-                                                        <div class="comp-box box-blue">전출</div>
+                                                        <div class="comp-box box-blue hover-scale" onclick="location.href='analysis_details.html?category=members&type=current_members'">현원</div>
+                                                        <div class="comp-box box-blue hover-scale" onclick="location.href='analysis_details.html?category=members&type=new_members'">신규</div>
+                                                        <div class="comp-box box-blue hover-scale" onclick="location.href='analysis_details.html?category=members&type=completed'">수료</div>
+                                                        <div class="comp-box box-blue hover-scale" onclick="location.href='analysis_details.html?category=members&type=waiting'">대기</div>
+                                                        <div class="comp-box box-blue hover-scale" onclick="location.href='analysis_details.html?category=members&type=transfer_in'">전입</div>
+                                                        <div class="comp-box box-blue hover-scale" onclick="location.href='analysis_details.html?category=members&type=transfer_out'">전출</div>
                                                     </div>
                                                 </div>
                                                 <!-- 학사정보 -->
                                                 <div>
                                                     <h4 style="text-align:center; color: #334155; margin-top: 0; margin-bottom: 20px; font-weight: 700;">학사정보 분석</h4>
                                                     <div style="background: white; border-radius: 12px; padding: 25px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                                                        <div class="comp-box box-green">출석</div>
-                                                        <div class="comp-box box-green">지각</div>
-                                                        <div class="comp-box box-green">결석</div>
-                                                        <div class="comp-box box-green">조퇴</div>
-                                                        <div class="comp-box box-green">보강</div>
-                                                        <div class="comp-box box-green">상담</div>
+                                                        <div class="comp-box box-green hover-scale" onclick="location.href='analysis_details.html?category=attendance&type=present'">출석</div>
+                                                        <div class="comp-box box-green hover-scale" onclick="location.href='analysis_details.html?category=attendance&type=late'">지각</div>
+                                                        <div class="comp-box box-green hover-scale" onclick="location.href='analysis_details.html?category=attendance&type=absent'">결석</div>
+                                                        <div class="comp-box box-green hover-scale" onclick="location.href='analysis_details.html?category=attendance&type=early_leave'">조퇴</div>
+                                                        <div class="comp-box box-green hover-scale" onclick="location.href='analysis_details.html?category=attendance&type=makeup'">보강</div>
+                                                        <div class="comp-box box-green hover-scale" onclick="location.href='analysis_details.html?category=attendance&type=consult'">상담</div>
                                                     </div>
                                                 </div>
                                                 <!-- 매출정보 -->
                                                 <div>
                                                     <h4 style="text-align:center; color: #334155; margin-top: 0; margin-bottom: 20px; font-weight: 700;">매출정보 분석</h4>
                                                     <div style="background: white; border-radius: 12px; padding: 25px; display: flex; flex-direction: column; gap: 15px;">
-                                                        <div class="comp-box box-pink" style="width: 100%;">기간 매출</div>
+                                                        <div class="comp-box box-pink hover-scale" style="width: 100%;" onclick="location.href='analysis_details.html?category=revenue&type=period_revenue'">기간 매출</div>
                                                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                                                            <div class="comp-box box-pink">매출일 기준 납입</div>
-                                                            <div class="comp-box box-pink">납부일 기준 납입</div>
-                                                            <div class="comp-box box-pink">매출일 기준 미납</div>
-                                                            <div class="comp-box box-pink">전체 누적 미납</div>
+                                                            <div class="comp-box box-pink hover-scale" onclick="location.href='analysis_details.html?category=revenue&type=sales_date_paid'">매출일 기준 납입</div>
+                                                            <div class="comp-box box-pink hover-scale" onclick="location.href='analysis_details.html?category=revenue&type=payment_date_paid'">납부일 기준 납입</div>
+                                                            <div class="comp-box box-pink hover-scale" onclick="location.href='analysis_details.html?category=revenue&type=sales_date_unpaid'">매출일 기준 미납</div>
+                                                            <div class="comp-box box-pink hover-scale" onclick="location.href='analysis_details.html?category=revenue&type=total_unpaid'">전체 누적 미납</div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -367,8 +367,8 @@
 
     <!-- Load Chart.js from CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="shared_calc.js?v=20260621-13"></script>
-    <script src="stats.js?v=20260621-13"></script>
+    <script src="shared_calc.js?v=20260621-14"></script>
+    <script src="stats.js?v=20260621-14"></script>
     <script>
         // Set Date to today
         const d = new Date();
