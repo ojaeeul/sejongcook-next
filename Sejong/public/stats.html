@@ -152,7 +152,7 @@
                                     <div class="d-val" id="dashCourses">-</div>
                                     <div class="d-badges"><span class="bg-green">신규 -</span><span class="bg-red">종료 -</span></div>
                                 </div>
-                                <div class="daily-card">
+                                <div class="daily-card" style="cursor: pointer; transition: transform 0.2s;" onclick="location.href='stat_details.html?type=grades'" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'" title="클릭하여 학년별 상세 보기">
                                     <div class="d-title">학년별</div>
                                     <div class="d-val" style="display:flex; justify-content: space-around; width:100%;">
                                         <div style="text-align:center;"><span id="ageAdult" style="font-size:2rem; font-weight:700;">-</span><div style="font-size:0.8rem; color:#94a3b8; margin-top:5px; font-weight:600;">고등/일반</div></div>
@@ -366,8 +366,8 @@
 
     <!-- Load Chart.js from CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="shared_calc.js?v=20260620-58"></script>
-    <script src="stats.js?v=20260620-58"></script>
+    <script src="shared_calc.js?v=20260620-59"></script>
+    <script src="stats.js?v=20260620-59"></script>
     <script>
         // Set Date to today
         const d = new Date();

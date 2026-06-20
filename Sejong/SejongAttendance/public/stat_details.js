@@ -22,6 +22,12 @@ const config = {
         t1Label: '총인원', t2Label: '수강 과목', t3Label: '해당 학생 명단',
         t2Empty: '구분을 먼저 선택해주세요.', t3Empty: '과목을 먼저 선택해주세요.'
     },
+    grades: {
+        title: '학년별 상세 현황', icon: 'school', color: '#f59e0b',
+        overallTitle: '전체 활성 수강생',
+        t1Label: '구분', t2Label: '수강 과목', t3Label: '해당 학생 명단',
+        t2Empty: '구분을 먼저 선택해주세요.', t3Empty: '과목을 먼저 선택해주세요.'
+    },
     courses: {
         title: '강좌별 상세 현황', icon: 'local_library', color: '#8b5cf6',
         overallTitle: '전체 개설 강좌 수',
@@ -268,6 +274,59 @@ function processData() {
 
         // Remove empty groups to keep the UI clean if preferred, or leave them. Let's leave them.
         overallValue = parsedData['총인원'].total;
+        document.getElementById('overallValue').innerText = overallValue + '명';
+    }
+    else if (type === 'grades') {
+        const baseMembers = globalMembers.filter(m => !['trash', 'delete'].includes(m.status));
+        
+        parsedData['일반인'] = { total: 0, children: {} };
+        parsedData['대학생'] = { total: 0, children: {} };
+        parsedData['고등학생'] = { total: 0, children: {} };
+        parsedData['중학생'] = { total: 0, children: {} };
+        parsedData['초등학생'] = { total: 0, children: {} };
+
+        baseMembers.forEach(m => {
+            let gradeType = '일반인'; // Default
+            
+            const school = m.school || '';
+            const gradeStr = m.grade || '';
+            
+            if (m.age && parseInt(m.age) < 14) {
+                gradeType = '초등학생';
+            } else if (m.age && parseInt(m.age) < 17) {
+                gradeType = '중학생';
+            } else if (m.age && parseInt(m.age) < 20) {
+                gradeType = '고등학생';
+            } else if (school.includes('초등') || gradeStr.includes('초등') || gradeStr.includes('초')) {
+                gradeType = '초등학생';
+            } else if (school.includes('중학교') || school.includes('중등') || gradeStr.includes('중등') || gradeStr.includes('중')) {
+                gradeType = '중학생';
+            } else if (school.includes('고등') || school.includes('고교') || gradeStr.includes('고등') || gradeStr.includes('고')) {
+                gradeType = '고등학생';
+            } else if (school.includes('대학') || gradeStr.includes('대학') || school.includes('대')) {
+                gradeType = '대학생';
+            } else if (m.type === 'general') {
+                gradeType = '일반인';
+            } else {
+                gradeType = '일반인'; 
+            }
+            
+            const courses = m.course ? m.course.split(',').map(c => c.split('(')[0].trim()).filter(c=>c) : ['미지정'];
+            courses.forEach(c => {
+                overallValue++;
+                if (!parsedData[gradeType]) parsedData[gradeType] = { total: 0, children: {} };
+                parsedData[gradeType].total++;
+                
+                if (!parsedData[gradeType].children[c]) parsedData[gradeType].children[c] = { total: 0, items: [] };
+                parsedData[gradeType].children[c].total++;
+                
+                parsedData[gradeType].children[c].items.push({
+                    name: m.name,
+                    subText: `소속: ${m.school || m.job || '정보 없음'} | 연락처: ${m.phone || '없음'}`,
+                    amount: 1
+                });
+            });
+        });
         document.getElementById('overallValue').innerText = overallValue + '명';
     }
     else if (type === 'courses') {
