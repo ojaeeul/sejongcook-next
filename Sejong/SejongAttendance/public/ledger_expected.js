@@ -286,8 +286,8 @@ function getAllLedgerMonthStats(memberId, year, month) {
 
     courses.forEach(courseName => {
         const stats = getLedgerMonthStats(memberId, year, month, courseName);
-        // User Request: 출석 날짜가 없는 수강생은 수강료예정일 표시하지 마시고, 출석이 1개라도 있으면 표시하세요.
-        if (stats.hasAnyAttendance) {
+        // User Request (Reverted): 이제 가상/예정 내역을 모두 표시하기 위해 조건 해제
+        if (true) {
             if (stats.milestones && stats.milestones.length > 0) {
                 stats.milestones.forEach(ms => {
                     results.push({
@@ -626,8 +626,14 @@ function renderTable(container, title, members, id) {
 
                 let slotHTML = `<div style="height: 38px; background: ${bg}; position: relative; border-radius: 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; padding: 1px;">`;
 
-                const matchingExpected = schedules.filter(s => parseInt(s.eighthDay) === day && (s.course === c || (!s.course && slot === 0)));
-                const matchingPaid = paid.filter(p => new Date(p.updatedAt).getDate() === day && (p.course === c || (!p.course && slot === 0) || p.course === 'null' || p.course === 'undefined' || p.course === ''));
+                const cleanC = c.split('(')[0].trim();
+                const matchC = (targetCourse) => {
+                    if (!targetCourse || targetCourse === 'null' || targetCourse === 'undefined' || targetCourse === '') return false;
+                    return targetCourse.split('(')[0].trim() === cleanC;
+                };
+
+                const matchingExpected = schedules.filter(s => parseInt(s.eighthDay) === day && (matchC(s.course) || (!s.course && slot === 0)));
+                const matchingPaid = paid.filter(p => new Date(p.updatedAt).getDate() === day && (matchC(p.course) || (!p.course && slot === 0) || p.course === 'null' || p.course === 'undefined' || p.course === ''));
 
                 matchingExpected.forEach(s => {
                     const feeColor = s.isSimulated ? '#3b82f6' : '#d946ef';
@@ -644,7 +650,6 @@ function renderTable(container, title, members, id) {
                 uniquePaid.forEach(p => {
                     slotHTML += `<div style="font-size: 0.55rem; font-weight: 800; color: #059669; background: #ecfdf5; padding: 1px 2px; border-radius: 2px; line-height: 1.1; margin-top: 1px;">${p.amount / 10000}만(실)</div>`;
                 });
-
                 cellHTML += slotHTML + `</div>`;
             }
 
