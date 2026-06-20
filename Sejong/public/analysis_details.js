@@ -174,7 +174,13 @@ function applyFilters() {
         });
 
         kpiData = [
-            { label: `누적 ${attTarget} 횟수`, value: totalAtt, unit: '건', icon: conf.icon }
+            { 
+                label: `누적 ${attTarget} 횟수`, 
+                value: totalAtt, 
+                unit: '건', 
+                icon: conf.icon,
+                link: `/sejong/sheet.html?year=${year}&month=${month}`
+            }
         ];
 
         const sortedMonths = Object.keys(trendMap).sort();
@@ -245,6 +251,14 @@ function renderKPIs(data, color) {
         const div = document.createElement('div');
         div.className = 'kpi-card';
         div.style.setProperty('--card-color', color);
+        if (item.link) {
+            div.style.cursor = 'pointer';
+            div.onclick = () => window.location.href = item.link;
+            div.title = "월간 출석부로 이동하여 상세 내용을 확인합니다.";
+            // Add a slight hover effect via CSS inline or rely on existing transition
+            div.onmouseover = () => div.style.transform = 'translateY(-2px)';
+            div.onmouseout = () => div.style.transform = 'translateY(0)';
+        }
         div.innerHTML = `
             <div class="kpi-info">
                 <h3>${item.label}</h3>
