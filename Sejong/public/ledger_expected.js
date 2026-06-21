@@ -1008,7 +1008,8 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
             }
 
             // --- 원장님 완벽 시각적 카운트 룰 시작 ---
-            let firstMarkerDay = 999;
+            let latestMarkerDay = 0;
+            let latestCutoffDay = 0;
             let lastActiveDay = -1;
             let pastAttendances = runningTotal - currentMonthAttendances;
             let attCountSoFar = 0;
@@ -1055,12 +1056,13 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
                 
                 let hasRealAtt = realAttendanceToday.length > 0;
                 let hasSimAtt = simAttendanceToday.length > 0;
-                let isCutoffDay = false;
+                
+                dayStates.push({ day, isClassDay, hasAtt: hasRealAtt || hasSimAtt });
                 
                 if (hasRealAtt || hasSimAtt) {
                     attCountSoFar += attendanceIncrement;
                     if (Math.round((pastAttendances + attCountSoFar) * 10) === Math.round(displayMakeup * 10)) {
-                        isCutoffDay = true;
+                        latestCutoffDay = day;
                     }
                 }
                 
@@ -1068,26 +1070,35 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
                 let hasVirtualPayment = expectedToday.some(s => s.isSimulated);
                 let hasExpectedPayment = expectedToday.some(s => !s.isSimulated);
                 
-                if (hasRealPayment || hasVirtualPayment || hasExpectedPayment || isCutoffDay) {
-                    if (day < firstMarkerDay) firstMarkerDay = day;
+                if (hasRealPayment || hasVirtualPayment || hasExpectedPayment) {
+                    latestMarkerDay = day;
                 }
                 
                 if (hasRealAtt || hasSimAtt || hasRealPayment || hasVirtualPayment || hasExpectedPayment) {
                     if (day > lastActiveDay) lastActiveDay = day;
                 }
-                
-                dayStates.push({ day, isClassDay });
             }
             
+            let firstMarkerDay = 1;
+            if (latestCutoffDay > 0) {
+                firstMarkerDay = latestCutoffDay + 1;
+            }
+            if (latestMarkerDay > firstMarkerDay) {
+                firstMarkerDay = latestMarkerDay;
+            }
+            
+            let emptyBoxesCount = 0;
             if (firstMarkerDay <= daysInMonth && lastActiveDay >= firstMarkerDay) {
-                let visualP = 0;
                 for (let day = firstMarkerDay; day <= lastActiveDay; day++) {
-                    if (dayStates[day - 1].isClassDay) {
-                        visualP += attendanceIncrement;
+                    let state = dayStates[day - 1];
+                    if (state.isClassDay && !state.hasAtt) {
+                        emptyBoxesCount += attendanceIncrement;
                     }
                 }
-                displayP = Math.round(visualP * 10) / 10;
             }
+            
+            let actualCurrentAtts = Math.max(0, Math.round((runningTotal - displayMakeup) * 10) / 10);
+            displayP = Math.round((actualCurrentAtts + emptyBoxesCount) * 10) / 10;
             // --- 원장님 완벽 시각적 카운트 룰 끝 ---
 
             let maxJ = limit;
