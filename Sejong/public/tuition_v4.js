@@ -1346,6 +1346,37 @@ async function saveTuitionSettings() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify([settingsObj])
         });
+
+        // 수강료 설정이 변경되면 기존 납부 내역의 금액들도 자동으로 업데이트 되도록 처리
+        try {
+            const paymentsRes = await fetch(getFetchUrl('payments'));
+            const allPayments = await paymentsRes.json();
+            
+            let paymentsUpdated = false;
+            allPayments.forEach(p => {
+                const member = membersData.find(m => m.id == p.memberId);
+                if (member) {
+                    const newAmount = calculateTotalFee(p.course || member.course, member.type);
+                    if (p.amount !== newAmount) {
+                        p.amount = newAmount;
+                        paymentsUpdated = true;
+                    }
+                }
+            });
+            
+            if (paymentsUpdated) {
+                await fetch(getFetchUrl('payments', true), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(allPayments)
+                });
+                paymentsData = allPayments; // update local var
+                localStorage.setItem('sejong_payment_sync', Date.now().toString());
+            }
+        } catch (err) {
+            console.error("Failed to retroactively update payments", err);
+        }
+
         closeTuitionSettings();
         renderTable();
         showResultModal('저장 완료', '수강료 설정이 저장되었습니다.');
