@@ -534,17 +534,17 @@ function renderTable(container, title, members, id) {
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #0f172a; margin-bottom: 12px; padding: 10px 0;">
             <h2 style="margin: 0; font-size: 1.4rem; font-weight: 900;">${title} (${members.length}명) - ${currentYear}년 ${currentMonth}월</h2>
         </div>
-        <div style="overflow-x: auto; border: 1.5px solid #0f172a; border-radius: 4px; background: #fff;">
-            <table style="width: 100%; border-collapse: collapse; table-layout: fixed; font-family: 'Noto Sans KR', sans-serif; min-width: 1200px;">
+        <div style="overflow: auto; max-height: calc(100vh - 180px); border: 1.5px solid #0f172a; border-radius: 4px; background: #fff;">
+            <table style="width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; font-family: 'Noto Sans KR', sans-serif; min-width: 1200px;">
                 <colgroup>
                     <col style="width: 35px;">
                     <col style="width: 105px;">
                     ${Array.from({ length: daysInMonth }, () => `<col style="width: calc((100% - 140px) / ${daysInMonth});">`).join('')}
                 </colgroup>
                 <thead>
-                    <tr style="background: #f8fafc; border-bottom: 1.5px solid #0f172a;">
-                        <th style="border-right: 1.5px solid #0f172a; font-size: 0.75rem;">NO</th>
-                        <th style="border-right: 1.5px solid #0f172a; font-size: 0.75rem; text-align: left; padding: 10px 5px;">회원정보/과정</th>
+                    <tr style="background: #f8fafc;">
+                        <th style="position: sticky; top: 0; left: 0; z-index: 30; background: #f8fafc; border-bottom: 1.5px solid #0f172a; border-right: 1.5px solid #0f172a; font-size: 0.75rem;">NO</th>
+                        <th style="position: sticky; top: 0; left: 35px; z-index: 30; background: #f8fafc; border-bottom: 1.5px solid #0f172a; border-right: 1.5px solid #0f172a; font-size: 0.75rem; text-align: left; padding: 10px 5px;">회원정보/과정</th>
                         ${Array.from({ length: daysInMonth }, (_, i) => {
                             const day = i + 1;
                             const dateObj = new Date(currentYear, currentMonth - 1, day);
@@ -557,7 +557,7 @@ function renderTable(container, title, members, id) {
                             } else if (dayOfWeek === 6) {
                                 color = '#2563eb';
                             }
-                            return `<th style="border-right: 1px solid #cbd5e1; padding: 4px 2px; font-size:0.75rem; font-weight:800; color: ${color};">${day}일</th>`;
+                            return `<th style="position: sticky; top: 0; z-index: 20; background: #f8fafc; border-bottom: 1.5px solid #0f172a; border-right: 1px solid #cbd5e1; padding: 4px 2px; font-size:0.75rem; font-weight:800; color: ${color};">${day}일</th>`;
                         }).join('')}
                     </tr>
                 </thead>
@@ -567,9 +567,10 @@ function renderTable(container, title, members, id) {
     members.forEach((m, idx) => {
         const isTarget = window.targetMemberId && String(m.id) === String(window.targetMemberId);
         const rowId = `row-${id}-${m.id}`;
-        html += `<tr id="${rowId}" style="border-bottom: 1px solid #0f172a; ${isTarget ? 'background: #fffbeb;' : ''}">
-            <td style="text-align: center; font-weight: 700; border-right: 1.5px solid #0f172a;">${idx + 1}</td>
-            <td style="padding: 0; border-right: 1.5px solid #0f172a; width: 105px; max-width: 105px; overflow: hidden; vertical-align: top;">
+        const trBg = isTarget ? '#fffbeb' : '#ffffff';
+        html += `<tr id="${rowId}" style="background: ${trBg};">
+            <td style="position: sticky; left: 0; z-index: 10; background: inherit; text-align: center; font-weight: 700; border-right: 1.5px solid #0f172a; border-bottom: 1px solid #0f172a;">${idx + 1}</td>
+            <td style="position: sticky; left: 35px; z-index: 10; background: inherit; padding: 0; border-right: 1.5px solid #0f172a; border-bottom: 1px solid #0f172a; width: 105px; max-width: 105px; overflow: hidden; vertical-align: top;">
                 <div style="height: 36px; padding: 4px; display: flex; flex-direction: column; justify-content: center; box-sizing: border-box; border-bottom: 1px solid #e2e8f0;">
                     <div style="display: flex; align-items: center; gap: 2px;">
                         <span style="font-weight: 900; font-size: 0.85rem; color: #000; line-height: 1;">${m.name || ''}</span>
@@ -675,7 +676,7 @@ function renderTable(container, title, members, id) {
             const isToday = (currentYear === new Date().getFullYear() && currentMonth === new Date().getMonth() + 1 && day === new Date().getDate());
             const todayStyle = isToday ? 'border-right: 1px dotted #cbd5e1; background: #fef9c333;' : 'border-right: 1px dotted #cbd5e1;';
 
-            html += `<td style="vertical-align: top; text-align: center; ${todayStyle} padding: 0;">${cellHTML}</td>`;
+            html += `<td style="vertical-align: top; text-align: center; border-bottom: 1px solid #0f172a; ${todayStyle} padding: 0;">${cellHTML}</td>`;
         }
 
         html += `</tr>`;
