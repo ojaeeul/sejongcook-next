@@ -1066,12 +1066,13 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
                 
                 let hasRealPayment = paidToday.length > 0;
                 let hasVirtualPayment = expectedToday.some(s => s.isSimulated);
+                let hasExpectedPayment = expectedToday.some(s => !s.isSimulated);
                 
-                if (hasRealPayment || hasVirtualPayment || isCutoffDay) {
+                if (hasRealPayment || hasVirtualPayment || hasExpectedPayment || isCutoffDay) {
                     if (day < firstMarkerDay) firstMarkerDay = day;
                 }
                 
-                if (hasRealAtt || hasSimAtt || hasRealPayment || hasVirtualPayment) {
+                if (hasRealAtt || hasSimAtt || hasRealPayment || hasVirtualPayment || hasExpectedPayment) {
                     if (day > lastActiveDay) lastActiveDay = day;
                 }
                 
