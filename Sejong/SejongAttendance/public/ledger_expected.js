@@ -841,7 +841,9 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
                     });
                     
                     const attTextRaw = mappedStatuses.join(',');
-                    const attTextFormatted = attTextRaw.replace(/,/g, '<br>');
+                    let attTextFormatted = attTextRaw.replace(/,/g, '<br>');
+                    // '연' 글자는 무조건 검정색으로 표시
+                    attTextFormatted = attTextFormatted.replace(/연/g, '<span style="color: #000000;">연</span>');
                     
                     if (expectedToday.length > 0 && !expectedToday.some(s => s.isSimulated)) {
                         let uniqueExpected = [...expectedToday];
@@ -866,8 +868,8 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
                             attBg = '#e0e7ff';
                             attColor = '#3730a3';
                         } else if (attTextRaw.includes('연')) {
-                            attBg = '#ffe4e6'; // 연기 핑크/빨강 계열
-                            attColor = '#e11d48';
+                            attBg = '#e2e8f0'; // 연기 배경(회색)
+                            attColor = '#000000'; // 연기 글자색(검정)
                         }
                         
                         slotContent += `
