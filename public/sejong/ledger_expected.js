@@ -812,26 +812,28 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
                 });
 
                 if (realAttendanceToday.length > 0) {
-                    const attType = realAttendanceToday[0].status; // '출석', '결석', '지각' 등
+                    const attTextRaw = realAttendanceToday.map(a => a.status).join(',');
                     let attBg = '#d1fae5'; // 기본 연두색
                     let attColor = '#065f46';
-                    let attText = attType;
                     
-                    if (attType === '결석') {
+                    if (attTextRaw.includes('결석')) {
                         attBg = '#fee2e2';
                         attColor = '#991b1b';
-                    } else if (attType === '지각') {
+                    } else if (attTextRaw.includes('지각')) {
                         attBg = '#ffedd5';
                         attColor = '#9a3412';
-                    } else if (attType === '공결' || attType === '조퇴') {
+                    } else if (attTextRaw.includes('공결') || attTextRaw.includes('조퇴')) {
                         attBg = '#e0e7ff';
                         attColor = '#3730a3';
                     }
                     
+                    // 텍스트가 길 경우 (예: "재고출석,출석") 칸에 맞게 줄바꿈 처리
+                    const attTextFormatted = attTextRaw.replace(/,/g, '<br>');
+                    
                     // 가상출석 대신 진짜 출석을 그림
                     slotContent += `
-                    <div style="font-size: 0.5rem; font-weight: 800; display: flex; flex-direction: column; align-items: center; background: ${attBg}; border: 1px solid ${attColor}; border-radius: 4px; padding: 1px; width: 100%; text-align: center; color: ${attColor};">
-                        ${attText}
+                    <div style="font-size: 0.45rem; font-weight: 800; display: flex; flex-direction: column; justify-content: center; align-items: center; background: ${attBg}; border: 1px solid ${attColor}; border-radius: 4px; padding: 1px; width: 100%; min-height: 20px; text-align: center; color: ${attColor}; line-height: 1; word-break: break-all; letter-spacing: -0.5px;">
+                        ${attTextFormatted}
                     </div>`;
                 } else if (simAttendanceToday.length > 0) {
                     // 가상출석 렌더링 (진짜 출석이 없을 때만)
