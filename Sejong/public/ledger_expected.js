@@ -740,7 +740,7 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
             <td style="position: sticky; left: 30px; z-index: 10; background: inherit; padding: 0; border-right: 1.5px solid #0f172a; border-bottom: 1px solid #0f172a; width: 95px; max-width: 95px; overflow: hidden; vertical-align: top;">
                 <div style="height: 36px; padding: 2px; display: flex; flex-direction: column; justify-content: center; box-sizing: border-box; border-bottom: 1px solid #e2e8f0;">
                     <div style="display: flex; align-items: center; gap: 2px;">
-                        <span style="font-weight: 900; font-size: 0.75rem; color: #000; line-height: 1;">${m.name || ''}</span>
+                        <span style="font-weight: 900; font-size: 0.75rem; color: ${(!m.age || isNaN(parseInt(m.age)) || parseInt(m.age) >= 20) ? '#15803d' : '#000'}; line-height: 1;">${m.name || ''}</span>
                     </div>
                     <div style="font-size: 0.55rem; color: #64748b; line-height: 1; margin-top: 2px;">${m.phone || ''}</div>
                 </div>
