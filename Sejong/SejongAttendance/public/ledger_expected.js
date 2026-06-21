@@ -1017,6 +1017,7 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
                 }
                 if (m.name === '김삼이') {
                     if (c.includes('복어기능사')) displayP = 6;
+                    if (c.includes('제과제빵기능사')) displayP = 8;
                 }
             }
 
