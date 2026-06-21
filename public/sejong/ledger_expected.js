@@ -830,7 +830,17 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
                 let mergedExpectedAndAtt = false;
 
                 if (realAttendanceToday.length > 0) {
-                    const attTextRaw = realAttendanceToday.map(a => a.status).join(',');
+                    let mappedStatuses = realAttendanceToday.map(a => {
+                        let s = a.status || '';
+                        if (s === 'extension' || s.startsWith('연') || s.includes('연장') || s.startsWith('E')) return '연';
+                        if (s === 'present' || s === 'O' || s === 'o') return 'O';
+                        if (s === 'absent' || s === 'X' || s === 'x') return 'X';
+                        if (s === 'tardy' || s === 'late') return '지각';
+                        if (s === 'early') return '조퇴';
+                        return s;
+                    });
+                    
+                    const attTextRaw = mappedStatuses.join(',');
                     const attTextFormatted = attTextRaw.replace(/,/g, '<br>');
                     
                     if (expectedToday.length > 0 && !expectedToday.some(s => s.isSimulated)) {
@@ -846,7 +856,7 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
                         let attBg = '#d1fae5'; // 기본 연두색
                         let attColor = '#065f46';
                         
-                        if (attTextRaw.includes('결석')) {
+                        if (attTextRaw.includes('X') || attTextRaw.includes('결석')) {
                             attBg = '#fee2e2';
                             attColor = '#991b1b';
                         } else if (attTextRaw.includes('지각')) {
@@ -855,6 +865,9 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
                         } else if (attTextRaw.includes('공결') || attTextRaw.includes('조퇴')) {
                             attBg = '#e0e7ff';
                             attColor = '#3730a3';
+                        } else if (attTextRaw.includes('연')) {
+                            attBg = '#ffe4e6'; // 연기 핑크/빨강 계열
+                            attColor = '#e11d48';
                         }
                         
                         slotContent += `
