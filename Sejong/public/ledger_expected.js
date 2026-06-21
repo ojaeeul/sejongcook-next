@@ -1005,10 +1005,54 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
             } else {
                 displayMakeup = Math.round((trigger + limit * (cycleCount - 1)) * 10) / 10;
                 displayP = Math.round((runningTotal - displayMakeup) * 10) / 10;
-                
-                // 원장님의 "가상결재 1 + 가상출석 2 = 3" 시각적 카운트 룰 강제 적용
-                if (m.name === '길삼이' && c.includes('일식기능사')) {
-                    displayP = 3;
+                // 원장님의 "시각적 카운트 룰" 동적 적용
+                // 이번 달에 진짜 결제일(30만 등)이나 가상결제일(파란색 박스)이 있다면, 그 날짜부터 월말까지의 모든 박스(빈칸+가상출석)를 세어서 출석으로 표시합니다.
+                let lastPaymentDay = -1;
+                const paidThisMonth = (window.tuitionData || []).filter(p => p.memberId === m.id && p.year === tYear && p.month === tMonth && (!c || !p.course || p.course.includes(c.split('(')[0].trim())));
+                if (paidThisMonth.length > 0) {
+                    paidThisMonth.forEach(p => {
+                        let pd = new Date(p.updatedAt || p.date).getDate();
+                        if (pd > lastPaymentDay) lastPaymentDay = pd;
+                    });
+                }
+
+                let lastVirtualPaymentDay = -1;
+                const virtualPaymentsThisMonth = (schedules.milestones || []).filter(ms => ms.year === tYear && ms.month === tMonth);
+                if (virtualPaymentsThisMonth.length > 0) {
+                    virtualPaymentsThisMonth.forEach(ms => {
+                        if (ms.day > lastVirtualPaymentDay) lastVirtualPaymentDay = ms.day;
+                    });
+                }
+
+                let startCountingDay = Math.max(lastPaymentDay, lastVirtualPaymentDay);
+
+                if (startCountingDay !== -1) {
+                    let visualBoxes = 0;
+                    
+                    // 진짜 출석 카운트
+                    if (m.attendances) {
+                        m.attendances.forEach(a => {
+                            let aDate = new Date(a.date);
+                            if (aDate.getFullYear() === tYear && (aDate.getMonth() + 1) === tMonth && aDate.getDate() >= startCountingDay) {
+                                if (!a.status.includes('결석') && (!c || !a.course || a.course.includes(c.split('(')[0].trim()))) {
+                                    visualBoxes++;
+                                }
+                            }
+                        });
+                    }
+                    
+                    // 가상 출석 카운트
+                    if (schedules.simulatedAttendances) {
+                        schedules.simulatedAttendances.forEach(sa => {
+                            if (sa.name === m.name && sa.year === tYear && sa.month === tMonth && sa.day >= startCountingDay) {
+                                if (!sa.course || sa.course.includes(c) || c.includes(sa.course) || activeCourses.length === 0) {
+                                    visualBoxes++;
+                                }
+                            }
+                        });
+                    }
+                    
+                    displayP = visualBoxes;
                 }
             }
 
