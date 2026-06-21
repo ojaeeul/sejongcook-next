@@ -105,17 +105,70 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
         // Deduplicate using date AND course to match sheet.html exactly
         uniqueRowLogsMap.set(`${dateStr}_${l.course || ''}`, { ...l, date: dateStr });
     });
-    const uniqueLogs = Array.from(uniqueRowLogsMap.values()).sort((a,b) => a.date.localeCompare(b.date));
+    let uniqueLogs = Array.from(uniqueRowLogsMap.values()).sort((a,b) => a.date.localeCompare(b.date));
 
-    const hasAnyAttendance = uniqueLogs.length > 0;
+    // [중요 수정] 수기 결제일(sejong_ledger_sync) 확인하여 가장 최근 날짜 찾기
+    let latestSyncedDateStr = null;
+    try {
+        const syncDataStr = typeof window !== 'undefined' && window.localStorage ? window.localStorage.getItem('sejong_ledger_sync') : null;
+        if (syncDataStr) {
+            const syncData = JSON.parse(syncDataStr);
+            const cleanFilter = courseFilter ? String(courseFilter).replace(/\([^)]*\)/g, '').trim() : 'all';
+            
+            Object.keys(syncData).forEach(k => {
+                const parts = k.split('_');
+                // format: memberId_year_month_courseFilter
+                if (parts.length >= 4 && parts[0] === String(member.id)) {
+                    const courseFull = parts.slice(3).join('_');
+                    const cleanSyncCourse = courseFull === 'all' ? 'all' : courseFull.replace(/\([^)]*\)/g, '').trim();
+                    
+                    if (cleanFilter === 'all' || cleanSyncCourse === cleanFilter || (cleanFilter === '미지정' && courseFull === 'all')) {
+                        const val = syncData[k];
+                        const syncDays = Array.isArray(val) ? val : [val];
+                        const year = parseInt(parts[1], 10);
+                        const month = parseInt(parts[2], 10);
+                        
+                        syncDays.forEach(dStr => {
+                            const d = parseInt(dStr, 10);
+                            if (!isNaN(d)) {
+                                const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                                if (!latestSyncedDateStr || dateStr > latestSyncedDateStr) {
+                                    latestSyncedDateStr = dateStr;
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+        }
+    } catch(e) {
+        console.error(e);
+    }
+
+    if (latestSyncedDateStr) {
+        // 수동 결제일이 있는 경우, 그 이전의 실제 출석 기록은 모두 무시
+        uniqueLogs = uniqueLogs.filter(l => l.date > latestSyncedDateStr);
+    }
+
+    const hasAnyAttendance = uniqueLogs.length > 0 || latestSyncedDateStr != null;
 
     let earliestYear = Number(targetYear);
     let earliestMonth = Number(targetMonth);
 
-    // [중요 수정] 출석 로그의 첫 날짜뿐만 아니라 학생의 '등록일/시작일'도 확인하여 가장 이른 시점을 시작점으로 잡아야 합니다.
-    // 그래야 등록월에 걸려 있는 '이월 조정(carryOverride)' 값을 놓치지 않고 적용할 수 있습니다.
+    // [중요 수정] 수기 결제일이 있으면 무조건 수기 결제일의 연/월을 시작점으로 잡음
     const displayStartDate = member ? (member.start_date || member.registeredDate) : null;
-    if (displayStartDate) {
+    
+    if (latestSyncedDateStr) {
+        const p = latestSyncedDateStr.split('-');
+        if (p.length >= 2) {
+            const regYear = parseInt(p[0], 10);
+            const regMonth = parseInt(p[1], 10);
+            if (regYear < earliestYear || (regYear === earliestYear && regMonth < earliestMonth)) {
+                earliestYear = regYear;
+                earliestMonth = regMonth;
+            }
+        }
+    } else if (displayStartDate) {
         const p = displayStartDate.split('-');
         if (p.length >= 2) {
             const regYear = parseInt(p[0], 10);
@@ -302,6 +355,8 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
         let lastRecordDateObj = null;
         if (uniqueLogs.length > 0) {
             lastRecordDateObj = new Date(uniqueLogs[uniqueLogs.length - 1].date);
+        } else if (latestSyncedDateStr) {
+            lastRecordDateObj = new Date(latestSyncedDateStr);
         } else if (displayStartDate) {
             // [수정] 출석 기록이 없어도 등록일/시작일이 있으면 그 날짜부터 시뮬레이션 시작
             lastRecordDateObj = new Date(displayStartDate);
