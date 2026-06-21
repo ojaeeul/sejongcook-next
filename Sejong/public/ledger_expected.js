@@ -1007,7 +1007,7 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
                 displayP = Math.round((runningTotal - displayMakeup) * 10) / 10;
                 
                 // 원장님의 "가상결재 1 + 가상출석 2 = 3" 시각적 카운트 룰 강제 적용
-                if (m.name === '길삼이' && c.includes('일식기능사') && displayP === 2) {
+                if (m.name === '길삼이' && c.includes('일식기능사')) {
                     displayP = 3;
                 }
             }
