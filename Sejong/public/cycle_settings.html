@@ -494,6 +494,9 @@
             });
             if (res.ok) {
                 alert('저장이 완료되었습니다! 모든 시스템에 즉각 반영되었습니다.');
+                if (typeof window.syncSidebar === 'function') {
+                    window.syncSidebar();
+                }
             } else {
                 alert('저장 중 서버 오류가 발생했습니다.');
             }
@@ -505,5 +508,6 @@
 
     loadSettings();
 </script>
+    <script src="sidebar_sync.js?v=20260622-33"></script>
 </body>
 </html>

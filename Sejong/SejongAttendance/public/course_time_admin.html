@@ -593,6 +593,9 @@
                     }
 
                     alert("설정이 성공적으로 저장되었습니다!");
+                    if (typeof window.syncSidebar === 'function') {
+                        window.syncSidebar(settingsObj);
+                    }
                 } else {
                     alert("설정 저장에 실패했습니다.");
                 }
@@ -624,5 +627,6 @@
             }
         });
     </script>
+    <script src="sidebar_sync.js?v=20260622-33"></script>
 </body>
 </html>
