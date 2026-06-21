@@ -1008,12 +1008,14 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
                 // blank
             } else {
                 let formattedMakeup = (displayMakeup % 1 === 0 ? displayMakeup : displayMakeup.toFixed(1));
-                htmlMakeup = formattedMakeup;
+                htmlMakeup = displayMakeup === 0 ? '' : formattedMakeup;
                 
                 let formattedP = (displayP % 1 === 0 ? displayP : displayP.toFixed(1));
-                if (displayP >= maxP) {
+                if (displayP === 0) {
+                    htmlP = '';
+                } else if (displayP >= maxP) {
                     htmlP = `<span style="background: #16a34a; color: white; padding: 2px 6px; border-radius: 10px; font-weight: bold; display: inline-block; line-height: 1;">${formattedP}</span>`;
-                } else if (displayP > 0) {
+                } else {
                     htmlP = formattedP;
                 }
             }
