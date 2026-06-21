@@ -338,7 +338,7 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
         let lastRecordDateObj = null;
         if (uniqueLogs.length > 0) {
             lastRecordDateObj = new Date(uniqueLogs[uniqueLogs.length - 1].date);
-        } else if (latestSyncedDateStr) {
+        } else if (typeof latestSyncedDateStr !== 'undefined' && latestSyncedDateStr) {
             lastRecordDateObj = new Date(latestSyncedDateStr);
             // [수정] 수기 결제일(보라박스) 당일부터 가상출석 카운트 시작
             lastRecordDateObj.setDate(lastRecordDateObj.getDate() - 1);
