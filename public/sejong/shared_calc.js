@@ -300,8 +300,13 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
         let simDate = null;
         
         let lastRecordDateObj = null;
-        if (uniqueLogs.length > 0) {
-            lastRecordDateObj = new Date(uniqueLogs[uniqueLogs.length - 1].date);
+        let logsUpToMonth = uniqueLogs.filter(l => {
+            const ld = new Date(l.date);
+            return ld.getFullYear() < currentMC.year || (ld.getFullYear() === currentMC.year && (ld.getMonth() + 1) <= currentMC.month);
+        });
+
+        if (logsUpToMonth.length > 0) {
+            lastRecordDateObj = new Date(logsUpToMonth[logsUpToMonth.length - 1].date);
         } else if (latestSyncedDateStr) {
             lastRecordDateObj = new Date(latestSyncedDateStr);
             // [수정] 수기 결제일(보라박스) 당일부터 가상출석 카운트 시작
