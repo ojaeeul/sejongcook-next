@@ -773,8 +773,25 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
                     </div>`;
                 } else if (simAttendanceToday.length > 0) {
                     // 가상출석 렌더링 (진짜 출석이 없을 때만)
+                    
+                    // 만약 이 날짜에 파란색 결재 예정일(expectedToday)이 함께 있다면 파란색 박스로 표시
+                    let isAlsoSimulatedMilestone = false;
+                    if (expectedToday.length > 0) {
+                        isAlsoSimulatedMilestone = expectedToday.some(s => s.isSimulated);
+                    }
+                    
+                    let bg = '#fef08a';
+                    let border = '#eab308';
+                    let color = '#854d0e';
+                    
+                    if (isAlsoSimulatedMilestone) {
+                        bg = '#eff6ff';      // 파란색 바탕
+                        border = '#3b82f6';  // 파란색 테두리
+                        color = '#1d4ed8';   // 파란색 글씨
+                    }
+                    
                     slotContent += `
-                    <div style="font-size: 0.5rem; font-weight: 800; display: flex; flex-direction: column; align-items: center; background: #fef08a; border: 1px solid #eab308; border-radius: 4px; padding: 1px; width: 100%; text-align: center; color: #854d0e;">
+                    <div style="font-size: 0.5rem; font-weight: 800; display: flex; flex-direction: column; align-items: center; background: ${bg}; border: 1px solid ${border}; border-radius: 4px; padding: 1px; width: 100%; text-align: center; color: ${color};">
                         가상<br>출석
                     </div>`;
                 }

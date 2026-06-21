@@ -319,7 +319,7 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
         let simTotal = runningTotal;
         let limitCounter = 0;
         
-        while (simDate <= limit && limitCounter < 100) {
+        while (simDate <= limit && limitCounter < 2000) {
             limitCounter++;
             // Fix timezone issue when getting YYYY-MM-DD
             const yy = simDate.getFullYear();
