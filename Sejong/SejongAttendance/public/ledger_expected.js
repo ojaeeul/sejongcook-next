@@ -526,7 +526,7 @@ function renderOtherMembersTable(container, members) {
 function renderTable(container, title, members, id) {
     const section = document.createElement('div');
     section.id = id;
-    section.style.cssText = `margin-bottom: 40px; display: flex; gap: 15px; overflow-x: auto; max-width: 100%;`;
+    section.style.cssText = `margin-bottom: 40px; display: flex; gap: 15px; overflow: auto; max-height: 65vh; max-width: 100%;`;
 
     const nextMonth = currentMonth === 12 ? 1 : currentMonth + 1;
     const nextYear = currentMonth === 12 ? currentYear + 1 : currentYear;
@@ -549,11 +549,11 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
     const daysInMonth = new Date(tYear, tMonth, 0).getDate();
 
     let html = `
-        <div style="flex: 1; min-width: 850px; overflow: auto; max-height: 65vh; border: 1.5px solid #0f172a; border-radius: 4px; background: #fff; position: relative;">
+        <div style="flex: 0 0 auto; width: 900px; border: 1.5px solid #0f172a; border-radius: 4px; background: #fff; position: relative;">
             <div style="position: sticky; left: 0; z-index: 40; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #0f172a; padding: 10px 10px; background: #fff;">
                 <h2 style="margin: 0; font-size: 1.2rem; font-weight: 900;">${title} (${members.length}명) - ${tYear}년 ${tMonth}월</h2>
             </div>
-            <table style="width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; font-family: 'Noto Sans KR', sans-serif; min-width: 850px;">
+            <table style="width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; font-family: 'Noto Sans KR', sans-serif; min-width: 900px;">
                 <colgroup>
                     <col style="width: 30px;">
                     <col style="width: 95px;">
@@ -1055,3 +1055,38 @@ window.addCourseInput = addCourseInput;
 window.removeCourseInput = removeCourseInput;
 window.toggleEditMemberType = toggleEditMemberType;
 window.openDaumPostcode = openDaumPostcode;
+
+// Drag to scroll logic for the table container
+document.addEventListener('mousedown', (e) => {
+    const container = e.target.closest('div[style*="overflow: auto"]');
+    if (!container) return;
+    
+    // Ignore if clicking on form elements or buttons
+    if (['INPUT', 'SELECT', 'TEXTAREA', 'BUTTON'].includes(e.target.tagName)) return;
+
+    let isDown = true;
+    let startX = e.pageX - container.offsetLeft;
+    let startY = e.pageY - container.offsetTop;
+    let scrollLeft = container.scrollLeft;
+    let scrollTop = container.scrollTop;
+
+    const mouseMoveHandler = (e) => {
+        if (!isDown) return;
+        e.preventDefault();
+        const x = e.pageX - container.offsetLeft;
+        const y = e.pageY - container.offsetTop;
+        const walkX = (x - startX) * 1.5; 
+        const walkY = (y - startY) * 1.5;
+        container.scrollLeft = scrollLeft - walkX;
+        container.scrollTop = scrollTop - walkY;
+    };
+
+    const mouseUpHandler = () => {
+        isDown = false;
+        document.removeEventListener('mousemove', mouseMoveHandler);
+        document.removeEventListener('mouseup', mouseUpHandler);
+    };
+
+    document.addEventListener('mousemove', mouseMoveHandler);
+    document.addEventListener('mouseup', mouseUpHandler);
+});
