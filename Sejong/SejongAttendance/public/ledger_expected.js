@@ -672,7 +672,7 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
                     ${title} (${members.length}명) - ${tYear}년 ${tMonth}월
                     <span style="margin-left: 15px; color: #dc2626; font-weight: 900; background: #fee2e2; padding: 4px 12px; border-radius: 20px; border: 2px solid #ef4444; font-size: 0.95rem; display: inline-flex; align-items: center; box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2);">
                         <span class="material-icons" style="font-size: 1.1rem; margin-right: 4px;">event_available</span> 
-                        결재일 건수: ${totalRedCount}건
+                        결재일 건수 (${totalRedCount}건)
                     </span>
                 </h2>
             </div>
@@ -736,9 +736,9 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
                 <div style="display: flex; flex-direction: column; gap: 0px; padding: 1px 2px;">
                     ${(() => {
                         const courses = getDisplayCourses(m.course);
-                        if (courses.length === 0) return `<div style="height: 38px;"></div>`;
+                        if (courses.length === 0) return `<div style="height: 44px;"></div>`;
                         return courses.map(c => {
-                            return `<div style="height: 38px; font-size: 0.55rem; color: #1d4ed8; background: #eff6ff; padding: 1px 2px; border-radius: 2px; display: flex; align-items: center; justify-content: center; text-align: center; line-height: 1.1; overflow: hidden; word-break: keep-all; margin-bottom: 2px;">${c}</div>`;
+                            return `<div style="height: 44px; font-size: 0.55rem; color: #1d4ed8; background: #eff6ff; padding: 1px 2px; border-radius: 2px; display: flex; align-items: center; justify-content: center; text-align: center; line-height: 1.1; overflow: hidden; word-break: keep-all; margin-bottom: 2px;">${c}</div>`;
                         }).join('');
                     })()}
                 </div>
@@ -766,7 +766,7 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
         for (let day = 1; day <= daysInMonth; day++) {
             let cellHTML = `
                 <div style="height: 36px; border-bottom: 1px solid #e2e8f0; box-sizing: border-box;"></div>
-                <div style="display: flex; flex-direction: column; gap: 0px; height: 100%; min-height: ${(slotsCount * 38) + (slotsCount * 2)}px; padding: 1px;">
+                <div style="display: flex; flex-direction: column; gap: 0px; height: 100%; min-height: ${(slotsCount * 44) + (slotsCount * 2)}px; padding: 1px;">
             `;
             
             for (let slot = 0; slot < slotsCount; slot++) {
@@ -887,7 +887,7 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
                 }
                 
                 cellHTML += `
-                <div style="flex: 1; min-height: 38px; display: flex; flex-direction: column; justify-content: center; align-items: center; background: ${slotBg}; border-radius: 0px; padding: 1px; margin-bottom: 2px;">
+                <div style="flex: 1; height: 44px; min-height: 44px; max-height: 44px; overflow: visible; display: flex; flex-direction: column; justify-content: center; align-items: center; background: ${slotBg}; border-radius: 0px; padding: 1px; margin-bottom: 2px;">
                     ${slotContent}
                 </div>`;
             }
