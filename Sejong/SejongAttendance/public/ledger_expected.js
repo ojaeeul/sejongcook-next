@@ -166,6 +166,7 @@ async function loadData(targetId) {
         paymentsData = await pRes.json();
         attendanceData = await aRes.json();
         holidaysData = await hRes.json();
+        window.holidaysData = holidaysData; // Make it available for shared_calc.js
         const rawSettings = await sRes.json();
         const timetableData = await tRes.json();
 
@@ -732,7 +733,7 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
                     return pdDay === day && (!c || pCourse === matchC);
                 });
                 
-                const simAttendanceToday = (schedules.simulatedAttendances || []).filter(sa => sa.day === day && (!sa.course || sa.course.includes(c) || c.includes(sa.course) || activeCourses.length === 0));
+                const simAttendanceToday = (schedules.simulatedAttendances || []).filter(sa => sa.year === tYear && sa.month === tMonth && sa.day === day && (!sa.course || sa.course.includes(c) || c.includes(sa.course) || activeCourses.length === 0));
 
                 let slotContent = '';
                 
