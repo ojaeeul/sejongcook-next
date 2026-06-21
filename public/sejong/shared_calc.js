@@ -62,17 +62,20 @@ window.getCourseAttendanceCutoff = function(courseNameScope, memberType) {
 window.getCourseLimits = function(courseNameScope, memberType) {
     let safeCourseKey = (courseNameScope || '').replace(/\s/g, '');
     
-    // 1. 재고출석 커트라인 관리 (Limit 직접 설정, 우선순위 1)
+    // 1. 재고출석 커트라인 관리 (Limit)
+    let limit = 8;
+    let isLimitSet = false;
     if (window.global_makeup_cutoffs && window.global_makeup_cutoffs[safeCourseKey] !== undefined) {
-        let limit = parseFloat(window.global_makeup_cutoffs[safeCourseKey]);
+        limit = parseFloat(window.global_makeup_cutoffs[safeCourseKey]);
         if (memberType === 'student' && window.global_makeup_cutoffs_student && window.global_makeup_cutoffs_student[safeCourseKey] !== undefined) {
             limit = parseFloat(window.global_makeup_cutoffs_student[safeCourseKey]);
         }
-        return { limit: limit, trigger: limit + 1.0 };
+        isLimitSet = true;
     }
     
-    // 2. 과정별 결재 주기 설정 (Trigger 직접 설정, 우선순위 2)
+    // 2. 과정별 결재 주기 설정 (Trigger)
     let trigger = window.sejongCycleRules ? window.sejongCycleRules.default : 9;
+    let isTriggerSet = false;
     
     if (window.sejongCycleRules && window.sejongCycleRules.custom) {
         let matched = false;
@@ -84,6 +87,7 @@ window.getCourseLimits = function(courseNameScope, memberType) {
                     trigger = rule.cycle;
                 }
                 matched = true;
+                isTriggerSet = true;
                 break;
             }
         }
@@ -91,11 +95,22 @@ window.getCourseLimits = function(courseNameScope, memberType) {
         // 제과제빵 키워드 폴백
         if (!matched && (safeCourseKey.includes('제과') || safeCourseKey.includes('제빵'))) {
             let bakingRule = window.sejongCycleRules.custom.find(r => r.keyword === "제과제빵");
-            if (bakingRule) trigger = bakingRule.cycle;
+            if (bakingRule) {
+                trigger = bakingRule.cycle;
+                isTriggerSet = true;
+            }
         }
     }
     
-    return { limit: trigger, trigger: trigger };
+    // Limit과 Trigger 간의 자동 보정 로직
+    if (isLimitSet && !isTriggerSet) {
+        trigger = limit + 1.0;
+    }
+    if (!isLimitSet && isTriggerSet) {
+        limit = trigger > 1 ? trigger - 1.0 : trigger;
+    }
+    
+    return { limit: limit, trigger: trigger };
 };
 
 window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, allAttendanceLogs, courseFilter, GLOBAL_DATA_ADJUSTMENTS) {

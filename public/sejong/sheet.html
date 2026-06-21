@@ -12,12 +12,12 @@
     <meta name="keywords" content="세종요리, 김포요리, 세종요리학원, 김포요리학원, 요리학원, 출석관리, 수강생관리, 요리자격증">
     <meta property="og:title" content="세종요리제과학원 월간 출석부">
     <meta property="og:description" content="수강생들의 출석 현황을 한눈에 확인하세요.">
-    <link rel="stylesheet" href="style.css?v=20260622-29">
+    <link rel="stylesheet" href="style.css?v=20260622-30">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="shared_calc.js?v=20260622-29"></script>
-    <script src="script.js?v=20260622-29" defer></script>
+    <script src="shared_calc.js?v=20260622-30"></script>
+    <script src="script.js?v=20260622-30" defer></script>
     <style>
         .sheet-container {
             background: white;
@@ -2501,87 +2501,34 @@
                             }
                             
                             if (cycleCount === 0) {
-                                // 붉은선네모박스 발생 전: 출석에 누적출석 표시, 재고출석은 빈칸(0)
-                                displayMakeup = 0;
-                                displayP = runningTotal; 
+                                // 붉은선네모박스 발생 전: 재고출석에 누적출석 표시, 출석은 0 (빈칸 처리됨)
+                                displayMakeup = runningTotal;
+                                displayP = 0; 
                             } else {
-                                // 붉은선네모박스 발생 후: 재고출석은 trigger + limit*(cycle-1), 출석은 나머지
-                                displayMakeup = Math.round((trigger + limit * (cycleCount - 1)) * 10) / 10;
-                                displayP = Math.round((runningTotal - displayMakeup) * 10) / 10;
+                                // 붉은선네모박스 발생 후: 재고출석은 limit의 배수로 고정, 출석은 전체에서 뺀 나머지
+                                let fixedMakeup = limit * cycleCount;
+                                displayP = Math.round((runningTotal - fixedMakeup) * 10) / 10;
+                                
+                                if (cycleCount > 1) {
+                                    // 2주기 이상일 때 승수 표기 (예: 8²)
+                                    const superscripts = ['⁰', '¹', '²', '³', '⁴', '⁵', '⁶', '⁷', '⁸', '⁹'];
+                                    displayMakeup = `${limit}${superscripts[cycleCount] || cycleCount}`;
+                                } else {
+                                    displayMakeup = limit;
+                                }
                             }
                         }
                     }
 
                     // [동기화 데이터 활용] 위에서 계산된 전체 동기화 데이터에서 가져오기
                     let syncScheduledDays = [];
-                    if (m && m.id) {
+                    if (m && m.id && window.ledgerSyncData) {
                         const syncKeyNow = `${m.id}_${currentYear}_${currentMonth}_${rowCourseNameScope || 'all'}`;
                         const rawSync = window.ledgerSyncData[syncKeyNow];
                         if (Array.isArray(rawSync)) {
                             syncScheduledDays = rawSync;
                         } else if (typeof rawSync === 'number') {
                             syncScheduledDays = [rawSync];
-                        }
-                        
-                        // --- 원장님 완벽 시각적 카운트 룰 시작 (sheet.html 전용) ---
-                        let startDay = -1;
-
-                        // 1. syncScheduledDays (납부대장에서 넘어온 핑크박스 등)가 가장 최우선
-                        if (syncScheduledDays && syncScheduledDays.length > 0) {
-                            startDay = Math.max(...syncScheduledDays);
-                        }
-
-                        // 2. 만약 없다면, 이번 달에 limit 도달로 자동 생성된 붉은 박스(redBoxDates) 확인
-                        if (startDay === -1) {
-                            let latestLimitRedDay = -1;
-                            Array.from(redBoxDates).forEach(dStr => {
-                                const dObj = new Date(dStr);
-                                if (dObj.getFullYear() === Number(currentYear) && (dObj.getMonth() + 1) === Number(currentMonth)) {
-                                    if (dObj.getDate() > latestLimitRedDay) {
-                                        latestLimitRedDay = dObj.getDate();
-                                    }
-                                }
-                            });
-                            if (latestLimitRedDay !== -1) {
-                                startDay = latestLimitRedDay;
-                            }
-                        }
-
-                        if (startDay !== -1) {
-                            let postMarkerAttendances = 0;
-                            
-                            // 출석 증분값 다시 계산 (스코프 문제 해결)
-                            const effectiveCourseName2 = rowCourseNameScope || String(m.course || '');
-                            const isDualCourse2 = effectiveCourseName2.replace(/\s/g, '').includes('제과제빵');
-                            const attendanceInc = isDualCourse2 ? 1.0 : 1;
-                            
-                            // 현재 월의 로그에서 startDay 이후의 수기출석만 셉니다.
-                            const currentMonthLogsRef = uniqueLogs.filter(l => {
-                                const ld = new Date(l.date);
-                                return ld.getFullYear() === Number(currentYear) && (ld.getMonth() + 1) === Number(currentMonth);
-                            });
-                            
-                            currentMonthLogsRef.forEach(l => {
-                                const ld = new Date(l.date);
-                                if (ld.getDate() > startDay) {
-                                    const isMakeupMarker = ['[', ']'].includes(l.status);
-                                    const strStatus = String(l.status);
-                                    const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(strStatus);
-                                    const isAbsent = l.status === 'absent' || strStatus.startsWith('X') || strStatus.includes('결석');
-                                    const isEarly = l.status === 'early' || strStatus.includes('조퇴');
-                                    const isTardy = l.status === 'tardy' || l.status === 'late' || strStatus.includes('지각') || strStatus.includes('△');
-                                    const isFirstLast = strStatus.includes('첫') || strStatus.includes('종료') || strStatus === '[' || strStatus === ']';
-                                    const isPresentExt = l.status === 'present' || strStatus.startsWith('O') || strStatus.startsWith('o') || strStatus.startsWith('O^') || strStatus.startsWith('o^'); 
-                                    const isRegularAttendance = isPresentExt || isNumericPresent || isAbsent || isEarly || isTardy || isFirstLast;
-
-                                    if (isRegularAttendance || isMakeupMarker) {
-                                        postMarkerAttendances += attendanceInc;
-                                    }
-                                }
-                            });
-                            
-                            // 원장님 공식: 붉은선네모박스(1) + 수기출석 개수
-                            displayP = Math.round((1 + postMarkerAttendances) * 10) / 10;
                         }
                     }
 
@@ -3530,7 +3477,7 @@
             }
         });
     </script>
-    <script src="ui_arrows.js?v=20260622-29"></script>
+    <script src="ui_arrows.js?v=20260622-30"></script>
 </body>
 
 </html>
