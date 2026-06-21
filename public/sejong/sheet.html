@@ -12,12 +12,12 @@
     <meta name="keywords" content="세종요리, 김포요리, 세종요리학원, 김포요리학원, 요리학원, 출석관리, 수강생관리, 요리자격증">
     <meta property="og:title" content="세종요리제과학원 월간 출석부">
     <meta property="og:description" content="수강생들의 출석 현황을 한눈에 확인하세요.">
-    <link rel="stylesheet" href="style.css?v=20260622-35">
+    <link rel="stylesheet" href="style.css?v=20260622-36">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="shared_calc.js?v=20260622-35"></script>
-    <script src="script.js?v=20260622-35" defer></script>
+    <script src="shared_calc.js?v=20260622-36"></script>
+    <script src="script.js?v=20260622-36" defer></script>
     <style>
         .sheet-container {
             background: white;
@@ -1393,7 +1393,13 @@
             "2027-12-25": "성탄절"
         };
 
-        const GLOBAL_DATA_ADJUSTMENTS = {};
+        const GLOBAL_DATA_ADJUSTMENTS = {
+    "1770517014506": {
+        "2026-06": {
+            carryOverrideDelta: 1
+        }
+    }
+};
         
         // [버그 수정] 과거 브라우저에 남아있는 시뮬레이션 잔상(고스트 데이터) 강제 초기화
         if (!localStorage.getItem('sheet_cache_cleared_v2')) {
@@ -1668,6 +1674,9 @@
                         if (!latestOverrideKey) {
                             latestOverrideKey = key;
                             rollingTotal = parseFloat(allAdjs[key].carryOverride) || 0;
+                            if (allAdjs[key].carryOverrideDelta !== undefined) {
+                                rollingTotal += parseFloat(allAdjs[key].carryOverrideDelta) || 0;
+                            }
                             startYear = yNum;
                             startMonth = mNum;
                         } else {
@@ -1675,6 +1684,9 @@
                             if (yNum > parseInt(lyStr, 10) || (yNum === parseInt(lyStr, 10) && mNum > parseInt(lmStr, 10))) {
                                 latestOverrideKey = key;
                                 rollingTotal = parseFloat(allAdjs[key].carryOverride) || 0;
+                            if (allAdjs[key].carryOverrideDelta !== undefined) {
+                                rollingTotal += parseFloat(allAdjs[key].carryOverrideDelta) || 0;
+                            }
                                 startYear = yNum;
                                 startMonth = mNum;
                             }
@@ -2323,6 +2335,9 @@
                             const adjustment = GLOBAL_DATA_ADJUSTMENTS[String(m.id)]?.[mc.key];
                             if (adjustment && adjustment.carryOverride !== undefined) {
                                 carryOverP = parseFloat(adjustment.carryOverride) || 0;
+                            }
+                            if (adjustment && adjustment.carryOverrideDelta !== undefined) {
+                                carryOverP += parseFloat(adjustment.carryOverrideDelta) || 0;
                             }
 
                             const mLogs = uniqueLogs.filter(l => {
@@ -3489,8 +3504,8 @@
             }
         });
     </script>
-    <script src="ui_arrows.js?v=20260622-35"></script>
-    <script src="sidebar_sync.js?v=20260622-35"></script>
+    <script src="ui_arrows.js?v=20260622-36"></script>
+    <script src="sidebar_sync.js?v=20260622-36"></script>
 </body>
 
 </html>

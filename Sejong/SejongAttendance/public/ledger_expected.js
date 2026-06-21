@@ -222,7 +222,13 @@ function processAttendanceData() {
 
 
 // sheet.html과 동일한 수동 보정 데이터
-const GLOBAL_DATA_ADJUSTMENTS = {};
+const GLOBAL_DATA_ADJUSTMENTS = {
+    "1770517014506": {
+        "2026-06": {
+            carryOverrideDelta: 1
+        }
+    }
+};
 
 // [신규] 과거의 잘못된 시뮬레이션 캐시(찌꺼기)를 한 번 지워주기 위한 로직
 if (!localStorage.getItem('cache_cleared_v2')) {

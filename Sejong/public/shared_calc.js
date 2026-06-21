@@ -218,6 +218,9 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
         if (adjustment && adjustment.carryOverride !== undefined) {
             carryOverP = parseFloat(adjustment.carryOverride) || 0;
         }
+        if (adjustment && adjustment.carryOverrideDelta !== undefined) {
+            carryOverP += parseFloat(adjustment.carryOverrideDelta) || 0;
+        }
 
         const mLogs = uniqueLogs.filter(l => {
             const ld = new Date(l.date);
