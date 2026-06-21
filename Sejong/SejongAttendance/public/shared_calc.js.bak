@@ -42,20 +42,40 @@ window.getCourseCycleLength = function(courseNameScope, memberType) {
     return limits.trigger; // Backward compatibility
 };
 
+window.getCourseAttendanceCutoff = function(courseNameScope, memberType) {
+    let safeCourseKey = (courseNameScope || '').replace(/\s/g, '');
+    let isDualCourse = courseNameScope && (
+        (courseNameScope.includes('조리') && (courseNameScope.includes('제과') || courseNameScope.includes('제빵'))) ||
+        (courseNameScope.includes('제과') && courseNameScope.includes('제빵'))
+    );
+    let maxP = isDualCourse ? 16.0 : 8.0;
+
+    if (window.global_attendance_cutoffs && window.global_attendance_cutoffs[safeCourseKey] !== undefined) {
+        maxP = parseFloat(window.global_attendance_cutoffs[safeCourseKey]);
+        if (memberType === 'student' && window.global_attendance_cutoffs_student && window.global_attendance_cutoffs_student[safeCourseKey] !== undefined) {
+            maxP = parseFloat(window.global_attendance_cutoffs_student[safeCourseKey]);
+        }
+    }
+    return maxP;
+};
+
 window.getCourseLimits = function(courseNameScope, memberType) {
     let safeCourseKey = (courseNameScope || '').replace(/\s/g, '');
     
-    // 1. 재고출석 커트라인 관리 (Limit 직접 설정, 우선순위 1)
+    // 1. 재고출석 커트라인 관리 (Limit)
+    let limit = 8;
+    let isLimitSet = false;
     if (window.global_makeup_cutoffs && window.global_makeup_cutoffs[safeCourseKey] !== undefined) {
-        let limit = parseFloat(window.global_makeup_cutoffs[safeCourseKey]);
+        limit = parseFloat(window.global_makeup_cutoffs[safeCourseKey]);
         if (memberType === 'student' && window.global_makeup_cutoffs_student && window.global_makeup_cutoffs_student[safeCourseKey] !== undefined) {
             limit = parseFloat(window.global_makeup_cutoffs_student[safeCourseKey]);
         }
-        return { limit: limit, trigger: limit + 1.0 };
+        isLimitSet = true;
     }
     
-    // 2. 과정별 결재 주기 설정 (Trigger 직접 설정, 우선순위 2)
+    // 2. 과정별 결재 주기 설정 (Trigger)
     let trigger = window.sejongCycleRules ? window.sejongCycleRules.default : 9;
+    let isTriggerSet = false;
     
     if (window.sejongCycleRules && window.sejongCycleRules.custom) {
         let matched = false;
@@ -67,6 +87,7 @@ window.getCourseLimits = function(courseNameScope, memberType) {
                     trigger = rule.cycle;
                 }
                 matched = true;
+                isTriggerSet = true;
                 break;
             }
         }
@@ -74,11 +95,22 @@ window.getCourseLimits = function(courseNameScope, memberType) {
         // 제과제빵 키워드 폴백
         if (!matched && (safeCourseKey.includes('제과') || safeCourseKey.includes('제빵'))) {
             let bakingRule = window.sejongCycleRules.custom.find(r => r.keyword === "제과제빵");
-            if (bakingRule) trigger = bakingRule.cycle;
+            if (bakingRule) {
+                trigger = bakingRule.cycle;
+                isTriggerSet = true;
+            }
         }
     }
     
-    return { limit: trigger - 1.0, trigger: trigger };
+    // Limit과 Trigger 간의 자동 보정 로직
+    if (isLimitSet && !isTriggerSet) {
+        trigger = limit + 1.0;
+    }
+    if (!isLimitSet && isTriggerSet) {
+        limit = trigger > 1 ? trigger - 1.0 : trigger;
+    }
+    
+    return { limit: limit, trigger: trigger };
 };
 
 window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, allAttendanceLogs, courseFilter, GLOBAL_DATA_ADJUSTMENTS) {
@@ -90,7 +122,11 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
     let rowLogsRaw = allAttendanceLogs.filter(l => String(l.memberId) === String(member.id));
     if (courseFilter) {
         rowLogsRaw = rowLogsRaw.filter(l => {
-            if (!l.course) return true; // global log
+            if (!l.course) {
+                const memCourses = (member.course || '').split(',').map(c => c.replace(/\([^)]*\)/g, '').trim()).filter(Boolean);
+                if (memCourses.length <= 1) return true;
+                return false;
+            }
             
             const cClean = String(l.course).replace(/\([^)]*\)/g, '').trim();
             const fClean = String(courseFilter).replace(/\([^)]*\)/g, '').trim();
@@ -181,6 +217,9 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
         const adjustment = GLOBAL_DATA_ADJUSTMENTS[String(member.id)]?.[mc.key];
         if (adjustment && adjustment.carryOverride !== undefined) {
             carryOverP = parseFloat(adjustment.carryOverride) || 0;
+        }
+        if (adjustment && adjustment.carryOverrideDelta !== undefined) {
+            carryOverP += parseFloat(adjustment.carryOverrideDelta) || 0;
         }
 
         const mLogs = uniqueLogs.filter(l => {
@@ -302,6 +341,10 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
         let lastRecordDateObj = null;
         if (uniqueLogs.length > 0) {
             lastRecordDateObj = new Date(uniqueLogs[uniqueLogs.length - 1].date);
+        } else if (typeof latestSyncedDateStr !== 'undefined' && latestSyncedDateStr) {
+            lastRecordDateObj = new Date(latestSyncedDateStr);
+            // [수정] 수기 결제일(보라박스) 당일부터 가상출석 카운트 시작
+            lastRecordDateObj.setDate(lastRecordDateObj.getDate() - 1);
         } else if (displayStartDate) {
             // [수정] 출석 기록이 없어도 등록일/시작일이 있으면 그 날짜부터 시뮬레이션 시작
             lastRecordDateObj = new Date(displayStartDate);

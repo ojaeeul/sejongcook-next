@@ -113,7 +113,7 @@ window.getCourseLimits = function(courseNameScope, memberType) {
     return { limit: limit, trigger: trigger };
 };
 
-window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, allAttendanceLogs, courseFilter, GLOBAL_DATA_ADJUSTMENTS) {
+window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, allAttendanceLogs, courseFilter, GLOBAL_DATA_ADJUSTMENTS, allPaymentsData) {
     if (!member) return { redDays: [], hasAnyAttendance: false, isSimulated: true };
 
     const isDualCourse = (courseFilter && String(courseFilter).replace(/\s/g, '').includes('제과제빵')) || (!courseFilter && String(member.course).replace(/\s/g, '').includes('제과제빵'));
@@ -127,7 +127,6 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
                 if (memCourses.length <= 1) return true;
                 return false;
             }
-            
             const cClean = String(l.course).replace(/\([^)]*\)/g, '').trim();
             const fClean = String(courseFilter).replace(/\([^)]*\)/g, '').trim();
             const cList = cClean.split(',').map(c => c.trim());
@@ -138,19 +137,57 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
     const uniqueRowLogsMap = new Map();
     rowLogsRaw.forEach(l => {
         const dateStr = l.date ? (l.date.includes('T') ? l.date.split('T')[0] : l.date) : (l.dateObj ? l.dateObj.toISOString().split('T')[0] : '');
-        // Deduplicate using date AND course to match sheet.html exactly
         uniqueRowLogsMap.set(`${dateStr}_${l.course || ''}`, { ...l, date: dateStr });
     });
-    const uniqueLogs = Array.from(uniqueRowLogsMap.values()).sort((a,b) => a.date.localeCompare(b.date));
+    let uniqueLogs = Array.from(uniqueRowLogsMap.values()).sort((a,b) => a.date.localeCompare(b.date));
+
+    // [핵심 변경] 수납 대장(paymentsData)에서 이 학생/과정의 '가장 최근 결제일' 찾기
+    let lastPaymentDateStr = null;
+    if (allPaymentsData && Array.isArray(allPaymentsData)) {
+        const paidRecords = allPaymentsData.filter(p => {
+            if (String(p.memberId) !== String(member.id)) return false;
+            if (p.status !== 'paid') return false;
+            if (courseFilter && p.course) {
+                const pCourse = String(p.course).replace(/\([^)]*\)/g, '').trim();
+                const fClean = String(courseFilter).replace(/\([^)]*\)/g, '').trim();
+                if (!pCourse.includes(fClean) && !fClean.includes(pCourse)) return false;
+            }
+            return true;
+        });
+
+        paidRecords.sort((a, b) => {
+            const dateA = a.updatedAt ? new Date(a.updatedAt) : (a.date ? new Date(a.date) : new Date(`${a.year}-${String(a.month).padStart(2, '0')}-01`));
+            const dateB = b.updatedAt ? new Date(b.updatedAt) : (b.date ? new Date(b.date) : new Date(`${b.year}-${String(b.month).padStart(2, '0')}-01`));
+            return dateB - dateA; // Descending
+        });
+
+        if (paidRecords.length > 0) {
+            const latestPayment = paidRecords[0];
+            if (latestPayment.updatedAt) {
+                lastPaymentDateStr = latestPayment.updatedAt.split('T')[0];
+            } else if (latestPayment.date) {
+                lastPaymentDateStr = latestPayment.date.split('T')[0];
+            } else {
+                lastPaymentDateStr = `${latestPayment.year}-${String(latestPayment.month).padStart(2, '0')}-01`;
+            }
+        }
+    }
+
+    // [핵심 변경] 결제일 이전의 모든 수기출석 기록은 강제로 무시 (자잘한 누적치 삭제 효과)
+    if (lastPaymentDateStr) {
+        uniqueLogs = uniqueLogs.filter(l => l.date >= lastPaymentDateStr);
+    }
 
     const hasAnyAttendance = uniqueLogs.length > 0;
 
     let earliestYear = Number(targetYear);
     let earliestMonth = Number(targetMonth);
 
-    // [중요 수정] 출석 로그의 첫 날짜뿐만 아니라 학생의 '등록일/시작일'도 확인하여 가장 이른 시점을 시작점으로 잡아야 합니다.
-    // 그래야 등록월에 걸려 있는 '이월 조정(carryOverride)' 값을 놓치지 않고 적용할 수 있습니다.
-    const displayStartDate = member ? (member.start_date || member.registeredDate) : null;
+    let displayStartDate = lastPaymentDateStr; 
+    if (!displayStartDate) {
+        displayStartDate = member ? (member.start_date || member.registeredDate) : null;
+    }
+    
     if (displayStartDate) {
         const p = displayStartDate.split('-');
         if (p.length >= 2) {
@@ -194,62 +231,46 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
         }
     }
 
-    
     const getCycle = (val) => {
         let vRaw = Math.round(val * 10);
         let limits = window.getCourseLimits(courseFilter || String(member.course), member.type);
         
         let firstLimit = Math.round(limits.trigger * 10);
         let step = Math.round(limits.limit * 10);
-        if (step <= 0) step = 10; // safety fallback
+        if (step <= 0) step = 10;
         
         if (vRaw < firstLimit) return 0;
         return Math.floor((vRaw - firstLimit) / step) + 1;
     };
 
     let globalRunningTotal = 0;
-    let globalCurrentCycle = 0;
     let allMilestones = [];
 
+    // [핵심 변경] 수동 보정치 무시, 항상 결제일 이후 실제 기록으로만 카운트.
     let carryOverP = 0;
 
     monthsToCalc.forEach(mc => {
-        const adjustment = GLOBAL_DATA_ADJUSTMENTS[String(member.id)]?.[mc.key];
-        if (adjustment && adjustment.carryOverride !== undefined) {
-            carryOverP = parseFloat(adjustment.carryOverride) || 0;
-        }
-        if (adjustment && adjustment.carryOverrideDelta !== undefined) {
-            carryOverP += parseFloat(adjustment.carryOverrideDelta) || 0;
-        }
-
         const mLogs = uniqueLogs.filter(l => {
             const ld = new Date(l.date);
             return ld.getFullYear() === mc.year && (ld.getMonth() + 1) === mc.month;
         });
 
-        let manualMakeup = 0;
         let attendances = 0;
 
         mLogs.forEach(l => {
-            const isMakeupMarker = ['[', ']'].includes(l.status);
             const strStatus = String(l.status);
+            const isMakeupMarker = ['[', ']'].includes(strStatus);
             const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(strStatus);
-            const isAbsent = l.status === 'absent' || strStatus.startsWith('X') || strStatus.includes('결석');
-            const isEarly = l.status === 'early' || strStatus.includes('조퇴');
-            const isTardy = l.status === 'tardy' || l.status === 'late' || strStatus.includes('지각') || strStatus.includes('△');
+            const isAbsent = strStatus === 'absent' || strStatus.startsWith('X') || strStatus.includes('결석');
+            const isEarly = strStatus === 'early' || strStatus.includes('조퇴');
+            const isTardy = strStatus === 'tardy' || strStatus === 'late' || strStatus.includes('지각') || strStatus.includes('△');
             const isFirstLast = strStatus.includes('첫') || strStatus.includes('종료') || strStatus === '[' || strStatus === ']';
-            const isExtension = l.status === 'extension' || strStatus.startsWith('연') || strStatus.includes('연장') || strStatus.startsWith('E');
-            const isPresent = l.status === 'present' || strStatus.startsWith('O') || strStatus.startsWith('o');
+            const isPresent = strStatus === 'present' || strStatus.startsWith('O') || strStatus.startsWith('o');
             
-            const isRegularAttendance = isPresent || isNumericPresent || isAbsent || isEarly || isTardy || isFirstLast;
-
-            if (isMakeupMarker) manualMakeup += attendanceIncrement;
+            const isRegularAttendance = isPresent || isNumericPresent || isAbsent || isEarly || isTardy || isFirstLast || isMakeupMarker;
 
             if (isRegularAttendance) {
                 attendances += attendanceIncrement;
-            }
-
-            if (isRegularAttendance || isMakeupMarker) {
                 const prevNet = globalRunningTotal;
                 globalRunningTotal += attendanceIncrement;
                 globalRunningTotal = Math.round(globalRunningTotal * 10) / 10;
@@ -257,20 +278,15 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
                 const currCycle = getCycle(globalRunningTotal);
                 
                 const dateStr = l.date.split('T')[0];
-                const isForced = adjustment && adjustment.forceRedBoxDates && adjustment.forceRedBoxDates.includes(dateStr);
                 
-                if (currCycle > prevCycle || isForced) {
+                // 결제일 당일의 출석은 사이클을 1로 만들기 때문에 박스가 생기지 않음 (trigger가 9이므로)
+                if (currCycle > prevCycle) {
                     allMilestones.push({ year: mc.year, month: mc.month, day: parseInt(dateStr.split('-')[2], 10), isReal: true });
                 }
             }
         });
 
-        if (adjustment && adjustment.presentOverride !== undefined) {
-            attendances = adjustment.presentOverride;
-        }
-
-        let totalCombined = Math.round((carryOverP + manualMakeup + attendances) * 10) / 10;
-
+        let totalCombined = Math.round((carryOverP + attendances) * 10) / 10;
         mc.carryFromPrev = carryOverP;
         carryOverP = totalCombined;
     });
@@ -288,24 +304,21 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
             return ld.getFullYear() === currentMC.year && (ld.getMonth() + 1) === currentMC.month;
         });
 
-        const adjustment = GLOBAL_DATA_ADJUSTMENTS[String(member.id)]?.[currentMC.key];
-
         currentMonthLogs.forEach(l => {
-            const isMakeupMarker = ['[', ']'].includes(l.status);
             const strStatus = String(l.status);
+            const isMakeupMarker = ['[', ']'].includes(strStatus);
             const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(strStatus);
-            const isAbsent = l.status === 'absent' || strStatus.startsWith('X') || strStatus.includes('결석');
-            const isEarly = l.status === 'early' || strStatus.includes('조퇴');
-            const isTardy = l.status === 'tardy' || l.status === 'late' || strStatus.includes('지각') || strStatus.includes('△');
+            const isAbsent = strStatus === 'absent' || strStatus.startsWith('X') || strStatus.includes('결석');
+            const isEarly = strStatus === 'early' || strStatus.includes('조퇴');
+            const isTardy = strStatus === 'tardy' || strStatus === 'late' || strStatus.includes('지각') || strStatus.includes('△');
             const isFirstLast = strStatus.includes('첫') || strStatus.includes('종료') || strStatus === '[' || strStatus === ']';
-            const isPresentExt = l.status === 'present' || strStatus.startsWith('O') || strStatus.startsWith('o') || strStatus.startsWith('O^') || strStatus.startsWith('o^');
+            const isPresentExt = strStatus === 'present' || strStatus.startsWith('O') || strStatus.startsWith('o') || strStatus.startsWith('O^') || strStatus.startsWith('o^');
             
-            const isRegularAttendance = isPresentExt || isNumericPresent || isAbsent || isEarly || isTardy || isFirstLast;
+            const isRegularAttendance = isPresentExt || isNumericPresent || isAbsent || isEarly || isTardy || isFirstLast || isMakeupMarker;
 
-            if (isRegularAttendance || isMakeupMarker) {
+            if (isRegularAttendance) {
                 runningTotal += attendanceIncrement;
                 runningTotal = Math.round(runningTotal * 10) / 10;
-
                 
                 let newCycle = getCycle(runningTotal);
                 if (isNaN(newCycle)) newCycle = 0;
@@ -319,10 +332,6 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
                 if (shouldShowRedBox) {
                     redBoxDates.add(l.date);
                     pureRedBoxDates.add(l.date);
-                }
-
-                if (adjustment && adjustment.forceRedBoxDates && adjustment.forceRedBoxDates.includes(l.date)) {
-                    redBoxDates.add(l.date);
                 }
             }
         });
@@ -341,21 +350,20 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
         let lastRecordDateObj = null;
         if (uniqueLogs.length > 0) {
             lastRecordDateObj = new Date(uniqueLogs[uniqueLogs.length - 1].date);
+        } else if (lastPaymentDateStr) {
+            lastRecordDateObj = new Date(lastPaymentDateStr);
+            lastRecordDateObj.setDate(lastRecordDateObj.getDate() - 1);
         } else if (typeof latestSyncedDateStr !== 'undefined' && latestSyncedDateStr) {
             lastRecordDateObj = new Date(latestSyncedDateStr);
-            // [수정] 수기 결제일(보라박스) 당일부터 가상출석 카운트 시작
             lastRecordDateObj.setDate(lastRecordDateObj.getDate() - 1);
         } else if (displayStartDate) {
-            // [수정] 출석 기록이 없어도 등록일/시작일이 있으면 그 날짜부터 시뮬레이션 시작
             lastRecordDateObj = new Date(displayStartDate);
-            // 시작일 당일부터 카운트할 수 있도록 -1일 해줌
             lastRecordDateObj.setDate(lastRecordDateObj.getDate() - 1);
         }
         
         if (lastRecordDateObj) {
             simDate = new Date(lastRecordDateObj.getTime() + 86400000);
         } else {
-            // Fallback
             simDate = new Date(currentMC.year, currentMC.month - 1, 1);
         }
 
@@ -364,7 +372,6 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
         
         while (simDate <= limit && limitCounter < 2000) {
             limitCounter++;
-            // Fix timezone issue when getting YYYY-MM-DD
             const yy = simDate.getFullYear();
             const mm = String(simDate.getMonth() + 1).padStart(2, '0');
             const dd = String(simDate.getDate()).padStart(2, '0');
@@ -423,23 +430,18 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
                             isSimulated = true;
                         }
                     }
-                    
-                    // [중요 수정] 가상 결제일(예정일)을 allMilestones에 명시적으로 추가하여 납부대장(tuition_v3.js)에서 '결제 예정일'로 인식하도록 함
                     allMilestones.push({ 
                         year: simDate.getFullYear(), 
                         month: simDate.getMonth() + 1, 
                         day: simDate.getDate(), 
                         isReal: false 
                     });
-                    
-                    // break removed so simulation continues until the limit
                 }
             }
             simDate.setDate(simDate.getDate() + 1);
         }
     }
 
-    // [중요 수정] scheduledDate 명시적 반환
     let finalScheduledDate = null;
     const futureMilestone = allMilestones.find(ms => !ms.isReal || new Date(ms.year, ms.month - 1, ms.day) > new Date());
     if (futureMilestone) {
@@ -460,3 +462,4 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
         currentCount: { count: carryOverP, target: window.getCourseCycleLength(courseFilter || String(member.course), member.type) }
     };
 };
+

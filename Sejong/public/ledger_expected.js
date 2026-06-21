@@ -268,7 +268,7 @@ function getLedgerMonthStats(memberId, targetYear, targetMonth, courseFilter = n
     if (typeof window.calculateRedBoxesForMonth === 'function') {
         const memberObj = m;
         if (memberObj) {
-            const result = window.calculateRedBoxesForMonth(memberObj, targetYear, targetMonth, attendanceData || [], courseFilter, window.GLOBAL_DATA_ADJUSTMENTS || {});
+            const result = window.calculateRedBoxesForMonth(memberObj, targetYear, targetMonth, attendanceData || [], courseFilter, window.GLOBAL_DATA_ADJUSTMENTS || {}, paymentsData || []);
             calcHasAny = result.hasAnyAttendance;
             simAtts = result.simulatedAttendances || [];
             if (result && result.allMilestones && result.allMilestones.length > 0) {
@@ -933,7 +933,7 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
             
             let runningTotal = 0;
             if (typeof window.calculateRedBoxesForMonth === 'function') {
-                const result = window.calculateRedBoxesForMonth(m, tYear, tMonth, attendanceData || [], c, window.GLOBAL_DATA_ADJUSTMENTS || {});
+                const result = window.calculateRedBoxesForMonth(m, tYear, tMonth, attendanceData || [], c, window.GLOBAL_DATA_ADJUSTMENTS || {}, paymentsData || []);
                 if (result && result.currentCount) {
                     runningTotal = result.currentCount.count;
                 }
