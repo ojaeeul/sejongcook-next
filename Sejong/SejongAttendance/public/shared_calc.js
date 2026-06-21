@@ -289,7 +289,7 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
         });
     }
 
-    let isSimulated = false;
+    let isSimulated = false;\n    let simulatedAttendances = [];
     const hasRealMilestonesThisMonth = redBoxDates.size > 0;
 
     if (currentMC) {
@@ -363,6 +363,11 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
             }
 
             if (isValidDay && !isHoliday) {
+                simulatedAttendances.push({
+                    year: simDate.getFullYear(),
+                    month: simDate.getMonth() + 1,
+                    day: simDate.getDate()
+                });
                 const prevSimCycle = getCycle(simTotal);
                 simTotal += attendanceIncrement;
                 const newSimCycle = getCycle(simTotal);
@@ -405,6 +410,7 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
         pureRedDays: pureRedDaysList,
         hasAnyAttendance: hasAnyAttendance,
         isSimulated: isSimulated,
+        simulatedAttendances: simulatedAttendances,
         allMilestones: allMilestones,
         scheduledDate: finalScheduledDate,
         currentCount: { count: carryOverP, target: window.getCourseCycleLength(courseFilter || String(member.course), member.type) }

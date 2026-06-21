@@ -1,82 +1,70 @@
-import os
 import re
 
-file_path = "/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejk 4/sejongcook-next/Sejong/SejongAttendance/public/shared_calc.js"
+with open('/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejk 4/sejongcook-next/Sejong/SejongAttendance/public/shared_calc.js', 'r', encoding='utf-8') as f:
+    content = f.read()
 
-with open(file_path, 'r', encoding='utf-8') as f:
-    js_content = f.read()
+# I need to add `simulatedAttendances: []` to the function
+# Around line 292:
+#     let isSimulated = false;
+#     const hasRealMilestonesThisMonth = redBoxDates.size > 0;
+# We will add: `let simulatedAttendances = [];`
+# Then inside `if (isValidDay && !isHoliday) {` we will push to it.
 
-# Add the loadCycleSettings and window.sejongCycleRules at the top
-header_injection = """
-window.sejongCycleRules = {
-    default: 9,
-    custom: [
-        { keyword: "제과제빵", cycle: 17 }
-    ]
-};
+if "let simulatedAttendances = [];" not in content:
+    content = content.replace("let isSimulated = false;", "let isSimulated = false;\\n    let simulatedAttendances = [];")
 
-window.loadCycleSettings = async function() {
-    try {
-        const res = await fetch('/api/sejong/settings');
-        if (res.ok) {
-            const data = await res.json();
-            if (data && data.cycleRules) {
-                window.sejongCycleRules = data.cycleRules;
-            }
-        }
-    } catch(e) {
-        console.error("Failed to load cycle settings:", e);
-    }
-};
+# Around line 365:
+#             if (isValidDay && !isHoliday) {
+#                 const prevSimCycle = getCycle(simTotal);
+#                 simTotal += attendanceIncrement;
 
-window.getCourseCycleLength = function(courseNameScope) {
-    if (!courseNameScope) return window.sejongCycleRules.default;
-    
-    if (window.sejongCycleRules && window.sejongCycleRules.custom) {
-        for (const rule of window.sejongCycleRules.custom) {
-            if (courseNameScope.includes(rule.keyword)) {
-                return rule.cycle;
-            }
-        }
-    }
-    return window.sejongCycleRules ? window.sejongCycleRules.default : 9;
-};
-"""
+old_valid_day = """            if (isValidDay && !isHoliday) {
+                const prevSimCycle = getCycle(simTotal);
+                simTotal += attendanceIncrement;"""
 
-js_content = re.sub(r'(\nwindow\.calculateRedBoxesForMonth = function)', header_injection + r'\1', js_content, count=1)
+new_valid_day = """            if (isValidDay && !isHoliday) {
+                simulatedAttendances.push({
+                    year: simDate.getFullYear(),
+                    month: simDate.getMonth() + 1,
+                    day: simDate.getDate()
+                });
+                const prevSimCycle = getCycle(simTotal);
+                simTotal += attendanceIncrement;"""
 
-# Modify getCycle function logic
-old_getCycle = """    const getCycle = (val) => {
-        let vRaw = Math.round(val * 10);
-        if (isDualCourse) {
-            if (vRaw < 170) return 0;
-            return Math.floor((vRaw - 170) / 160) + 1;
-        } else {
-            if (vRaw < 90) return 0;
-            return Math.floor((vRaw - 90) / 80) + 1;
-        }
+if old_valid_day in content:
+    content = content.replace(old_valid_day, new_valid_day)
+    print("Replaced old_valid_day successfully.")
+else:
+    print("Could not find old_valid_day.")
+
+# Return object replacement
+old_return = """    return {
+        redDays: actualRedDays,
+        pureRedDays: pureRedDaysList,
+        hasAnyAttendance: hasAnyAttendance,
+        isSimulated: isSimulated,
+        allMilestones: allMilestones,
+        scheduledDate: finalScheduledDate,
+        currentCount: { count: carryOverP, target: window.getCourseCycleLength(courseFilter || String(member.course), member.type) }
     };"""
 
-new_getCycle = """    const getCycle = (val) => {
-        let vRaw = Math.round(val * 10);
-        let cycleLimit = window.getCourseCycleLength(courseFilter || String(member.course));
-        let firstLimit = cycleLimit * 10;
-        let step = (cycleLimit - 1) * 10;
-        if (step <= 0) step = 10; // safety fallback
-        
-        if (vRaw < firstLimit) return 0;
-        return Math.floor((vRaw - firstLimit) / step) + 1;
+new_return = """    return {
+        redDays: actualRedDays,
+        pureRedDays: pureRedDaysList,
+        hasAnyAttendance: hasAnyAttendance,
+        isSimulated: isSimulated,
+        simulatedAttendances: simulatedAttendances,
+        allMilestones: allMilestones,
+        scheduledDate: finalScheduledDate,
+        currentCount: { count: carryOverP, target: window.getCourseCycleLength(courseFilter || String(member.course), member.type) }
     };"""
 
-js_content = js_content.replace(old_getCycle, new_getCycle)
+if old_return in content:
+    content = content.replace(old_return, new_return)
+    print("Replaced old_return successfully.")
+else:
+    print("Could not find old_return.")
 
-# Fix the currentCount return payload target
-js_content = js_content.replace(
-    "currentCount: { count: carryOverP, target: isDualCourse ? 17 : 9 }",
-    "currentCount: { count: carryOverP, target: window.getCourseCycleLength(courseFilter || String(member.course)) }"
-)
+with open('/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejk 4/sejongcook-next/Sejong/SejongAttendance/public/shared_calc.js', 'w', encoding='utf-8') as f:
+    f.write(content)
 
-with open(file_path, 'w', encoding='utf-8') as f:
-    f.write(js_content)
-    
-print("Successfully updated shared_calc.js to support dynamic cycle settings.")

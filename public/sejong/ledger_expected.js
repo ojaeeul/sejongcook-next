@@ -257,16 +257,21 @@ function getLedgerMonthStats(memberId, targetYear, targetMonth, courseFilter = n
                 if (result && result.allMilestones && result.allMilestones.length > 0) {
                     const monthMilestones = result.allMilestones.filter(ms => ms.year === targetYear && ms.month === targetMonth);
                     if (monthMilestones.length > 0) {
-                        return { milestones: monthMilestones, hasAnyAttendance: result.hasAnyAttendance };
+                        return { milestones: monthMilestones, hasAnyAttendance: result.hasAnyAttendance, simulatedAttendances: result.simulatedAttendances };
                     }
                 }
                 // fallback to old redDays logic
                 if (result && result.redDays && result.redDays.length > 0) {
-                    return { eighthDays: result.redDays, eighthMonth: targetMonth, isSimulated: result.isSimulated, hasAnyAttendance: result.hasAnyAttendance };
+                    return { eighthDays: result.redDays, eighthMonth: targetMonth, isSimulated: result.isSimulated, hasAnyAttendance: result.hasAnyAttendance, simulatedAttendances: result.simulatedAttendances };
+                }
+                
+                // If there are simulated attendances but no milestone yet (or milestone is in a future month), we still want to return them!
+                if (result && result.simulatedAttendances && result.simulatedAttendances.length > 0) {
+                     return { eighthDays: [], eighthMonth: targetMonth, isSimulated: result.isSimulated, hasAnyAttendance: result.hasAnyAttendance, simulatedAttendances: result.simulatedAttendances, milestones: [] };
                 }
             }
         }
-    return { eighthDays: [], eighthMonth: targetMonth, isSimulated: false, hasAnyAttendance: false, milestones: [] };
+    return { eighthDays: [], eighthMonth: targetMonth, isSimulated: false, hasAnyAttendance: false, milestones: [], simulatedAttendances: [] };
 }
 
 function getAllLedgerMonthStats(memberId, year, month) {
@@ -283,9 +288,16 @@ function getAllLedgerMonthStats(memberId, year, month) {
     courses = [...new Set(courses)];
 
     const results = [];
+    let combinedSimulatedAttendances = [];
 
     courses.forEach(courseName => {
         const stats = getLedgerMonthStats(memberId, year, month, courseName);
+        if (stats.simulatedAttendances && stats.simulatedAttendances.length > 0) {
+            stats.simulatedAttendances.forEach(sa => {
+                sa.course = courseName;
+                combinedSimulatedAttendances.push(sa);
+            });
+        }
         // 가상 결제(예정) 내역을 항상 표시하도록 조건 완화
         if (true) {
             if (stats.milestones && stats.milestones.length > 0) {
@@ -312,6 +324,7 @@ function getAllLedgerMonthStats(memberId, year, month) {
         }
     });
 
+    results.simulatedAttendances = combinedSimulatedAttendances;
     return results;
 }
 
@@ -690,14 +703,25 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
                     const pCourse = (p.course || '').split('(')[0].trim();
                     return pdDay === day && (!c || pCourse === matchC);
                 });
+                
+                const simAttendanceToday = (schedules.simulatedAttendances || []).filter(sa => sa.day === day && (!sa.course || sa.course.includes(c) || c.includes(sa.course) || activeCourses.length === 0));
 
                 let slotContent = '';
+                
+                // 가상출석 렌더링 (단, 해당 날짜에 진짜 출석이 있으면 무시하는 로직은 이미 shared_calc.js에서 오늘/과거 날짜의 경우 필터링됨)
+                if (simAttendanceToday.length > 0) {
+                    slotContent += `
+                    <div style="font-size: 0.5rem; font-weight: 800; display: flex; flex-direction: column; align-items: center; background: #fef08a; border: 1px solid #eab308; border-radius: 4px; padding: 1px; width: 100%; text-align: center; color: #854d0e;">
+                        가상출석
+                    </div>`;
+                }
+
                 if (expectedToday.length > 0) {
                     let uniqueExpected = [...expectedToday];
                     uniqueExpected.forEach(s => {
                         const feeColor = s.isSimulated ? '#3b82f6' : '#d946ef';
                         slotContent += `
-                        <div style="font-size: 0.5rem; font-weight: 800; display: flex; flex-direction: column; align-items: center; background: #f8fafc; border: 1px solid ${feeColor}; border-radius: 4px; padding: 1px;">
+                        <div style="font-size: 0.5rem; font-weight: 800; display: flex; flex-direction: column; align-items: center; background: #f8fafc; border: 1px solid ${feeColor}; border-radius: 4px; padding: 1px; margin-top: 1px;">
                             <div style="color: ${feeColor};">${s.fee / 10000}만</div>
                         </div>`;
                     });
@@ -708,7 +732,7 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
                     uniquePaid.forEach(p => {
                         const amt = p.amount ? (p.amount / 10000) + '만(실)' : '완료(실)';
                         slotContent += `
-                        <div style="font-size: 0.5rem; font-weight: 800; display: flex; flex-direction: column; align-items: center; background: #ecfdf5; border: 1px solid #059669; border-radius: 4px; padding: 1px;">
+                        <div style="font-size: 0.5rem; font-weight: 800; display: flex; flex-direction: column; align-items: center; background: #ecfdf5; border: 1px solid #059669; border-radius: 4px; padding: 1px; margin-top: 1px;">
                             <div style="color: #059669;">${amt}</div>
                         </div>`;
                     });
