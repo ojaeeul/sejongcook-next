@@ -635,10 +635,53 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
 
     const daysInMonth = new Date(tYear, tMonth, 0).getDate();
 
+    let rCount = 0;
+    let bCount = 0;
+    members.forEach(m => {
+        const schedules = getAllLedgerMonthStats(m.id, tYear, tMonth);
+        let hasAnyPaid = false;
+        
+        schedules.forEach(s => {
+            if (!s.isSimulated && s.eighthDay && !isNaN(parseInt(s.eighthDay)) && Number(s.eighthDay) > 0) {
+                const isPaid = (typeof paymentsData !== 'undefined' ? paymentsData : window.paymentsData || []).some(p =>
+                    String(p.memberId) === String(m.id) &&
+                    String(p.year) === String(tYear) &&
+                    String(p.month) === String(tMonth) &&
+                    p.status === 'paid' &&
+                    (!p.course || p.course === 'null' || p.course === 'undefined' || p.course === '' || !s.course || p.course.includes(s.course) || s.course.includes(p.course))
+                );
+
+                if (isPaid) {
+                    hasAnyPaid = true;
+                } else {
+                    rCount++;
+                }
+            }
+        });
+        
+        if (hasAnyPaid) {
+            bCount++;
+        }
+    });
+
+    let contentHtml = '';
+    if (rCount > 0 || bCount > 0) {
+        contentHtml = `
+            <div style="display:flex; align-items:center; gap:2px; margin-top: 6px;">
+                ${rCount > 0 ? `<span style="background:#ef4444; color:white; border-radius:10px; padding:1px 4px; font-size:0.6rem; min-width:12px; text-align:center;">${rCount}</span>` : `<span style="visibility:hidden; padding:1px 4px; font-size:0.6rem; min-width:12px;">0</span>`}
+                <span style="font-size:0.75rem; font-weight:800;">${tMonth}월</span>
+                ${bCount > 0 ? `<span style="background:#2563eb; color:white; border-radius:10px; padding:1px 4px; font-size:0.6rem; min-width:12px; text-align:center;">${bCount}</span>` : `<span style="visibility:hidden; padding:1px 4px; font-size:0.6rem; min-width:12px;">0</span>`}
+            </div>
+        `;
+    } else {
+        contentHtml = `<div style="margin-top: 6px;"><span style="font-size:0.75rem; font-weight:800;">${tMonth}월</span></div>`;
+    }
+
     let html = `
         <div style="flex: 0 0 auto; width: 900px; border: 1.5px solid #0f172a; border-radius: 4px; background: #fff; position: relative;">
-            <div style="position: sticky; left: 0; z-index: 40; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #0f172a; padding: 10px 10px; background: #fff;">
+            <div style="position: sticky; left: 0; z-index: 40; display: flex; flex-direction: column; align-items: flex-start; border-bottom: 3px solid #0f172a; padding: 10px 10px; background: #fff;">
                 <h2 style="margin: 0; font-size: 1.2rem; font-weight: 900;">${title} (${members.length}명) - ${tYear}년 ${tMonth}월</h2>
+                ${contentHtml}
             </div>
             <table style="width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; font-family: 'Noto Sans KR', sans-serif; min-width: 900px;">
                 <colgroup>

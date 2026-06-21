@@ -167,9 +167,8 @@ echo "서버 준비 대기 (5초)..."
 sleep 5
 
 echo "브라우저 새 창 열기..."
-open -a "Google Chrome" "http://localhost:3000/sejong/ledger.html"
-open -a "Google Chrome" "http://localhost:3000/sejong/expense.html"
-open -a "Google Chrome" "http://localhost:3000"
+open -a "Google Chrome" "http://localhost:3000/sejong/sheet.html"
+open -a "Google Chrome" "http://localhost:3000/sejong/ledger_expected.html"
 
 # ==============================================================================
 # [STEP 4] 깃허브(Git) 자동 백업 저장
