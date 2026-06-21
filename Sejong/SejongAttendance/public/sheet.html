@@ -12,12 +12,12 @@
     <meta name="keywords" content="세종요리, 김포요리, 세종요리학원, 김포요리학원, 요리학원, 출석관리, 수강생관리, 요리자격증">
     <meta property="og:title" content="세종요리제과학원 월간 출석부">
     <meta property="og:description" content="수강생들의 출석 현황을 한눈에 확인하세요.">
-    <link rel="stylesheet" href="style.css?v=20260622-36">
+    <link rel="stylesheet" href="style.css?v=20260622-37">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="shared_calc.js?v=20260622-36"></script>
-    <script src="script.js?v=20260622-36" defer></script>
+    <script src="shared_calc.js?v=20260622-37"></script>
+    <script src="script.js?v=20260622-37" defer></script>
     <style>
         .sheet-container {
             background: white;
@@ -1396,7 +1396,7 @@
         const GLOBAL_DATA_ADJUSTMENTS = {
     "1770517014506": {
         "2026-06": {
-            carryOverrideDelta: 1
+            carryOverrideDelta: 6
         }
     }
 };
@@ -3006,6 +3006,8 @@
         window.isSavingAttendance = false;
         let saveQueue = [];
 
+        let renderSheetTimeout = null;
+
         async function processSaveQueue() {
             if (window.isSavingAttendance || saveQueue.length === 0) return;
             window.isSavingAttendance = true;
@@ -3025,9 +3027,12 @@
             }
             
             window.isSavingAttendance = false;
-            // Force re-fetch to ensure sync with server
-            lastAttendanceHash = ''; 
-            fetchAttendance().then(changed => { if(changed) renderSheet(); });
+            // Force re-fetch to ensure sync with server, but debounce it by 1 second to allow rapid clicking
+            if (renderSheetTimeout) clearTimeout(renderSheetTimeout);
+            renderSheetTimeout = setTimeout(() => {
+                lastAttendanceHash = ''; 
+                fetchAttendance().then(changed => { if(changed) renderSheet(); });
+            }, 1000);
         }
 
         async function saveAttendance(memberId, dateStr, status, course) {
@@ -3504,8 +3509,8 @@
             }
         });
     </script>
-    <script src="ui_arrows.js?v=20260622-36"></script>
-    <script src="sidebar_sync.js?v=20260622-36"></script>
+    <script src="ui_arrows.js?v=20260622-37"></script>
+    <script src="sidebar_sync.js?v=20260622-37"></script>
 </body>
 
 </html>
