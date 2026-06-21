@@ -389,7 +389,7 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
                         isReal: false 
                     });
                     
-                    break; 
+                    // break removed so simulation continues until the limit
                 }
             }
             simDate.setDate(simDate.getDate() + 1);
