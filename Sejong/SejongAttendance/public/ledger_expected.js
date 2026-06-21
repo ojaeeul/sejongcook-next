@@ -681,6 +681,8 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
                     <col style="width: 30px;">
                     <col style="width: 95px;">
                     ${Array.from({ length: daysInMonth }, () => `<col style="width: 25px;">`).join('')}
+                    <col style="width: 35px;">
+                    <col style="width: 35px;">
                 </colgroup>
                 <thead>
                     <tr style="background: #f8fafc;">
@@ -710,6 +712,13 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
                             `;
                             return `<th style="position: sticky; top: 0; z-index: 20; background: #f8fafc; border-bottom: 1.5px solid #0f172a; border-right: 1px solid #cbd5e1; padding: 2px 1px; vertical-align: bottom; height: 42px;">${contentHtml}</th>`;
                         }).join('')}
+                        <th style="position: sticky; top: 0; right: 35px; z-index: 30; background: #f8fafc; border-bottom: 1.5px solid #0f172a; font-size: 0.65rem; border-left: 1px solid #0f172a; padding: 0;">
+                            <div style="transform: scale(0.85); display: flex; flex-direction: column; align-items: center;">
+                                <span>재고</span>
+                                <span>출석</span>
+                            </div>
+                        </th>
+                        <th style="position: sticky; top: 0; right: 0px; z-index: 30; background: #f8fafc; border-bottom: 1.5px solid #0f172a; font-size: 0.65rem; border-left: 1px solid #cbd5e1; padding: 0;">출석</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -896,6 +905,141 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
             html += `<td style="vertical-align: top; text-align: center; border-bottom: 1px solid #0f172a; ${todayStyle} padding: 0;">${cellHTML}</td>`;
         }
 
+        let html1 = ``;
+        let html2 = ``;
+
+        html1 += `
+            <div style="height: 36px; border-bottom: 1px solid #e2e8f0; box-sizing: border-box; background-color: #f8fafc;"></div>
+            <div style="display: flex; flex-direction: column; gap: 0px; height: 100%; padding: 1px 0px;">
+        `;
+        html2 += `
+            <div style="height: 36px; border-bottom: 1px solid #e2e8f0; box-sizing: border-box; background-color: #f8fafc;"></div>
+            <div style="display: flex; flex-direction: column; gap: 0px; height: 100%; padding: 1px 0px;">
+        `;
+
+        for (let slot = 0; slot < slotsCount; slot++) {
+            const c = activeCourses[slot] || '';
+            let displayMakeup = 0;
+            let displayP = 0;
+            
+            let isDualCourse = String(c).replace(/\\s/g, '').includes('제과제빵');
+            let attendanceIncrement = isDualCourse ? 1.0 : 1.0;
+            
+            let runningTotal = 0;
+            if (typeof window.calculateRedBoxesForMonth === 'function') {
+                const result = window.calculateRedBoxesForMonth(m, tYear, tMonth, attendanceData || [], c, window.GLOBAL_DATA_ADJUSTMENTS || {});
+                if (result && result.currentCount) {
+                    runningTotal = result.currentCount.count;
+                }
+            }
+
+            let currentMonthAttendances = 0;
+            if (typeof attendanceData !== 'undefined' && Array.isArray(attendanceData)) {
+                attendanceData.forEach(l => {
+                    if (String(l.memberId) !== String(m.id)) return;
+                    if (l.course) {
+                        const cClean = String(l.course).replace(/\\([^)]*\\)/g, '').trim();
+                        const fClean = String(c).replace(/\\([^)]*\\)/g, '').trim();
+                        const cList = cClean.split(',').map(course => course.trim());
+                        if (!cList.includes(fClean)) return;
+                    }
+
+                    const dStr = l.date ? (l.date.includes('T') ? l.date.split('T')[0] : l.date) : (l.dateObj ? l.dateObj.toISOString().split('T')[0] : '');
+                    if (!dStr) return;
+                    const p = dStr.split('-');
+                    if (p.length < 3) return;
+                    const lYear = parseInt(p[0], 10);
+                    const lMonth = parseInt(p[1], 10);
+                    
+                    if (lYear === tYear && lMonth === tMonth) {
+                        const strStatus = String(l.status);
+                        const isNumericPresent = ['10', '12', '2', '5', '7', '3', '9'].includes(strStatus);
+                        const isAbsent = l.status === 'absent' || strStatus.startsWith('X') || strStatus.includes('결석');
+                        const isEarly = l.status === 'early' || strStatus.includes('조퇴');
+                        const isTardy = l.status === 'tardy' || l.status === 'late' || strStatus.includes('지각') || strStatus.includes('△');
+                        const isFirstLast = strStatus.includes('첫') || strStatus.includes('종료') || strStatus === '[' || strStatus === ']';
+                        const isPresentExt = l.status === 'present' || strStatus.startsWith('O') || strStatus.startsWith('o') || strStatus.startsWith('O^') || strStatus.startsWith('o^');
+                        const isRegularAttendance = isPresentExt || isNumericPresent || isAbsent || isEarly || isTardy || isFirstLast;
+                        if (isRegularAttendance) {
+                            currentMonthAttendances += attendanceIncrement;
+                        }
+                    }
+                });
+            }
+
+            let adjustments = typeof window.GLOBAL_DATA_ADJUSTMENTS !== 'undefined' ? window.GLOBAL_DATA_ADJUSTMENTS[String(m.id)] : null;
+            let currentMCKey = `${tYear}-${String(tMonth).padStart(2, '0')}`;
+            let adjustment = adjustments ? adjustments[currentMCKey] : null;
+
+            displayP = Math.round(currentMonthAttendances * 10) / 10;
+            if (adjustment && adjustment.presentOverride !== undefined) {
+                displayP = adjustment.presentOverride;
+            }
+
+            let vRaw = Math.round(runningTotal * 10);
+            let limits = (typeof window.getCourseLimits !== 'undefined') ? window.getCourseLimits(c, m.type) : { limit: 8, trigger: 9 };
+            let limit = limits.limit;
+            let trigger = limits.trigger;
+            let limitRaw = Math.round(limit * 10);
+            let triggerRaw = Math.round(trigger * 10);
+
+            let cycleCount = 0;
+            if (vRaw >= triggerRaw) {
+                cycleCount = Math.floor((vRaw - triggerRaw) / limitRaw) + 1;
+            }
+
+            if (cycleCount === 0) {
+                displayMakeup = runningTotal;
+                displayP = 0;
+            } else {
+                displayMakeup = Math.round(limit * cycleCount * 10) / 10;
+                displayP = Math.round((runningTotal - (cycleCount * limit)) * 10) / 10;
+            }
+
+            let safeCourseKey = String(c).replace(/\\s/g, '');
+            let maxJ = (typeof window.global_makeup_cutoffs !== 'undefined' && window.global_makeup_cutoffs[safeCourseKey] !== undefined)
+                ? window.global_makeup_cutoffs[safeCourseKey]
+                : (isDualCourse ? 16.0 : 8.0);
+                
+            let maxP = (typeof window.global_attendance_cutoffs !== 'undefined' && window.global_attendance_cutoffs[safeCourseKey] !== undefined)
+                ? window.global_attendance_cutoffs[safeCourseKey]
+                : (isDualCourse ? 16.0 : 8.0);
+
+            let htmlMakeup = '';
+            let htmlP = '';
+
+            if (displayMakeup === 0 && displayP === 0) {
+                // blank
+            } else {
+                let formattedMakeup = (displayMakeup % 1 === 0 ? displayMakeup : displayMakeup.toFixed(1));
+                if (displayMakeup >= maxJ && (displayMakeup % maxJ) === 0) {
+                    const multiple = Math.round(displayMakeup / maxJ);
+                    if (multiple > 1) {
+                        htmlMakeup = `${maxJ}<span style="font-size: 0.6em; color: gray; vertical-align: super; margin-left: 1px;">${multiple}</span>`;
+                    } else {
+                        htmlMakeup = formattedMakeup;
+                    }
+                } else {
+                    htmlMakeup = formattedMakeup;
+                }
+                
+                let formattedP = (displayP % 1 === 0 ? displayP : displayP.toFixed(1));
+                if (displayP >= maxP) {
+                    htmlP = `<span style="background: #16a34a; color: white; padding: 2px 6px; border-radius: 10px; font-weight: bold; display: inline-block; line-height: 1;">${formattedP}</span>`;
+                } else if (displayP > 0) {
+                    htmlP = formattedP;
+                }
+            }
+            
+            html1 += `<div style="height: 44px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: bold; margin-bottom: 2px; color: #1e293b;">${htmlMakeup}</div>`;
+            html2 += `<div style="height: 44px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: bold; margin-bottom: 2px; color: #1e293b;">${htmlP}</div>`;
+        }
+        
+        html1 += `</div>`;
+        html2 += `</div>`;
+
+        html += `<td style="vertical-align: top; text-align: center; border-bottom: 1px solid #0f172a; padding: 0; min-width: 35px; border-left: 1px solid #0f172a; background-color: #f8fafc; position: sticky; right: 35px; z-index: 10;">${html1}</td>`;
+        html += `<td style="vertical-align: top; text-align: center; border-bottom: 1px solid #0f172a; padding: 0; min-width: 35px; border-left: 1px solid #cbd5e1; background-color: #f8fafc; position: sticky; right: 0px; z-index: 10;">${html2}</td>`;
         html += `</tr>`;
     });
 
