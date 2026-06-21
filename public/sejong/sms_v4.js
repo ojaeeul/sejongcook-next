@@ -41,12 +41,19 @@ let courseFees = {
     '브런치': 200000
 };
 
-function calculateTotalFee(courseStr) {
+function calculateTotalFee(courseStr, memberType) {
     if (!courseStr) return courseFees['all'] || 200000;
     const courses = courseStr.split(',').map(s => s.split('(')[0].trim());
     let total = 0;
     courses.forEach(c => {
-        total += (courseFees[c] || courseFees['all'] || 200000);
+        let fee;
+        if (memberType === 'student' || memberType === '학생') {
+            fee = courseFees[c + '_학생'];
+        }
+        if (fee === undefined || isNaN(fee)) {
+            fee = courseFees[c] || courseFees['all'] || 200000;
+        }
+        total += fee;
     });
     return total;
 }
@@ -936,7 +943,7 @@ function selectFilteredCourses() {
         detailMsg = '<br><br><div style="font-size:0.9rem; text-align:left; background:#f8fafc; padding:10px; border-radius:5px; max-height:200px; overflow-y:auto;">';
         selectedTargets.forEach(t => {
             const d = t.specificMilestone ? `${t.specificMilestone.month}월 ${t.specificMilestone.day}일` : '날짜미정';
-            const price = typeof calculateTotalFee === 'function' ? calculateTotalFee(t.selectedCourse).toLocaleString() + '원' : '금액확인필요';
+            const price = typeof calculateTotalFee === 'function' ? calculateTotalFee(t.selectedCourse, t.type).toLocaleString() + '원' : '금액확인필요';
             detailMsg += `<div style="margin-bottom:5px;">- <b>${t.name}</b> (${t.selectedCourse}) : <span style="color:#ef4444;">${d} 결제</span> / <span style="color:#2563eb; font-weight:bold;">${price}</span></div>`;
         });
         detailMsg += '</div>';
@@ -1330,7 +1337,7 @@ function sendSms() {
 
         // Generate placeholders
         const courseNameStr = (t.selectedCourse && t.selectedCourse !== '미지정') ? t.selectedCourse.replace(/\([^)]*\)/g, '').trim() : '과정 미지정';
-        const tuitionAmountStr = calculateTotalFee(courseNameStr).toLocaleString() + '원';
+        const tuitionAmountStr = calculateTotalFee(courseNameStr, t.type).toLocaleString() + '원';
 
         msg = msg.replace(/\[\[과정명\]\]/g, courseNameStr);
         msg = msg.replace(/\[\[결제일\]\]/g, tuitionDateStr);

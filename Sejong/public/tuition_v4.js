@@ -76,12 +76,19 @@ let courseFees = {
     '브런치': 200000
 };
 
-function calculateTotalFee(courseStr) {
+function calculateTotalFee(courseStr, memberType) {
     if (!courseStr) return courseFees['all'] || DEFAULT_PRICE;
     const courses = courseStr.split(',').map(s => s.split('(')[0].trim());
     let total = 0;
     courses.forEach(c => {
-        total += (courseFees[c] || courseFees['all'] || DEFAULT_PRICE);
+        let fee;
+        if (memberType === 'student' || memberType === '학생') {
+            fee = courseFees[c + '_학생'];
+        }
+        if (fee === undefined || isNaN(fee)) {
+            fee = courseFees[c] || courseFees['all'] || DEFAULT_PRICE;
+        }
+        total += fee;
     });
     return total;
 }
@@ -548,7 +555,7 @@ function renderTable() {
             const courseNameOnly = fullCourse ? fullCourse.split('(')[0].trim() : '';
             if (window.currentState.course !== 'all' && courseNameOnly !== window.currentState.course) return;
 
-            const courseFee = courseFees[courseNameOnly] || courseFees['all'] || DEFAULT_PRICE;
+            const courseFee = calculateTotalFee(courseNameOnly, m.type);
             const stats = getMemberEighthDayInMonth(m.id, window.currentState.year, window.currentState.month, courseNameOnly);
 
             let isDueThisMonth = false;
@@ -1073,7 +1080,7 @@ async function togglePayment(memberId, forcedStatus = null, courseName = null, a
                 month: month,
                 course: courseName,
                 status: newStatus,
-                amount: amount || calculateTotalFee(courseName || member.course),
+                amount: amount || calculateTotalFee(courseName || member.course, member.type),
                 updatedAt: new Date().toISOString()
             })
         });
@@ -1199,7 +1206,7 @@ function exportToCSV() {
                 (!p.course || p.course === 'null' || p.course === 'undefined' || p.course === '' || !courseNameOnly || p.course.includes(courseNameOnly) || courseNameOnly.includes(p.course))
             );
             const isPaid = payment && payment.status === 'paid';
-            const amount = calculateTotalFee(courseNameOnly || m.course);
+            const amount = calculateTotalFee(courseNameOnly || m.course, m.type);
 
             rows.push([
                 isPaid ? "납부완료" : "미납",
@@ -1273,11 +1280,19 @@ async function openTuitionSettings() {
                 `;
                 
                 courses.forEach((c, idx) => {
-                    const fee = (courseFeesObj[c] || DEFAULT_PRICE).toLocaleString();
+                    const feeGen = (courseFeesObj[c] || DEFAULT_PRICE).toLocaleString();
+                    const feeStu = (courseFeesObj[c + '_학생'] || courseFeesObj[c] || DEFAULT_PRICE).toLocaleString();
                     html += `
-                        <div class="form-group">
-                            <label>${c}</label>
-                            <input type="text" id="fee_dyn_${idx}" data-course="${c}" value="${fee}" class="text-right" title="${c} 수강료" placeholder="금액 입력">
+                        <div class="form-group" style="display: flex; gap: 10px; align-items: center; margin-bottom: 5px; flex-wrap: wrap;">
+                            <label style="width: 110px; flex-shrink: 0;">${c}</label>
+                            <div style="display: flex; align-items: center; gap: 5px;">
+                                <span style="font-size: 0.8rem; color: #64748b;">일반</span>
+                                <input type="text" id="fee_dyn_${idx}_gen" data-course="${c}" value="${feeGen}" class="text-right" style="width: 80px;" title="${c} 일반 수강료">
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 5px;">
+                                <span style="font-size: 0.8rem; color: #64748b;">학생</span>
+                                <input type="text" id="fee_dyn_${idx}_stu" data-course="${c}_학생" value="${feeStu}" class="text-right" style="width: 80px;" title="${c} 학생 수강료">
+                            </div>
                         </div>
                     `;
                 });
@@ -1304,7 +1319,7 @@ function closeTuitionSettings() {
 async function saveTuitionSettings() {
     courseFees['all'] = parseInt(document.getElementById('fee_all').value.replace(/,/g, '')) || DEFAULT_PRICE;
     
-    const dynamicInputs = document.querySelectorAll('#tuitionSettingsContainer input[id^="fee_dyn_"]');
+    const dynamicInputs = document.querySelectorAll('#tuitionSettingsContainer input[data-course]');
     dynamicInputs.forEach(input => {
         const cName = input.getAttribute('data-course');
         courseFees[cName] = parseInt(input.value.replace(/,/g, '')) || DEFAULT_PRICE;
