@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        .section {
+            display: flex; gap: 15px; overflow: auto; max-height: 65vh; max-width: 100%; border: 1px solid red;
+        }
+        .container {
+            flex: 0 0 auto; width: max-content; border: 1.5px solid #0f172a; position: relative;
+        }
+        table {
+            width: 100%; border-collapse: separate; table-layout: fixed; min-width: 980px;
+        }
+        td, th {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <div class="section">
+        <div class="container">
+            <table>
+                <tr>
+                    <td style="width: 30px">A</td>
+                    <td style="width: 95px">B</td>
+                    <td style="width: 775px">C</td>
+                    <td style="width: 35px">D</td>
+                    <td style="width: 35px">E</td>
+                </tr>
+            </table>
+        </div>
+        <div class="container">
+            <table>
+                <tr>
+                    <td style="width: 30px">A</td>
+                    <td style="width: 95px">B</td>
+                    <td style="width: 775px">C</td>
+                    <td style="width: 35px">D</td>
+                    <td style="width: 35px">E</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

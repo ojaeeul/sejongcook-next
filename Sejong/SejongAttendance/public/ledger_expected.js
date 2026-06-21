@@ -666,7 +666,7 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
     const totalRedCount = dayRedCounts.reduce((sum, count) => sum + count, 0);
 
     let html = `
-        <div style="flex: 0 0 auto; width: max-content; border: 1.5px solid #0f172a; border-radius: 4px; background: #fff; position: relative;">
+        <div style="flex: 0 0 auto; width: 980px; border: 1.5px solid #0f172a; border-radius: 4px; background: #fff; position: relative;">
             <div style="position: sticky; left: 0; z-index: 40; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #0f172a; padding: 10px 10px; background: #fff;">
                 <h2 style="margin: 0; font-size: 1.2rem; font-weight: 900; display: flex; align-items: center;">
                     ${title} (${members.length}명) - ${tYear}년 ${tMonth}월
