@@ -798,7 +798,7 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
                         let labelHtml = '';
                         // 가상출석이랑 겹치면 금액 박스 안에 가상출석 글자를 섞어줌
                         if (s.isSimulated && simAttendanceToday.length > 0 && realAttendanceToday.length === 0) {
-                            labelHtml = `가상출석<br>`;
+                            labelHtml = `출석<br>`;
                         }
 
                         slotContent += `
