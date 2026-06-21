@@ -1005,21 +1005,89 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
             } else {
                 displayMakeup = Math.round((trigger + limit * (cycleCount - 1)) * 10) / 10;
                 displayP = Math.round((runningTotal - displayMakeup) * 10) / 10;
-                
-                // 원장님의 "시각적 카운트 룰" 명시적 지정 강제 적용
-                if (m.name === '길삼이') {
-                    if (c.includes('일식기능사')) displayP = 3;
-                    if (c.includes('양식기능사')) displayP = 3;
-                    if (c.includes('가정요리')) displayP = 7;
-                }
-                if (m.name === '길춘이') {
-                    if (c.includes('제빵기능사')) displayP = 3;
-                }
-                if (m.name === '김삼이') {
-                    if (c.includes('복어기능사')) displayP = 6;
-                    if (c.includes('제과제빵기능사')) displayP = 8;
-                }
             }
+
+            // --- 원장님 완벽 시각적 카운트 룰 시작 ---
+            let firstMarkerDay = 999;
+            let lastActiveDay = -1;
+            let pastAttendances = runningTotal - currentMonthAttendances;
+            let attCountSoFar = 0;
+            
+            let dayStates = [];
+            
+            for (let day = 1; day <= daysInMonth; day++) {
+                let isClassDay = true;
+                const dayOfWeek = new Date(tYear, tMonth - 1, day).getDay();
+                const dateStr = `${tYear}-${String(tMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const isHolidayInSys = holidaysData.find(h => h.date === dateStr);
+                const isNationalHoliday = !!(typeof KOREAN_HOLIDAYS_MAP !== 'undefined' && KOREAN_HOLIDAYS_MAP[dateStr]);
+                
+                if (isHolidayInSys || isNationalHoliday || dayOfWeek === 0) {
+                    isClassDay = false; 
+                } else {
+                    let schedule = null;
+                    if (c && window.COURSE_SCHEDULES) {
+                        schedule = window.COURSE_SCHEDULES[c] || window.COURSE_SCHEDULES[c.split('(')[0].trim()];
+                    }
+                    if (schedule && !schedule.includes(dayOfWeek)) {
+                        isClassDay = false;
+                    }
+                }
+                
+                const expectedToday = schedules.filter(s => parseInt(s.eighthDay) === day && (!s.course || s.course.includes(c) || c.includes(s.course) || activeCourses.length === 0));
+                const matchC = c.split('(')[0].trim();
+                const paidToday = paid.filter(p => {
+                    const pdDay = new Date(p.updatedAt || p.date).getDate();
+                    const pCourse = (p.course || '').split('(')[0].trim();
+                    return pdDay === day && (!c || pCourse === matchC);
+                });
+                const simAttendanceToday = (schedules.simulatedAttendances || []).filter(sa => sa.year === tYear && sa.month === tMonth && sa.day === day && (!sa.course || sa.course.includes(c) || c.includes(sa.course) || activeCourses.length === 0));
+                const realAttendanceToday = (window.attendanceData || []).filter(a => {
+                    if (String(a.memberId) !== String(m.id)) return false;
+                    const aDate = new Date(a.date);
+                    if (aDate.getFullYear() !== tYear || (aDate.getMonth() + 1) !== tMonth || aDate.getDate() !== day) return false;
+                    if (c && a.course) {
+                        const aC = a.course.split('(')[0].trim();
+                        return aC === matchC || a.course.includes(matchC) || c.includes(aC);
+                    }
+                    return true;
+                });
+                
+                let hasRealAtt = realAttendanceToday.length > 0;
+                let hasSimAtt = simAttendanceToday.length > 0;
+                let isCutoffDay = false;
+                
+                if (hasRealAtt || hasSimAtt) {
+                    attCountSoFar += attendanceIncrement;
+                    if (Math.round((pastAttendances + attCountSoFar) * 10) === Math.round(displayMakeup * 10)) {
+                        isCutoffDay = true;
+                    }
+                }
+                
+                let hasRealPayment = paidToday.length > 0;
+                let hasVirtualPayment = expectedToday.some(s => s.isSimulated);
+                
+                if (hasRealPayment || hasVirtualPayment || isCutoffDay) {
+                    if (day < firstMarkerDay) firstMarkerDay = day;
+                }
+                
+                if (hasRealAtt || hasSimAtt || hasRealPayment || hasVirtualPayment) {
+                    if (day > lastActiveDay) lastActiveDay = day;
+                }
+                
+                dayStates.push({ day, isClassDay });
+            }
+            
+            if (firstMarkerDay <= daysInMonth && lastActiveDay >= firstMarkerDay) {
+                let visualP = 0;
+                for (let day = firstMarkerDay; day <= lastActiveDay; day++) {
+                    if (dayStates[day - 1].isClassDay) {
+                        visualP += attendanceIncrement;
+                    }
+                }
+                displayP = Math.round(visualP * 10) / 10;
+            }
+            // --- 원장님 완벽 시각적 카운트 룰 끝 ---
 
             let maxJ = limit;
             let maxP = (typeof window.getCourseAttendanceCutoff !== 'undefined')
