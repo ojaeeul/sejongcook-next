@@ -177,6 +177,7 @@ async function loadData(targetId) {
         const settings = Array.isArray(rawSettings) ? rawSettings[0] : rawSettings;
         if (!Array.isArray(paymentsData)) paymentsData = [];
         if (!Array.isArray(attendanceData)) attendanceData = [];
+        window.attendanceData = attendanceData;
 
         if (settings && settings.courseFees) {
             courseFees = settings.courseFees;
@@ -813,8 +814,8 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
 
                 let slotContent = '';
                 
-                // 진짜 출석 렌더링 (attendanceData 활용)
-                const realAttendanceToday = (window.attendanceData || []).filter(a => {
+                // 진짜 출석 렌더링 (attendanceData 활용) - 당월(currentMonth)에만 표시
+                const realAttendanceToday = (tMonth === currentMonth) ? (window.attendanceData || []).filter(a => {
                     if (String(a.memberId) !== String(m.id)) return false;
                     const aDate = new Date(a.date);
                     if (aDate.getFullYear() !== tYear || (aDate.getMonth() + 1) !== tMonth || aDate.getDate() !== day) return false;
@@ -824,7 +825,7 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
                         return aC === matchC || a.course.includes(matchC) || c.includes(aC);
                     }
                     return true;
-                });
+                }) : [];
 
                 if (realAttendanceToday.length > 0) {
                     const attTextRaw = realAttendanceToday.map(a => a.status).join(',');
