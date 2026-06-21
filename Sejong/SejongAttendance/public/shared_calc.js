@@ -289,7 +289,8 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
         });
     }
 
-    let isSimulated = false;\n    let simulatedAttendances = [];
+    let isSimulated = false;
+    let simulatedAttendances = [];
     const hasRealMilestonesThisMonth = redBoxDates.size > 0;
 
     if (currentMC) {
