@@ -1008,7 +1008,8 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
             }
 
             // --- 원장님 완벽 시각적 카운트 룰 시작 ---
-            let firstMarkerDay = 999;
+            let realMarkerDay = 999;
+            let virtualMarkerDay = 999;
             let lastActiveDay = -1;
             let pastAttendances = runningTotal - currentMonthAttendances;
             let attCountSoFar = 0;
@@ -1068,21 +1069,38 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
                 let hasVirtualPayment = expectedToday.some(s => s.isSimulated);
                 let hasExpectedPayment = expectedToday.some(s => !s.isSimulated);
                 
-                if (hasRealPayment || hasVirtualPayment || hasExpectedPayment) {
-                    firstMarkerDay = day; // 항상 화면에 보이는 가장 최근 마커를 기준으로 잡습니다.
+                if (hasRealPayment || hasExpectedPayment) {
+                    realMarkerDay = day; // 진짜 결재일 마커 (핑크색, 초록색 등)
+                }
+                if (hasVirtualPayment) {
+                    virtualMarkerDay = day; // 가상 결재일 마커 (파란색)
                 }
                 
                 if (hasRealAtt || hasSimAtt || hasRealPayment || hasVirtualPayment || hasExpectedPayment) {
                     if (day > lastActiveDay) lastActiveDay = day;
                 }
                 
-                dayStates.push({ day, isClassDay });
+                dayStates.push({ day, isClassDay, hasVirtualPayment });
             }
             
-            if (firstMarkerDay <= daysInMonth && lastActiveDay >= firstMarkerDay) {
+            let startDay = 999;
+            let ignoreBlueBoxes = false;
+
+            if (realMarkerDay <= daysInMonth) {
+                startDay = realMarkerDay;
+                ignoreBlueBoxes = true; // 진짜 결재일이 기준이면, 가상결재일(파란박스)은 개수에서 뺌!
+            } else if (virtualMarkerDay <= daysInMonth) {
+                startDay = virtualMarkerDay;
+                ignoreBlueBoxes = false; // 파란박스가 기준이면 파란박스 본인부터 1로 셈!
+            }
+
+            if (startDay <= daysInMonth && lastActiveDay >= startDay) {
                 let visualP = 0;
-                for (let day = firstMarkerDay; day <= lastActiveDay; day++) {
+                for (let day = startDay; day <= lastActiveDay; day++) {
                     if (dayStates[day - 1].isClassDay) {
+                        if (ignoreBlueBoxes && dayStates[day - 1].hasVirtualPayment) {
+                            continue; // 블루박스는 카운트에서 제외!
+                        }
                         visualP += attendanceIncrement;
                     }
                 }
