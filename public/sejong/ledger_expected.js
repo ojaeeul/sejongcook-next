@@ -1018,8 +1018,11 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
             if (displayMakeup === 0 && displayP === 0) {
                 // blank
             } else {
-                let formattedMakeup = (displayMakeup % 1 === 0 ? displayMakeup : displayMakeup.toFixed(1));
-                htmlMakeup = displayMakeup === 0 ? '' : formattedMakeup;
+                let formattedMakeup = '';
+                if (displayMakeup > 0 && cycleCount > 0) {
+                    formattedMakeup = `${trigger}x${cycleCount}`;
+                }
+                htmlMakeup = formattedMakeup;
                 
                 let formattedP = (displayP % 1 === 0 ? displayP : displayP.toFixed(1));
                 if (displayP === 0) {
