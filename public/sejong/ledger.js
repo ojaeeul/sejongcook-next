@@ -552,6 +552,31 @@ function renderOtherMembersTable(container, members) {
 }
 
 function renderTable(container, title, members, id) {
+    const getDisplayCourses = (mCourseStr) => {
+        let baseCourses = (mCourseStr || '').split(',').map(c => c.trim()).filter(c => c && !c.includes('[삭제]'));
+        if (activeCategory === '전체') return baseCourses;
+        
+        if (activeCategory === '기타') {
+            const standardList = COURSE_LIST.filter(cl => cl !== '기타');
+            return baseCourses.filter(c => !standardList.some(cl => c.includes(cl)));
+        }
+        
+        if (typeof COURSE_LIST !== 'undefined' && COURSE_LIST.includes(activeCategory)) {
+            return baseCourses.filter(c => {
+                if (activeCategory === '제과기능사' || activeCategory === '제빵기능사') {
+                    return c.includes(activeCategory) && !c.includes('제과제빵기능사');
+                }
+                return c.includes(activeCategory);
+            });
+        }
+        
+        if (typeof COURSE_CATEGORIES !== 'undefined' && COURSE_CATEGORIES[activeCategory]) {
+            const catCourses = COURSE_CATEGORIES[activeCategory];
+            return baseCourses.filter(c => catCourses.some(cat => c.includes(cat)));
+        }
+        
+        return baseCourses;
+    };
     const section = document.createElement('div');
     section.id = id;
     section.style.cssText = `margin-bottom: 40px;`;
@@ -649,10 +674,12 @@ function renderTable(container, title, members, id) {
                 </div>
                 <div style="margin-top: 4px; display: flex; flex-direction: column; gap: 2px;">
                     ${(() => {
-                        const courses = (m.course || '').split(',').map(c => c.trim());
+                        const allCourses = (m.course || '').split(',').map(c => c.trim());
+                        const courses = getDisplayCourses(m.course);
                         const htmlParts = [];
                         let activeCount = 0;
-                        courses.forEach((c, originalIdx) => {
+                        allCourses.forEach((c, originalIdx) => {
+                            if (!courses.includes(c)) return;
                             if (!c || c.includes('[삭제]')) return;
                             activeCount++;
                             htmlParts.push(`
