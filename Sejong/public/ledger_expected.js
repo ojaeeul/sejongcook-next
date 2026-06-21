@@ -989,11 +989,11 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
             }
 
             if (cycleCount === 0) {
-                displayMakeup = runningTotal;
-                displayP = 0;
+                displayMakeup = 0;
+                displayP = runningTotal;
             } else {
-                displayMakeup = Math.round(limit * cycleCount * 10) / 10;
-                displayP = Math.round((runningTotal - (cycleCount * limit)) * 10) / 10;
+                displayMakeup = Math.round((trigger + limit * (cycleCount - 1)) * 10) / 10;
+                displayP = Math.round((runningTotal - displayMakeup) * 10) / 10;
             }
 
             let maxJ = limit;
@@ -1008,16 +1008,7 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
                 // blank
             } else {
                 let formattedMakeup = (displayMakeup % 1 === 0 ? displayMakeup : displayMakeup.toFixed(1));
-                if (displayMakeup >= maxJ && (displayMakeup % maxJ) === 0) {
-                    const multiple = Math.round(displayMakeup / maxJ);
-                    if (multiple > 1) {
-                        htmlMakeup = `${maxJ}<span style="font-size: 0.6em; color: gray; vertical-align: super; margin-left: 1px;">${multiple}</span>`;
-                    } else {
-                        htmlMakeup = formattedMakeup;
-                    }
-                } else {
-                    htmlMakeup = formattedMakeup;
-                }
+                htmlMakeup = formattedMakeup;
                 
                 let formattedP = (displayP % 1 === 0 ? displayP : displayP.toFixed(1));
                 if (displayP >= maxP) {
