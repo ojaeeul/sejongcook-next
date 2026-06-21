@@ -1020,7 +1020,7 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
             } else {
                 let formattedMakeup = '';
                 if (displayMakeup > 0 && cycleCount > 0) {
-                    formattedMakeup = `${trigger}x${cycleCount}`;
+                    formattedMakeup = cycleCount === 1 ? `${trigger}` : `${trigger}<sup>${cycleCount}</sup>`;
                 }
                 htmlMakeup = formattedMakeup;
                 
