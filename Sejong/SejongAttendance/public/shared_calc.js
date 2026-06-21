@@ -107,7 +107,11 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
     let rowLogsRaw = allAttendanceLogs.filter(l => String(l.memberId) === String(member.id));
     if (courseFilter) {
         rowLogsRaw = rowLogsRaw.filter(l => {
-            if (!l.course) return true; // global log
+            if (!l.course) {
+                const memCourses = (member.course || '').split(',').map(c => c.replace(/\([^)]*\)/g, '').trim()).filter(Boolean);
+                if (memCourses.length <= 1) return true;
+                return false;
+            }
             
             const cClean = String(l.course).replace(/\([^)]*\)/g, '').trim();
             const fClean = String(courseFilter).replace(/\([^)]*\)/g, '').trim();

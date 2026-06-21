@@ -931,6 +931,10 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
                 if (result && result.currentCount) {
                     runningTotal = result.currentCount.count;
                 }
+                if (result && result.simulatedAttendances) {
+                    const simThisMonth = result.simulatedAttendances.filter(sa => sa.year === tYear && sa.month === tMonth).length;
+                    runningTotal += simThisMonth * attendanceIncrement;
+                }
             }
 
             let currentMonthAttendances = 0;
@@ -938,10 +942,13 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
                 attendanceData.forEach(l => {
                     if (String(l.memberId) !== String(m.id)) return;
                     if (l.course) {
-                        const cClean = String(l.course).replace(/\\([^)]*\\)/g, '').trim();
-                        const fClean = String(c).replace(/\\([^)]*\\)/g, '').trim();
+                        const cClean = String(l.course).replace(/\([^)]*\)/g, '').trim();
+                        const fClean = String(c).replace(/\([^)]*\)/g, '').trim();
                         const cList = cClean.split(',').map(course => course.trim());
                         if (!cList.includes(fClean)) return;
+                    } else {
+                        const memCourses = (m.course || '').split(',').map(course => course.replace(/\([^)]*\)/g, '').trim()).filter(Boolean);
+                        if (memCourses.length > 1) return;
                     }
 
                     const dStr = l.date ? (l.date.includes('T') ? l.date.split('T')[0] : l.date) : (l.dateObj ? l.dateObj.toISOString().split('T')[0] : '');
@@ -976,8 +983,7 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
                 displayP = adjustment.presentOverride;
             }
 
-            let baseTotal = displayP;
-            let vRaw = Math.round(baseTotal * 10);
+            let vRaw = Math.round(runningTotal * 10);
             let limits = (typeof window.getCourseLimits !== 'undefined') ? window.getCourseLimits(c, m.type) : { limit: 8, trigger: 9 };
             let limit = limits.limit;
             let trigger = limits.trigger;
@@ -991,10 +997,10 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
 
             if (cycleCount === 0) {
                 displayMakeup = 0;
-                displayP = baseTotal;
+                displayP = runningTotal;
             } else {
                 displayMakeup = Math.round((trigger + limit * (cycleCount - 1)) * 10) / 10;
-                displayP = Math.round((baseTotal - displayMakeup) * 10) / 10;
+                displayP = Math.round((runningTotal - displayMakeup) * 10) / 10;
             }
 
             let maxJ = limit;
