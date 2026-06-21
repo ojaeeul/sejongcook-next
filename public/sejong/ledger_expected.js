@@ -932,8 +932,12 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
                     runningTotal = result.currentCount.count;
                 }
                 if (result && result.simulatedAttendances) {
-                    const simThisMonth = result.simulatedAttendances.filter(sa => sa.year === tYear && sa.month === tMonth).length;
-                    runningTotal += simThisMonth * attendanceIncrement;
+                    const simUpToThisMonth = result.simulatedAttendances.filter(sa => {
+                        if (sa.year < tYear) return true;
+                        if (sa.year === tYear && sa.month <= tMonth) return true;
+                        return false;
+                    }).length;
+                    runningTotal += simUpToThisMonth * attendanceIncrement;
                 }
             }
 
@@ -984,7 +988,7 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
             }
 
             let vRaw = Math.round(runningTotal * 10);
-            let limits = (typeof window.getCourseLimits !== 'undefined') ? window.getCourseLimits(c, m.type) : { limit: 8, trigger: 9 };
+            let limits = (typeof window.getCourseLimits !== 'undefined') ? window.getCourseLimits(c, m.type) : { limit: 9, trigger: 9 };
             let limit = limits.limit;
             let trigger = limits.trigger;
             let limitRaw = Math.round(limit * 10);

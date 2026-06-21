@@ -95,7 +95,7 @@ window.getCourseLimits = function(courseNameScope, memberType) {
         }
     }
     
-    return { limit: trigger - 1.0, trigger: trigger };
+    return { limit: trigger, trigger: trigger };
 };
 
 window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, allAttendanceLogs, courseFilter, GLOBAL_DATA_ADJUSTMENTS) {
