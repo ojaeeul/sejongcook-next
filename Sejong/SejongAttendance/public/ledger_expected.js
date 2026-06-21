@@ -827,35 +827,42 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
                     return true;
                 }) : [];
 
+                let mergedExpectedAndAtt = false;
+
                 if (realAttendanceToday.length > 0) {
                     const attTextRaw = realAttendanceToday.map(a => a.status).join(',');
-                    let attBg = '#d1fae5'; // 기본 연두색
-                    let attColor = '#065f46';
-                    
-                    if (attTextRaw.includes('결석')) {
-                        attBg = '#fee2e2';
-                        attColor = '#991b1b';
-                    } else if (attTextRaw.includes('지각')) {
-                        attBg = '#ffedd5';
-                        attColor = '#9a3412';
-                    } else if (attTextRaw.includes('공결') || attTextRaw.includes('조퇴')) {
-                        attBg = '#e0e7ff';
-                        attColor = '#3730a3';
-                    }
-                    
-                    // 텍스트가 길 경우 (예: "재고출석,출석") 칸에 맞게 줄바꿈 처리
                     const attTextFormatted = attTextRaw.replace(/,/g, '<br>');
                     
-                    // 가상출석 대신 진짜 출석을 그림
-                    slotContent += `
-                    <div style="font-size: 0.45rem; font-weight: 800; display: flex; flex-direction: column; justify-content: center; align-items: center; background: ${attBg}; border: 1px solid ${attColor}; border-radius: 4px; padding: 1px; width: 100%; min-height: 20px; text-align: center; color: ${attColor}; line-height: 1; word-break: break-all; letter-spacing: -0.5px;">
-                        ${attTextFormatted}
-                    </div>`;
+                    if (expectedToday.length > 0 && !expectedToday.some(s => s.isSimulated)) {
+                        let uniqueExpected = [...expectedToday];
+                        uniqueExpected.forEach(s => {
+                            slotContent += `
+                            <div style="font-size: 0.45rem; font-weight: 800; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #fee2e2; border: 1px solid #ef4444; border-radius: 4px; padding: 1px; width: 100%; min-height: 20px; text-align: center; color: #dc2626; line-height: 1; word-break: break-all; letter-spacing: -0.5px;">
+                                ${attTextFormatted}<br><span style="font-size: 0.4rem; opacity: 0.9;">${s.fee / 10000}만</span>
+                            </div>`;
+                        });
+                        mergedExpectedAndAtt = true;
+                    } else {
+                        let attBg = '#d1fae5'; // 기본 연두색
+                        let attColor = '#065f46';
+                        
+                        if (attTextRaw.includes('결석')) {
+                            attBg = '#fee2e2';
+                            attColor = '#991b1b';
+                        } else if (attTextRaw.includes('지각')) {
+                            attBg = '#ffedd5';
+                            attColor = '#9a3412';
+                        } else if (attTextRaw.includes('공결') || attTextRaw.includes('조퇴')) {
+                            attBg = '#e0e7ff';
+                            attColor = '#3730a3';
+                        }
+                        
+                        slotContent += `
+                        <div style="font-size: 0.45rem; font-weight: 800; display: flex; flex-direction: column; justify-content: center; align-items: center; background: ${attBg}; border: 1px solid ${attColor}; border-radius: 4px; padding: 1px; width: 100%; min-height: 20px; text-align: center; color: ${attColor}; line-height: 1; word-break: break-all; letter-spacing: -0.5px;">
+                            ${attTextFormatted}
+                        </div>`;
+                    }
                 } else if (simAttendanceToday.length > 0) {
-                    // 가상출석 렌더링 (진짜 출석이 없을 때만)
-                    
-                    // 만약 이 날짜에 파란색 결재 예정일(expectedToday)이 함께 있다면 여기서 박스를 그리지 않고
-                    // 금액 박스 안에 '가상출석' 글자를 합쳐서 그리도록 넘김.
                     let isAlsoSimulatedMilestone = false;
                     if (expectedToday.length > 0) {
                         isAlsoSimulatedMilestone = expectedToday.some(s => s.isSimulated);
@@ -869,14 +876,13 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
                     }
                 }
 
-                if (expectedToday.length > 0) {
+                if (expectedToday.length > 0 && !mergedExpectedAndAtt) {
                     let uniqueExpected = [...expectedToday];
                     uniqueExpected.forEach(s => {
-                        const feeColor = s.isSimulated ? '#3b82f6' : '#d946ef';
-                        const feeBg = s.isSimulated ? '#eff6ff' : '#fdf4ff';
+                        const feeColor = s.isSimulated ? '#3b82f6' : '#ef4444';
+                        const feeBg = s.isSimulated ? '#eff6ff' : '#fee2e2';
                         
                         let labelHtml = '';
-                        // 가상출석이랑 겹치면 금액 박스 안에 가상출석 글자를 섞어줌
                         if (s.isSimulated && simAttendanceToday.length > 0 && realAttendanceToday.length === 0) {
                             labelHtml = `출석<br>`;
                         }
