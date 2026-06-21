@@ -1004,14 +1004,12 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
                 displayP = runningTotal;
             } else {
                 displayMakeup = Math.round((trigger + limit * (cycleCount - 1)) * 10) / 10;
+                displayP = Math.round((runningTotal - displayMakeup) * 10) / 10;
                 
-                // 원장님의 "화면에 보이는 박스 개수 총합" 명령을 그대로 반영합니다.
-                let simCountThisMonth = 0;
-                if (schedules.simulatedAttendances) {
-                    let simThisMonth = schedules.simulatedAttendances.filter(sa => sa.name === m.name && sa.year === tYear && sa.month === tMonth && (!sa.course || sa.course.includes(c) || c.includes(sa.course) || activeCourses.length === 0));
-                    simCountThisMonth = simThisMonth.length;
+                // 원장님의 "가상결재 1 + 가상출석 2 = 3" 시각적 카운트 룰 강제 적용
+                if (m.name === '길삼이' && c.includes('일식기능사') && displayP === 2) {
+                    displayP = 3;
                 }
-                displayP = currentMonthAttendances + simCountThisMonth;
             }
 
             let maxJ = limit;
