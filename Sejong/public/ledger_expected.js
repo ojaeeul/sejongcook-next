@@ -317,6 +317,22 @@ function getAllLedgerMonthStats(memberId, year, month) {
 
     courses.forEach(courseName => {
         const stats = getLedgerMonthStats(memberId, year, month, courseName);
+        
+        // 수강료 규칙 적용 로직 (학생, 대학생, 일반 구분 및 일식/중식기능사 고정 금액)
+        let calcFee = courseFees[courseName];
+        if (member.type === '대학생' || member.type === 'college') {
+            calcFee = courseFees[courseName + '_대학생'];
+        } else if (member.type === 'student' || member.type === '학생') {
+            if (courseName === '일식기능사' || courseName === '중식기능사') {
+                calcFee = 300000;
+            } else {
+                calcFee = courseFees[courseName + '_학생'];
+            }
+        }
+        if (calcFee === undefined || isNaN(calcFee)) {
+            calcFee = courseFees[courseName] || courseFees['all'] || 0;
+        }
+
         if (stats.simulatedAttendances && stats.simulatedAttendances.length > 0) {
             stats.simulatedAttendances.forEach(sa => {
                 sa.course = courseName;
@@ -332,7 +348,7 @@ function getAllLedgerMonthStats(memberId, year, month) {
                         eighthDay: ms.day,
                         eighthMonth: ms.month,
                         isSimulated: !ms.isReal,
-                        fee: courseFees[courseName] || courseFees['all'] || 0
+                        fee: calcFee
                     });
                 });
             } else if (stats.eighthDays && stats.eighthDays.length > 0) {
@@ -342,7 +358,7 @@ function getAllLedgerMonthStats(memberId, year, month) {
                         eighthDay: day,
                         eighthMonth: stats.eighthMonth,
                         isSimulated: stats.isSimulated,
-                        fee: courseFees[courseName] || courseFees['all'] || 0
+                        fee: calcFee
                     });
                 });
             }
