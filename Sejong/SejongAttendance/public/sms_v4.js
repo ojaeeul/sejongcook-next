@@ -47,9 +47,12 @@ function calculateTotalFee(courseStr, memberType) {
     let total = 0;
     courses.forEach(c => {
         let fee;
-        if (memberType === 'student' || memberType === '학생') {
+        if (memberType === '대학생' || memberType === 'college') {
+            fee = courseFees[c + '_대학생'];
+        } else if (memberType === 'student' || memberType === '학생') {
             fee = courseFees[c + '_학생'];
         }
+        
         if (fee === undefined || isNaN(fee)) {
             fee = courseFees[c] || courseFees['all'] || 200000;
         }

@@ -82,9 +82,12 @@ function calculateTotalFee(courseStr, memberType) {
     let total = 0;
     courses.forEach(c => {
         let fee;
-        if (memberType === 'student' || memberType === '학생') {
+        if (memberType === '대학생' || memberType === 'college') {
+            fee = courseFees[c + '_대학생'];
+        } else if (memberType === 'student' || memberType === '학생') {
             fee = courseFees[c + '_학생'];
         }
+        
         if (fee === undefined || isNaN(fee)) {
             fee = courseFees[c] || courseFees['all'] || DEFAULT_PRICE;
         }
@@ -1282,16 +1285,21 @@ async function openTuitionSettings() {
                 courses.forEach((c, idx) => {
                     const feeGen = (courseFeesObj[c] || DEFAULT_PRICE).toLocaleString();
                     const feeStu = (courseFeesObj[c + '_학생'] || courseFeesObj[c] || DEFAULT_PRICE).toLocaleString();
+                    const feeCol = (courseFeesObj[c + '_대학생'] || courseFeesObj[c] || DEFAULT_PRICE).toLocaleString();
                     html += `
-                        <div class="form-group" style="display: flex; gap: 10px; align-items: center; margin-bottom: 5px; flex-wrap: wrap;">
-                            <label style="width: 110px; flex-shrink: 0;">${c}</label>
-                            <div style="display: flex; align-items: center; gap: 5px;">
-                                <span style="font-size: 0.8rem; color: #64748b;">일반</span>
-                                <input type="text" id="fee_dyn_${idx}_gen" data-course="${c}" value="${feeGen}" class="text-right" style="width: 80px;" title="${c} 일반 수강료">
+                        <div class="form-group" style="display: flex; gap: 8px; align-items: center; margin-bottom: 5px; flex-wrap: wrap;">
+                            <label style="width: 100px; flex-shrink: 0; font-size: 0.9rem;">${c}</label>
+                            <div style="display: flex; align-items: center; gap: 3px;">
+                                <span style="font-size: 0.75rem; color: #64748b;">일반</span>
+                                <input type="text" id="fee_dyn_${idx}_gen" data-course="${c}" value="${feeGen}" class="text-right" style="width: 70px; padding: 4px;" title="${c} 일반 수강료">
                             </div>
-                            <div style="display: flex; align-items: center; gap: 5px;">
-                                <span style="font-size: 0.8rem; color: #64748b;">학생</span>
-                                <input type="text" id="fee_dyn_${idx}_stu" data-course="${c}_학생" value="${feeStu}" class="text-right" style="width: 80px;" title="${c} 학생 수강료">
+                            <div style="display: flex; align-items: center; gap: 3px;">
+                                <span style="font-size: 0.75rem; color: #64748b;">학생</span>
+                                <input type="text" id="fee_dyn_${idx}_stu" data-course="${c}_학생" value="${feeStu}" class="text-right" style="width: 70px; padding: 4px;" title="${c} 학생 수강료">
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 3px;">
+                                <span style="font-size: 0.75rem; color: #64748b;">대학생</span>
+                                <input type="text" id="fee_dyn_${idx}_col" data-course="${c}_대학생" value="${feeCol}" class="text-right" style="width: 70px; padding: 4px;" title="${c} 대학생 수강료">
                             </div>
                         </div>
                     `;
