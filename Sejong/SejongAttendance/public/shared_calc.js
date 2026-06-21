@@ -42,6 +42,23 @@ window.getCourseCycleLength = function(courseNameScope, memberType) {
     return limits.trigger; // Backward compatibility
 };
 
+window.getCourseAttendanceCutoff = function(courseNameScope, memberType) {
+    let safeCourseKey = (courseNameScope || '').replace(/\s/g, '');
+    let isDualCourse = courseNameScope && (
+        (courseNameScope.includes('조리') && (courseNameScope.includes('제과') || courseNameScope.includes('제빵'))) ||
+        (courseNameScope.includes('제과') && courseNameScope.includes('제빵'))
+    );
+    let maxP = isDualCourse ? 16.0 : 8.0;
+
+    if (window.global_attendance_cutoffs && window.global_attendance_cutoffs[safeCourseKey] !== undefined) {
+        maxP = parseFloat(window.global_attendance_cutoffs[safeCourseKey]);
+        if (memberType === 'student' && window.global_attendance_cutoffs_student && window.global_attendance_cutoffs_student[safeCourseKey] !== undefined) {
+            maxP = parseFloat(window.global_attendance_cutoffs_student[safeCourseKey]);
+        }
+    }
+    return maxP;
+};
+
 window.getCourseLimits = function(courseNameScope, memberType) {
     let safeCourseKey = (courseNameScope || '').replace(/\s/g, '');
     

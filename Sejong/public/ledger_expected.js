@@ -996,13 +996,9 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
                 displayP = Math.round((runningTotal - (cycleCount * limit)) * 10) / 10;
             }
 
-            let safeCourseKey = String(c).replace(/\\s/g, '');
-            let maxJ = (typeof window.global_makeup_cutoffs !== 'undefined' && window.global_makeup_cutoffs[safeCourseKey] !== undefined)
-                ? window.global_makeup_cutoffs[safeCourseKey]
-                : (isDualCourse ? 16.0 : 8.0);
-                
-            let maxP = (typeof window.global_attendance_cutoffs !== 'undefined' && window.global_attendance_cutoffs[safeCourseKey] !== undefined)
-                ? window.global_attendance_cutoffs[safeCourseKey]
+            let maxJ = limit;
+            let maxP = (typeof window.getCourseAttendanceCutoff !== 'undefined')
+                ? window.getCourseAttendanceCutoff(c, m.type)
                 : (isDualCourse ? 16.0 : 8.0);
 
             let htmlMakeup = '';
