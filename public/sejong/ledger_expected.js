@@ -534,7 +534,7 @@ function renderTable(container, title, members, id) {
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #0f172a; margin-bottom: 12px; padding: 10px 0;">
             <h2 style="margin: 0; font-size: 1.4rem; font-weight: 900;">${title} (${members.length}명) - ${currentYear}년 ${currentMonth}월</h2>
         </div>
-        <div style="border: 1.5px solid #0f172a; border-radius: 4px; background: #fff; margin-bottom: 20px;">
+        <div style="overflow: auto; max-height: 65vh; border: 1.5px solid #0f172a; border-radius: 4px; background: #fff; margin-bottom: 20px;">
             <table style="width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; font-family: 'Noto Sans KR', sans-serif; min-width: 1800px;">
                 <colgroup>
                     <col style="width: 35px;">
