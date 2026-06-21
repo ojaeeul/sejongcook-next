@@ -1086,12 +1086,12 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
             let startDay = 999;
             let ignoreBlueBoxes = false;
 
-            if (realMarkerDay <= daysInMonth) {
+            if (realMarkerDay <= daysInMonth && virtualMarkerDay <= daysInMonth) {
+                startDay = Math.max(realMarkerDay, virtualMarkerDay);
+            } else if (realMarkerDay <= daysInMonth) {
                 startDay = realMarkerDay;
-                ignoreBlueBoxes = false; // 원장님 요청: 진짜 결재일이 있어도 파란박스를 0으로 무시하지 않고 정상 카운트(+1) 함!
             } else if (virtualMarkerDay <= daysInMonth) {
                 startDay = virtualMarkerDay;
-                ignoreBlueBoxes = false; // 파란박스가 기준이면 파란박스 본인부터 1로 셈!
             }
 
             if (startDay <= daysInMonth && lastActiveDay >= startDay) {
