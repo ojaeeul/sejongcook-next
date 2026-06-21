@@ -684,7 +684,7 @@ function renderTable(container, title, members, id) {
             <td style="padding: 6px 4px; border-right: 1.5px solid #0f172a; width: 105px; max-width: 105px; overflow: hidden;">
                 <div style="display: flex; align-items: center; gap: 2px;">
                     <span onclick="moveToTrash('${m.id}')" style="cursor: pointer; color: #ef4444; font-size: 0.8rem; display: flex; align-items: center;" title="휴지통으로 이동"><span class="material-icons" style="font-size: 0.8rem;">delete</span></span>
-                    <span style="font-weight: 900; font-size: 0.85rem; color: #000;">${m.name || ''}</span>
+                    <span style="font-weight: 900; font-size: 0.85rem; color: ${(!m.age || isNaN(parseInt(m.age)) || parseInt(m.age) >= 20) ? '#15803d' : '#000'};">${m.name || ''}</span>
                 </div>
                     <span style="font-size: 0.7rem; color: #64748b;">${m.phone || ''}</span>
                 </div>
