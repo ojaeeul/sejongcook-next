@@ -145,10 +145,10 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
         console.error(e);
     }
 
-    if (latestSyncedDateStr) {
-        // 수동 결제일이 있는 경우, 그 이전의 실제 출석 기록은 모두 무시
-        uniqueLogs = uniqueLogs.filter(l => l.date > latestSyncedDateStr);
-    }
+    // [중요 수정] 원장님 요청: "학생이 실제로 출석(또는 결석)한 과거 기록이 숨은것은 삭제하고 
+    // 과거에 이미 누적된 실제 출석 횟수도 삭제 실제로 표시 실제수기로 되어 있는 표시만 인정해서 적용"
+    // 수동 결제일이든 시작일이든 기준일부터 무조건 가상 출석으로만 시뮬레이션 (실제 출석은 무시)
+    uniqueLogs = [];
 
     const hasAnyAttendance = uniqueLogs.length > 0 || latestSyncedDateStr != null;
 
