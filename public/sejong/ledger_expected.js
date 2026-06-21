@@ -1088,7 +1088,7 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
 
             if (realMarkerDay <= daysInMonth) {
                 startDay = realMarkerDay;
-                ignoreBlueBoxes = true; // 진짜 결재일이 기준이면, 가상결재일(파란박스)은 개수에서 뺌!
+                ignoreBlueBoxes = false; // 원장님 요청: 진짜 결재일이 있어도 파란박스를 0으로 무시하지 않고 정상 카운트(+1) 함!
             } else if (virtualMarkerDay <= daysInMonth) {
                 startDay = virtualMarkerDay;
                 ignoreBlueBoxes = false; // 파란박스가 기준이면 파란박스 본인부터 1로 셈!
