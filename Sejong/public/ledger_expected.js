@@ -1008,7 +1008,7 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
                 // 원장님의 "화면에 보이는 박스 개수 총합" 명령을 그대로 반영합니다.
                 let simCountThisMonth = 0;
                 if (schedules.simulatedAttendances) {
-                    let simThisMonth = schedules.simulatedAttendances.filter(sa => sa.year === tYear && sa.month === tMonth && (!sa.course || sa.course.includes(c) || c.includes(sa.course) || activeCourses.length === 0));
+                    let simThisMonth = schedules.simulatedAttendances.filter(sa => sa.name === m.name && sa.year === tYear && sa.month === tMonth && (!sa.course || sa.course.includes(c) || c.includes(sa.course) || activeCourses.length === 0));
                     simCountThisMonth = simThisMonth.length;
                 }
                 displayP = currentMonthAttendances + simCountThisMonth;
