@@ -1006,11 +1006,14 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
                 displayMakeup = Math.round((trigger + limit * (cycleCount - 1)) * 10) / 10;
                 displayP = Math.round((runningTotal - displayMakeup) * 10) / 10;
                 
-                // 원장님의 "시각적 카운트 룰" 명시적 지정 강제 적용 (길삼이 전용)
+                // 원장님의 "시각적 카운트 룰" 명시적 지정 강제 적용
                 if (m.name === '길삼이') {
                     if (c.includes('일식기능사')) displayP = 3;
                     if (c.includes('양식기능사')) displayP = 3;
                     if (c.includes('가정요리')) displayP = 7;
+                }
+                if (m.name === '길춘이') {
+                    if (c.includes('제빵기능사')) displayP = 3;
                 }
             }
 
