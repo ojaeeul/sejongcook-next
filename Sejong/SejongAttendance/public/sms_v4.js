@@ -50,7 +50,11 @@ function calculateTotalFee(courseStr, memberType) {
         if (memberType === '대학생' || memberType === 'college') {
             fee = courseFees[c + '_대학생'];
         } else if (memberType === 'student' || memberType === '학생') {
-            fee = courseFees[c + '_학생'];
+            if (c === '일식기능사' || c === '중식기능사') {
+                fee = 300000;
+            } else {
+                fee = courseFees[c + '_학생'];
+            }
         }
         
         if (fee === undefined || isNaN(fee)) {

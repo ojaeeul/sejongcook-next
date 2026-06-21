@@ -85,7 +85,11 @@ function calculateTotalFee(courseStr, memberType) {
         if (memberType === '대학생' || memberType === 'college') {
             fee = courseFees[c + '_대학생'];
         } else if (memberType === 'student' || memberType === '학생') {
-            fee = courseFees[c + '_학생'];
+            if (c === '일식기능사' || c === '중식기능사') {
+                fee = 300000;
+            } else {
+                fee = courseFees[c + '_학생'];
+            }
         }
         
         if (fee === undefined || isNaN(fee)) {
@@ -1284,8 +1288,15 @@ async function openTuitionSettings() {
                 
                 courses.forEach((c, idx) => {
                     const feeGen = (courseFeesObj[c] || DEFAULT_PRICE).toLocaleString();
-                    const feeStu = (courseFeesObj[c + '_학생'] || courseFeesObj[c] || DEFAULT_PRICE).toLocaleString();
+                    let feeStu = (courseFeesObj[c + '_학생'] || courseFeesObj[c] || DEFAULT_PRICE).toLocaleString();
                     const feeCol = (courseFeesObj[c + '_대학생'] || courseFeesObj[c] || DEFAULT_PRICE).toLocaleString();
+                    
+                    let stuAttr = 'style="width: 70px; padding: 4px;"';
+                    if (c === '일식기능사' || c === '중식기능사') {
+                        feeStu = '300,000';
+                        stuAttr = 'style="width: 70px; padding: 4px; background-color: #f1f5f9; color: #94a3b8; cursor: not-allowed;" readonly title="고정 요금"';
+                    }
+
                     html += `
                         <div class="form-group" style="display: flex; gap: 8px; align-items: center; margin-bottom: 5px; flex-wrap: wrap;">
                             <label style="width: 100px; flex-shrink: 0; font-size: 0.9rem;">${c}</label>
@@ -1295,7 +1306,7 @@ async function openTuitionSettings() {
                             </div>
                             <div style="display: flex; align-items: center; gap: 3px;">
                                 <span style="font-size: 0.75rem; color: #64748b;">학생</span>
-                                <input type="text" id="fee_dyn_${idx}_stu" data-course="${c}_학생" value="${feeStu}" class="text-right" style="width: 70px; padding: 4px;" title="${c} 학생 수강료">
+                                <input type="text" id="fee_dyn_${idx}_stu" data-course="${c}_학생" value="${feeStu}" class="text-right" ${stuAttr} title="${c} 학생 수강료">
                             </div>
                             <div style="display: flex; align-items: center; gap: 3px;">
                                 <span style="font-size: 0.75rem; color: #64748b;">대학생</span>
