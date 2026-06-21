@@ -669,7 +669,7 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
         <div style="flex: 0 0 auto; width: 900px; border: 1.5px solid #0f172a; border-radius: 4px; background: #fff; position: relative;">
             <div style="position: sticky; left: 0; z-index: 40; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #0f172a; padding: 10px 10px; background: #fff;">
                 <h2 style="margin: 0; font-size: 1.2rem; font-weight: 900; display: flex; align-items: center;">
-                    ${title === '전체 수강생' ? '결재일 건수' : title} - ${tYear}년 ${tMonth}월
+                    ${title} (${members.length}명) - ${tYear}년 ${tMonth}월
                     <span style="margin-left: 15px; color: #dc2626; font-weight: 900; background: #fee2e2; padding: 4px 12px; border-radius: 20px; border: 2px solid #ef4444; font-size: 0.95rem; display: inline-flex; align-items: center; box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2);">
                         <span class="material-icons" style="font-size: 1.1rem; margin-right: 4px;">event_available</span> 
                         결재일 건수: ${totalRedCount}건
