@@ -166,7 +166,6 @@ async function loadData(targetId) {
         paymentsData = await pRes.json();
         attendanceData = await aRes.json();
         holidaysData = await hRes.json();
-        window.holidaysData = holidaysData; // Make it available for shared_calc.js
         const rawSettings = await sRes.json();
         const timetableData = await tRes.json();
 
@@ -737,11 +736,46 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
 
                 let slotContent = '';
                 
-                // 가상출석 렌더링 (단, 해당 날짜에 진짜 출석이 있으면 무시하는 로직은 이미 shared_calc.js에서 오늘/과거 날짜의 경우 필터링됨)
-                if (simAttendanceToday.length > 0) {
+                // 진짜 출석 렌더링 (attendanceData 활용)
+                const realAttendanceToday = (window.attendanceData || []).filter(a => {
+                    if (String(a.memberId) !== String(m.id)) return false;
+                    const aDate = new Date(a.date);
+                    if (aDate.getFullYear() !== tYear || (aDate.getMonth() + 1) !== tMonth || aDate.getDate() !== day) return false;
+                    if (c && a.course) {
+                        const aC = a.course.split('(')[0].trim();
+                        const matchC = c.split('(')[0].trim();
+                        return aC === matchC || a.course.includes(matchC) || c.includes(aC);
+                    }
+                    return true;
+                });
+
+                if (realAttendanceToday.length > 0) {
+                    const attType = realAttendanceToday[0].status; // '출석', '결석', '지각' 등
+                    let attBg = '#d1fae5'; // 기본 연두색
+                    let attColor = '#065f46';
+                    let attText = attType;
+                    
+                    if (attType === '결석') {
+                        attBg = '#fee2e2';
+                        attColor = '#991b1b';
+                    } else if (attType === '지각') {
+                        attBg = '#ffedd5';
+                        attColor = '#9a3412';
+                    } else if (attType === '공결' || attType === '조퇴') {
+                        attBg = '#e0e7ff';
+                        attColor = '#3730a3';
+                    }
+                    
+                    // 가상출석 대신 진짜 출석을 그림
+                    slotContent += `
+                    <div style="font-size: 0.5rem; font-weight: 800; display: flex; flex-direction: column; align-items: center; background: ${attBg}; border: 1px solid ${attColor}; border-radius: 4px; padding: 1px; width: 100%; text-align: center; color: ${attColor};">
+                        ${attText}
+                    </div>`;
+                } else if (simAttendanceToday.length > 0) {
+                    // 가상출석 렌더링 (진짜 출석이 없을 때만)
                     slotContent += `
                     <div style="font-size: 0.5rem; font-weight: 800; display: flex; flex-direction: column; align-items: center; background: #fef08a; border: 1px solid #eab308; border-radius: 4px; padding: 1px; width: 100%; text-align: center; color: #854d0e;">
-                        가상출석
+                        가상<br>출석
                     </div>`;
                 }
 
