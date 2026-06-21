@@ -976,7 +976,8 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
                 displayP = adjustment.presentOverride;
             }
 
-            let vRaw = Math.round(runningTotal * 10);
+            let baseTotal = displayP;
+            let vRaw = Math.round(baseTotal * 10);
             let limits = (typeof window.getCourseLimits !== 'undefined') ? window.getCourseLimits(c, m.type) : { limit: 8, trigger: 9 };
             let limit = limits.limit;
             let trigger = limits.trigger;
@@ -990,10 +991,10 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
 
             if (cycleCount === 0) {
                 displayMakeup = 0;
-                displayP = runningTotal;
+                displayP = baseTotal;
             } else {
                 displayMakeup = Math.round((trigger + limit * (cycleCount - 1)) * 10) / 10;
-                displayP = Math.round((runningTotal - displayMakeup) * 10) / 10;
+                displayP = Math.round((baseTotal - displayMakeup) * 10) / 10;
             }
 
             let maxJ = limit;
