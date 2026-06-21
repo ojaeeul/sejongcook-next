@@ -436,7 +436,14 @@ function renderLedger() {
                 if (cList.length === 0) return true;
                 return !COURSE_LIST.filter(cl => cl !== '기타').some(cl => cList.some(c => c.includes(cl)));
             }
-            return m.course && m.course.includes(courseName);
+            if (!m.course) return false;
+            const cList = m.course.split(',').map(c => c.trim()).filter(c => c && !c.includes('[삭제]'));
+            return cList.some(c => {
+                if (courseName === '제과기능사' || courseName === '제빵기능사') {
+                    return c.includes(courseName) && !c.includes('제과제빵기능사');
+                }
+                return c.includes(courseName);
+            });
         }).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
 
         filteredMembers = filterByPeriod(filteredMembers);
@@ -556,7 +563,12 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
         }
         
         if (typeof COURSE_LIST !== 'undefined' && COURSE_LIST.includes(activeCategory)) {
-            return baseCourses.filter(c => c.includes(activeCategory));
+            return baseCourses.filter(c => {
+                if (activeCategory === '제과기능사' || activeCategory === '제빵기능사') {
+                    return c.includes(activeCategory) && !c.includes('제과제빵기능사');
+                }
+                return c.includes(activeCategory);
+            });
         }
         
         if (typeof COURSE_CATEGORIES !== 'undefined' && COURSE_CATEGORIES[activeCategory]) {
