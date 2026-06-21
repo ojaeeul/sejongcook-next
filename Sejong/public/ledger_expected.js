@@ -1006,17 +1006,62 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
                 displayMakeup = Math.round((trigger + limit * (cycleCount - 1)) * 10) / 10;
                 displayP = Math.round((runningTotal - displayMakeup) * 10) / 10;
                 
-                // 원장님의 "시각적 카운트 룰" 명시적 지정 강제 적용
-                if (m.name === '길삼이') {
-                    if (c.includes('일식기능사')) displayP = 3;
-                    if (c.includes('양식기능사')) displayP = 3;
-                    if (c.includes('가정요리')) displayP = 7;
+                // 원장님의 "시각적 카운트 룰" 전체 시트 범용 적용
+                let allTimeline = [];
+                if (m.attendances) {
+                    m.attendances.forEach(a => {
+                        let aDate = new Date(a.date);
+                        if (aDate.getFullYear() < tYear || (aDate.getFullYear() === tYear && (aDate.getMonth() + 1) <= tMonth)) {
+                            if (!a.status.includes('결석') && (!c || !a.course || a.course.includes(c.split('(')[0].trim()))) {
+                                allTimeline.push({ date: aDate, type: 'real' });
+                            }
+                        }
+                    });
                 }
-                if (m.name === '길춘이') {
-                    if (c.includes('제빵기능사')) displayP = 3;
+                if (schedules.simulatedAttendances) {
+                    schedules.simulatedAttendances.forEach(sa => {
+                        if (sa.name === m.name && (sa.year < tYear || (sa.year === tYear && sa.month <= tMonth))) {
+                            if (!sa.course || sa.course.includes(c) || c.includes(sa.course) || activeCourses.length === 0) {
+                                allTimeline.push({ date: new Date(sa.year, sa.month - 1, sa.day), type: 'sim' });
+                            }
+                        }
+                    });
                 }
-                if (m.name === '김삼이') {
-                    if (c.includes('복어기능사')) displayP = 6;
+                allTimeline.sort((a, b) => a.date - b.date);
+
+                let currentMonthBoxes = [];
+                let validCutoffs = [];
+                for (let i = 0; i < 100; i++) {
+                    validCutoffs.push(Math.round((trigger + limit * i) * 10) / 10);
+                }
+
+                allTimeline.forEach((box, idx) => {
+                    let attendanceIndex = idx + 1;
+                    box.isCutoff = validCutoffs.includes(attendanceIndex);
+                    
+                    if (box.date.getFullYear() === tYear && (box.date.getMonth() + 1) === tMonth) {
+                        currentMonthBoxes.push(box);
+                    }
+                });
+
+                const paidThisMonth = (window.tuitionData || []).filter(p => p.memberId === m.id && p.year === tYear && p.month === tMonth && (!c || !p.course || p.course.includes(c.split('(')[0].trim())));
+                const virtualPaymentsThisMonth = (schedules.milestones || []).filter(ms => ms.year === tYear && ms.month === tMonth);
+
+                currentMonthBoxes.forEach(box => {
+                    box.isRealPayment = paidThisMonth.some(p => new Date(p.updatedAt || p.date).getDate() === box.date.getDate());
+                    box.isVirtualPayment = virtualPaymentsThisMonth.some(ms => ms.day === box.date.getDate());
+                });
+
+                let firstMarkerIdx = -1;
+                for (let i = 0; i < currentMonthBoxes.length; i++) {
+                    if (currentMonthBoxes[i].isRealPayment || currentMonthBoxes[i].isVirtualPayment || currentMonthBoxes[i].isCutoff) {
+                        firstMarkerIdx = i;
+                        break;
+                    }
+                }
+
+                if (firstMarkerIdx !== -1) {
+                    displayP = currentMonthBoxes.length - firstMarkerIdx;
                 }
             }
 
