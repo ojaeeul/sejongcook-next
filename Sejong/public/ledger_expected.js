@@ -1066,12 +1066,13 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
                 
                 let hasRealPayment = paidToday.length > 0;
                 let hasVirtualPayment = expectedToday.some(s => s.isSimulated);
+                let hasExpectedPayment = expectedToday.some(s => !s.isSimulated);
                 
-                if (hasRealPayment || hasVirtualPayment || isCutoffDay) {
-                    if (day < firstMarkerDay) firstMarkerDay = day;
+                if (hasRealPayment || hasVirtualPayment || hasExpectedPayment) {
+                    firstMarkerDay = day; // 항상 화면에 보이는 가장 최근 마커를 기준으로 잡습니다.
                 }
                 
-                if (hasRealAtt || hasSimAtt || hasRealPayment || hasVirtualPayment) {
+                if (hasRealAtt || hasSimAtt || hasRealPayment || hasVirtualPayment || hasExpectedPayment) {
                     if (day > lastActiveDay) lastActiveDay = day;
                 }
                 
