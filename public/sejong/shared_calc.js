@@ -357,6 +357,8 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
             lastRecordDateObj = new Date(uniqueLogs[uniqueLogs.length - 1].date);
         } else if (latestSyncedDateStr) {
             lastRecordDateObj = new Date(latestSyncedDateStr);
+            // 결제일(수기 입력일) 당일부터 가상 출석 카운트 시작하도록 -1일 보정
+            lastRecordDateObj.setDate(lastRecordDateObj.getDate() - 1);
         } else if (displayStartDate) {
             // [수정] 출석 기록이 없어도 등록일/시작일이 있으면 그 날짜부터 시뮬레이션 시작
             lastRecordDateObj = new Date(displayStartDate);
