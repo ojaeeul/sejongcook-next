@@ -1015,6 +1015,9 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
                 if (m.name === '길춘이') {
                     if (c.includes('제빵기능사')) displayP = 3;
                 }
+                if (m.name === '김삼이') {
+                    if (c.includes('복어기능사')) displayP = 6;
+                }
             }
 
             let maxJ = limit;
