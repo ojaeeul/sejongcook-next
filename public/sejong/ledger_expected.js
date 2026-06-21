@@ -701,19 +701,14 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
                                 color = '#2563eb';
                             }
                             
-                            let contentHtml = '';
-                            if (rC > 0 || bC > 0) {
-                                contentHtml = `
-                                    <div style="display:flex; flex-direction:column; align-items:center; gap:1px;">
-                                        ${rC > 0 ? `<span style="background:#ef4444; color:white; border-radius:10px; padding:1px 3px; font-size:0.55rem; min-width:10px; text-align:center;">${rC}</span>` : `<span style="visibility:hidden; font-size:0.55rem; padding:1px 3px; min-width:10px;">0</span>`}
-                                        <span style="font-size:0.6rem; font-weight:800; color:${color};">${day}</span>
-                                        ${bC > 0 ? `<span style="background:#2563eb; color:white; border-radius:10px; padding:1px 3px; font-size:0.55rem; min-width:10px; text-align:center;">${bC}</span>` : `<span style="visibility:hidden; font-size:0.55rem; padding:1px 3px; min-width:10px;">0</span>`}
-                                    </div>
-                                `;
-                            } else {
-                                contentHtml = `<span style="font-size:0.6rem; font-weight:800; color:${color};">${day}</span>`;
-                            }
-                            return `<th style="position: sticky; top: 0; z-index: 20; background: #f8fafc; border-bottom: 1.5px solid #0f172a; border-right: 1px solid #cbd5e1; padding: 2px 1px; vertical-align: bottom;">${contentHtml}</th>`;
+                            let contentHtml = `
+                                <div style="display:flex; flex-direction:column; align-items:center; gap:1px; height: 38px; justify-content: flex-end;">
+                                    ${rC > 0 ? `<span style="background:#ef4444; color:white; border-radius:10px; padding:1px 3px; font-size:0.55rem; min-width:10px; text-align:center; line-height: 1;">${rC}</span>` : `<span style="visibility:hidden; font-size:0.55rem; padding:1px 3px; min-width:10px; line-height: 1;">0</span>`}
+                                    <span style="font-size:0.6rem; font-weight:800; color:${color}; line-height: 1.2;">${day}</span>
+                                    ${bC > 0 ? `<span style="background:#2563eb; color:white; border-radius:10px; padding:1px 3px; font-size:0.55rem; min-width:10px; text-align:center; line-height: 1;">${bC}</span>` : `<span style="visibility:hidden; font-size:0.55rem; padding:1px 3px; min-width:10px; line-height: 1;">0</span>`}
+                                </div>
+                            `;
+                            return `<th style="position: sticky; top: 0; z-index: 20; background: #f8fafc; border-bottom: 1.5px solid #0f172a; border-right: 1px solid #cbd5e1; padding: 2px 1px; vertical-align: bottom; height: 42px;">${contentHtml}</th>`;
                         }).join('')}
                     </tr>
                 </thead>
