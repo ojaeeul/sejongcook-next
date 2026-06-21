@@ -546,6 +546,27 @@ function renderTable(container, title, members, id) {
 }
 
 function generateMonthTableHTML(title, members, id, tYear, tMonth) {
+    const getDisplayCourses = (mCourseStr) => {
+        let baseCourses = (mCourseStr || '').split(',').map(c => c.trim()).filter(c => c && !c.includes('[삭제]'));
+        if (activeCategory === '전체') return baseCourses;
+        
+        if (activeCategory === '기타') {
+            const standardList = COURSE_LIST.filter(cl => cl !== '기타');
+            return baseCourses.filter(c => !standardList.some(cl => c.includes(cl)));
+        }
+        
+        if (typeof COURSE_LIST !== 'undefined' && COURSE_LIST.includes(activeCategory)) {
+            return baseCourses.filter(c => c.includes(activeCategory));
+        }
+        
+        if (typeof COURSE_CATEGORIES !== 'undefined' && COURSE_CATEGORIES[activeCategory]) {
+            const catCourses = COURSE_CATEGORIES[activeCategory];
+            return baseCourses.filter(c => catCourses.some(cat => c.includes(cat)));
+        }
+        
+        return baseCourses;
+    };
+
     const daysInMonth = new Date(tYear, tMonth, 0).getDate();
 
     let html = `
@@ -597,7 +618,7 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 0px; padding: 1px 2px;">
                     ${(() => {
-                        const courses = (m.course || '').split(',').map(c => c.trim()).filter(c => c && !c.includes('[삭제]'));
+                        const courses = getDisplayCourses(m.course);
                         if (courses.length === 0) return `<div style="height: 38px;"></div>`;
                         return courses.map(c => {
                             return `<div style="height: 38px; font-size: 0.55rem; color: #1d4ed8; background: #eff6ff; padding: 1px 2px; border-radius: 2px; display: flex; align-items: center; justify-content: center; text-align: center; line-height: 1.1; overflow: hidden; word-break: keep-all; margin-bottom: 2px;">${c}</div>`;
@@ -619,7 +640,7 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
 
         const paid = paymentsData.filter(p => String(p.memberId) === String(m.id) && String(p.year) === String(tYear) && String(p.month) === String(tMonth) && p.status === 'paid');
 
-        const activeCourses = (m.course || '').split(',').map(c => c.trim()).filter(c => c && !c.includes('[삭제]'));
+        const activeCourses = getDisplayCourses(m.course);
         const slotsCount = Math.max(1, activeCourses.length);
 
         for (let day = 1; day <= daysInMonth; day++) {
