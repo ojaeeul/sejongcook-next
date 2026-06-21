@@ -803,7 +803,7 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
 
                         slotContent += `
                         <div style="font-size: 0.5rem; font-weight: 800; display: flex; flex-direction: column; align-items: center; background: ${feeBg}; border: 1px solid ${feeColor}; border-radius: 4px; padding: 1px; margin-top: 1px; width: 100%; text-align: center;">
-                            <div style="color: ${feeColor};">${labelHtml}${s.fee / 10000}만</div>
+                            <div style="color: ${feeColor};">${labelHtml}<span style="font-size: 0.4rem; opacity: 0.9;">${s.fee / 10000}만</span></div>
                         </div>`;
                     });
                 }
