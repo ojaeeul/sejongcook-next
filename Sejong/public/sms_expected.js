@@ -538,7 +538,7 @@ function renderTargetList() {
                         }
                     }
 
-                    if (daysArr.length > 0 && hasAtt && !isSim) {
+                    if (daysArr.length > 0 && (hasAtt || isSim)) {
                         daysArr.forEach(dVal => {
                             const d = String(dVal).includes('-') ? parseInt(String(dVal).split('-')[2], 10) : parseInt(dVal, 10);
                             if (isNaN(d) || d <= 0) return;
@@ -1670,23 +1670,36 @@ function renderRangeCalendar() {
 
                     if (daysArr.length > 0 && (hasAtt || isSim)) {
                         daysArr.forEach(dVal => {
+                            const d = String(dVal).includes('-') ? parseInt(String(dVal).split('-')[2], 10) : parseInt(dVal, 10);
+                            let dayIsSim = isSim;
+                            if (resultCache && resultCache.allMilestones) {
+                                const ms = resultCache.allMilestones.find(x => x.day === d && x.month === (typeof month !== 'undefined' ? month : calendarMonth + 1) && x.year === (typeof year !== 'undefined' ? year : calendarYear));
+                                if (ms) dayIsSim = !ms.isReal;
+                                else {
+                                    const y = typeof year !== 'undefined' ? year : calendarYear;
+                                    const m = typeof month !== 'undefined' ? month - 1 : calendarMonth;
+                                    const dateObj = new Date(y, m, d);
+                                    const today = new Date();
+                                    today.setHours(0,0,0,0);
+                                    dayIsSim = dateObj > today;
+                                }
+                            }
+
                             const showReal = document.getElementById('filterRealPayment') ? document.getElementById('filterRealPayment').checked : true;
                             const showSim = document.getElementById('filterSimPayment') ? document.getElementById('filterSimPayment').checked : false;
                             
-                            if (isSim && !showSim) return;
-                            if (!isSim && !showReal) return;
-                            
-                            const d = String(dVal).includes('-') ? parseInt(String(dVal).split('-')[2], 10) : parseInt(dVal, 10);
+                            if (dayIsSim && !showSim) return;
+                            if (!dayIsSim && !showReal) return;
                             if (isNaN(d) || d <= 0) return;
                             
                             if (!paymentNamesByDay[d]) paymentNamesByDay[d] = { real: [], sim: [] };
                             const cClean = c.trim().replace('기능사', '');
                             const label = `${m.name}(${cClean})`;
-                            if (isSim) {
-                                if (!paymentNamesByDay[d].sim.includes(label)) paymentNamesByDay[d].sim.push(label);
-                            } else {
-                                if (!paymentNamesByDay[d].real.includes(label)) paymentNamesByDay[d].real.push(label);
-                            }
+                            if (typeof dayIsSim !== 'undefined' ? dayIsSim : isSim) {
+                        if (!paymentNamesByDay[d].sim.includes(label)) paymentNamesByDay[d].sim.push(label);
+                    } else {
+                        if (!paymentNamesByDay[d].real.includes(label)) paymentNamesByDay[d].real.push(label);
+                    }
                         });
                     }
                 });
@@ -1988,13 +2001,26 @@ function getAllMilestonesForRange(memberId, courseFilter, startRange, endRange) 
 
             if (daysArr.length > 0 && (hasAtt || isSim)) {
                 daysArr.forEach(dVal => {
-                    const showReal = document.getElementById('filterRealPayment') ? document.getElementById('filterRealPayment').checked : true;
-                    const showSim = document.getElementById('filterSimPayment') ? document.getElementById('filterSimPayment').checked : false;
-                    
-                    if (isSim && !showSim) return;
-                    if (!isSim && !showReal) return;
-                    
                     const d = String(dVal).includes('-') ? parseInt(String(dVal).split('-')[2], 10) : parseInt(dVal, 10);
+                            let dayIsSim = isSim;
+                            if (resultCache && resultCache.allMilestones) {
+                                const ms = resultCache.allMilestones.find(x => x.day === d && x.month === (typeof month !== 'undefined' ? month : calendarMonth + 1) && x.year === (typeof year !== 'undefined' ? year : calendarYear));
+                                if (ms) dayIsSim = !ms.isReal;
+                                else {
+                                    const y = typeof year !== 'undefined' ? year : calendarYear;
+                                    const m = typeof month !== 'undefined' ? month - 1 : calendarMonth;
+                                    const dateObj = new Date(y, m, d);
+                                    const today = new Date();
+                                    today.setHours(0,0,0,0);
+                                    dayIsSim = dateObj > today;
+                                }
+                            }
+
+                            const showReal = document.getElementById('filterRealPayment') ? document.getElementById('filterRealPayment').checked : true;
+                            const showSim = document.getElementById('filterSimPayment') ? document.getElementById('filterSimPayment').checked : false;
+                            
+                            if (dayIsSim && !showSim) return;
+                            if (!dayIsSim && !showReal) return;
                     if (isNaN(d) || d <= 0) return;
                     
                     const exactDate = new Date(year, month - 1, d);
