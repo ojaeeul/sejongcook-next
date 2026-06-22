@@ -504,7 +504,7 @@ function renderTargetList() {
             const ledgerSync = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
             
             membersInCourse.forEach(m => {
-                let foundDates = new Set();
+                let foundDates = new Map();
                 
                 const startY = rangeStart.getFullYear();
                 const startM = rangeStart.getMonth() + 1; // 1-12
@@ -552,7 +552,10 @@ function renderTargetList() {
                                     (p.course && cName && (p.course.includes(cName) || cName.includes(p.course)))
                                 );
                                 if (!isPaid) {
-                                    foundDates.add(`${year}-${month}-${d}`);
+                                    const key = `${year}-${month}-${d}`;
+                                    if (!foundDates.has(key) || !isSim) {
+                                        foundDates.set(key, isSim);
+                                    }
                                 }
                             }
                         });
@@ -567,9 +570,9 @@ function renderTargetList() {
                 
                 // If sheet.html had red boxes for this member in this range, use them exactly!
                 if (foundDates.size > 0) {
-                    Array.from(foundDates).forEach(dateStr => {
+                    Array.from(foundDates.entries()).forEach(([dateStr, isSimFlag]) => {
                         const [y, mStr, d] = dateStr.split('-');
-                        expandedMembers.push({ ...m, specificMilestone: { month: parseInt(mStr), day: parseInt(d) } });
+                        expandedMembers.push({ ...m, specificMilestone: { month: parseInt(mStr), day: parseInt(d), isSimulated: isSimFlag } });
                     });
                 }
             });
@@ -645,14 +648,17 @@ function renderTargetList() {
             const isInactive = m.status === 'trash' || m.status === 'delete' || m.status === 'completed';
             const statusLabel = isInactive ? '<span style="color:#ef4444; font-size:0.75rem; margin-left:4px;">(휴원)</span>' : '';
             const typeLabel = targetType === 'student' ? '<span style="color:#94a3b8; font-size:0.7rem; margin-right:4px;">수강생:</span>' : '<span style="color:#94a3b8; font-size:0.7rem; margin-right:4px;">학부모:</span>';
-            const dateLabel = m.specificMilestone ? `<span style="color:#3b82f6; font-size:0.75rem; margin-left:6px; font-weight:700;">${m.specificMilestone.month}/${m.specificMilestone.day}</span>` : '';
+            const isSim = m.specificMilestone ? m.specificMilestone.isSimulated : false;
+            const nameColor = m.specificMilestone ? (isSim ? '#d97706' : '#16a34a') : 'inherit';
+            const dateColor = m.specificMilestone ? (isSim ? '#d97706' : '#16a34a') : '';
+            const dateLabel = m.specificMilestone ? `<span style="color:${dateColor}; font-size:0.75rem; margin-left:6px; font-weight:700;">${m.specificMilestone.month}/${m.specificMilestone.day}</span>` : '';
 
             mDiv.innerHTML = `
                 <span style="display:flex; align-items:center;">
                     <i class="material-icons" style="font-size:1rem; vertical-align:middle; margin-right:8px; color:${isSelected ? '#3b82f6' : '#cbd5e1'};">
                         ${isSelected ? 'check_circle' : (hasPhone ? 'radio_button_unchecked' : 'error_outline')}
                     </i>
-                    <span style="font-weight:600;">${m.name}</span>
+                    <span style="font-weight:600; color:${nameColor};">${m.name}</span>
                     ${dateLabel}
                     ${statusLabel}
                 </span>
@@ -757,9 +763,14 @@ function updateSelectedTags() {
     selectedTargets.forEach((t, index) => {
         const tag = document.createElement('div');
         tag.className = 'target-tag';
-        tag.style.background = '#eff6ff';
-        tag.style.color = '#3b82f6';
-        tag.style.borderColor = '#93c5fd';
+        const isSim = t.specificMilestone ? t.specificMilestone.isSimulated : false;
+        const tagBgColor = t.specificMilestone ? (isSim ? '#fef3c7' : '#dcfce7') : '#eff6ff';
+        const tagTextColor = t.specificMilestone ? (isSim ? '#d97706' : '#16a34a') : '#3b82f6';
+        const tagBorderColor = t.specificMilestone ? (isSim ? '#fcd34d' : '#86efac') : '#93c5fd';
+
+        tag.style.background = tagBgColor;
+        tag.style.color = tagTextColor;
+        tag.style.borderColor = tagBorderColor;
         tag.style.display = 'inline-flex';
         tag.style.alignItems = 'center';
 
@@ -795,7 +806,7 @@ function updateSelectedTags() {
                 return `${mm}/${dd}`;
             });
             if (dateStrings.length > 0) {
-                datePart = `<span style="font-size:0.75rem; color:#2563eb; margin-left:6px; font-weight:700;">${dateStrings.join(', ')}</span>`;
+                datePart = `<span style="font-size:0.75rem; color:${tagTextColor}; margin-left:6px; font-weight:700;">${dateStrings.join(', ')}</span>`;
             }
         }
 
