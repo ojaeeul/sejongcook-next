@@ -460,6 +460,10 @@ function renderTargetList() {
     const includeInactive = document.getElementById('includeInactive').checked;
     const targetType = document.querySelector('input[name="targetType"]:checked').value;
     const usePaymentFilter = document.getElementById('usePaymentFilter').checked;
+    const ptfElem = document.querySelector('input[name="paymentTypeFilter"]:checked');
+    const paymentTypeFilter = ptfElem ? ptfElem.value : 'all';
+    const showRealPayment = paymentTypeFilter === 'all' || paymentTypeFilter === 'real';
+    const showSimPayment = paymentTypeFilter === 'all' || paymentTypeFilter === 'sim';
     const rangeStartVal = document.getElementById('paymentRangeStart').value;
     const rangeEndVal = document.getElementById('paymentRangeEnd').value;
     const searchVal = (document.getElementById('memberSearchInputSide') ? document.getElementById('memberSearchInputSide').value : '').toLowerCase();
@@ -504,7 +508,7 @@ function renderTargetList() {
             const ledgerSync = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
             
             membersInCourse.forEach(m => {
-                let foundDates = new Set();
+                let foundDates = new Map();
                 
                 const startY = rangeStart.getFullYear();
                 const startM = rangeStart.getMonth() + 1; // 1-12
@@ -520,12 +524,8 @@ function renderTargetList() {
                     let hasAtt = false;
                     let isSim = false;
 
-                    if (ledgerSync && ledgerSync[syncKey]) {
-                        const rawSync = ledgerSync[syncKey];
-                        daysArr = Array.isArray(rawSync) ? rawSync : (typeof rawSync === 'number' ? [rawSync] : []);
-                        if (daysArr.length > 0) hasAtt = true;
-                    } else if (typeof window.calculateRedBoxesForMonth === 'function') {
-                        const result = window.calculateRedBoxesForMonth(m, year, month, typeof attendanceData !== 'undefined' ? attendanceData : [], cName, typeof window.GLOBAL_DATA_ADJUSTMENTS !== 'undefined' ? window.GLOBAL_DATA_ADJUSTMENTS : {});
+                    if (typeof window.calculateRedBoxesForMonth === 'function') {
+                        const result = window.calculateRedBoxesForMonth(m, year, month, typeof attendanceData !== 'undefined' ? attendanceData : [], cName, typeof window.GLOBAL_DATA_ADJUSTMENTS !== 'undefined' ? window.GLOBAL_DATA_ADJUSTMENTS : {}, typeof paymentsData !== 'undefined' ? paymentsData : []);
                         if (result && result.redDays && result.redDays.length > 0) {
                             daysArr = result.redDays;
                             isSim = result.isSimulated;
@@ -533,7 +533,7 @@ function renderTargetList() {
                         }
                     }
 
-                    if (daysArr.length > 0 && hasAtt && !isSim) {
+                    if (daysArr.length > 0 && (hasAtt || isSim)) {
                         daysArr.forEach(dVal => {
                             const d = String(dVal).includes('-') ? parseInt(String(dVal).split('-')[2], 10) : parseInt(dVal, 10);
                             if (isNaN(d) || d <= 0) return;
@@ -552,7 +552,12 @@ function renderTargetList() {
                                     (p.course && cName && (p.course.includes(cName) || cName.includes(p.course)))
                                 );
                                 if (!isPaid) {
-                                    foundDates.add(`${year}-${month}-${d}`);
+                                    if (isSim && !showSimPayment) return;
+                                    if (!isSim && !showRealPayment) return;
+                                    const key = `${year}-${month}-${d}`;
+                                    if (!foundDates.has(key) || !isSim) {
+                                        foundDates.set(key, isSim);
+                                    }
                                 }
                             }
                         });
@@ -567,9 +572,9 @@ function renderTargetList() {
                 
                 // If sheet.html had red boxes for this member in this range, use them exactly!
                 if (foundDates.size > 0) {
-                    Array.from(foundDates).forEach(dateStr => {
+                    Array.from(foundDates.entries()).forEach(([dateStr, isSimFlag]) => {
                         const [y, mStr, d] = dateStr.split('-');
-                        expandedMembers.push({ ...m, specificMilestone: { month: parseInt(mStr), day: parseInt(d) } });
+                        expandedMembers.push({ ...m, specificMilestone: { month: parseInt(mStr), day: parseInt(d), isSimulated: isSimFlag } });
                     });
                 }
             });
@@ -645,14 +650,17 @@ function renderTargetList() {
             const isInactive = m.status === 'trash' || m.status === 'delete' || m.status === 'completed';
             const statusLabel = isInactive ? '<span style="color:#ef4444; font-size:0.75rem; margin-left:4px;">(휴원)</span>' : '';
             const typeLabel = targetType === 'student' ? '<span style="color:#94a3b8; font-size:0.7rem; margin-right:4px;">수강생:</span>' : '<span style="color:#94a3b8; font-size:0.7rem; margin-right:4px;">학부모:</span>';
-            const dateLabel = m.specificMilestone ? `<span style="color:#3b82f6; font-size:0.75rem; margin-left:6px; font-weight:700;">${m.specificMilestone.month}/${m.specificMilestone.day}</span>` : '';
+            const isSim = m.specificMilestone ? m.specificMilestone.isSimulated : false;
+            const nameColor = m.specificMilestone ? (isSim ? '#d97706' : '#16a34a') : 'inherit';
+            const dateColor = m.specificMilestone ? (isSim ? '#d97706' : '#16a34a') : '';
+            const dateLabel = m.specificMilestone ? `<span style="color:${dateColor}; font-size:0.75rem; margin-left:6px; font-weight:700;">${m.specificMilestone.month}/${m.specificMilestone.day}</span>` : '';
 
             mDiv.innerHTML = `
                 <span style="display:flex; align-items:center;">
                     <i class="material-icons" style="font-size:1rem; vertical-align:middle; margin-right:8px; color:${isSelected ? '#3b82f6' : '#cbd5e1'};">
                         ${isSelected ? 'check_circle' : (hasPhone ? 'radio_button_unchecked' : 'error_outline')}
                     </i>
-                    <span style="font-weight:600;">${m.name}</span>
+                    <span style="font-weight:600; color:${nameColor};">${m.name}</span>
                     ${dateLabel}
                     ${statusLabel}
                 </span>
@@ -757,9 +765,14 @@ function updateSelectedTags() {
     selectedTargets.forEach((t, index) => {
         const tag = document.createElement('div');
         tag.className = 'target-tag';
-        tag.style.background = '#eff6ff';
-        tag.style.color = '#3b82f6';
-        tag.style.borderColor = '#93c5fd';
+        const isSim = t.specificMilestone ? t.specificMilestone.isSimulated : false;
+        const tagBgColor = t.specificMilestone ? (isSim ? '#fef3c7' : '#dcfce7') : '#eff6ff';
+        const tagTextColor = t.specificMilestone ? (isSim ? '#d97706' : '#16a34a') : '#3b82f6';
+        const tagBorderColor = t.specificMilestone ? (isSim ? '#fcd34d' : '#86efac') : '#93c5fd';
+
+        tag.style.background = tagBgColor;
+        tag.style.color = tagTextColor;
+        tag.style.borderColor = tagBorderColor;
         tag.style.display = 'inline-flex';
         tag.style.alignItems = 'center';
 
@@ -795,7 +808,7 @@ function updateSelectedTags() {
                 return `${mm}/${dd}`;
             });
             if (dateStrings.length > 0) {
-                datePart = `<span style="font-size:0.75rem; color:#2563eb; margin-left:6px; font-weight:700;">${dateStrings.join(', ')}</span>`;
+                datePart = `<span style="font-size:0.75rem; color:${tagTextColor}; margin-left:6px; font-weight:700;">${dateStrings.join(', ')}</span>`;
             }
         }
 
@@ -828,6 +841,8 @@ function resetFilters() {
     if (pf) pf.checked = false;
     if (ii) ii.checked = true;
     if (search) search.value = '';
+    const ptf = document.querySelector('input[name="paymentTypeFilter"][value="all"]');
+    if (ptf) ptf.checked = true;
 
     renderTargetList();
     saveAllDrafts();
@@ -1623,10 +1638,16 @@ function renderRangeCalendar() {
     if (startDate) startDate.setHours(0, 0, 0, 0);
     if (endDate) endDate.setHours(0, 0, 0, 0);
 
+    // Read filter states
+    const ptfElem = document.querySelector('input[name="paymentTypeFilter"]:checked');
+    const paymentTypeFilter = ptfElem ? ptfElem.value : 'all';
+    const showRealPayment = paymentTypeFilter === 'all' || paymentTypeFilter === 'real';
+    const showSimPayment = paymentTypeFilter === 'all' || paymentTypeFilter === 'sim';
+
     // Pre-calculate payment days for highlighting WITH NAMES
-    const paymentNamesByDay = {}; // e.g. { 12: ['홍길동 (제과)', '김철수 (제빵)'] }
+    const paymentNamesRealByDay = {}; // e.g. { 12: ['홍길동 (제과)'] }
+    const paymentNamesSimByDay = {}; // e.g. { 12: ['김철수 (제빵)'] }
     try {
-        let ledgerSync = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
         if (Array.isArray(allMembers)) {
             allMembers.forEach(m => {
                 if (!m) return;
@@ -1645,12 +1666,8 @@ function renderRangeCalendar() {
                     let isSim = false;
 
                     const syncKey = `${m.id}_${calendarYear}_${calendarMonth + 1}_${cName}`;
-                    if (ledgerSync && ledgerSync[syncKey]) {
-                        const rawSync = ledgerSync[syncKey];
-                        daysArr = Array.isArray(rawSync) ? rawSync : (typeof rawSync === 'number' ? [rawSync] : []);
-                        if (daysArr.length > 0) hasAtt = true;
-                    } else if (typeof window.calculateRedBoxesForMonth === 'function') {
-                        const result = window.calculateRedBoxesForMonth(m, calendarYear, calendarMonth + 1, typeof attendanceData !== 'undefined' ? attendanceData : [], cName, typeof window.GLOBAL_DATA_ADJUSTMENTS !== 'undefined' ? window.GLOBAL_DATA_ADJUSTMENTS : {});
+                    if (typeof window.calculateRedBoxesForMonth === 'function') {
+                        const result = window.calculateRedBoxesForMonth(m, calendarYear, calendarMonth + 1, typeof attendanceData !== 'undefined' ? attendanceData : [], cName, typeof window.GLOBAL_DATA_ADJUSTMENTS !== 'undefined' ? window.GLOBAL_DATA_ADJUSTMENTS : {}, typeof paymentsData !== 'undefined' ? paymentsData : []);
                         if (result && result.redDays && result.redDays.length > 0) {
                             daysArr = result.redDays;
                             isSim = result.isSimulated;
@@ -1658,16 +1675,20 @@ function renderRangeCalendar() {
                         }
                     }
 
-                    if (daysArr.length > 0 && hasAtt && !isSim) {
+                    if (daysArr.length > 0 && (hasAtt || isSim)) {
                         daysArr.forEach(dVal => {
+                            if (isSim && !showSimPayment) return;
+                            if (!isSim && !showRealPayment) return;
+                            
                             const d = String(dVal).includes('-') ? parseInt(String(dVal).split('-')[2], 10) : parseInt(dVal, 10);
                             if (isNaN(d) || d <= 0) return;
                             
-                            if (!paymentNamesByDay[d]) paymentNamesByDay[d] = [];
-                            const cClean = c.trim().replace('기능사', '');
-                            const label = `${m.name}(${cClean})`;
-                            if (!paymentNamesByDay[d].includes(label)) {
-                                paymentNamesByDay[d].push(label);
+                            if (isSim) {
+                                if (!paymentNamesSimByDay[d]) paymentNamesSimByDay[d] = [];
+                                if (!paymentNamesSimByDay[d].includes(label)) paymentNamesSimByDay[d].push(label);
+                            } else {
+                                if (!paymentNamesRealByDay[d]) paymentNamesRealByDay[d] = [];
+                                if (!paymentNamesRealByDay[d].includes(label)) paymentNamesRealByDay[d].push(label);
                             }
                         });
                     }
@@ -1738,10 +1759,25 @@ function renderRangeCalendar() {
             d.classList.add('range-start');
         }
 
-        // Highlight payment milestones with NAMES (Match Red Badge Style)
-        if (paymentNamesByDay[i] && paymentNamesByDay[i].length > 0) {
-            d.innerHTML = `<span style="background: #fee2e2; color: #dc2626; border: 2px solid #ef4444; border-radius: 20px; padding: 2px 6px; font-weight: 900; box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2); display: inline-block; line-height: 1;">${i}</span>`;
-            d.title = `결제 대상: ${paymentNamesByDay[i].length}건\n` + paymentNamesByDay[i].join('\n');
+        // Highlight payment milestones with NAMES (Match Red Badge Style -> Green/Yellow)
+        let labelsReal = paymentNamesRealByDay[i] || [];
+        let labelsSim = paymentNamesSimByDay[i] || [];
+        
+        if (labelsReal.length > 0 || labelsSim.length > 0) {
+            let badgeHtml = '';
+            let titles = [];
+            
+            if (labelsReal.length > 0) {
+                badgeHtml += `<span style="background: #dcfce7; color: #16a34a; border: 2px solid #22c55e; border-radius: 20px; padding: 2px 6px; font-weight: 900; box-shadow: 0 2px 4px rgba(34, 197, 94, 0.2); display: inline-block; line-height: 1; margin-right: 2px;">${i}</span>`;
+                titles.push(`[진짜 결제일] ${labelsReal.length}건\n` + labelsReal.join('\n'));
+            }
+            if (labelsSim.length > 0) {
+                badgeHtml += `<span style="background: #fef3c7; color: #d97706; border: 2px solid #f59e0b; border-radius: 20px; padding: 2px 6px; font-weight: 900; box-shadow: 0 2px 4px rgba(245, 158, 11, 0.2); display: inline-block; line-height: 1;">${i}</span>`;
+                titles.push(`[예정 결제일] ${labelsSim.length}건\n` + labelsSim.join('\n'));
+            }
+            
+            d.innerHTML = badgeHtml;
+            d.title = titles.join('\n\n');
         }
 
         // Mouse Events for Drag
@@ -1927,7 +1963,7 @@ function getAllMilestonesForRange(memberId, courseFilter, startRange, endRange) 
                 daysArr = Array.isArray(rawSync) ? rawSync : (typeof rawSync === 'number' ? [rawSync] : []);
                 if (daysArr.length > 0) hasAtt = true;
             } else if (typeof window.calculateRedBoxesForMonth === 'function') {
-                const result = window.calculateRedBoxesForMonth(m, year, month, typeof attendanceData !== 'undefined' ? attendanceData : [], cName, typeof window.GLOBAL_DATA_ADJUSTMENTS !== 'undefined' ? window.GLOBAL_DATA_ADJUSTMENTS : {});
+                const result = window.calculateRedBoxesForMonth(m, year, month, typeof attendanceData !== 'undefined' ? attendanceData : [], cName, typeof window.GLOBAL_DATA_ADJUSTMENTS !== 'undefined' ? window.GLOBAL_DATA_ADJUSTMENTS : {}, typeof paymentsData !== 'undefined' ? paymentsData : []);
                 if (result && result.redDays && result.redDays.length > 0) {
                     daysArr = result.redDays;
                     isSim = result.isSimulated;
@@ -1935,7 +1971,7 @@ function getAllMilestonesForRange(memberId, courseFilter, startRange, endRange) 
                 }
             }
 
-            if (daysArr.length > 0 && hasAtt && !isSim) {
+            if (daysArr.length > 0 && (hasAtt || isSim)) {
                 daysArr.forEach(dVal => {
                     const d = String(dVal).includes('-') ? parseInt(String(dVal).split('-')[2], 10) : parseInt(dVal, 10);
                     if (isNaN(d) || d <= 0) return;
@@ -2068,7 +2104,7 @@ function getLedgerMonthStats(memberId, year, month, courseFilter = null) {
     if (!m) return { eighthDays: [], eighthMonth: month, isSimulated: false, isArtificial1st: false, hasAnyAttendance: false };
     
     if (typeof window.calculateRedBoxesForMonth === 'function') {
-        const result = window.calculateRedBoxesForMonth(m, year, month, window.attendanceData || [], courseFilter, window.GLOBAL_DATA_ADJUSTMENTS || {});
+        const result = window.calculateRedBoxesForMonth(m, year, month, window.attendanceData || [], courseFilter, window.GLOBAL_DATA_ADJUSTMENTS || {}, typeof paymentsData !== 'undefined' ? paymentsData : []);
         
         let days = [...result.redDays];
         
