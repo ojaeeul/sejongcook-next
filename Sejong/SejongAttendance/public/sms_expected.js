@@ -1669,11 +1669,13 @@ function renderRangeCalendar() {
                             const d = String(dVal).includes('-') ? parseInt(String(dVal).split('-')[2], 10) : parseInt(dVal, 10);
                             if (isNaN(d) || d <= 0) return;
                             
-                            if (!paymentNamesByDay[d]) paymentNamesByDay[d] = [];
+                            if (!paymentNamesByDay[d]) paymentNamesByDay[d] = { real: [], sim: [] };
                             const cClean = c.trim().replace('기능사', '');
                             const label = `${m.name}(${cClean})`;
-                            if (!paymentNamesByDay[d].includes(label)) {
-                                paymentNamesByDay[d].push(label);
+                            if (isSim) {
+                                if (!paymentNamesByDay[d].sim.includes(label)) paymentNamesByDay[d].sim.push(label);
+                            } else {
+                                if (!paymentNamesByDay[d].real.includes(label)) paymentNamesByDay[d].real.push(label);
                             }
                         });
                     }
@@ -1744,10 +1746,38 @@ function renderRangeCalendar() {
             d.classList.add('range-start');
         }
 
-        // Highlight payment milestones with NAMES (Match Red Badge Style)
-        if (paymentNamesByDay[i] && paymentNamesByDay[i].length > 0) {
-            d.innerHTML = `<span style="background: #fee2e2; color: #dc2626; border: 2px solid #ef4444; border-radius: 20px; padding: 2px 6px; font-weight: 900; box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2); display: inline-block; line-height: 1;">${i}</span>`;
-            d.title = `결제 대상: ${paymentNamesByDay[i].length}건\n` + paymentNamesByDay[i].join('\n');
+        // Highlight payment milestones with NAMES (Match Red/Yellow Badge Style)
+        if (paymentNamesByDay[i] && (paymentNamesByDay[i].real.length > 0 || paymentNamesByDay[i].sim.length > 0)) {
+            let totalReal = paymentNamesByDay[i].real.length;
+            let totalSim = paymentNamesByDay[i].sim.length;
+            
+            let badges = [];
+            let titleLines = [];
+            
+            if (totalReal > 0) {
+                // Red badge (진짜결제일)
+                badges.push(`<span style="background: #fee2e2; color: #dc2626; border: 2px solid #ef4444; border-radius: 20px; padding: 2px 6px; font-weight: 900; box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2); display: inline-block; line-height: 1; margin: 1px;">${i}</span>`);
+                titleLines.push(`[진짜] 결제 대상: ${totalReal}건`);
+                titleLines.push(paymentNamesByDay[i].real.join('\\n'));
+            }
+            if (totalSim > 0) {
+                // Yellow badge (예정결제일)
+                badges.push(`<span style="background: #fef3c7; color: #d97706; border: 2px solid #f59e0b; border-radius: 20px; padding: 2px 6px; font-weight: 900; box-shadow: 0 2px 4px rgba(245, 158, 11, 0.2); display: inline-block; line-height: 1; margin: 1px;">${i}</span>`);
+                if (totalReal > 0) titleLines.push('');
+                titleLines.push(`[예정] 결제 대상: ${totalSim}건`);
+                titleLines.push(paymentNamesByDay[i].sim.join('\\n'));
+            }
+            
+            d.innerHTML = badges.join('');
+            d.title = titleLines.join('\\n');
+            
+            // Adjust layout if there are multiple badges to prevent overflow
+            d.style.display = 'flex';
+            d.style.flexDirection = 'column';
+            d.style.alignItems = 'center';
+            d.style.justifyContent = 'center';
+            d.style.gap = '2px';
+            d.style.padding = '0';
         }
 
         // Mouse Events for Drag
