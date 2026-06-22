@@ -525,15 +525,20 @@ function renderTargetList() {
                         daysArr = Array.isArray(rawSync) ? rawSync : (typeof rawSync === 'number' ? [rawSync] : []);
                         if (daysArr.length > 0) hasAtt = true;
                     } else if (typeof window.calculateRedBoxesForMonth === 'function') {
-                        const result = window.calculateRedBoxesForMonth(m, year, month, typeof attendanceData !== 'undefined' ? attendanceData : [], cName, typeof window.GLOBAL_DATA_ADJUSTMENTS !== 'undefined' ? window.GLOBAL_DATA_ADJUSTMENTS : {});
-                        if (result && result.redDays && result.redDays.length > 0) {
-                            daysArr = result.redDays;
-                            isSim = result.isSimulated;
+                        const result = window.calculateRedBoxesForMonth(m, year, month, typeof attendanceData !== 'undefined' ? attendanceData : [], cName, typeof window.GLOBAL_DATA_ADJUSTMENTS !== 'undefined' ? window.GLOBAL_DATA_ADJUSTMENTS : {}, typeof paymentsData !== 'undefined' ? paymentsData : []);
+                        if (result && result.allMilestones) {
                             hasAtt = result.hasAnyAttendance;
+                            const showReal = document.getElementById('filterRealPayment') ? document.getElementById('filterRealPayment').checked : true;
+                            const showSim = document.getElementById('filterSimPayment') ? document.getElementById('filterSimPayment').checked : false;
+                            const thisMonthMs = result.allMilestones.filter(ms => ms.year === year && ms.month === month);
+                            thisMonthMs.forEach(ms => {
+                                if (ms.isReal && showReal) daysArr.push(ms.day);
+                                if (!ms.isReal && showSim) daysArr.push(ms.day);
+                            });
                         }
                     }
 
-                    if (daysArr.length > 0 && hasAtt && !isSim) {
+                    if (daysArr.length > 0) {
                         daysArr.forEach(dVal => {
                             const d = String(dVal).includes('-') ? parseInt(String(dVal).split('-')[2], 10) : parseInt(dVal, 10);
                             if (isNaN(d) || d <= 0) return;
@@ -1651,21 +1656,21 @@ function renderRangeCalendar() {
                         if (daysArr.length > 0) hasAtt = true;
                     } else if (typeof window.calculateRedBoxesForMonth === 'function') {
                         const result = window.calculateRedBoxesForMonth(m, calendarYear, calendarMonth + 1, typeof attendanceData !== 'undefined' ? attendanceData : [], cName, typeof window.GLOBAL_DATA_ADJUSTMENTS !== 'undefined' ? window.GLOBAL_DATA_ADJUSTMENTS : {}, typeof paymentsData !== 'undefined' ? paymentsData : []);
-                        if (result && result.redDays && result.redDays.length > 0) {
-                            daysArr = result.redDays;
-                            isSim = result.isSimulated;
+                        if (result && result.allMilestones) {
                             hasAtt = result.hasAnyAttendance;
-                        }
-                    }
-
-                    if (daysArr.length > 0 && (hasAtt || isSim)) {
-                        daysArr.forEach(dVal => {
                             const showReal = document.getElementById('filterRealPayment') ? document.getElementById('filterRealPayment').checked : true;
                             const showSim = document.getElementById('filterSimPayment') ? document.getElementById('filterSimPayment').checked : false;
                             
-                            if (isSim && !showSim) return;
-                            if (!isSim && !showReal) return;
-                            
+                            const thisMonthMs = result.allMilestones.filter(ms => ms.year === calendarYear && ms.month === calendarMonth + 1);
+                            thisMonthMs.forEach(ms => {
+                                if (ms.isReal && showReal) daysArr.push(ms.day);
+                                if (!ms.isReal && showSim) daysArr.push(ms.day);
+                            });
+                        }
+                    }
+
+                    if (daysArr.length > 0) {
+                        daysArr.forEach(dVal => {
                             const d = String(dVal).includes('-') ? parseInt(String(dVal).split('-')[2], 10) : parseInt(dVal, 10);
                             if (isNaN(d) || d <= 0) return;
                             
@@ -1934,21 +1939,21 @@ function getAllMilestonesForRange(memberId, courseFilter, startRange, endRange) 
                 if (daysArr.length > 0) hasAtt = true;
             } else if (typeof window.calculateRedBoxesForMonth === 'function') {
                 const result = window.calculateRedBoxesForMonth(m, year, month, typeof attendanceData !== 'undefined' ? attendanceData : [], cName, typeof window.GLOBAL_DATA_ADJUSTMENTS !== 'undefined' ? window.GLOBAL_DATA_ADJUSTMENTS : {}, typeof paymentsData !== 'undefined' ? paymentsData : []);
-                if (result && result.redDays && result.redDays.length > 0) {
-                    daysArr = result.redDays;
-                    isSim = result.isSimulated;
+                if (result && result.allMilestones) {
                     hasAtt = result.hasAnyAttendance;
-                }
-            }
-
-            if (daysArr.length > 0 && (hasAtt || isSim)) {
-                daysArr.forEach(dVal => {
                     const showReal = document.getElementById('filterRealPayment') ? document.getElementById('filterRealPayment').checked : true;
                     const showSim = document.getElementById('filterSimPayment') ? document.getElementById('filterSimPayment').checked : false;
                     
-                    if (isSim && !showSim) return;
-                    if (!isSim && !showReal) return;
-                    
+                    const thisMonthMs = result.allMilestones.filter(ms => ms.year === year && ms.month === month);
+                    thisMonthMs.forEach(ms => {
+                        if (ms.isReal && showReal) daysArr.push(ms.day);
+                        if (!ms.isReal && showSim) daysArr.push(ms.day);
+                    });
+                }
+            }
+
+            if (daysArr.length > 0) {
+                daysArr.forEach(dVal => {
                     const d = String(dVal).includes('-') ? parseInt(String(dVal).split('-')[2], 10) : parseInt(dVal, 10);
                     if (isNaN(d) || d <= 0) return;
                     
@@ -2082,11 +2087,16 @@ function getLedgerMonthStats(memberId, year, month, courseFilter = null) {
     if (typeof window.calculateRedBoxesForMonth === 'function') {
         const result = window.calculateRedBoxesForMonth(m, year, month, window.attendanceData || [], courseFilter, window.GLOBAL_DATA_ADJUSTMENTS || {}, typeof paymentsData !== 'undefined' ? paymentsData : []);
         
-        let days = [...result.redDays];
+        let days = [];
         const showReal = document.getElementById('filterRealPayment') ? document.getElementById('filterRealPayment').checked : true;
         const showSim = document.getElementById('filterSimPayment') ? document.getElementById('filterSimPayment').checked : false;
-        if (result.isSimulated && !showSim) days = [];
-        if (!result.isSimulated && !showReal) days = [];
+        if (result && result.allMilestones) {
+            const thisMonthMs = result.allMilestones.filter(ms => ms.year === year && ms.month === month);
+            thisMonthMs.forEach(ms => {
+                if (ms.isReal && showReal) days.push(ms.day);
+                if (!ms.isReal && showSim) days.push(ms.day);
+            });
+        }
         
         // 동기화 데이터 (sejong_ledger_sync) 병합
         try {
