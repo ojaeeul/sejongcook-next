@@ -460,6 +460,8 @@ function renderTargetList() {
     const includeInactive = document.getElementById('includeInactive').checked;
     const targetType = document.querySelector('input[name="targetType"]:checked').value;
     const usePaymentFilter = document.getElementById('usePaymentFilter').checked;
+    const showRealPayment = document.getElementById('showRealPayment') ? document.getElementById('showRealPayment').checked : true;
+    const showSimPayment = document.getElementById('showSimPayment') ? document.getElementById('showSimPayment').checked : true;
     const rangeStartVal = document.getElementById('paymentRangeStart').value;
     const rangeEndVal = document.getElementById('paymentRangeEnd').value;
     const searchVal = (document.getElementById('memberSearchInputSide') ? document.getElementById('memberSearchInputSide').value : '').toLowerCase();
@@ -552,6 +554,8 @@ function renderTargetList() {
                                     (p.course && cName && (p.course.includes(cName) || cName.includes(p.course)))
                                 );
                                 if (!isPaid) {
+                                    if (isSim && !showSimPayment) return;
+                                    if (!isSim && !showRealPayment) return;
                                     const key = `${year}-${month}-${d}`;
                                     if (!foundDates.has(key) || !isSim) {
                                         foundDates.set(key, isSim);
@@ -839,6 +843,10 @@ function resetFilters() {
     if (pf) pf.checked = false;
     if (ii) ii.checked = true;
     if (search) search.value = '';
+    const srp = document.getElementById('showRealPayment');
+    const ssp = document.getElementById('showSimPayment');
+    if (srp) srp.checked = true;
+    if (ssp) ssp.checked = true;
 
     renderTargetList();
     saveAllDrafts();
