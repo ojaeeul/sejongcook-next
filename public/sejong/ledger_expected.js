@@ -886,7 +886,7 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
                     if (!isAlsoSimulatedMilestone) {
                         slotContent += `
                         <div style="font-size: 0.5rem; font-weight: 800; display: flex; flex-direction: column; align-items: center; background: #fef08a; border: 1px solid #eab308; border-radius: 4px; padding: 1px; width: 100%; text-align: center; color: #854d0e;">
-                            가상<br>출석
+                            예정<br>출석
                         </div>`;
                     }
                 }
