@@ -525,7 +525,7 @@ function renderTargetList() {
                     let isSim = false;
 
                     if (typeof window.calculateRedBoxesForMonth === 'function') {
-                        const result = window.calculateRedBoxesForMonth(m, year, month, typeof attendanceData !== 'undefined' ? attendanceData : [], cName, typeof window.GLOBAL_DATA_ADJUSTMENTS !== 'undefined' ? window.GLOBAL_DATA_ADJUSTMENTS : {});
+                        const result = window.calculateRedBoxesForMonth(m, year, month, typeof attendanceData !== 'undefined' ? attendanceData : [], cName, typeof window.GLOBAL_DATA_ADJUSTMENTS !== 'undefined' ? window.GLOBAL_DATA_ADJUSTMENTS : {}, typeof paymentsData !== 'undefined' ? paymentsData : []);
                         if (result && result.redDays && result.redDays.length > 0) {
                             daysArr = result.redDays;
                             isSim = result.isSimulated;
@@ -1667,7 +1667,7 @@ function renderRangeCalendar() {
 
                     const syncKey = `${m.id}_${calendarYear}_${calendarMonth + 1}_${cName}`;
                     if (typeof window.calculateRedBoxesForMonth === 'function') {
-                        const result = window.calculateRedBoxesForMonth(m, calendarYear, calendarMonth + 1, typeof attendanceData !== 'undefined' ? attendanceData : [], cName, typeof window.GLOBAL_DATA_ADJUSTMENTS !== 'undefined' ? window.GLOBAL_DATA_ADJUSTMENTS : {});
+                        const result = window.calculateRedBoxesForMonth(m, calendarYear, calendarMonth + 1, typeof attendanceData !== 'undefined' ? attendanceData : [], cName, typeof window.GLOBAL_DATA_ADJUSTMENTS !== 'undefined' ? window.GLOBAL_DATA_ADJUSTMENTS : {}, typeof paymentsData !== 'undefined' ? paymentsData : []);
                         if (result && result.redDays && result.redDays.length > 0) {
                             daysArr = result.redDays;
                             isSim = result.isSimulated;
@@ -1963,7 +1963,7 @@ function getAllMilestonesForRange(memberId, courseFilter, startRange, endRange) 
                 daysArr = Array.isArray(rawSync) ? rawSync : (typeof rawSync === 'number' ? [rawSync] : []);
                 if (daysArr.length > 0) hasAtt = true;
             } else if (typeof window.calculateRedBoxesForMonth === 'function') {
-                const result = window.calculateRedBoxesForMonth(m, year, month, typeof attendanceData !== 'undefined' ? attendanceData : [], cName, typeof window.GLOBAL_DATA_ADJUSTMENTS !== 'undefined' ? window.GLOBAL_DATA_ADJUSTMENTS : {});
+                const result = window.calculateRedBoxesForMonth(m, year, month, typeof attendanceData !== 'undefined' ? attendanceData : [], cName, typeof window.GLOBAL_DATA_ADJUSTMENTS !== 'undefined' ? window.GLOBAL_DATA_ADJUSTMENTS : {}, typeof paymentsData !== 'undefined' ? paymentsData : []);
                 if (result && result.redDays && result.redDays.length > 0) {
                     daysArr = result.redDays;
                     isSim = result.isSimulated;
@@ -2104,7 +2104,7 @@ function getLedgerMonthStats(memberId, year, month, courseFilter = null) {
     if (!m) return { eighthDays: [], eighthMonth: month, isSimulated: false, isArtificial1st: false, hasAnyAttendance: false };
     
     if (typeof window.calculateRedBoxesForMonth === 'function') {
-        const result = window.calculateRedBoxesForMonth(m, year, month, window.attendanceData || [], courseFilter, window.GLOBAL_DATA_ADJUSTMENTS || {});
+        const result = window.calculateRedBoxesForMonth(m, year, month, window.attendanceData || [], courseFilter, window.GLOBAL_DATA_ADJUSTMENTS || {}, typeof paymentsData !== 'undefined' ? paymentsData : []);
         
         let days = [...result.redDays];
         
