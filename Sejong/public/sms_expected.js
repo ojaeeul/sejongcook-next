@@ -520,16 +520,21 @@ function renderTargetList() {
                     let hasAtt = false;
                     let isSim = false;
 
+                    let resultCache = null;
+                    if (typeof window.calculateRedBoxesForMonth === 'function') {
+                        resultCache = window.calculateRedBoxesForMonth(m, year, month, typeof attendanceData !== 'undefined' ? attendanceData : [], cName, typeof window.GLOBAL_DATA_ADJUSTMENTS !== 'undefined' ? window.GLOBAL_DATA_ADJUSTMENTS : {}, typeof paymentsData !== 'undefined' ? paymentsData : []);
+                    }
+
                     if (ledgerSync && ledgerSync[syncKey]) {
                         const rawSync = ledgerSync[syncKey];
                         daysArr = Array.isArray(rawSync) ? rawSync : (typeof rawSync === 'number' ? [rawSync] : []);
                         if (daysArr.length > 0) hasAtt = true;
-                    } else if (typeof window.calculateRedBoxesForMonth === 'function') {
-                        const result = window.calculateRedBoxesForMonth(m, year, month, typeof attendanceData !== 'undefined' ? attendanceData : [], cName, typeof window.GLOBAL_DATA_ADJUSTMENTS !== 'undefined' ? window.GLOBAL_DATA_ADJUSTMENTS : {});
-                        if (result && result.redDays && result.redDays.length > 0) {
-                            daysArr = result.redDays;
-                            isSim = result.isSimulated;
-                            hasAtt = result.hasAnyAttendance;
+                        if (resultCache) isSim = resultCache.isSimulated;
+                    } else if (resultCache) {
+                        if (resultCache.redDays && resultCache.redDays.length > 0) {
+                            daysArr = resultCache.redDays;
+                            isSim = resultCache.isSimulated;
+                            hasAtt = resultCache.hasAnyAttendance;
                         }
                     }
 
@@ -1645,16 +1650,21 @@ function renderRangeCalendar() {
                     let isSim = false;
 
                     const syncKey = `${m.id}_${calendarYear}_${calendarMonth + 1}_${cName}`;
+                    let resultCache = null;
+                    if (typeof window.calculateRedBoxesForMonth === 'function') {
+                        resultCache = window.calculateRedBoxesForMonth(m, calendarYear, calendarMonth + 1, typeof attendanceData !== 'undefined' ? attendanceData : [], cName, typeof window.GLOBAL_DATA_ADJUSTMENTS !== 'undefined' ? window.GLOBAL_DATA_ADJUSTMENTS : {}, typeof paymentsData !== 'undefined' ? paymentsData : []);
+                    }
+
                     if (ledgerSync && ledgerSync[syncKey]) {
                         const rawSync = ledgerSync[syncKey];
                         daysArr = Array.isArray(rawSync) ? rawSync : (typeof rawSync === 'number' ? [rawSync] : []);
                         if (daysArr.length > 0) hasAtt = true;
-                    } else if (typeof window.calculateRedBoxesForMonth === 'function') {
-                        const result = window.calculateRedBoxesForMonth(m, calendarYear, calendarMonth + 1, typeof attendanceData !== 'undefined' ? attendanceData : [], cName, typeof window.GLOBAL_DATA_ADJUSTMENTS !== 'undefined' ? window.GLOBAL_DATA_ADJUSTMENTS : {}, typeof paymentsData !== 'undefined' ? paymentsData : []);
-                        if (result && result.redDays && result.redDays.length > 0) {
-                            daysArr = result.redDays;
-                            isSim = result.isSimulated;
-                            hasAtt = result.hasAnyAttendance;
+                        if (resultCache) isSim = resultCache.isSimulated;
+                    } else if (resultCache) {
+                        if (resultCache.redDays && resultCache.redDays.length > 0) {
+                            daysArr = resultCache.redDays;
+                            isSim = resultCache.isSimulated;
+                            hasAtt = resultCache.hasAnyAttendance;
                         }
                     }
 
@@ -1958,16 +1968,21 @@ function getAllMilestonesForRange(memberId, courseFilter, startRange, endRange) 
             let hasAtt = false;
             let isSim = false;
 
+            let resultCache = null;
+            if (typeof window.calculateRedBoxesForMonth === 'function') {
+                resultCache = window.calculateRedBoxesForMonth(m, year, month, typeof attendanceData !== 'undefined' ? attendanceData : [], cName, typeof window.GLOBAL_DATA_ADJUSTMENTS !== 'undefined' ? window.GLOBAL_DATA_ADJUSTMENTS : {}, typeof paymentsData !== 'undefined' ? paymentsData : []);
+            }
+
             if (syncData && syncData[syncKey]) {
                 const rawSync = syncData[syncKey];
                 daysArr = Array.isArray(rawSync) ? rawSync : (typeof rawSync === 'number' ? [rawSync] : []);
                 if (daysArr.length > 0) hasAtt = true;
-            } else if (typeof window.calculateRedBoxesForMonth === 'function') {
-                const result = window.calculateRedBoxesForMonth(m, year, month, typeof attendanceData !== 'undefined' ? attendanceData : [], cName, typeof window.GLOBAL_DATA_ADJUSTMENTS !== 'undefined' ? window.GLOBAL_DATA_ADJUSTMENTS : {}, typeof paymentsData !== 'undefined' ? paymentsData : []);
-                if (result && result.redDays && result.redDays.length > 0) {
-                    daysArr = result.redDays;
-                    isSim = result.isSimulated;
-                    hasAtt = result.hasAnyAttendance;
+                if (resultCache) isSim = resultCache.isSimulated;
+            } else if (resultCache) {
+                if (resultCache.redDays && resultCache.redDays.length > 0) {
+                    daysArr = resultCache.redDays;
+                    isSim = resultCache.isSimulated;
+                    hasAtt = resultCache.hasAnyAttendance;
                 }
             }
 
