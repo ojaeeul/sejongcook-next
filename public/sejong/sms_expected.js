@@ -460,8 +460,10 @@ function renderTargetList() {
     const includeInactive = document.getElementById('includeInactive').checked;
     const targetType = document.querySelector('input[name="targetType"]:checked').value;
     const usePaymentFilter = document.getElementById('usePaymentFilter').checked;
-    const showRealPayment = document.getElementById('showRealPayment') ? document.getElementById('showRealPayment').checked : true;
-    const showSimPayment = document.getElementById('showSimPayment') ? document.getElementById('showSimPayment').checked : true;
+    const ptfElem = document.querySelector('input[name="paymentTypeFilter"]:checked');
+    const paymentTypeFilter = ptfElem ? ptfElem.value : 'all';
+    const showRealPayment = paymentTypeFilter === 'all' || paymentTypeFilter === 'real';
+    const showSimPayment = paymentTypeFilter === 'all' || paymentTypeFilter === 'sim';
     const rangeStartVal = document.getElementById('paymentRangeStart').value;
     const rangeEndVal = document.getElementById('paymentRangeEnd').value;
     const searchVal = (document.getElementById('memberSearchInputSide') ? document.getElementById('memberSearchInputSide').value : '').toLowerCase();
@@ -843,10 +845,8 @@ function resetFilters() {
     if (pf) pf.checked = false;
     if (ii) ii.checked = true;
     if (search) search.value = '';
-    const srp = document.getElementById('showRealPayment');
-    const ssp = document.getElementById('showSimPayment');
-    if (srp) srp.checked = true;
-    if (ssp) ssp.checked = true;
+    const ptf = document.querySelector('input[name="paymentTypeFilter"][value="all"]');
+    if (ptf) ptf.checked = true;
 
     renderTargetList();
     saveAllDrafts();
