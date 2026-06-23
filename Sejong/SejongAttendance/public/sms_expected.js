@@ -1784,8 +1784,8 @@ function renderRangeCalendar() {
                 titleLines.push(paymentNamesByDay[i].real.join('\\n'));
             }
             if (totalSim > 0) {
-                // Yellow badge (예정결제일)
-                badges.push(`<span style="background: #fef3c7; color: #d97706; border: 2px solid #f59e0b; border-radius: 20px; padding: 2px 6px; font-weight: 900; box-shadow: 0 2px 4px rgba(245, 158, 11, 0.2); display: inline-block; line-height: 1; margin: 1px;">${i}</span>`);
+                // Blue badge (예정결제일)
+                badges.push(`<span style="background: #eff6ff; color: #2563eb; border: 2px solid #3b82f6; border-radius: 20px; padding: 2px 6px; font-weight: 900; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2); display: inline-block; line-height: 1; margin: 1px;">${i}</span>`);
                 if (totalReal > 0) titleLines.push('');
                 titleLines.push(`[예정] 결제 대상: ${totalSim}건`);
                 titleLines.push(paymentNamesByDay[i].sim.join('\\n'));
