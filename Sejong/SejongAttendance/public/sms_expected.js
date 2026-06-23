@@ -516,52 +516,73 @@ function renderTargetList() {
                 
                 while (year < endY || (year === endY && month <= endM)) {
                     const syncKey = `${m.id}_${year}_${month}_${cName}`;
-                    let daysArr = [];
-                    let hasAtt = false;
-                    let isSim = false;
-
                     let resultCache = null;
                     if (typeof window.calculateRedBoxesForMonth === 'function') {
                         resultCache = window.calculateRedBoxesForMonth(m, year, month, typeof attendanceData !== 'undefined' ? attendanceData : [], cName, typeof window.GLOBAL_DATA_ADJUSTMENTS !== 'undefined' ? window.GLOBAL_DATA_ADJUSTMENTS : {}, typeof paymentsData !== 'undefined' ? paymentsData : []);
                     }
 
-                    if (ledgerSync && ledgerSync[syncKey]) {
-                        const rawSync = ledgerSync[syncKey];
-                        daysArr = Array.isArray(rawSync) ? rawSync : (typeof rawSync === 'number' ? [rawSync] : []);
-                        if (daysArr.length > 0) hasAtt = true;
-                        if (resultCache) isSim = resultCache.isSimulated;
-                    } else if (resultCache) {
+                    let monthMilestones = [];
+                    let calcEighthDays = [];
+                    let calcIsSim = false;
+                    if (resultCache) {
+                        if (resultCache.allMilestones && resultCache.allMilestones.length > 0) {
+                            monthMilestones = resultCache.allMilestones.filter(ms => ms.year === year && ms.month === month);
+                        }
                         if (resultCache.redDays && resultCache.redDays.length > 0) {
-                            daysArr = resultCache.redDays;
-                            isSim = resultCache.isSimulated;
-                            hasAtt = resultCache.hasAnyAttendance;
+                            calcEighthDays = resultCache.redDays;
+                            calcIsSim = resultCache.isSimulated;
                         }
                     }
 
-                    if (daysArr.length > 0 && (hasAtt || isSim)) {
-                        daysArr.forEach(dVal => {
-                            const d = String(dVal).includes('-') ? parseInt(String(dVal).split('-')[2], 10) : parseInt(dVal, 10);
-                            if (isNaN(d) || d <= 0) return;
-                            
-                            const exactDate = new Date(year, month - 1, d);
-                            const exactTime = exactDate.getTime();
-                            const startTime = new Date(rangeStart.getFullYear(), rangeStart.getMonth(), rangeStart.getDate()).getTime();
-                            const endTime = new Date(rangeEnd.getFullYear(), rangeEnd.getMonth(), rangeEnd.getDate(), 23, 59, 59).getTime();
-                            
-                            if (exactTime >= startTime && exactTime <= endTime) {
-                                const isPaid = (typeof paymentsData !== 'undefined' ? paymentsData : []).some(p =>
-                                    String(p.memberId) === String(m.id) &&
-                                    String(p.year) === String(year) &&
-                                    String(p.month) === String(month) &&
-                                    p.status === 'paid' &&
-                                    (p.course && cName && (p.course.includes(cName) || cName.includes(p.course)))
-                                );
-                                if (!isPaid) {
-                                    foundDates.add(`${year}-${month}-${d}`);
-                                }
-                            }
-                        });
+                    let realEighthDays = [];
+                    let hasRealFromSync = false;
+                    if (ledgerSync && ledgerSync[syncKey]) {
+                        const rawSync = ledgerSync[syncKey];
+                        realEighthDays = Array.isArray(rawSync) ? rawSync : (typeof rawSync === 'number' ? [rawSync] : []);
+                        if (realEighthDays.length > 0) hasRealFromSync = true;
                     }
+
+                    let finalItems = [];
+                    if (hasRealFromSync) {
+                        finalItems = monthMilestones.length > 0 ? monthMilestones : realEighthDays.map(d => ({ day: d, isReal: true }));
+                    } else {
+                        if (monthMilestones.length > 0) {
+                            finalItems = monthMilestones;
+                        } else if (calcEighthDays.length > 0) {
+                            finalItems = calcEighthDays.map(d => ({ day: d, isReal: !calcIsSim }));
+                        }
+                    }
+
+                    finalItems.forEach(item => {
+                        const d = item.day;
+                        let dayIsSim = !item.isReal;
+
+                        if (isNaN(d) || d <= 0) return;
+                        
+                        const exactDate = new Date(year, month - 1, d);
+                        const exactTime = exactDate.getTime();
+                        const startTime = new Date(rangeStart.getFullYear(), rangeStart.getMonth(), rangeStart.getDate()).getTime();
+                        const endTime = new Date(rangeEnd.getFullYear(), rangeEnd.getMonth(), rangeEnd.getDate(), 23, 59, 59).getTime();
+                        
+                        if (exactTime >= startTime && exactTime <= endTime) {
+                            const isPaid = (typeof paymentsData !== 'undefined' ? paymentsData : []).some(p =>
+                                String(p.memberId) === String(m.id) &&
+                                String(p.year) === String(year) &&
+                                String(p.month) === String(month) &&
+                                p.status === 'paid' &&
+                                (!p.course || p.course === 'null' || p.course === 'undefined' || p.course === '' || !cName || p.course.includes(cName) || cName.includes(p.course))
+                            );
+                            if (!isPaid) {
+                                const showReal = document.getElementById('filterRealPayment') ? document.getElementById('filterRealPayment').checked : true;
+                                const showSim = document.getElementById('filterSimPayment') ? document.getElementById('filterSimPayment').checked : false;
+                                
+                                if (dayIsSim && !showSim) return;
+                                if (!dayIsSim && !showReal) return;
+                                
+                                foundDates.add(`${year}-${month}-${d}`);
+                            }
+                        }
+                    });
 
                     month++;
                     if (month > 12) {
