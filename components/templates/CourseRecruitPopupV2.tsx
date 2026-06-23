@@ -73,14 +73,14 @@ export default function CourseRecruitPopupV2({ content, onClose, link }: Props) 
                     </div>
 
                     {/* Schedules White Box */}
-                    <div className="pointer-events-auto bg-white/95 backdrop-blur-md rounded-xl p-5 shadow-lg border border-white/50 w-full mt-auto mb-10 flex flex-col gap-4">
-                        
+                    <div className="pointer-events-auto bg-white/95 backdrop-blur-md rounded-xl p-5 shadow-lg border border-white/50 w-full mt-auto mb-10 flex flex-col items-center justify-center">
+                        <div className="flex flex-col gap-4 w-fit">
                         {/* Schedule A */}
                         {content.scheduleA && (content.scheduleA.label || content.scheduleA.period) && (
                             <div className="flex items-start gap-4">
                                 <div 
                                     className="w-16 shrink-0 text-[#0369a1] pt-0.5 whitespace-nowrap text-right"
-                                    style={getStyle(content.scheduleALabelStyle, '#0369a1', 14, '700')}
+                                    style={getStyle(content.scheduleALabelStyle, '#0369a1', 14, '800')}
                                 >
                                     {content.scheduleA.label}
                                 </div>
@@ -88,14 +88,14 @@ export default function CourseRecruitPopupV2({ content, onClose, link }: Props) 
                                 <div className="flex-1 flex flex-col gap-1">
                                     <div 
                                         className="text-gray-900 leading-tight"
-                                        style={getStyle(content.scheduleAPeriodStyle, '#111827', 15, '700')}
+                                        style={getStyle(content.scheduleAPeriodStyle, '#111827', 15, '800')}
                                     >
                                         {content.scheduleA.period}
                                     </div>
                                     {content.scheduleA.time && (
                                         <div 
-                                            className="text-gray-600 leading-tight"
-                                            style={getStyle(content.scheduleATimeStyle, '#4b5563', 13, '500')}
+                                            className="text-gray-700 leading-tight"
+                                            style={getStyle(content.scheduleATimeStyle, '#374151', 13, '600')}
                                         >
                                             {content.scheduleA.time}
                                         </div>
@@ -109,7 +109,7 @@ export default function CourseRecruitPopupV2({ content, onClose, link }: Props) 
                             <div className="flex items-start gap-4">
                                 <div 
                                     className="w-16 shrink-0 text-[#0369a1] pt-0.5 whitespace-nowrap text-right"
-                                    style={getStyle(content.scheduleBLabelStyle, '#0369a1', 14, '700')}
+                                    style={getStyle(content.scheduleBLabelStyle, '#0369a1', 14, '800')}
                                 >
                                     {content.scheduleB.label}
                                 </div>
@@ -117,14 +117,14 @@ export default function CourseRecruitPopupV2({ content, onClose, link }: Props) 
                                 <div className="flex-1 flex flex-col gap-1">
                                     <div 
                                         className="text-gray-900 leading-tight"
-                                        style={getStyle(content.scheduleBPeriodStyle, '#111827', 15, '700')}
+                                        style={getStyle(content.scheduleBPeriodStyle, '#111827', 15, '800')}
                                     >
                                         {content.scheduleB.period}
                                     </div>
                                     {content.scheduleB.time && (
                                         <div 
-                                            className="text-gray-600 leading-tight"
-                                            style={getStyle(content.scheduleBTimeStyle, '#4b5563', 13, '500')}
+                                            className="text-gray-700 leading-tight"
+                                            style={getStyle(content.scheduleBTimeStyle, '#374151', 13, '600')}
                                         >
                                             {content.scheduleB.time}
                                         </div>
@@ -138,7 +138,7 @@ export default function CourseRecruitPopupV2({ content, onClose, link }: Props) 
                             <div className="flex items-start gap-4">
                                 <div 
                                     className="w-16 shrink-0 text-[#0369a1] pt-0.5 whitespace-nowrap text-right"
-                                    style={getStyle(content.scheduleCLabelStyle, '#0369a1', 14, '700')}
+                                    style={getStyle(content.scheduleCLabelStyle, '#0369a1', 14, '800')}
                                 >
                                     {content.scheduleC.label}
                                 </div>
@@ -146,14 +146,14 @@ export default function CourseRecruitPopupV2({ content, onClose, link }: Props) 
                                 <div className="flex-1 flex flex-col gap-1">
                                     <div 
                                         className="text-gray-900 leading-tight"
-                                        style={getStyle(content.scheduleCPeriodStyle, '#111827', 15, '700')}
+                                        style={getStyle(content.scheduleCPeriodStyle, '#111827', 15, '800')}
                                     >
                                         {content.scheduleC.period}
                                     </div>
                                     {content.scheduleC.time && (
                                         <div 
-                                            className="text-gray-600 leading-tight"
-                                            style={getStyle(content.scheduleCTimeStyle, '#4b5563', 13, '500')}
+                                            className="text-gray-700 leading-tight"
+                                            style={getStyle(content.scheduleCTimeStyle, '#374151', 13, '600')}
                                         >
                                             {content.scheduleC.time}
                                         </div>
@@ -161,6 +161,7 @@ export default function CourseRecruitPopupV2({ content, onClose, link }: Props) 
                                 </div>
                             </div>
                         )}
+                        </div>
                     </div>
                 </div>
             )}
