@@ -73,8 +73,7 @@ export default function CourseRecruitPopupV2({ content, onClose, link }: Props) 
                     </div>
 
                     {/* Schedules White Box */}
-                    <div className="pointer-events-auto bg-white/95 backdrop-blur-md rounded-xl p-5 shadow-lg border border-white/50 w-full mt-auto mb-10 flex flex-col items-center justify-center">
-                        <div className="flex flex-col gap-4 w-fit">
+                    <div className="pointer-events-auto bg-white/95 backdrop-blur-md rounded-xl p-5 shadow-lg border border-white/50 w-full my-auto flex flex-col gap-4">
                         {/* Schedule A */}
                         {content.scheduleA && (content.scheduleA.label || content.scheduleA.period) && (
                             <div className="flex items-start gap-4">
@@ -161,7 +160,6 @@ export default function CourseRecruitPopupV2({ content, onClose, link }: Props) 
                                 </div>
                             </div>
                         )}
-                        </div>
                     </div>
                 </div>
             )}
