@@ -114,7 +114,8 @@ export default function MainPopup() {
                     position: relative !important;
                     width: 90vw !important;
                     max-width: var(--popup-width) !important;
-                    height: var(--popup-height) !important;
+                    height: auto !important;
+                    aspect-ratio: var(--popup-aspect-ratio) !important;
                     max-height: 90vh !important;
                     display: flex !important;
                     flex-direction: column !important;

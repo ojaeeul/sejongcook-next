@@ -57,43 +57,43 @@ export default function CourseRecruitPopupV2({ content, onClose, link }: Props) 
                     )}
 
                     {/* Titles */}
-                    <div className="pointer-events-auto flex flex-col gap-2 mb-6 mt-4">
+                    <div className="pointer-events-auto flex flex-col gap-1 sm:gap-2 mb-4 sm:mb-6 mt-2 sm:mt-4">
                         <h2
-                            className="leading-snug whitespace-pre-line tracking-tight text-[#1e293b]"
-                            style={getStyle(content.titleStyle, '#1e293b', 34, '800', '"Nanum Myeongjo", "Batang", serif')}
+                            className="leading-snug whitespace-pre-line tracking-tight text-[#1e293b] text-[clamp(24px,7vw,34px)]"
+                            style={getStyle({...content.titleStyle, fontSize: undefined}, '#1e293b', undefined, '800', '"Nanum Myeongjo", "Batang", serif')}
                         >
                             {content.title}
                         </h2>
                         <p
-                            className="whitespace-pre-line text-[#475569]"
-                            style={getStyle(content.subTextStyle, '#475569', 15, '500')}
+                            className="whitespace-pre-line text-[#475569] text-[clamp(13px,3.5vw,15px)]"
+                            style={getStyle({...content.subTextStyle, fontSize: undefined}, '#475569', undefined, '500')}
                         >
                             {content.subText}
                         </p>
                     </div>
 
                     {/* Schedules White Box */}
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-auto bg-white/95 backdrop-blur-md rounded-xl p-5 shadow-lg border border-white/50 w-[calc(100%-3rem)] flex flex-col gap-4">
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-auto bg-white/95 backdrop-blur-md rounded-xl p-4 sm:p-5 shadow-lg border border-white/50 w-[calc(100%-2rem)] sm:w-[calc(100%-3rem)] flex flex-col gap-3 sm:gap-4">
                         {/* Schedule A */}
                         {content.scheduleA && (content.scheduleA.label || content.scheduleA.period) && (
-                            <div className="flex items-start gap-4">
+                            <div className="flex items-start gap-3 sm:gap-4">
                                 <div 
-                                    className="w-[72px] shrink-0 text-[#0369a1] pt-0.5 whitespace-nowrap text-right"
-                                    style={getStyle(content.scheduleALabelStyle, '#0369a1', 16, '800')}
+                                    className="w-[60px] sm:w-[72px] shrink-0 text-[#0369a1] pt-0.5 whitespace-nowrap text-right text-[clamp(13px,3.5vw,16px)]"
+                                    style={getStyle({...content.scheduleALabelStyle, fontSize: undefined}, '#0369a1', undefined, '800')}
                                 >
                                     {content.scheduleA.label}
                                 </div>
                                 <div className="w-[1px] bg-gray-300 self-stretch my-0.5 rounded-full" />
-                                <div className="flex-1 flex flex-col gap-1">
+                                <div className="flex-1 flex flex-col gap-0.5 sm:gap-1">
                                     <div 
-                                        className="text-gray-900 leading-tight whitespace-pre-line"
-                                        style={getStyle(content.scheduleAPeriodStyle, '#111827', 17, '800')}
+                                        className="text-gray-900 leading-tight whitespace-pre-line text-[clamp(14px,4vw,17px)]"
+                                        style={getStyle({...content.scheduleAPeriodStyle, fontSize: undefined}, '#111827', undefined, '800')}
                                         dangerouslySetInnerHTML={{ __html: content.scheduleA.period }}
                                     />
                                     {content.scheduleA.time && (
                                         <div 
-                                            className="text-gray-700 leading-tight whitespace-pre-line"
-                                            style={getStyle(content.scheduleATimeStyle, '#374151', 15, '600')}
+                                            className="text-gray-700 leading-tight whitespace-pre-line text-[clamp(12px,3.5vw,15px)]"
+                                            style={getStyle({...content.scheduleATimeStyle, fontSize: undefined}, '#374151', undefined, '600')}
                                             dangerouslySetInnerHTML={{ __html: content.scheduleA.time }}
                                         />
                                     )}
@@ -103,24 +103,24 @@ export default function CourseRecruitPopupV2({ content, onClose, link }: Props) 
 
                         {/* Schedule B */}
                         {content.scheduleB && (content.scheduleB.label || content.scheduleB.period) && (
-                            <div className="flex items-start gap-4">
+                            <div className="flex items-start gap-3 sm:gap-4">
                                 <div 
-                                    className="w-[72px] shrink-0 text-[#0369a1] pt-0.5 whitespace-nowrap text-right"
-                                    style={getStyle(content.scheduleBLabelStyle, '#0369a1', 16, '800')}
+                                    className="w-[60px] sm:w-[72px] shrink-0 text-[#0369a1] pt-0.5 whitespace-nowrap text-right text-[clamp(13px,3.5vw,16px)]"
+                                    style={getStyle({...content.scheduleBLabelStyle, fontSize: undefined}, '#0369a1', undefined, '800')}
                                 >
                                     {content.scheduleB.label}
                                 </div>
                                 <div className="w-[1px] bg-gray-300 self-stretch my-0.5 rounded-full" />
-                                <div className="flex-1 flex flex-col gap-1">
+                                <div className="flex-1 flex flex-col gap-0.5 sm:gap-1">
                                     <div 
-                                        className="text-gray-900 leading-tight whitespace-pre-line"
-                                        style={getStyle(content.scheduleBPeriodStyle, '#111827', 17, '800')}
+                                        className="text-gray-900 leading-tight whitespace-pre-line text-[clamp(14px,4vw,17px)]"
+                                        style={getStyle({...content.scheduleBPeriodStyle, fontSize: undefined}, '#111827', undefined, '800')}
                                         dangerouslySetInnerHTML={{ __html: content.scheduleB.period }}
                                     />
                                     {content.scheduleB.time && (
                                         <div 
-                                            className="text-gray-700 leading-tight whitespace-pre-line"
-                                            style={getStyle(content.scheduleBTimeStyle, '#374151', 15, '600')}
+                                            className="text-gray-700 leading-tight whitespace-pre-line text-[clamp(12px,3.5vw,15px)]"
+                                            style={getStyle({...content.scheduleBTimeStyle, fontSize: undefined}, '#374151', undefined, '600')}
                                             dangerouslySetInnerHTML={{ __html: content.scheduleB.time }}
                                         />
                                     )}
@@ -130,24 +130,24 @@ export default function CourseRecruitPopupV2({ content, onClose, link }: Props) 
 
                         {/* Schedule C */}
                         {content.scheduleC && (content.scheduleC.label || content.scheduleC.period) && (
-                            <div className="flex items-start gap-4">
+                            <div className="flex items-start gap-3 sm:gap-4">
                                 <div 
-                                    className="w-[72px] shrink-0 text-[#0369a1] pt-0.5 whitespace-nowrap text-right"
-                                    style={getStyle(content.scheduleCLabelStyle, '#0369a1', 16, '800')}
+                                    className="w-[60px] sm:w-[72px] shrink-0 text-[#0369a1] pt-0.5 whitespace-nowrap text-right text-[clamp(13px,3.5vw,16px)]"
+                                    style={getStyle({...content.scheduleCLabelStyle, fontSize: undefined}, '#0369a1', undefined, '800')}
                                 >
                                     {content.scheduleC.label}
                                 </div>
                                 <div className="w-[1px] bg-gray-300 self-stretch my-0.5 rounded-full" />
-                                <div className="flex-1 flex flex-col gap-1">
+                                <div className="flex-1 flex flex-col gap-0.5 sm:gap-1">
                                     <div 
-                                        className="text-gray-900 leading-tight whitespace-pre-line"
-                                        style={getStyle(content.scheduleCPeriodStyle, '#111827', 17, '800')}
+                                        className="text-gray-900 leading-tight whitespace-pre-line text-[clamp(14px,4vw,17px)]"
+                                        style={getStyle({...content.scheduleCPeriodStyle, fontSize: undefined}, '#111827', undefined, '800')}
                                         dangerouslySetInnerHTML={{ __html: content.scheduleC.period }}
                                     />
                                     {content.scheduleC.time && (
                                         <div 
-                                            className="text-gray-700 leading-tight whitespace-pre-line"
-                                            style={getStyle(content.scheduleCTimeStyle, '#374151', 15, '600')}
+                                            className="text-gray-700 leading-tight whitespace-pre-line text-[clamp(12px,3.5vw,15px)]"
+                                            style={getStyle({...content.scheduleCTimeStyle, fontSize: undefined}, '#374151', undefined, '600')}
                                             dangerouslySetInnerHTML={{ __html: content.scheduleC.time }}
                                         />
                                     )}
