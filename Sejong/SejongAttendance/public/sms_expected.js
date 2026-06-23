@@ -1655,53 +1655,69 @@ function renderRangeCalendar() {
                         resultCache = window.calculateRedBoxesForMonth(m, calendarYear, calendarMonth + 1, typeof attendanceData !== 'undefined' ? attendanceData : [], cName, typeof window.GLOBAL_DATA_ADJUSTMENTS !== 'undefined' ? window.GLOBAL_DATA_ADJUSTMENTS : {}, typeof paymentsData !== 'undefined' ? paymentsData : []);
                     }
 
-                    if (ledgerSync && ledgerSync[syncKey]) {
-                        const rawSync = ledgerSync[syncKey];
-                        daysArr = Array.isArray(rawSync) ? rawSync : (typeof rawSync === 'number' ? [rawSync] : []);
-                        if (daysArr.length > 0) hasAtt = true;
-                        if (resultCache) isSim = resultCache.isSimulated;
-                    } else if (resultCache) {
+                    let monthMilestones = [];
+                    let calcEighthDays = [];
+                    let calcIsSim = false;
+                    if (resultCache) {
+                        if (resultCache.allMilestones && resultCache.allMilestones.length > 0) {
+                            monthMilestones = resultCache.allMilestones.filter(ms => ms.year === calendarYear && ms.month === calendarMonth + 1);
+                        }
                         if (resultCache.redDays && resultCache.redDays.length > 0) {
-                            daysArr = resultCache.redDays;
-                            isSim = resultCache.isSimulated;
-                            hasAtt = resultCache.hasAnyAttendance;
+                            calcEighthDays = resultCache.redDays;
+                            calcIsSim = resultCache.isSimulated;
                         }
                     }
 
-                    if (daysArr.length > 0 && (hasAtt || isSim)) {
-                        daysArr.forEach(dVal => {
-                            const d = String(dVal).includes('-') ? parseInt(String(dVal).split('-')[2], 10) : parseInt(dVal, 10);
-                            let dayIsSim = isSim;
-                            if (resultCache && resultCache.allMilestones) {
-                                const ms = resultCache.allMilestones.find(x => x.day === d && x.month === (typeof month !== 'undefined' ? month : calendarMonth + 1) && x.year === (typeof year !== 'undefined' ? year : calendarYear));
-                                if (ms) dayIsSim = !ms.isReal;
-                                else {
-                                    const y = typeof year !== 'undefined' ? year : calendarYear;
-                                    const m = typeof month !== 'undefined' ? month - 1 : calendarMonth;
-                                    const dateObj = new Date(y, m, d);
-                                    const today = new Date();
-                                    today.setHours(0,0,0,0);
-                                    dayIsSim = dateObj > today;
-                                }
-                            }
+                    let realEighthDays = [];
+                    let hasRealFromSync = false;
+                    if (ledgerSync && ledgerSync[syncKey]) {
+                        const rawSync = ledgerSync[syncKey];
+                        realEighthDays = Array.isArray(rawSync) ? rawSync : (typeof rawSync === 'number' ? [rawSync] : []);
+                        if (realEighthDays.length > 0) hasRealFromSync = true;
+                    }
 
-                            const showReal = document.getElementById('filterRealPayment') ? document.getElementById('filterRealPayment').checked : true;
-                            const showSim = document.getElementById('filterSimPayment') ? document.getElementById('filterSimPayment').checked : false;
-                            
-                            if (dayIsSim && !showSim) return;
-                            if (!dayIsSim && !showReal) return;
-                            if (isNaN(d) || d <= 0) return;
-                            
-                            if (!paymentNamesByDay[d]) paymentNamesByDay[d] = { real: [], sim: [] };
-                            const cClean = c.trim().replace('기능사', '');
-                            const label = `${m.name}(${cClean})`;
-                            if (typeof dayIsSim !== 'undefined' ? dayIsSim : isSim) {
-                        if (!paymentNamesByDay[d].sim.includes(label)) paymentNamesByDay[d].sim.push(label);
+                    let finalItems = [];
+                    if (hasRealFromSync) {
+                        finalItems = monthMilestones.length > 0 ? monthMilestones : realEighthDays.map(d => ({ day: d, isReal: true }));
                     } else {
-                        if (!paymentNamesByDay[d].real.includes(label)) paymentNamesByDay[d].real.push(label);
+                        if (monthMilestones.length > 0) {
+                            finalItems = monthMilestones;
+                        } else if (calcEighthDays.length > 0) {
+                            finalItems = calcEighthDays.map(d => ({ day: d, isReal: !calcIsSim }));
+                        }
                     }
-                        });
-                    }
+
+                    finalItems.forEach(item => {
+                        const d = item.day;
+                        let dayIsSim = !item.isReal;
+
+                        if (isNaN(d) || d <= 0) return;
+
+                        const isPaid = (typeof paymentsData !== 'undefined' ? paymentsData : []).some(p =>
+                            String(p.memberId) === String(m.id) &&
+                            String(p.year) === String(calendarYear) &&
+                            String(p.month) === String(calendarMonth + 1) &&
+                            p.status === 'paid' &&
+                            (!p.course || p.course === 'null' || p.course === 'undefined' || p.course === '' || !cName || p.course.includes(cName) || cName.includes(p.course))
+                        );
+
+                        if (isPaid) return;
+
+                        const showReal = document.getElementById('filterRealPayment') ? document.getElementById('filterRealPayment').checked : true;
+                        const showSim = document.getElementById('filterSimPayment') ? document.getElementById('filterSimPayment').checked : false;
+                        
+                        if (dayIsSim && !showSim) return;
+                        if (!dayIsSim && !showReal) return;
+                        
+                        if (!paymentNamesByDay[d]) paymentNamesByDay[d] = { real: [], sim: [] };
+                        const cClean = c.trim().replace('기능사', '');
+                        const label = `${m.name}(${cClean})`;
+                        if (dayIsSim) {
+                            if (!paymentNamesByDay[d].sim.includes(label)) paymentNamesByDay[d].sim.push(label);
+                        } else {
+                            if (!paymentNamesByDay[d].real.includes(label)) paymentNamesByDay[d].real.push(label);
+                        }
+                    });
                 });
             });
         }
