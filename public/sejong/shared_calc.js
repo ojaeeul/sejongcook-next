@@ -463,3 +463,88 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
     };
 };
 
+// --- [양방향 동기화 알림 기능] ---
+(function() {
+    if (typeof window === 'undefined' || window.sejongSyncInitialized) return;
+    window.sejongSyncInitialized = true;
+
+    const myTabId = Math.random().toString(36).substring(2, 15);
+    let syncChannel;
+    try {
+        syncChannel = new BroadcastChannel('sejong_sync_channel');
+    } catch(e) {
+        return; // BroadcastChannel not supported
+    }
+
+    function createToast() {
+        if (document.getElementById('sejong-sync-toast')) return;
+        const style = document.createElement('style');
+        style.textContent = `
+            #sejong-sync-toast {
+                position: fixed; bottom: 30px; right: 30px;
+                background: #3b82f6; color: white; padding: 15px 20px;
+                border-radius: 8px; box-shadow: 0 10px 15px rgba(0,0,0,0.2);
+                z-index: 999999; display: none; align-items: center; gap: 15px;
+                font-family: 'Pretendard', sans-serif; font-size: 0.95rem;
+                animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+            #sejong-sync-toast button {
+                background: white; color: #3b82f6; border: none; padding: 8px 15px;
+                border-radius: 6px; cursor: pointer; font-weight: bold; transition: all 0.2s;
+            }
+            #sejong-sync-toast button:hover { background: #eff6ff; }
+            @keyframes slideUp {
+                from { transform: translateY(100px); opacity: 0; }
+                to { transform: translateY(0); opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        const toast = document.createElement('div');
+        toast.id = 'sejong-sync-toast';
+        toast.innerHTML = `
+            <span>🔄 다른 탭에서 최신 데이터가 업데이트 되었습니다.</span>
+            <button onclick="location.reload()">새로고침 (적용)</button>
+        `;
+        document.body.appendChild(toast);
+    }
+
+    syncChannel.onmessage = function(e) {
+        if (e.data && e.data.type === 'DATA_MODIFIED' && e.data.tabId !== myTabId) {
+            createToast();
+            const toast = document.getElementById('sejong-sync-toast');
+            if (toast) toast.style.display = 'flex';
+        }
+    };
+
+    window.notifyGlobalDataChanged = function() {
+        if (syncChannel) {
+            syncChannel.postMessage({ type: 'DATA_MODIFIED', tabId: myTabId });
+        }
+    };
+
+    const originalFetch = window.fetch;
+    window.fetch = async function(...args) {
+        const response = await originalFetch.apply(this, args);
+        try {
+            const url = typeof args[0] === 'string' ? args[0] : (args[0] && args[0].url ? args[0].url : '');
+            const options = args[1] || {};
+            const method = (options.method || (args[0] && args[0].method) || 'GET').toUpperCase();
+            
+            if (url) {
+                const isApiCall = url.includes('api.php') || url.includes('/api/sejong/');
+                const isModification = method === 'POST' || method === 'PUT' || method === 'DELETE' || method === 'PATCH';
+                const isGetWithAction = method === 'GET' && (url.includes('action=save') || url.includes('action=delete') || url.includes('action=update'));
+
+                if (isApiCall && (isModification || isGetWithAction)) {
+                    if (response.ok) {
+                        window.notifyGlobalDataChanged();
+                    }
+                }
+            }
+        } catch (e) {
+            console.error('Sync interception error:', e);
+        }
+        return response;
+    };
+})();
