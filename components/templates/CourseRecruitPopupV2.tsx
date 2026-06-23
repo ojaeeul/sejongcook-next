@@ -159,33 +159,33 @@ export default function CourseRecruitPopupV2({ content, onClose, link }: Props) 
             )}
 
             {/* Footer Control Bar */}
-            <div className="absolute bottom-0 w-full z-50 h-[52px] flex justify-between items-center bg-[#25282f] text-white pointer-events-auto">
-                <div className="flex-1 flex items-center h-full px-3">
-                    <label className="flex items-center gap-2 cursor-pointer hover:text-gray-300 transition-colors group/check shrink-0">
+            <div className="absolute bottom-0 w-full z-50 h-[48px] sm:h-[52px] flex justify-between items-center bg-[#25282f] text-white pointer-events-auto">
+                <div className="flex items-center h-full px-3 z-10 bg-[#25282f]">
+                    <label className="flex items-center gap-1.5 sm:gap-2 cursor-pointer hover:text-gray-300 transition-colors group/check shrink-0">
                         <input
                             type="checkbox"
                             onClick={(e) => e.stopPropagation()}
                             onChange={(e) => {
                                 if (e.target.checked) onClose(true);
                             }}
-                            className="rounded bg-white/10 border-white/30 text-white focus:ring-0 focus:ring-offset-0 w-4 h-4 cursor-pointer"
+                            className="rounded bg-white/10 border-white/30 text-white focus:ring-0 focus:ring-offset-0 w-3.5 h-3.5 sm:w-4 sm:h-4 cursor-pointer"
                         />
-                        <span className="text-xs text-gray-300 font-medium group-hover/check:text-white pt-0.5">하루 안보기</span>
+                        <span className="text-[11px] sm:text-xs text-gray-300 font-medium group-hover/check:text-white pt-0.5">하루 안보기</span>
                     </label>
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
                             onClose(false);
                         }}
-                        className="text-xs text-gray-300 hover:text-white font-bold px-2 py-1 ml-2 transition-all hover:bg-white/10 rounded shrink-0"
+                        className="text-[11px] sm:text-xs text-gray-300 hover:text-white font-bold px-2 py-1 ml-1 sm:ml-2 transition-all hover:bg-white/10 rounded shrink-0"
                     >
                         [X] 닫기
                     </button>
                 </div>
 
-                {/* Footer Branding */}
+                {/* Footer Branding - Hidden on mobile to prevent overlap */}
                 {showText && (
-                    <div className="flex-1 flex flex-col items-end justify-center pr-4 h-full bg-[#1b1e24] skew-x-[-15deg] origin-bottom-right w-full">
+                    <div className="hidden sm:flex flex-1 flex-col items-end justify-center pr-4 h-full bg-[#1b1e24] skew-x-[-15deg] origin-bottom-right w-full">
                         <div className="skew-x-[15deg] flex flex-col items-end leading-tight text-right pt-0.5">
                             <div className="flex items-center gap-1.5 font-bold text-sm tracking-wide">
                                 <span>031-986-1933</span>
@@ -198,15 +198,15 @@ export default function CourseRecruitPopupV2({ content, onClose, link }: Props) 
                 )}
             </div>
             
-            {/* Logo in footer overlay (since skew can be tricky) */}
+            {/* Logo in footer overlay */}
             {showText && (
-                <div className="absolute bottom-0 left-0 w-full z-50 h-[52px] pointer-events-none flex justify-center items-center">
-                    {/* Centered logo area */}
-                    <div className="flex items-center gap-2 -ml-8">
-                        <div className="w-6 h-6 rounded-full bg-white text-[#25282f] flex items-center justify-center font-black text-[10px]">
+                <div className="absolute bottom-0 left-0 w-full z-50 h-[48px] sm:h-[52px] pointer-events-none flex justify-end sm:justify-center items-center pr-3 sm:pr-0 overflow-hidden">
+                    {/* Centered logo area (Right-aligned on mobile, centered on desktop) */}
+                    <div className="flex items-center gap-1.5 sm:gap-2 sm:-ml-8 opacity-70 sm:opacity-100">
+                        <div className="w-4 h-4 sm:w-6 sm:h-6 rounded-full bg-white text-[#25282f] flex items-center justify-center font-black text-[8px] sm:text-[10px]">
                             세종
                         </div>
-                        <span className="font-bold tracking-tight text-white/90">세종요리제과기술학원</span>
+                        <span className="font-bold tracking-tight text-white/90 text-[11px] sm:text-base">세종요리제과기술학원</span>
                     </div>
                 </div>
             )}
