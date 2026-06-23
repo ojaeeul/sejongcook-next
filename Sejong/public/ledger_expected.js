@@ -649,7 +649,7 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
         const schedules = getAllLedgerMonthStats(m.id, tYear, tMonth);
         
         schedules.forEach(s => {
-            if (!s.isSimulated && s.eighthDay && !isNaN(parseInt(s.eighthDay)) && Number(s.eighthDay) > 0) {
+            if (s.eighthDay && !isNaN(parseInt(s.eighthDay)) && Number(s.eighthDay) > 0) {
                 const day = parseInt(s.eighthDay);
                 if (day >= 1 && day <= daysInMonth) {
                     const isPaid = (typeof paymentsData !== 'undefined' ? paymentsData : window.paymentsData || []).some(p =>
@@ -660,10 +660,12 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
                         (!p.course || p.course === 'null' || p.course === 'undefined' || p.course === '' || !s.course || p.course.includes(s.course) || s.course.includes(p.course))
                     );
 
-                    if (isPaid) {
-                        dayBlueCounts[day]++;
-                    } else {
-                        dayRedCounts[day]++;
+                    if (!isPaid) {
+                        if (s.isSimulated) {
+                            dayBlueCounts[day]++;
+                        } else {
+                            dayRedCounts[day]++;
+                        }
                     }
                 }
             }
@@ -671,15 +673,20 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
     });
 
     const totalRedCount = dayRedCounts.reduce((sum, count) => sum + count, 0);
+    const totalBlueCount = dayBlueCounts.reduce((sum, count) => sum + count, 0);
 
     let html = `
         <div style="flex: 0 0 auto; width: 980px; border: 1.5px solid #0f172a; border-radius: 4px; background: #fff; position: relative;">
             <div style="position: sticky; left: 0; z-index: 40; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #0f172a; padding: 10px 10px; background: #fff;">
-                <h2 style="margin: 0; font-size: 1.2rem; font-weight: 900; display: flex; align-items: center;">
-                    ${title} (${members.length}명) - ${tYear}년 ${tMonth}월
-                    <span style="margin-left: 15px; color: #dc2626; font-weight: 900; background: #fee2e2; padding: 4px 12px; border-radius: 20px; border: 2px solid #ef4444; font-size: 0.95rem; display: inline-flex; align-items: center; box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2);">
+                <h2 style="margin: 0; font-size: 1.2rem; font-weight: 900; display: flex; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <span>${title} (${members.length}명) - ${tYear}년 ${tMonth}월</span>
+                    <span style="color: #dc2626; font-weight: 900; background: #fee2e2; padding: 4px 12px; border-radius: 20px; border: 2px solid #ef4444; font-size: 0.95rem; display: inline-flex; align-items: center; box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2);">
                         <span class="material-icons" style="font-size: 1.1rem; margin-right: 4px;">event_available</span> 
-                        결재일 건수 (${totalRedCount}건)
+                        진짜결제일 건수 (${totalRedCount}건)
+                    </span>
+                    <span style="color: #2563eb; font-weight: 900; background: #eff6ff; padding: 4px 12px; border-radius: 20px; border: 2px solid #3b82f6; font-size: 0.95rem; display: inline-flex; align-items: center; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);">
+                        <span class="material-icons" style="font-size: 1.1rem; margin-right: 4px;">event_available</span> 
+                        예정결재일 건수 (${totalBlueCount}건)
                     </span>
                 </h2>
             </div>
