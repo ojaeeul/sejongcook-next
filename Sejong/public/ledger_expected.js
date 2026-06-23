@@ -426,7 +426,74 @@ const COURSE_CATEGORIES = {
 let activeCategory = '전체';
 let currentFilterDate = '';
 
+function renderExpectedMonthlyPanel() {
+    const panel = document.getElementById('ledgerExpectedMonthlyPanel');
+    if (!panel) return;
+    
+    const tYearSelect = document.getElementById('yearSelect');
+    if (!tYearSelect) return;
+    const tYear = parseInt(tYearSelect.value);
+    if (!tYear) return;
+
+    const monthCountsSim = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0, 11: 0, 12: 0 };
+    const members = (typeof mergedMembersData !== 'undefined' ? mergedMembersData : window.membersData || []).filter(m => {
+        if (m.status === 'trash' || m.status === 'delete' || m.status === 'completed' || m.status === 'hold') return false;
+        return true;
+    });
+
+    members.forEach(m => {
+        for (let month = 1; month <= 12; month++) {
+            const schedules = getAllLedgerMonthStats(m.id, tYear, month);
+            schedules.forEach(s => {
+                if (s.eighthDay && !isNaN(parseInt(s.eighthDay)) && Number(s.eighthDay) > 0) {
+                    const isPaid = (typeof paymentsData !== 'undefined' ? paymentsData : window.paymentsData || []).some(p =>
+                        String(p.memberId) === String(m.id) &&
+                        String(p.year) === String(tYear) &&
+                        String(p.month) === String(month) &&
+                        p.status === 'paid' &&
+                        (!p.course || p.course === 'null' || p.course === 'undefined' || p.course === '' || !s.course || p.course.includes(s.course) || s.course.includes(p.course))
+                    );
+
+                    if (!isPaid && s.isSimulated) {
+                        monthCountsSim[month]++;
+                    }
+                }
+            });
+        }
+    });
+
+    let badgesSimHtml = `
+        <div style="display:flex; gap:6px; flex-wrap:wrap; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:6px 14px; align-items:center;">
+            <span style="font-size:0.75rem; font-weight:700; color:#1e3a8a; white-space:nowrap; margin-right:8px;">
+                <span class="material-icons" style="font-size:0.9rem; vertical-align:middle; margin-right:2px; color:#3b82f6;">calendar_month</span>
+                예정결재일
+            </span>
+    `;
+    const selectedMonth = parseInt(document.getElementById('monthSelect').value);
+    
+    for (let month = 1; month <= 12; month++) {
+        const count = monthCountsSim[month];
+        const displayCount = count > 0 ? `<span style="background:#2563eb; color:white; border-radius:12px; padding:2px 7px; font-size:0.7rem; font-weight:bold; margin-left:4px;">${count}</span>` : '';
+        
+        const isSelected = month === selectedMonth;
+        const borderStyle = isSelected ? 'border:2px solid #2563eb; background:#eff6ff;' : (count > 0 ? 'border:1px solid #93c5fd; background:#eff6ff;' : 'border:1px solid #cbd5e1; background:#fff;');
+        const textStyle = count > 0 ? 'color:#1e3a8a;' : 'color:#475569;';
+        const shadowStyle = isSelected ? 'box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);' : '';
+        
+        badgesSimHtml += `
+            <div style="display:flex; align-items:center; padding:3px 10px; border-radius:20px; font-size:0.8rem; font-weight:700; margin-right:2px; cursor:pointer; ${borderStyle} ${textStyle} ${shadowStyle}" onclick="document.getElementById('monthSelect').value='${month}'; renderLedger();">
+                <span>${month}월</span>
+                ${displayCount}
+            </div>
+        `;
+    }
+    badgesSimHtml += `</div>`;
+    
+    panel.innerHTML = badgesSimHtml;
+}
+
 function renderLedger() {
+    renderExpectedMonthlyPanel();
     const container = document.getElementById('ledgerTablesContainer');
     if (!container) return;
     container.innerHTML = '';
