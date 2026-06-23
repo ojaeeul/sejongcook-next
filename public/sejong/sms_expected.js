@@ -2036,43 +2036,59 @@ function getAllMilestonesForRange(memberId, courseFilter, startRange, endRange) 
             let hasRealFromSync = false;
             if (syncData && syncData[syncKey]) {
                 const rawSync = syncData[syncKey];
-                                }
-                            }
+                realEighthDays = Array.isArray(rawSync) ? rawSync : (typeof rawSync === 'number' ? [rawSync] : []);
+                if (realEighthDays.length > 0) hasRealFromSync = true;
+            }
 
-                            const showReal = document.getElementById('filterRealPayment') ? document.getElementById('filterRealPayment').checked : true;
-                            const showSim = document.getElementById('filterSimPayment') ? document.getElementById('filterSimPayment').checked : false;
-                            
-                            if (dayIsSim && !showSim) return;
-                            if (!dayIsSim && !showReal) return;
-                    if (isNaN(d) || d <= 0) return;
-                    
-                    const exactDate = new Date(year, month - 1, d);
-                    const exactTime = exactDate.getTime();
-                    const startTime = new Date(startRange.getFullYear(), startRange.getMonth(), startRange.getDate()).getTime();
-                    const endTime = new Date(endRange.getFullYear(), endRange.getMonth(), endRange.getDate(), 23, 59, 59).getTime();
-                    
-                    if (exactTime >= startTime && exactTime <= endTime) {
-                        const isPaid = (typeof paymentsData !== 'undefined' ? paymentsData : []).some(p =>
-                            String(p.memberId) === String(m.id) &&
-                            String(p.year) === String(year) &&
-                            String(p.month) === String(month) &&
-                            p.status === 'paid' &&
-                            (p.course && cName && (p.course.includes(cName) || cName.includes(p.course)))
-                        );
-                        if (!isPaid) {
-                            const isDup = matched.some(x => x.year === year && x.month === month && x.day === d && x.course === cName);
-                            if (!isDup) {
-                                matched.push({
-                                    year: year,
-                                    month: month,
-                                    day: d,
-                                    course: cName === 'all' ? null : cName
-                                });
-                            }
+            let finalItems = [];
+            if (hasRealFromSync) {
+                finalItems = monthMilestones.length > 0 ? monthMilestones : realEighthDays.map(d => ({ day: d, isReal: true }));
+            } else {
+                if (monthMilestones.length > 0) {
+                    finalItems = monthMilestones;
+                } else if (calcEighthDays.length > 0) {
+                    finalItems = calcEighthDays.map(d => ({ day: d, isReal: !calcIsSim }));
+                }
+            }
+
+            finalItems.forEach(item => {
+                const d = item.day;
+                let dayIsSim = !item.isReal;
+
+                const showReal = document.getElementById('filterRealPayment') ? document.getElementById('filterRealPayment').checked : true;
+                const showSim = document.getElementById('filterSimPayment') ? document.getElementById('filterSimPayment').checked : false;
+                
+                if (dayIsSim && !showSim) return;
+                if (!dayIsSim && !showReal) return;
+                
+                if (isNaN(d) || d <= 0) return;
+                
+                const exactDate = new Date(year, month - 1, d);
+                const exactTime = exactDate.getTime();
+                const startTime = new Date(startRange.getFullYear(), startRange.getMonth(), startRange.getDate()).getTime();
+                const endTime = new Date(endRange.getFullYear(), endRange.getMonth(), endRange.getDate(), 23, 59, 59).getTime();
+                
+                if (exactTime >= startTime && exactTime <= endTime) {
+                    const isPaid = (typeof paymentsData !== 'undefined' ? paymentsData : []).some(p =>
+                        String(p.memberId) === String(m.id) &&
+                        String(p.year) === String(year) &&
+                        String(p.month) === String(month) &&
+                        p.status === 'paid' &&
+                        (!p.course || p.course === 'null' || p.course === 'undefined' || p.course === '' || !cName || p.course.includes(cName) || cName.includes(p.course))
+                    );
+                    if (!isPaid) {
+                        const isDup = matched.some(x => x.year === year && x.month === month && x.day === d && x.course === cName);
+                        if (!isDup) {
+                            matched.push({
+                                year: year,
+                                month: month,
+                                day: d,
+                                course: cName === 'all' ? null : cName
+                            });
                         }
                     }
-                });
-            }
+                }
+            });
         });
 
         month++;
