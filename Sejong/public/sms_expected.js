@@ -2014,42 +2014,28 @@ function getAllMilestonesForRange(memberId, courseFilter, startRange, endRange) 
 
         coursesToCheck.forEach(cName => {
             const syncKey = `${m.id}_${year}_${month}_${cName}`;
-            let daysArr = [];
-            let hasAtt = false;
-            let isSim = false;
-
             let resultCache = null;
             if (typeof window.calculateRedBoxesForMonth === 'function') {
                 resultCache = window.calculateRedBoxesForMonth(m, year, month, typeof attendanceData !== 'undefined' ? attendanceData : [], cName, typeof window.GLOBAL_DATA_ADJUSTMENTS !== 'undefined' ? window.GLOBAL_DATA_ADJUSTMENTS : {}, typeof paymentsData !== 'undefined' ? paymentsData : []);
             }
 
-            if (syncData && syncData[syncKey]) {
-                const rawSync = syncData[syncKey];
-                daysArr = Array.isArray(rawSync) ? rawSync : (typeof rawSync === 'number' ? [rawSync] : []);
-                if (daysArr.length > 0) hasAtt = true;
-                if (resultCache) isSim = resultCache.isSimulated;
-            } else if (resultCache) {
+            let monthMilestones = [];
+            let calcEighthDays = [];
+            let calcIsSim = false;
+            if (resultCache) {
+                if (resultCache.allMilestones && resultCache.allMilestones.length > 0) {
+                    monthMilestones = resultCache.allMilestones.filter(ms => ms.year === year && ms.month === month);
+                }
                 if (resultCache.redDays && resultCache.redDays.length > 0) {
-                    daysArr = resultCache.redDays;
-                    isSim = resultCache.isSimulated;
-                    hasAtt = resultCache.hasAnyAttendance;
+                    calcEighthDays = resultCache.redDays;
+                    calcIsSim = resultCache.isSimulated;
                 }
             }
 
-            if (daysArr.length > 0 && (hasAtt || isSim)) {
-                daysArr.forEach(dVal => {
-                    const d = String(dVal).includes('-') ? parseInt(String(dVal).split('-')[2], 10) : parseInt(dVal, 10);
-                            let dayIsSim = isSim;
-                            if (resultCache && resultCache.allMilestones) {
-                                const ms = resultCache.allMilestones.find(x => x.day === d && x.month === (typeof month !== 'undefined' ? month : calendarMonth + 1) && x.year === (typeof year !== 'undefined' ? year : calendarYear));
-                                if (ms) dayIsSim = !ms.isReal;
-                                else {
-                                    const y = typeof year !== 'undefined' ? year : calendarYear;
-                                    const m = typeof month !== 'undefined' ? month - 1 : calendarMonth;
-                                    const dateObj = new Date(y, m, d);
-                                    const today = new Date();
-                                    today.setHours(0,0,0,0);
-                                    dayIsSim = dateObj > today;
+            let realEighthDays = [];
+            let hasRealFromSync = false;
+            if (syncData && syncData[syncKey]) {
+                const rawSync = syncData[syncKey];
                                 }
                             }
 
