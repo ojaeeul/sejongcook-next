@@ -7,12 +7,12 @@
     <meta http-equiv="Expires" content="0">    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>문자 발송 - 세종요리</title>
-    <link rel="stylesheet" href="style.css?v=20260623-12">
+    <link rel="stylesheet" href="style.css?v=20260623-13">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="shared_calc.js?v=20260623-12"></script>
-    <script src="sms_expected.js?v=20260623-12" defer></script>
+    <script src="shared_calc.js?v=20260623-13"></script>
+    <script src="sms_expected.js?v=20260623-13" defer></script>
     <style>
         .sms-container {
             display: flex;
@@ -1048,7 +1048,8 @@
         window.updateRedBoxes = function(targetYear, targetMonth) {
             try {
                 const syncData = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
-                const monthCounts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0, 11: 0, 12: 0 };
+                const monthCountsReal = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0, 11: 0, 12: 0 };
+                const monthCountsSim = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0, 11: 0, 12: 0 };
                 
                 const now = new Date();
                 let cy = targetYear;
@@ -1090,22 +1091,28 @@
                             let isSim = false;
 
                             const syncKey = `${m.id}_${cy}_${month}_${cName}`;
+                            let resultCache = null;
+                            if (typeof window.calculateRedBoxesForMonth === 'function') {
+                                resultCache = window.calculateRedBoxesForMonth(m, cy, month, typeof attendanceData !== 'undefined' ? attendanceData : [], cName, typeof window.GLOBAL_DATA_ADJUSTMENTS !== 'undefined' ? window.GLOBAL_DATA_ADJUSTMENTS : {}, typeof paymentsData !== 'undefined' ? paymentsData : []);
+                            }
+
                             if (syncData && syncData[syncKey]) {
                                 const rawSync = syncData[syncKey];
                                 days = Array.isArray(rawSync) ? rawSync : (typeof rawSync === 'number' ? [rawSync] : []);
                                 if (days.length > 0) hasAtt = true;
-                            } else if (typeof window.calculateRedBoxesForMonth === 'function') {
-                                const result = window.calculateRedBoxesForMonth(m, cy, month, typeof attendanceData !== 'undefined' ? attendanceData : [], cName, typeof window.GLOBAL_DATA_ADJUSTMENTS !== 'undefined' ? window.GLOBAL_DATA_ADJUSTMENTS : {});
-                                if (result && result.redDays && result.redDays.length > 0) {
-                                    days = result.redDays;
-                                    isSim = result.isSimulated;
-                                    hasAtt = result.hasAnyAttendance;
+                                if (resultCache) isSim = resultCache.isSimulated;
+                            } else if (resultCache) {
+                                if (resultCache.redDays && resultCache.redDays.length > 0) {
+                                    days = resultCache.redDays;
+                                    isSim = resultCache.isSimulated;
+                                    hasAtt = resultCache.hasAnyAttendance;
                                 }
                             }
 
                             if (days.length > 0 && (hasAtt || isSim)) {
-                                days.forEach(d => {
-                                    if (!isNaN(parseInt(d)) && Number(d) > 0) {
+                                days.forEach(dVal => {
+                                    const d = String(dVal).includes('-') ? parseInt(String(dVal).split('-')[2], 10) : parseInt(dVal, 10);
+                                    if (!isNaN(d) && d > 0) {
                                         const isPaid = (typeof paymentsData !== 'undefined' ? paymentsData : []).some(p =>
                                             String(p.memberId) === String(m.id) &&
                                             String(p.year) === String(cy) &&
@@ -1114,7 +1121,18 @@
                                             (p.course && cName && (p.course.includes(cName) || cName.includes(p.course)))
                                         );
                                         if (!isPaid) {
-                                            monthCounts[month]++;
+                                            let dayIsSim = isSim;
+                                            if (resultCache && resultCache.allMilestones) {
+                                                const ms = resultCache.allMilestones.find(x => x.day === d && x.month === month && x.year === cy);
+                                                if (ms) dayIsSim = !ms.isReal;
+                                                else dayIsSim = isSim;
+                                            }
+
+                                            if (dayIsSim) {
+                                                monthCountsSim[month]++;
+                                            } else {
+                                                monthCountsReal[month]++;
+                                            }
                                         }
                                     }
                                 });
@@ -1132,30 +1150,60 @@
 
                 const panel = document.getElementById('smsMonthlyRedBoxPanel');
                 if (panel) {
-                    // 월간출석부와 시각적으로 100% 동일한 디자인 적용
-                    let badgesHtml = `
+                    panel.style.display = 'flex';
+                    panel.style.flexDirection = 'column';
+                    panel.style.alignItems = 'flex-start';
+                    panel.style.gap = '8px';
+
+                    // 1. 예정결재일 (Simulated)
+                    let badgesSimHtml = `
                         <div style="display:flex; gap:6px; flex-wrap:wrap; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:6px 14px; align-items:center;">
-                            <span style="font-size:0.75rem; font-weight:700; color:#64748b; white-space:nowrap; margin-right:8px;">
-                                <span class="material-icons" style="font-size:0.9rem; vertical-align:middle; margin-right:2px;">calendar_month</span>
-                                수강생결재일
+                            <span style="font-size:0.75rem; font-weight:700; color:#1e3a8a; white-space:nowrap; margin-right:8px;">
+                                <span class="material-icons" style="font-size:0.9rem; vertical-align:middle; margin-right:2px; color:#3b82f6;">calendar_month</span>
+                                예정결재일
                             </span>
                     `;
                     for (let month = 1; month <= 12; month++) {
-                        const count = monthCounts[month];
+                        const count = monthCountsSim[month];
                         const displayCount = count > 0 ? `<span style="background:#2563eb; color:white; border-radius:12px; padding:2px 7px; font-size:0.7rem; font-weight:bold; margin-left:4px;">${count}</span>` : '';
                         
                         const borderStyle = count > 0 ? 'border:1px solid #93c5fd; background:#eff6ff;' : 'border:1px solid #cbd5e1; background:#fff;';
                         const textStyle = count > 0 ? 'color:#1e3a8a;' : 'color:#475569;';
                         
-                        badgesHtml += `
+                        badgesSimHtml += `
                             <div style="display:flex; align-items:center; padding:3px 10px; border-radius:20px; font-size:0.8rem; font-weight:700; margin-right:2px; cursor:pointer; ${borderStyle} ${textStyle}" onclick="if(window.jumpToRangeMonth) window.jumpToRangeMonth(${cy}, ${month})">
                                 <span>${month}월</span>
                                 ${displayCount}
                             </div>
                         `;
                     }
-                    badgesHtml += `</div>`;
-                    panel.innerHTML = badgesHtml;
+                    badgesSimHtml += `</div>`;
+
+                    // 2. 수강생결재일 (Real)
+                    let badgesRealHtml = `
+                        <div style="display:flex; gap:6px; flex-wrap:wrap; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:6px 14px; align-items:center;">
+                            <span style="font-size:0.75rem; font-weight:700; color:#dc2626; white-space:nowrap; margin-right:8px;">
+                                <span class="material-icons" style="font-size:0.9rem; vertical-align:middle; margin-right:2px; color:#ef4444;">calendar_month</span>
+                                수강생결제일
+                            </span>
+                    `;
+                    for (let month = 1; month <= 12; month++) {
+                        const count = monthCountsReal[month];
+                        const displayCount = count > 0 ? `<span style="background:#dc2626; color:white; border-radius:12px; padding:2px 7px; font-size:0.7rem; font-weight:bold; margin-left:4px;">${count}</span>` : '';
+                        
+                        const borderStyle = count > 0 ? 'border:1px solid #fca5a5; background:#fef2f2;' : 'border:1px solid #cbd5e1; background:#fff;';
+                        const textStyle = count > 0 ? 'color:#dc2626;' : 'color:#475569;';
+                        
+                        badgesRealHtml += `
+                            <div style="display:flex; align-items:center; padding:3px 10px; border-radius:20px; font-size:0.8rem; font-weight:700; margin-right:2px; cursor:pointer; ${borderStyle} ${textStyle}" onclick="if(window.jumpToRangeMonth) window.jumpToRangeMonth(${cy}, ${month})">
+                                <span>${month}월</span>
+                                ${displayCount}
+                            </div>
+                        `;
+                    }
+                    badgesRealHtml += `</div>`;
+
+                    panel.innerHTML = badgesSimHtml + badgesRealHtml;
                 }
             } catch (e) {
                 console.error('Red boxes update error:', e);
@@ -1168,7 +1216,7 @@
             }, 500);
         });
     </script>
-    <script src="sidebar_sync.js?v=20260623-12"></script>
+    <script src="sidebar_sync.js?v=20260623-13"></script>
 </body>
 
 </html>
