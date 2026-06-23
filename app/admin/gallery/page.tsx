@@ -33,6 +33,7 @@ export default function GalleryPage() {
 
     const [uploading, setUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState('');
+    const [isDragging, setIsDragging] = useState(false);
 
     const processUpload = async (files: FileList) => {
         const imageFiles = Array.from(files).filter(file => file.type.startsWith('image/') || /\.(png|jpe?g|gif|webp)$/i.test(file.name));
@@ -64,7 +65,7 @@ export default function GalleryPage() {
                 }
                 
                 const uploadData = await uploadRes.json();
-                if (!uploadData.success || !uploadData.url) {
+                if (!uploadData.url) {
                     throw new Error('서버 반환 오류');
                 }
                 
@@ -121,6 +122,28 @@ export default function GalleryPage() {
         e.target.value = '';
     };
 
+    const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(true);
+    };
+
+    const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(false);
+    };
+
+    const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(false);
+
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            await processUpload(e.dataTransfer.files);
+        }
+    };
+
     const handleDelete = async (id: string) => {
         if (!confirm('정말 삭제하시겠습니까?')) return;
         try {
@@ -174,7 +197,21 @@ export default function GalleryPage() {
     };
 
     return (
-        <div className="space-y-6">
+        <div 
+            className={`relative min-h-[500px] space-y-6 transition-all duration-200 ${isDragging ? 'bg-indigo-50/50 outline-dashed outline-2 outline-indigo-400 rounded-xl p-4' : ''}`}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+        >
+            {isDragging && (
+                <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm rounded-xl border-2 border-dashed border-indigo-500 pointer-events-none">
+                    <div className="text-center">
+                        <Upload className="w-16 h-16 text-indigo-500 mx-auto mb-4 animate-bounce" />
+                        <h3 className="text-xl font-bold text-indigo-900">여기에 파일이나 폴더를 놓으세요</h3>
+                        <p className="text-sm text-indigo-600 mt-2">마우스를 놓으면 자동으로 업로드됩니다.</p>
+                    </div>
+                </div>
+            )}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <h1 className="text-2xl font-bold text-gray-800">갤러리 / 이미지 관리</h1>
                 <div className="flex flex-wrap items-center gap-3">

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import CourseRecruitPopup, { CourseRecruitContent } from './templates/CourseRecruitPopup';
+import CourseRecruitPopupV2 from './templates/CourseRecruitPopupV2';
 
 export interface Popup {
     id: number;
@@ -155,11 +156,19 @@ export default function MainPopup() {
                         className={`popup-container-responsive popup-container ${popup.type !== 'template' ? 'popup-image-mode' : ''}`}
                     >
                     {popup.type === 'template' && popup.content ? (
-                        <CourseRecruitPopup
-                            content={popup.content}
-                            onClose={(dontShowToday) => closePopup(popup.id, dontShowToday)}
-                            link={popup.link}
-                        />
+                        popup.templateId === 'course_recruit_v2' ? (
+                            <CourseRecruitPopupV2
+                                content={popup.content}
+                                onClose={(dontShowToday) => closePopup(popup.id, dontShowToday)}
+                                link={popup.link}
+                            />
+                        ) : (
+                            <CourseRecruitPopup
+                                content={popup.content}
+                                onClose={(dontShowToday) => closePopup(popup.id, dontShowToday)}
+                                link={popup.link}
+                            />
+                        )
                     ) : (
                         // Fallback/Default Image Popup
                         <>

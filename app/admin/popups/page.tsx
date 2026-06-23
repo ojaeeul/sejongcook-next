@@ -101,6 +101,37 @@ export default function AdminPopupsPage() {
         startEdit(newPopup);
     };
 
+    const addNewTemplatePopupV2 = async () => {
+        const newId = popups.length > 0 ? Math.max(...popups.map(p => p.id)) + 1 : 1;
+        const newPopup: Popup = {
+            id: newId,
+            title: `새 포스터 템플릿 ${newId}`,
+            type: 'template',
+            templateId: 'course_recruit_v2',
+            link: '/',
+            isActive: false,
+            position: { top: 100, left: 100 },
+            size: { width: 500, height: 750 },
+            content: {
+                textVisible: true,
+                badgeText: '기초부터 확실하게!',
+                title: '주말(토요일)\n제과·제빵 정규반',
+                subText: '세종요리제과기술학원만의 특별한 노하우 전수',
+                mainImage: '',
+                scheduleA: { label: '모집기간', period: '상시모집! 언제든 신청 가능', time: '' },
+                scheduleB: { label: '수업시간', period: '매주 토요일 진행', time: '제과(오전 10:00) / 제빵(오후 진행)' },
+                scheduleC: { label: '수업내용', period: '제과기능사 / 제빵기능사 실기 품목', time: '매주 2가지씩 집중 실습' },
+                footerContact: '',
+                titleStyle: {},
+                subTextStyle: {}
+            }
+        };
+        const updatedPopups = [newPopup, ...popups];
+        setPopups(updatedPopups);
+        await savePopups(updatedPopups);
+        startEdit(newPopup);
+    };
+
     const deletePopup = async (id: number) => {
         if (!confirm('정말 삭제하시겠습니까?')) return;
         const updatedPopups = popups.filter(p => p.id !== id);
@@ -245,9 +276,14 @@ export default function AdminPopupsPage() {
                         {resetText}
                     </button>
                 </div>
-                <button onClick={addNewImagePopup} className="bg-indigo-600 text-white px-5 py-2.5 rounded-lg shadow font-bold hover:bg-indigo-700 transition-colors flex items-center gap-2">
-                    <span>➕</span> 새 이미지 팝업 추가
-                </button>
+                <div className="flex gap-2">
+                    <button onClick={addNewImagePopup} className="bg-indigo-600 text-white px-4 py-2.5 rounded-lg shadow font-bold hover:bg-indigo-700 transition-colors flex items-center gap-2 text-sm">
+                        <span>➕</span> 이미지 팝업 추가
+                    </button>
+                    <button onClick={addNewTemplatePopupV2} className="bg-purple-600 text-white px-4 py-2.5 rounded-lg shadow font-bold hover:bg-purple-700 transition-colors flex items-center gap-2 text-sm">
+                        <span>➕</span> 포스터 템플릿(V2) 추가
+                    </button>
+                </div>
             </div>
 
             <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-8 rounded shadow-sm">
@@ -265,7 +301,7 @@ export default function AdminPopupsPage() {
                                 <span className="bg-gray-200 text-gray-700 px-2 py-1 rounded text-xs font-mono font-bold">ID: {popup.id}</span>
                                 <h3 className="font-bold text-xl text-gray-800">{popup.title}</h3>
                                 <span className={`text-xs px-2.5 py-1 rounded-full font-bold uppercase tracking-wider ${popup.type === 'template' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
-                                    {popup.type === 'template' ? 'TEMAPLTE' : 'IMAGE'}
+                                    {popup.type === 'template' ? (popup.templateId === 'course_recruit_v2' ? 'TEMPLATE V2' : 'TEMPLATE V1') : 'IMAGE'}
                                 </span>
                             </div>
                             <div className="flex items-center gap-3">
@@ -676,6 +712,30 @@ export default function AdminPopupsPage() {
                                                         </div>
                                                     </div>
                                                 </div>
+                                                {/* Schedule C (only for V2) */}
+                                                {editForm.templateId === 'course_recruit_v2' && (
+                                                    <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm relative overflow-hidden group col-span-1 md:col-span-2">
+                                                        <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500"></div>
+                                                        <label className="font-bold text-sm text-emerald-800 block mb-3 flex items-center gap-2">
+                                                            <span className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center text-xs">C</span>
+                                                            일정 C (하단)
+                                                        </label>
+                                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                                            <div>
+                                                                <label className="text-[10px] uppercase font-bold text-gray-400">라벨</label>
+                                                                <input type="text" value={editForm.content.scheduleC?.label || ''} onChange={(e) => handleEditChange('content.scheduleC.label', e.target.value)} className="w-full border p-2 rounded text-sm font-bold" />
+                                                            </div>
+                                                            <div>
+                                                                <label className="text-[10px] uppercase font-bold text-gray-400">기간</label>
+                                                                <input type="text" value={editForm.content.scheduleC?.period || ''} onChange={(e) => handleEditChange('content.scheduleC.period', e.target.value)} className="w-full border p-2 rounded text-sm" />
+                                                            </div>
+                                                            <div>
+                                                                <label className="text-[10px] uppercase font-bold text-gray-400">시간</label>
+                                                                <input type="text" value={editForm.content.scheduleC?.time || ''} onChange={(e) => handleEditChange('content.scheduleC.time', e.target.value)} className="w-full border p-2 rounded text-sm bg-yellow-50" />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
 
                                             <div className="mt-6">

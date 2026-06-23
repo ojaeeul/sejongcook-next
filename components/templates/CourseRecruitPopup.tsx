@@ -21,6 +21,7 @@ export interface CourseRecruitContent {
     subText: string;
     scheduleA: Schedule;
     scheduleB: Schedule;
+    scheduleC?: Schedule;
     mainImage: string;
     subImage?: string;
     footerContact: string; // Left Text (Contact/Notice)
@@ -36,6 +37,9 @@ export interface CourseRecruitContent {
     scheduleBLabelStyle?: TextStyle;
     scheduleBPeriodStyle?: TextStyle;
     scheduleBTimeStyle?: TextStyle;
+    scheduleCLabelStyle?: TextStyle;
+    scheduleCPeriodStyle?: TextStyle;
+    scheduleCTimeStyle?: TextStyle;
     footerStyle?: TextStyle;
 }
 
