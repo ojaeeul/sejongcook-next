@@ -73,7 +73,7 @@ export default function CourseRecruitPopupV2({ content, onClose, link }: Props) 
                     </div>
 
                     {/* Schedules White Box */}
-                    <div className="pointer-events-auto bg-white/95 backdrop-blur-md rounded-xl p-5 shadow-lg border border-white/50 w-full my-auto flex flex-col gap-4">
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-auto bg-white/95 backdrop-blur-md rounded-xl p-5 shadow-lg border border-white/50 w-[calc(100%-3rem)] flex flex-col gap-4">
                         {/* Schedule A */}
                         {content.scheduleA && (content.scheduleA.label || content.scheduleA.period) && (
                             <div className="flex items-start gap-4">
