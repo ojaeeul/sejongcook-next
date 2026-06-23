@@ -60,6 +60,12 @@ async function fetchMembers() {
                 timetableData = { ...timetableData, ...apiData };
             }
         }
+        
+        // 당일 8시 이후 자동 결석 처리 로직 (공유 엔진)
+        if (typeof window.autoMarkAbsences === 'function') {
+            await window.autoMarkAbsences(allMembers, attendanceData, timetableData);
+        }
+
         processCourses();
         renderCourseList();
     } catch (err) {

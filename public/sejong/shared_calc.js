@@ -547,4 +547,108 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
         }
         return response;
     };
+
+    /**
+     * 당일 출석 누락자 8시 이후 자동 결석 처리 (일일/월간 출석부 연동)
+     */
+    window.autoMarkAbsences = async function(members, attendanceData, timetableData, holidaysData = []) {
+        const now = new Date();
+        const hours = now.getHours();
+        if (hours < 20) return false; // 20:00 (오후 8시) 이전에는 동작 안 함
+
+        const todayStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+        const dayOfWeek = now.getDay();
+        
+        // 일요일 또는 등록된 공휴일인 경우 당일은 제외
+        if (dayOfWeek === 0) return false;
+        if (holidaysData && holidaysData.some(h => h.date === todayStr)) return false;
+
+        let hasChanges = false;
+        let newAbsenceCount = 0;
+        const postPromises = [];
+
+        // 재원생만 필터링
+        const activeMembers = members.filter(m => m.status !== 'trash' && m.status !== 'delete' && m.status !== 'completed' && m.status !== 'hold');
+
+        for (const m of activeMembers) {
+            if (!m.course || m.course.trim() === '') continue;
+
+            const courses = m.course.split(',').map(c => c.trim());
+            for (const cName of courses) {
+                const cleanCourseName = cName.replace(/\([^)]*\)/g, '').trim();
+                const tightCourseName = cleanCourseName.replace(/\s/g, '');
+
+                let isClassDay = false;
+                if (timetableData[cleanCourseName]) {
+                    isClassDay = timetableData[cleanCourseName].includes(dayOfWeek);
+                } else if (timetableData[tightCourseName]) {
+                    isClassDay = timetableData[tightCourseName].includes(dayOfWeek);
+                }
+
+                if (isClassDay) {
+                    // 해당 학생의 오늘 출석 기록이 있는지 확인
+                    const dbRecord = attendanceData.find(a => {
+                        if (String(a.memberId) !== String(m.id)) return false;
+                        if (a.date !== todayStr) return false;
+                        if (!a.course) return true; // 글로벌 기록인 경우 포함
+                        const aCourseClean = a.course.replace(/\([^)]*\)/g, '').trim();
+                        return aCourseClean.includes(cleanCourseName) || aCourseClean.includes(tightCourseName);
+                    });
+
+                    // 기록이 아예 없거나, status 속성이 비어있으면 '결석(X)' 삽입
+                    if (!dbRecord || !dbRecord.status || dbRecord.status === 'unchecked') {
+                        // 로컬 데이터에 즉시 반영
+                        if (!dbRecord) {
+                            attendanceData.push({
+                                memberId: m.id,
+                                date: todayStr,
+                                status: 'X',
+                                course: cName
+                            });
+                        } else {
+                            dbRecord.status = 'X';
+                        }
+                        
+                        hasChanges = true;
+                        newAbsenceCount++;
+
+                        // 서버로 POST 요청 큐에 추가
+                        const API_BASE = window.location.href.includes('api.php') ? '/api.php?action=sejong_attendance' : '/api/sejong';
+                        const fetchUrl = API_BASE + (API_BASE.includes('?') ? '&' : '/') + 'attendance?t=' + Date.now();
+                        
+                        postPromises.push(
+                            fetch(fetchUrl, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    memberId: m.id,
+                                    date: todayStr,
+                                    status: 'X',
+                                    course: cName
+                                })
+                            })
+                        );
+                    }
+                }
+            }
+        }
+
+        if (hasChanges && postPromises.length > 0) {
+            try {
+                await Promise.all(postPromises);
+                console.log(`[Auto-Absence] Processed ${newAbsenceCount} new absences for today.`);
+                window.notifyGlobalDataChanged();
+                
+                if (typeof showToast === 'function') {
+                    showToast(`저녁 8시가 경과하여 누락된 ${newAbsenceCount}명의 당일 출석이 결석(X) 처리되었습니다.`);
+                } else {
+                    alert(`저녁 8시가 경과하여 누락된 ${newAbsenceCount}명의 당일 출석이 자동 결석 처리되었습니다.`);
+                }
+            } catch (e) {
+                console.error('Failed to save auto-absences:', e);
+            }
+        }
+        
+        return hasChanges;
+    };
 })();
