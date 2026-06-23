@@ -436,7 +436,7 @@ function renderExpectedMonthlyPanel() {
     if (!tYear) return;
 
     const monthCountsSim = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0, 11: 0, 12: 0 };
-    const members = (typeof mergedMembersData !== 'undefined' ? mergedMembersData : window.membersData || []).filter(m => {
+    const members = membersData.filter(m => {
         if (m.status === 'trash' || m.status === 'delete' || m.status === 'completed' || m.status === 'hold') return false;
         return true;
     });
