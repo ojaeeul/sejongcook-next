@@ -86,18 +86,16 @@ export default function CourseRecruitPopupV2({ content, onClose, link }: Props) 
                                 <div className="w-[1px] bg-gray-300 self-stretch my-0.5 rounded-full" />
                                 <div className="flex-1 flex flex-col gap-1">
                                     <div 
-                                        className="text-gray-900 leading-tight"
+                                        className="text-gray-900 leading-tight whitespace-pre-line"
                                         style={getStyle(content.scheduleAPeriodStyle, '#111827', 17, '800')}
-                                    >
-                                        {content.scheduleA.period}
-                                    </div>
+                                        dangerouslySetInnerHTML={{ __html: content.scheduleA.period }}
+                                    />
                                     {content.scheduleA.time && (
                                         <div 
-                                            className="text-gray-700 leading-tight"
+                                            className="text-gray-700 leading-tight whitespace-pre-line"
                                             style={getStyle(content.scheduleATimeStyle, '#374151', 15, '600')}
-                                        >
-                                            {content.scheduleA.time}
-                                        </div>
+                                            dangerouslySetInnerHTML={{ __html: content.scheduleA.time }}
+                                        />
                                     )}
                                 </div>
                             </div>
@@ -115,18 +113,16 @@ export default function CourseRecruitPopupV2({ content, onClose, link }: Props) 
                                 <div className="w-[1px] bg-gray-300 self-stretch my-0.5 rounded-full" />
                                 <div className="flex-1 flex flex-col gap-1">
                                     <div 
-                                        className="text-gray-900 leading-tight"
+                                        className="text-gray-900 leading-tight whitespace-pre-line"
                                         style={getStyle(content.scheduleBPeriodStyle, '#111827', 17, '800')}
-                                    >
-                                        {content.scheduleB.period}
-                                    </div>
+                                        dangerouslySetInnerHTML={{ __html: content.scheduleB.period }}
+                                    />
                                     {content.scheduleB.time && (
                                         <div 
-                                            className="text-gray-700 leading-tight"
+                                            className="text-gray-700 leading-tight whitespace-pre-line"
                                             style={getStyle(content.scheduleBTimeStyle, '#374151', 15, '600')}
-                                        >
-                                            {content.scheduleB.time}
-                                        </div>
+                                            dangerouslySetInnerHTML={{ __html: content.scheduleB.time }}
+                                        />
                                     )}
                                 </div>
                             </div>
@@ -144,18 +140,16 @@ export default function CourseRecruitPopupV2({ content, onClose, link }: Props) 
                                 <div className="w-[1px] bg-gray-300 self-stretch my-0.5 rounded-full" />
                                 <div className="flex-1 flex flex-col gap-1">
                                     <div 
-                                        className="text-gray-900 leading-tight"
+                                        className="text-gray-900 leading-tight whitespace-pre-line"
                                         style={getStyle(content.scheduleCPeriodStyle, '#111827', 17, '800')}
-                                    >
-                                        {content.scheduleC.period}
-                                    </div>
+                                        dangerouslySetInnerHTML={{ __html: content.scheduleC.period }}
+                                    />
                                     {content.scheduleC.time && (
                                         <div 
-                                            className="text-gray-700 leading-tight"
+                                            className="text-gray-700 leading-tight whitespace-pre-line"
                                             style={getStyle(content.scheduleCTimeStyle, '#374151', 15, '600')}
-                                        >
-                                            {content.scheduleC.time}
-                                        </div>
+                                            dangerouslySetInnerHTML={{ __html: content.scheduleC.time }}
+                                        />
                                     )}
                                 </div>
                             </div>
