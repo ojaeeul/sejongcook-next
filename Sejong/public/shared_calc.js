@@ -525,7 +525,7 @@ window.calculateRedBoxesForMonth = function (member, targetYear, targetMonth, al
 
     const originalFetch = window.fetch;
     window.fetch = async function(...args) {
-        const response = await originalFetch.apply(this, args);
+        const response = await originalFetch.apply(window, args);
         try {
             const url = typeof args[0] === 'string' ? args[0] : (args[0] && args[0].url ? args[0].url : '');
             const options = args[1] || {};
