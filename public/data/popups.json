@@ -151,7 +151,7 @@
             "scheduleC": {
                 "label": "수업내용",
                 "period": "제과기능사 / 제빵기능사 실기 품목",
-                "time": "매주 2가지씩 집중 실습<br><span style=\"font-size:12px;color:#6b7280;display:inline-block;margin-top:2px;\">(10주과정)</span>"
+                "time": "매주 2가지씩 집중 실습<br><span style=\"font-size:15px;color:#6b7280;display:inline-block;margin-top:2px;\">(10주과정)</span>"
             },
             "mainImage": "/img_up/tmp/baking_poster_bg_v2.png"
         },
