@@ -7,19 +7,36 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const date = searchParams.get('date');
 
-    let query = supabase.from('attendance').select('*');
-    if (date) {
-        query = query.eq('date', date);
+    let allLogs: any[] = [];
+    let from = 0;
+    const step = 1000;
+    
+    while (true) {
+        let query = supabase.from('attendance').select('*').range(from, from + step - 1);
+        if (date) {
+            query = query.eq('date', date);
+        }
+        
+        const { data: logs, error } = await query;
+        
+        if (error) {
+            console.error("GET Attendance Error:", error);
+            return NextResponse.json({ error: error.message }, { status: 500 });
+        }
+        
+        if (!logs || logs.length === 0) {
+            break;
+        }
+        
+        allLogs = allLogs.concat(logs);
+        
+        if (logs.length < step) {
+            break;
+        }
+        from += step;
     }
 
-    const { data: logs, error } = await query;
-
-    if (error) {
-        console.error("GET Attendance Error:", error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
-    return NextResponse.json(logs || []);
+    return NextResponse.json(allLogs);
 }
 
 export async function POST(req: NextRequest) {
