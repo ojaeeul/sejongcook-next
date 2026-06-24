@@ -1178,11 +1178,13 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
                     virtualMarkerDay = day; // 가상 결재일 마커 (파란색)
                 }
                 
-                if (hasRealAtt || hasSimAtt || hasRealPayment || hasVirtualPayment || hasExpectedPayment) {
+                let hasAnyBox = hasRealAtt || hasSimAtt || hasRealPayment || hasVirtualPayment || hasExpectedPayment;
+
+                if (hasAnyBox) {
                     if (day > lastActiveDay) lastActiveDay = day;
                 }
                 
-                dayStates.push({ day, isClassDay, hasVirtualPayment });
+                dayStates.push({ day, isClassDay, hasVirtualPayment, hasAnyBox });
             }
             
             let startDay = 999;
@@ -1199,7 +1201,7 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
             if (startDay <= daysInMonth && lastActiveDay >= startDay) {
                 let visualP = 0;
                 for (let day = startDay; day <= lastActiveDay; day++) {
-                    if (dayStates[day - 1].isClassDay) {
+                    if (dayStates[day - 1].isClassDay || dayStates[day - 1].hasAnyBox) {
                         if (ignoreBlueBoxes && dayStates[day - 1].hasVirtualPayment) {
                             continue; // 블루박스는 카운트에서 제외!
                         }
