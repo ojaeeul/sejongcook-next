@@ -108,6 +108,7 @@ async function processPDF(file) {
             totalFiles += pdf.numPages - 1; // Adjust total files for PDF pages
             updateProgress();
 
+            const analyzePromises = [];
             for (let i = 1; i <= pdf.numPages; i++) {
                 const page = await pdf.getPage(i);
                 const viewport = page.getViewport({ scale: 1.5 });
@@ -118,9 +119,11 @@ async function processPDF(file) {
 
                 await page.render({ canvasContext: context, viewport: viewport }).promise;
                 
-                const base64Data = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
-                await analyzeImage(base64Data, `${file.name} (페이지 ${i})`, canvas.toDataURL('image/jpeg', 0.8));
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                const base64Data = dataUrl.split(',')[1];
+                analyzePromises.push(analyzeImage(base64Data, `${file.name} (페이지 ${i})`, dataUrl));
             }
+            await Promise.all(analyzePromises);
         };
         fileReader.readAsArrayBuffer(file);
     } catch (e) {
