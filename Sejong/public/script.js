@@ -2201,13 +2201,13 @@ if (typeof window.openSettingsModal === 'undefined') {
 }
 
 const COURSE_CHECKBOX_MAP = {
-    'course_bake': '제과',
-    'course_bread': '제빵',
-    'course_korean': '한식',
-    'course_western': '양식',
-    'course_japanese': '일식',
-    'course_chinese': '중식',
-    'course_puffer': '복어'
+    'course_bake': '제과기능사',
+    'course_bread': '제빵기능사',
+    'course_korean': '한식기능사',
+    'course_western': '양식기능사',
+    'course_japanese': '일식기능사',
+    'course_chinese': '중식기능사',
+    'course_puffer': '복어기능사'
 };
 
 const TIME_CHECKBOX_MAP = {
@@ -2239,7 +2239,8 @@ window.syncDynamicListToCheckboxes = function() {
         if (nameInput && nameInput.value) {
             const courseVal = nameInput.value.trim();
             for (const [cbName, courseName] of Object.entries(COURSE_CHECKBOX_MAP)) {
-                if (courseVal === courseName) {
+                const baseName = courseName.replace('기능사', '');
+                if (courseVal.includes(baseName)) {
                     const cb = document.querySelector(`input[name="${cbName}"]`);
                     if (cb) cb.checked = true;
                 }
@@ -2269,7 +2270,8 @@ window.syncCheckboxesToDynamicList = function(changedCbName, isChecked, isTime) 
         if (isChecked) {
             const exists = rows.some(row => {
                 const input = row.querySelector('.course-edit-name');
-                return input && input.value.trim() === courseName;
+                const baseName = courseName.replace('기능사', '');
+                return input && input.value.trim().includes(baseName);
             });
             if (!exists) {
                 let emptyRow = rows.find(row => {
@@ -2287,7 +2289,8 @@ window.syncCheckboxesToDynamicList = function(changedCbName, isChecked, isTime) 
             rows.forEach(row => {
                 const nameInput = row.querySelector('.course-edit-name');
                 const timeInput = row.querySelector('.course-edit-time');
-                if (nameInput && nameInput.value.trim() === courseName) {
+                const baseName = courseName.replace('기능사', '');
+                if (nameInput && nameInput.value.trim().includes(baseName)) {
                     if (timeInput && timeInput.value.trim() !== '') {
                         nameInput.value = '';
                     } else {
