@@ -682,18 +682,31 @@ function openEditModal(memberId) {
             if (window.renderRrnDisplay) window.renderRrnDisplay(rrnDisplay);
         }
         
-        if (window.toggleRrnBirth) {
+        if (window.toggleEditRrnBirth) {
             if (member.birth_date && !member.resident_num) {
-                window.toggleRrnBirth('birth');
+                window.toggleEditRrnBirth('birth');
             } else {
-                window.toggleRrnBirth('rrn');
+                window.toggleEditRrnBirth('rrn');
             }
         }
         editForm.address.value = member.address || '';
         editForm.address_detail.value = member.address_detail || '';
-        editForm.phone.value = member.phone || '';
-        editForm.phone_guardian.value = member.phone_guardian || '';
         
+        editForm.phone.value = member.phone || '';
+        const phoneBody = document.getElementById('edit_phone_body');
+        if (phoneBody) phoneBody.value = (member.phone || '').replace('010-', '');
+
+        editForm.phone_guardian.value = member.phone_guardian || '';
+        const guardianBody = document.getElementById('edit_phone_guardian_body');
+        if (guardianBody) guardianBody.value = (member.phone_guardian || '').replace('010-', '');
+
+        if (editForm.phone_home) {
+            editForm.phone_home.value = member.phone_home || '';
+            const homeBody = document.getElementById('edit_phone_home_body');
+            if (homeBody) homeBody.value = (member.phone_home || '').replace('02-', '');
+        }
+
+        if (editForm.gender) editForm.gender.value = member.gender || '';
         if (editForm.paper_email) {
             editForm.paper_email.value = member.paper_email || '';
             const email = member.paper_email || '';
@@ -868,6 +881,10 @@ async function handleEditSubmit(e) {
         data.school = '';
         data.school_level = '';
         data.grade = '';
+        if (data.job === '기타' && data.job_other) {
+            data.job = `기타(${data.job_other})`;
+        }
+        delete data.job_other;
     }
 
     // ------------------------------------------

@@ -7,16 +7,16 @@
     <meta http-equiv="Expires" content="0">    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>세종요리 출결관리</title>
-    <link rel="stylesheet" href="style.css?v=20260626-46">
-    <link rel="stylesheet" href="exam_view.css?v=20260626-46">
+    <link rel="stylesheet" href="style.css?v=20260626-47">
+    <link rel="stylesheet" href="exam_view.css?v=20260626-47">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
         rel="stylesheet">
     <!-- Google Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <!-- Swiper CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-    <script src="script.js?v=20260626-46" defer></script>
-    <script src="questions_data.js?v=20260626-46" defer></script>
+    <script src="script.js?v=20260626-47" defer></script>
+    <script src="questions_data.js?v=20260626-47" defer></script>
     <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#ffffff">
@@ -295,108 +295,187 @@
                 <input type="hidden" name="id">
                 <input type="hidden" name="registeredDate">
 
-                <div class="form-group">
-                    <label>이름</label>
-                    <input type="text" name="name" required title="수강생 이름">
-                </div>
+                <style>
+                    /* Ensure table UI fits within modal */
+                    #editStudentForm .dark-table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        font-size: 13px;
+                        color: #1f2937;
+                        text-align: center;
+                        border: 2px solid #475569;
+                        margin-bottom: 15px;
+                    }
+                    #editStudentForm .dark-table td {
+                        border: 1px solid #e5e7eb;
+                        padding: 8px 5px;
+                    }
+                    #editStudentForm .dark-table .th-dark {
+                        background-color: #f3f4f6;
+                        color: #475569;
+                        font-weight: bold;
+                    }
+                    #editStudentForm input[type="text"], 
+                    #editStudentForm input[type="tel"], 
+                    #editStudentForm select, 
+                    #editStudentForm input[type="date"] {
+                        width: 100%;
+                        box-sizing: border-box;
+                        border: 1px solid #475569;
+                        border-radius: 4px;
+                        padding: 4px;
+                    }
+                    #editStudentForm input[readonly] {
+                        background-color: #f3f4f6;
+                    }
+                </style>
 
-                <div class="form-group">
-                    <label>주민등록번호</label>
-                    <input type="text" name="resident_num" placeholder="000000-0000000" title="주민등록번호">
-                </div>
+                <table class="dark-table">
+                    <tr>
+                        <td class="th-dark" style="width: 15%;">성명 <span class="required" style="color:#ef4444">*</span></td>
+                        <td><input type="text" id="edit_name" name="name" required placeholder="이름 입력" style="text-align: center;"></td>
+                        <td class="th-dark" style="width: 10%;">성별</td>
+                        <td style="width: 15%;">
+                            <select id="edit_gender" name="gender" style="text-align: center; text-align-last: center;">
+                                <option value="">선택</option>
+                                <option value="여">여</option>
+                                <option value="남">남</option>
+                            </select>
+                        </td>
+                        <td class="th-dark" style="width: 15%; cursor: pointer;" onclick="toggleEditRrnBirth()" id="edit_rrn_birth_label" title="클릭하여 생년월일/주민번호 전환">주민등록번호</td>
+                        <td>
+                            <div id="edit_rrn_container" style="display: flex; width: 100%;">
+                                <input type="text" id="resident_num_display" placeholder="000000-0000000" style="text-align: center; width: 100%;" 
+                                    oninput="handleRrnInput(this)" 
+                                    onfocus="this.dataset.focused = 'true'; renderRrnDisplay(this);" 
+                                    onblur="this.dataset.focused = 'false'; renderRrnDisplay(this);">
+                                <input type="hidden" id="resident_num" name="resident_num">
+                            </div>
+                            <div id="edit_birth_container" style="display: none; width: 100%; gap: 5px; justify-content: center; align-items: center;">
+                                <select id="birth_yy" style="text-align: center; flex: 1; padding: 5px; box-sizing: border-box; font-family: inherit; font-size: 14px;" onchange="updateEditBirthDate()">
+                                    <option value="">년도</option>
+                                </select>
+                                <select id="birth_mm" style="text-align: center; flex: 1; padding: 5px; box-sizing: border-box; font-family: inherit; font-size: 14px;" onchange="updateEditBirthDate()">
+                                    <option value="">월</option>
+                                </select>
+                                <select id="birth_dd" style="text-align: center; flex: 1; padding: 5px; box-sizing: border-box; font-family: inherit; font-size: 14px;" onchange="updateEditBirthDate()">
+                                    <option value="">일</option>
+                                </select>
+                                <input type="hidden" id="birth_date" name="birth_date">
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="th-dark">주소</td>
+                        <td colspan="5" style="text-align: left; display: flex; align-items: center; border-bottom: none;">
+                            <input type="text" id="edit_address" name="address" readonly placeholder="주소 검색 버튼을 눌러주세요" style="flex: 1;">
+                            <button type="button" class="btn-secondary" style="padding: 4px 8px; margin-left: 5px;" onclick="execDaumPostcode('edit_address', 'edit_address_detail')">검색</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="th-dark" style="border-top: none;"></td>
+                        <td colspan="5" style="border-top: 1px dashed #475569;"><input type="text" id="edit_address_detail" name="address_detail" placeholder="상세 주소 입력" style="text-align: left;"></td>
+                    </tr>
+                    <tr>
+                        <td rowspan="2" class="th-dark">연락처</td>
+                        <td class="th-dark">본인</td>
+                        <td colspan="4" style="text-align: center; padding: 0;">
+                            <div style="display: flex; align-items: center; justify-content: center; gap: 5px; height: 100%; min-height: 35px;">
+                                <span style="color: #94a3b8; font-weight: 500;">010 - </span>
+                                <input type="tel" id="edit_phone_body" maxlength="9" placeholder="0000-0000" style="width: 120px; text-align: center;" 
+                                    oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/^(\d{4})(\d{1,4})$/, '$1-$2'); document.getElementById('edit_phone').value = this.value ? '010-' + this.value : '';">
+                                <input type="hidden" id="edit_phone" name="phone">
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="th-dark">보호자 / 자택</td>
+                        <td colspan="2" style="text-align: center; padding: 0;">
+                            <div style="display: flex; align-items: center; justify-content: center; gap: 5px; height: 100%; min-height: 35px;">
+                                <span style="color: #94a3b8; font-weight: 500; font-size: 12px; margin-right: 5px; white-space: nowrap;">보호자</span>
+                                <span style="color: #94a3b8; font-weight: 500; white-space: nowrap;">010 - </span>
+                                <input type="tel" id="edit_phone_guardian_body" maxlength="9" placeholder="0000-0000" style="width: 100px; text-align: center;" 
+                                    oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/^(\d{4})(\d{1,4})$/, '$1-$2'); document.getElementById('edit_phone_guardian').value = this.value ? '010-' + this.value : '';">
+                                <input type="hidden" id="edit_phone_guardian" name="phone_guardian">
+                            </div>
+                        </td>
+                        <td colspan="2" style="text-align: center; padding: 0;">
+                            <div style="display: flex; align-items: center; justify-content: center; gap: 5px; height: 100%; min-height: 35px;">
+                                <span style="color: #94a3b8; font-weight: 500; font-size: 12px; margin-right: 5px; white-space: nowrap;">자택</span>
+                                <span style="color: #94a3b8; font-weight: 500; white-space: nowrap;">02 - </span>
+                                <input type="tel" id="edit_phone_home_body" maxlength="9" placeholder="0000-0000" style="width: 100px; text-align: center;" 
+                                    oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/^(\d{4})(\d{1,4})$/, '$1-$2'); document.getElementById('edit_phone_home').value = this.value ? '02-' + this.value : '';">
+                                <input type="hidden" id="edit_phone_home" name="phone_home">
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="th-dark">회원구분</td>
+                        <td colspan="5">
+                            <select id="edit_remark_type" name="type" onchange="toggleEditMemberType()" style="text-align: center; text-align-last: center;">
+                                <option value="student">학생</option>
+                                <option value="general">일반인</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr id="edit_student-fields-row">
+                        <td class="th-dark">학교</td>
+                        <td colspan="2"><input type="text" id="edit_school" name="school" placeholder="학교명" style="text-align: center;"></td>
+                        <td colspan="3" style="display: flex; gap: 5px; border: none;">
+                            <select id="edit_school_level" name="school_level" style="border: 1px solid #475569; border-radius: 4px; padding: 2px;">
+                                <option value="">구분</option>
+                                <option value="고등학교">고등학교</option>
+                                <option value="중학교">중학교</option>
+                                <option value="초등학교">초등학교</option>
+                                <option value="대학교">대학교</option>
+                            </select>
+                            <select id="edit_grade" name="grade" style="border: 1px solid #475569; border-radius: 4px; padding: 2px;">
+                                <option value="">학년</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                                <option value="6">6</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr id="edit_general-fields-row" class="hidden">
+                        <td class="th-dark">직업</td>
+                        <td colspan="5" style="display: flex; border-bottom: none; gap: 5px;">
+                            <select id="edit_job" name="job" onchange="toggleEditJobOther()" style="flex: 1; text-align: center; text-align-last: center; border: 1px solid #475569; border-radius: 4px; padding: 2px;">
+                                <option value="">선택하세요</option>
+                                <option value="회사원">회사원</option>
+                                <option value="주부">주부</option>
+                                <option value="사업가">사업가</option>
+                                <option value="공무원">공무원</option>
+                                <option value="무직">무직</option>
+                                <option value="기타">기타</option>
+                            </select>
+                            <input type="text" id="edit_job_other" name="job_other" class="hidden" placeholder="직접 입력" style="flex: 1; border: 1px solid #475569; border-radius: 4px; padding: 2px; text-align: left; padding-left: 10px;">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="th-dark">수강과목</td>
+                        <td colspan="5" style="text-align: left;">
+                            <div id="edit_course_container"></div>
+                            <button type="button" onclick="addCourseInput()" style="margin-top: 5px; padding: 6px; border-radius: 4px; background: #3b82f6; color: white; border: none; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px; justify-content: center; width: 100%;">
+                                <span class="material-icons" style="font-size: 14px;">add</span> 과정 추가
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="th-dark">시작일</td>
+                        <td colspan="5">
+                            <input type="date" name="start_date" style="width: 100%; text-align: center; padding: 5px; box-sizing: border-box;">
+                        </td>
+                    </tr>
 
-                <div class="form-group">
-                    <label>주소</label>
-                    <div class="flex-group gap-5">
-                        <input type="text" name="address" id="edit_address" placeholder="기본 주소" class="flex-1"
-                            title="기본 주소">
-                        <button type="button" onclick="openDaumPostcode('edit_address')"
-                            class="btn-secondary p-8">검색</button>
-                    </div>
-                    <input type="text" name="address_detail" placeholder="상세 주소" class="mt-5 full-width" title="상세 주소">
-                </div>
-
-                <div class="form-group">
-                    <label>연락처</label>
-                    <input type="text" name="phone" placeholder="010-0000-0000" title="본인 연락처">
-                </div>
-
-                <div class="form-group">
-                    <label>연락처</label>
-                    <input type="text" name="phone_guardian" placeholder="010-0000-0000" title="보호자 연락처">
-                </div>
-
-                <div class="form-group">
-                    <label>과정 (예: 한식(10:00))</label>
-                    <div id="edit_course_container">
-                        <!-- Inputs will be added here dynamically -->
-                    </div>
-                    <button type="button" class="btn-secondary mt-5 full-width p-5" onclick="addCourseInput()">+
-                        과정 추가</button>
-                </div>
-
-                <div class="form-group">
-                    <label>수강 시작일</label>
-                    <div class="flex-center gap-5">
-                        <span class="fs-1-1-em bold">20</span>
-                        <input type="text" name="start_yy" maxlength="2" placeholder="YY" class="w-50 text-center"
-                            title="연도(YY)">
-                        <span>-</span>
-                        <input type="text" name="start_mm" maxlength="2" placeholder="MM" class="w-50 text-center"
-                            title="월(MM)">
-                        <span>-</span>
-                        <input type="text" name="start_dd" maxlength="2" placeholder="DD" class="w-50 text-center"
-                            title="일(DD)">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>비고 작성</label>
-                    <select id="edit_remark_type" class="full-width mb-5 p-8 border-light rounded" title="비고 유형 선택">
-                        <option value="student">학생</option>
-                        <option value="general">일반</option>
-                    </select>
-
-                    <!-- Student Inputs -->
-                    <div id="edit_student_inputs" class="flex-group gap-5">
-                        <input type="text" name="school" placeholder="학교명" class="flex-2" title="학교명">
-                        <select name="school_level" title="학교 구분" class="flex-1 p-8 border-light rounded">
-                            <option value="">구분</option>
-                            <option value="고등학교">고등학교</option>
-                            <option value="중학교">중학교</option>
-                            <option value="초등학교">초등학교</option>
-                            <option value="대학교">대학교</option>
-                        </select>
-                        <select name="grade" title="학년" class="flex-1 p-8 border-light rounded">
-                            <option value="">학년</option>
-                            <option value="1">1</option>
-                            <option value="2">2</option>
-                            <option value="3">3</option>
-                            <option value="4">4</option>
-                            <option value="5">5</option>
-                            <option value="6">6</option>
-                        </select>
-                    </div>
-
-                    <!-- General Inputs -->
-                    <div id="edit_general_inputs" class="hidden">
-                        <select name="job" class="full-width p-8 border-light rounded" title="직업 선택">
-                            <option value="">선택하세요</option>
-                            <option value="회사원">회사원</option>
-                            <option value="주부">주부</option>
-                            <option value="사업가">사업가</option>
-                            <option value="공무원">공무원</option>
-                            <option value="무직">무직</option>
-                            <option value="기타">기타</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>특이사항</label>
-                    <textarea name="notes" class="full-width h-80 p-8 border-light rounded resize-v"
-                        placeholder="보류 사유 및 기타 특이사항" title="특이사항"></textarea>
-                </div>
+                    <tr>
+                        <td class="th-dark">비고</td>
+                        <td colspan="5"><input type="text" id="edit_notes" name="notes" placeholder="특이사항 입력" style="text-align: left; padding-left: 10px;"></td>
+                    </tr>
+                </table>
 
                 <div class="mt-20 flex-group gap-10 flex-end">
                     <button type="button" onclick="closeEditModal()" class="btn-secondary">취소</button>
@@ -405,6 +484,94 @@
             </form>
         </div>
     </div>
+    <script>
+        function toggleEditRrnBirth(forceState) {
+            const rrnContainer = document.getElementById('edit_rrn_container');
+            const birthContainer = document.getElementById('edit_birth_container');
+            const label = document.getElementById('edit_rrn_birth_label');
+            const rrnInput = document.getElementById('resident_num');
+            const rrnDisplay = document.getElementById('resident_num_display');
+            const birthDate = document.getElementById('birth_date');
+            
+            const isCurrentlyRrn = rrnContainer.style.display !== 'none';
+            let toBirth = isCurrentlyRrn;
+            if (forceState === 'birth') toBirth = true;
+            if (forceState === 'rrn') toBirth = false;
+
+            if (toBirth) {
+                rrnContainer.style.display = 'none';
+                birthContainer.style.display = 'flex';
+                label.innerHTML = '생년월일';
+                
+                const currentYear = new Date().getFullYear();
+                const yySelect = document.getElementById('birth_yy');
+                const mmSelect = document.getElementById('birth_mm');
+                const ddSelect = document.getElementById('birth_dd');
+                
+                if (yySelect.options.length <= 1) {
+                    for (let y = currentYear; y >= 1930; y--) {
+                        yySelect.options.add(new Option(y, y));
+                    }
+                    for (let m = 1; m <= 12; m++) {
+                        const val = m.toString().padStart(2, '0');
+                        mmSelect.options.add(new Option(val, val));
+                    }
+                    for (let d = 1; d <= 31; d++) {
+                        const val = d.toString().padStart(2, '0');
+                        ddSelect.options.add(new Option(val, val));
+                    }
+                }
+            } else {
+                rrnContainer.style.display = 'flex';
+                birthContainer.style.display = 'none';
+                label.innerHTML = '주민등록번호';
+            }
+        }
+
+        function updateEditBirthDate() {
+            const yy = document.getElementById('birth_yy').value;
+            const mm = document.getElementById('birth_mm').value;
+            const dd = document.getElementById('birth_dd').value;
+            if (yy && mm && dd) {
+                document.getElementById('birth_date').value = `${yy}-${mm}-${dd}`;
+            } else {
+                document.getElementById('birth_date').value = '';
+            }
+        }
+
+        function toggleEditMemberType() {
+            const type = document.getElementById('edit_remark_type').value;
+            const studentRow = document.getElementById('edit_student-fields-row');
+            const generalRow = document.getElementById('edit_general-fields-row');
+            
+            if (type === 'student') {
+                studentRow.style.display = '';
+                studentRow.classList.remove('hidden');
+                generalRow.style.display = 'none';
+                generalRow.classList.add('hidden');
+            } else {
+                studentRow.style.display = 'none';
+                studentRow.classList.add('hidden');
+                generalRow.style.display = '';
+                generalRow.classList.remove('hidden');
+            }
+        }
+
+        function toggleEditJobOther() {
+            const jobSelect = document.getElementById('edit_job');
+            const jobOther = document.getElementById('edit_job_other');
+            if (jobSelect.value === '기타') {
+                jobOther.classList.remove('hidden');
+                jobOther.style.display = 'block';
+                jobSelect.style.flex = '0.5';
+            } else {
+                jobOther.classList.add('hidden');
+                jobOther.style.display = 'none';
+                jobOther.value = '';
+                jobSelect.style.flex = '1';
+            }
+        }
+    </script>
 
     <!-- Edit Confirmation Modal -->
     <div id="editConfirmModal" class="modal-overlay hidden">
@@ -515,6 +682,6 @@
 
     <!-- Swiper JS -->
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-    <script src="sidebar_sync.js?v=20260626-46"></script>
+    <script src="sidebar_sync.js?v=20260626-47"></script>
 </body>
 </html>
