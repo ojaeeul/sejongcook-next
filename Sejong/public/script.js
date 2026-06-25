@@ -1728,7 +1728,8 @@ function renderMembers() {
                 { val: 'completed', text: '수료' },
                 { val: 'retaking', text: '재수강' },
                 { val: 'hold', text: '보류' },
-                { val: 'trash', text: '휴지통' }
+                { val: 'trash', text: '휴지통' },
+                { val: 'delete', text: '삭제' }
             ];
 
             const optionsHtml = statuses.map(s =>
