@@ -18,7 +18,8 @@ export async function POST(request: Request) {
         const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
         
         let response;
-        let retries = 3;
+        let retries = 5;
+        let delay = 2000; // Start with 2 seconds
         while (retries > 0) {
             response = await fetch(url, {
                 method: 'POST',
@@ -36,7 +37,8 @@ export async function POST(request: Request) {
                 console.log(`Gemini API returned ${response.status}. Retrying... (${retries} left)`);
                 retries--;
                 if (retries > 0) {
-                    await new Promise(res => setTimeout(res, 1000));
+                    await new Promise(res => setTimeout(res, delay));
+                    delay *= 2; // Exponential backoff (2s, 4s, 8s, 16s)
                     continue;
                 }
             }

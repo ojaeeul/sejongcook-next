@@ -210,7 +210,36 @@ function createCardUI(title, imgUrl, id) {
     return card;
 }
 
+const CONCURRENCY_LIMIT = 5;
+let activeRequests = 0;
+const requestQueue = [];
+
 async function analyzeImage(base64Data, fileName, imgUrl) {
+    return new Promise((resolve) => {
+        requestQueue.push(async () => {
+            activeRequests++;
+            try {
+                await executeAnalysis(base64Data, fileName, imgUrl);
+            } catch(e) {
+                console.error(e);
+            } finally {
+                activeRequests--;
+                processQueue();
+                resolve();
+            }
+        });
+        processQueue();
+    });
+}
+
+function processQueue() {
+    if (activeRequests < CONCURRENCY_LIMIT && requestQueue.length > 0) {
+        const nextJob = requestQueue.shift();
+        nextJob();
+    }
+}
+
+async function executeAnalysis(base64Data, fileName, imgUrl) {
     const id = Date.now() + Math.floor(Math.random() * 1000);
     const card = createCardUI(fileName, imgUrl, id);
     
