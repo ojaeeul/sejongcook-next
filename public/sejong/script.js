@@ -55,6 +55,42 @@ async function loadGlobalCourseTimeSettings() {
         timeDl.appendChild(opt);
     });
     document.body.appendChild(timeDl);
+
+    // 동적으로 시간 체크박스 재생성 (register_course_container 아래에 있는 time checkbox)
+    const timeRow = document.getElementById('dynamic_time_checkboxes_row');
+    if (timeRow && global_time_options.length > 0) {
+        timeRow.innerHTML = '';
+        window.TIME_CHECKBOX_MAP = {};
+        const numTimes = global_time_options.length;
+        
+        // 7칸을 균등하게 분배 (colspan 계산)
+        let colspans = [];
+        let remaining = 7;
+        for (let i = 0; i < numTimes; i++) {
+            let span = Math.floor(remaining / (numTimes - i));
+            colspans.push(span);
+            remaining -= span;
+        }
+        
+        global_time_options.forEach((t, i) => {
+            const safeName = 'time_' + t.replace(/[^a-zA-Z0-9가-힣]/g, '');
+            window.TIME_CHECKBOX_MAP[safeName] = t;
+            
+            const td = document.createElement('td');
+            td.colSpan = colspans[i];
+            td.innerHTML = `<label style="cursor: pointer;"><input type="checkbox" name="${safeName}"> ${t}</label>`;
+            timeRow.appendChild(td);
+            
+            const cb = td.querySelector('input[type="checkbox"]');
+            if (cb) {
+                cb.addEventListener('change', function() {
+                    if (window.syncCheckboxesToDynamicList) {
+                        window.syncCheckboxesToDynamicList(this.name, this.checked, true);
+                    }
+                });
+            }
+        });
+    }
 }
 document.addEventListener("DOMContentLoaded", loadGlobalCourseTimeSettings);
 
@@ -2210,7 +2246,7 @@ const COURSE_CHECKBOX_MAP = {
     'course_puffer': '복어기능사'
 };
 
-const TIME_CHECKBOX_MAP = {
+window.TIME_CHECKBOX_MAP = {
     'time_10': '10시',
     'time_5': '5시',
     'time_7': '7시'
@@ -2277,7 +2313,7 @@ window.syncDynamicListToCheckboxes = function() {
         
         if (timeInput && timeInput.value) {
             const timeVal = timeInput.value.trim();
-            for (const [cbName, timeName] of Object.entries(TIME_CHECKBOX_MAP)) {
+            for (const [cbName, timeName] of Object.entries(window.TIME_CHECKBOX_MAP)) {
                 if (timeVal === timeName) {
                     const cb = document.querySelector(`input[name="${cbName}"]`);
                     if (cb) cb.checked = true;
@@ -2341,7 +2377,7 @@ window.syncCheckboxesToDynamicList = function(changedCbName, isChecked, isTime) 
         }
         window.mergeBakeBreadIfNeeded();
     } else {
-        const timeName = TIME_CHECKBOX_MAP[changedCbName];
+        const timeName = window.TIME_CHECKBOX_MAP[changedCbName];
         if (isChecked) {
             const exists = rows.some(row => {
                 const input = row.querySelector('.course-edit-time');
@@ -2398,7 +2434,7 @@ window.initCourseSync = function() {
         }
     });
     
-    Object.keys(TIME_CHECKBOX_MAP).forEach(name => {
+    Object.keys(window.TIME_CHECKBOX_MAP).forEach(name => {
         const cb = document.querySelector(`input[name="${name}"]`);
         if (cb) {
             cb.addEventListener('change', () => {
