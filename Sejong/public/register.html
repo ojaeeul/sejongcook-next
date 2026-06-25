@@ -9,12 +9,12 @@
     <title>수강생 등록 - 세종요리제과학원 (김포/세종 요리 전문)</title>
     <meta name="description" content="세종요리제과학원 신규 수강생 등록 페이지입니다. 김포 및 세종 지역에서 요리사의 꿈을 시작하세요.">
     <meta name="keywords" content="세종요리, 김포요리, 세종요리학원, 김포요리학원, 요리학원 등록, 수강생 모집">
-    <link rel="stylesheet" href="style.css?v=20260626-22">
+    <link rel="stylesheet" href="style.css?v=20260626-23">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="script.js?v=20260626-22" defer></script>
-    <script src="questions_data.js?v=20260626-22" defer></script>
+    <script src="script.js?v=20260626-23" defer></script>
+    <script src="questions_data.js?v=20260626-23" defer></script>
     <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 </head>
 
@@ -463,7 +463,23 @@
                                         <td class="th-dark" style="width: 15%;">I.D</td>
                                         <td colspan="2"><input type="text" name="paper_id" style="text-align: center;"></td>
                                         <td class="th-dark" rowspan="2" style="width: 15%;">전자메일</td>
-                                        <td rowspan="2" colspan="2"><input type="email" name="paper_email" style="text-align: center;"></td>
+                                        <td rowspan="2" colspan="2">
+                                            <div style="display: flex; align-items: center; justify-content: center; gap: 4px; padding: 0 5px; width: 100%;">
+                                                <input type="text" id="paper_email_id" style="flex: 1; text-align: right; font-size: 14px; min-width: 50px;" oninput="updatePaperEmail()">
+                                                <span style="font-weight: bold;">@</span>
+                                                <input type="text" id="paper_email_domain_manual" style="display: none; flex: 1.2; text-align: left; font-size: 14px; min-width: 60px;" placeholder="직접 입력" oninput="updatePaperEmail()">
+                                                <select id="paper_email_domain_select" style="flex: 1.2; padding: 5px 2px; box-sizing: border-box; font-family: inherit; font-size: 14px; min-width: 80px;" onchange="handlePaperEmailDomainChange()">
+                                                    <option value="">도메인 선택</option>
+                                                    <option value="naver.com">naver.com</option>
+                                                    <option value="gmail.com">gmail.com</option>
+                                                    <option value="daum.net">daum.net</option>
+                                                    <option value="hanmail.net">hanmail.net</option>
+                                                    <option value="nate.com">nate.com</option>
+                                                    <option value="direct">직접 입력</option>
+                                                </select>
+                                                <input type="hidden" name="paper_email" id="paper_email">
+                                            </div>
+                                        </td>
                                     </tr>
                                     <tr>
                                         <td class="th-dark">비밀번호</td>
@@ -560,7 +576,7 @@
         </div>
     </div>
 
-    <script src="sidebar_sync.js?v=20260626-22"></script>
+    <script src="sidebar_sync.js?v=20260626-23"></script>
 </body>
 
 </html>

@@ -645,6 +645,33 @@ function openEditModal(memberId) {
         editForm.address_detail.value = member.address_detail || '';
         editForm.phone.value = member.phone || '';
         editForm.phone_guardian.value = member.phone_guardian || '';
+        
+        if (editForm.paper_email) {
+            editForm.paper_email.value = member.paper_email || '';
+            const email = member.paper_email || '';
+            const [id, domain] = email.split('@');
+            
+            const idInput = document.getElementById('paper_email_id');
+            const manualInput = document.getElementById('paper_email_domain_manual');
+            const select = document.getElementById('paper_email_domain_select');
+            
+            if (idInput) idInput.value = id || '';
+            
+            if (domain && select) {
+                const options = Array.from(select.options).map(opt => opt.value);
+                if (options.includes(domain)) {
+                    select.value = domain;
+                    if (window.handlePaperEmailDomainChange) window.handlePaperEmailDomainChange();
+                } else {
+                    select.value = 'direct';
+                    if (manualInput) manualInput.value = domain;
+                    if (window.handlePaperEmailDomainChange) window.handlePaperEmailDomainChange();
+                }
+            } else {
+                if (select) select.value = '';
+                if (window.handlePaperEmailDomainChange) window.handlePaperEmailDomainChange();
+            }
+        }
         // editForm.course.value = member.course || ''; // Removed single input
         // Parse Start Date (YYYY-MM-DD)
         if (member.start_date) {
@@ -1263,6 +1290,40 @@ window.updateStartDate = function() {
 document.addEventListener('DOMContentLoaded', () => {
     window.initDateSelects();
 });
+
+window.handlePaperEmailDomainChange = function() {
+    const select = document.getElementById('paper_email_domain_select');
+    const manualInput = document.getElementById('paper_email_domain_manual');
+    if (!select || !manualInput) return;
+    
+    if (select.value === 'direct') {
+        select.style.display = 'none';
+        manualInput.style.display = 'block';
+        manualInput.focus();
+    } else {
+        manualInput.style.display = 'none';
+        manualInput.value = '';
+        select.style.display = 'block';
+    }
+    if (window.updatePaperEmail) window.updatePaperEmail();
+};
+
+window.updatePaperEmail = function() {
+    const idInput = document.getElementById('paper_email_id');
+    const select = document.getElementById('paper_email_domain_select');
+    const manualInput = document.getElementById('paper_email_domain_manual');
+    const hidden = document.getElementById('paper_email');
+    
+    if (!hidden || !idInput || !select || !manualInput) return;
+    
+    let domain = select.value === 'direct' ? manualInput.value : select.value;
+    
+    if (idInput.value && domain) {
+        hidden.value = `${idInput.value}@${domain}`;
+    } else {
+        hidden.value = '';
+    }
+};
 // Sidebar Toggle Logic with localStorage persistence
 window.toggleNavSub = function (el) {
     const isAlreadyActive = el.classList.contains('active');
