@@ -1055,7 +1055,12 @@ async function performRegistration(data, formEl) {
                 alert("등록되었습니다.");
                 window.location.href = 'index.html';
             }
+            const paperDate = formEl.querySelector('input[name="paper_date"]')?.value;
             formEl.reset();
+            if (paperDate) {
+                const dateInput = formEl.querySelector('input[name="paper_date"]');
+                if (dateInput) dateInput.value = paperDate;
+            }
         } else {
             alert("등록 실패");
         }
@@ -1967,9 +1972,21 @@ function renderMembers() {
             displayMembers = displayMembers.filter(m => m.course && m.course.includes(currentFilter));
         }
 
-        // 3. Filter by Search Term
+        // 3. Filter by Unified Search Term
         if (window.memberSearchTerm) {
-            displayMembers = displayMembers.filter(m => (m.name || '').toLowerCase().includes(window.memberSearchTerm));
+            const term = window.memberSearchTerm.toLowerCase();
+            displayMembers = displayMembers.filter(m => {
+                const searchString = [
+                    m.name || '',
+                    m.course || '',
+                    m.phone || '',
+                    m.guardianPhone || '',
+                    m.studentType || '',
+                    m.gender || '',
+                    m.paper_date || ''
+                ].join(' ').toLowerCase();
+                return searchString.includes(term);
+            });
         }
 
         if (displayMembers.length === 0) {
