@@ -265,7 +265,7 @@ async function analyzeImage(base64Data, fileName, imgUrl) {
             break;
         }
 
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`;
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
         
         try {
             const response = await fetch(url, {
