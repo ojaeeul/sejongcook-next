@@ -1106,11 +1106,11 @@ window.toggleRrnBirth = function(forceShow = null) {
     if (toShow === 'birth') {
         rrnContainer.style.display = 'none';
         birthContainer.style.display = 'flex';
-        label.innerText = '생년월일 (클릭)';
+        label.innerText = '생년월일';
     } else {
         rrnContainer.style.display = 'flex';
         birthContainer.style.display = 'none';
-        label.innerText = '주민등록번호 (클릭)';
+        label.innerText = '주민등록번호';
     }
 };
 
