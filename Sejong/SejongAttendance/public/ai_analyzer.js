@@ -75,13 +75,15 @@ async function handleFiles(files) {
     totalFiles += validFiles.length;
     updateProgress();
 
+    const promises = [];
     for (let file of validFiles) {
         if (file.type === 'application/pdf') {
-            await processPDF(file);
+            promises.push(processPDF(file));
         } else {
-            await processImage(file);
+            promises.push(processImage(file));
         }
     }
+    await Promise.all(promises);
 }
 
 function updateProgress() {
@@ -143,8 +145,8 @@ async function processImage(file) {
         reader.onload = (e) => {
             const img = new Image();
             img.onload = async () => {
-                // Resize image to max 900px to speed up upload drastically (Fast Mode)
-                const maxSize = 900;
+                // Resize image to max 750px to speed up upload drastically (Ultra Fast Mode)
+                const maxSize = 750;
                 let width = img.width;
                 let height = img.height;
                 
@@ -164,7 +166,7 @@ async function processImage(file) {
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, width, height);
                 
-                const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.5);
                 const base64Data = dataUrl.split(',')[1];
                 
                 try {
