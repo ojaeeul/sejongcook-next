@@ -646,18 +646,28 @@ function openEditModal(memberId) {
         editForm.phone.value = member.phone || '';
         editForm.phone_guardian.value = member.phone_guardian || '';
         // editForm.course.value = member.course || ''; // Removed single input
-        // Parse Start Date (20YY-MM-DD)
+        // Parse Start Date (YYYY-MM-DD)
         if (member.start_date) {
             const parts = member.start_date.split('-');
             if (parts.length === 3) {
-                editForm.start_yy.value = parts[0].length === 4 ? parts[0].slice(2) : parts[0];
-                editForm.start_mm.value = parts[1];
-                editForm.start_dd.value = parts[2];
+                const syyEl = document.getElementById('start_yy');
+                const smmEl = document.getElementById('start_mm');
+                const sddEl = document.getElementById('start_dd');
+                if (syyEl && smmEl && sddEl) {
+                    syyEl.value = parts[0].length === 2 ? '20' + parts[0] : parts[0];
+                    smmEl.value = parts[1];
+                    sddEl.value = parts[2];
+                }
+                if (editForm.start_date) editForm.start_date.value = member.start_date;
             }
         } else {
-            editForm.start_yy.value = '';
-            editForm.start_mm.value = '';
-            editForm.start_dd.value = '';
+            const syyEl = document.getElementById('start_yy');
+            const smmEl = document.getElementById('start_mm');
+            const sddEl = document.getElementById('start_dd');
+            if (syyEl) syyEl.value = '';
+            if (smmEl) smmEl.value = '';
+            if (sddEl) sddEl.value = '';
+            if (editForm.start_date) editForm.start_date.value = '';
         }
 
         // Handle Multiple Courses
@@ -764,9 +774,10 @@ async function handleEditSubmit(e) {
     const mm = data.start_mm || '';
     const dd = data.start_dd || '';
     if (yy && mm && dd) {
-        data.start_date = `20${yy}-${mm}-${dd}`;
+        let fullYear = yy.length === 2 ? `20${yy}` : yy;
+        data.start_date = `${fullYear}-${mm}-${dd}`;
     } else {
-        data.start_date = '';
+        if (!data.start_date) data.start_date = '';
     }
     delete data.start_yy;
     delete data.start_mm;
@@ -1154,37 +1165,68 @@ window.renderRrnDisplay = function(el) {
     }
 };
 
-window.initBirthSelects = function() {
-    const yy = document.getElementById('birth_yy');
-    const mm = document.getElementById('birth_mm');
-    const dd = document.getElementById('birth_dd');
-    if (!yy || !mm || !dd) return;
+window.initDateSelects = function() {
+    const currentYear = new Date().getFullYear();
     
-    if (yy.options.length <= 1) {
-        const currentYear = new Date().getFullYear();
+    // 생년월일
+    const byy = document.getElementById('birth_yy');
+    const bmm = document.getElementById('birth_mm');
+    const bdd = document.getElementById('birth_dd');
+    if (byy && byy.options.length <= 1) {
         for (let i = currentYear; i >= 1930; i--) {
             let opt = document.createElement('option');
             opt.value = i;
             opt.text = i + '년';
-            yy.appendChild(opt);
+            byy.appendChild(opt);
         }
     }
-    if (mm.options.length <= 1) {
+    if (bmm && bmm.options.length <= 1) {
         for (let i = 1; i <= 12; i++) {
             let opt = document.createElement('option');
             let val = i < 10 ? '0' + i : i;
             opt.value = val;
             opt.text = i + '월';
-            mm.appendChild(opt);
+            bmm.appendChild(opt);
         }
     }
-    if (dd.options.length <= 1) {
+    if (bdd && bdd.options.length <= 1) {
         for (let i = 1; i <= 31; i++) {
             let opt = document.createElement('option');
             let val = i < 10 ? '0' + i : i;
             opt.value = val;
             opt.text = i + '일';
-            dd.appendChild(opt);
+            bdd.appendChild(opt);
+        }
+    }
+
+    // 시작일
+    const syy = document.getElementById('start_yy');
+    const smm = document.getElementById('start_mm');
+    const sdd = document.getElementById('start_dd');
+    if (syy && syy.options.length <= 1) {
+        for (let i = currentYear + 2; i >= 2000; i--) {
+            let opt = document.createElement('option');
+            opt.value = i;
+            opt.text = i + '년';
+            syy.appendChild(opt);
+        }
+    }
+    if (smm && smm.options.length <= 1) {
+        for (let i = 1; i <= 12; i++) {
+            let opt = document.createElement('option');
+            let val = i < 10 ? '0' + i : i;
+            opt.value = val;
+            opt.text = i + '월';
+            smm.appendChild(opt);
+        }
+    }
+    if (sdd && sdd.options.length <= 1) {
+        for (let i = 1; i <= 31; i++) {
+            let opt = document.createElement('option');
+            let val = i < 10 ? '0' + i : i;
+            opt.value = val;
+            opt.text = i + '일';
+            sdd.appendChild(opt);
         }
     }
 };
@@ -1203,8 +1245,23 @@ window.updateBirthDate = function() {
     }
 };
 
+window.updateStartDate = function() {
+    const yy = document.getElementById('start_yy').value;
+    const mm = document.getElementById('start_mm').value;
+    const dd = document.getElementById('start_dd').value;
+    const hidden = document.getElementById('start_date');
+    if (hidden) {
+        if (yy && mm && dd) {
+            let fullYear = yy.length === 2 ? `20${yy}` : yy;
+            hidden.value = `${fullYear}-${mm}-${dd}`;
+        } else {
+            hidden.value = '';
+        }
+    }
+};
+
 document.addEventListener('DOMContentLoaded', () => {
-    window.initBirthSelects();
+    window.initDateSelects();
 });
 // Sidebar Toggle Logic with localStorage persistence
 window.toggleNavSub = function (el) {
