@@ -222,13 +222,13 @@ async function analyzeImage(base64Data, fileName, imgUrl) {
     
     let prompt = "";
     if (currentMode === 'phonebook') {
-        prompt = `이 이미지는 요리학원의 전화번호부입니다. 
-목록에서 이름과 전화번호를 추출해주세요. 
+        prompt = `이 이미지는 요리학원의 전화번호부입니다. (사진이 옆으로 누워있거나 90도 회전되어 있을 수 있으니 글씨 방향에 맞춰서 정확히 읽어주세요.)
+목록에서 이름과 전화번호를 추출해주세요. 전화번호 옆에 적힌 '母', '주', '본' 등 관계를 나타내는 글자가 있다면 괄호 안에 그대로 포함해주세요. (예: 010-1234-5678(母))
 반드시 다음 JSON 형식의 배열로 반환하세요:
 [
-  {"이름": "홍길동", "전화번호": "010-1234-5678"}
+  {"이름": "홍길동", "전화번호": "010-1234-5678(母)"}
 ]
-찾을 수 없으면 빈 배열 []을 반환하세요. JSON 코드 블록 없이 순수 JSON 텍스트만 출력하세요.`;
+이름이나 글씨를 절대 유추해서 획일화하지 말고, 적혀있는 그대로(예: 민지영, 민수정, 민원기, 민종훈, 문다빈, 문승희 등) 정확하게 판독하세요. 찾을 수 없으면 빈 배열 []을 반환하세요. JSON 코드 블록 없이 순수 JSON 텍스트만 출력하세요.`;
     } else {
         prompt = `이 이미지는 요리학원의 수강생 등록 원서입니다. 
 사용자가 직접 펜으로 적은 글씨와 펜으로 동그라미 친 부분을 완벽하게 인식해주세요.
@@ -262,7 +262,7 @@ async function analyzeImage(base64Data, fileName, imgUrl) {
             break;
         }
 
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${key}`;
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`;
         
         try {
             const response = await fetch(url, {
