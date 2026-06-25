@@ -27,6 +27,21 @@ window.syncSidebar = async function (forceData = null) {
             }
         }
 
+        // Inject AI Analyzer menu if it doesn't exist
+        const navCategories = Array.from(categories);
+        let sugamMenu = navCategories.find(c => c.textContent.trim() === '수강 관리');
+        if (sugamMenu) {
+            let aiMenu = navCategories.find(c => c.textContent.trim() === '스마트 분석');
+            if (!aiMenu) {
+                const aiHtml = `
+                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">스마트 분석</div>
+                <div class="nav-sub-menu show">
+                    <a href="ai_analyzer.html" class="nav-item">🤖 AI 스마트 원서 분석</a>
+                </div>`;
+                sugamMenu.insertAdjacentHTML('beforebegin', aiHtml);
+            }
+        }
+
         if (examMenu && examMenu.classList.contains('nav-sub-menu')) {
             let html = '';
             courses.forEach(course => {

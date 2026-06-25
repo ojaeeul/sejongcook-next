@@ -1,22 +1,15 @@
-import { createClient } from '@supabase/supabase-js';
-import dotenv from 'dotenv';
-dotenv.config({ path: '.env.local' });
+const { createClient } = require('@supabase/supabase-js');
+const fs = require('fs');
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const envContent = fs.readFileSync('.env.local', 'utf8');
+const urlMatch = envContent.match(/NEXT_PUBLIC_SUPABASE_URL=(.*)/);
+const keyMatch = envContent.match(/NEXT_PUBLIC_SUPABASE_ANON_KEY=(.*)/);
 
-const supabase = createClient(supabaseUrl, supabaseKey);
-
-async function check() {
-    const { data, error } = await supabase.from('board_posts').select('board_type');
-    if (error) {
-        console.error(error);
-        return;
-    }
-    const counts = {};
-    for (const row of data) {
-        counts[row.board_type] = (counts[row.board_type] || 0) + 1;
-    }
-    console.log("Supabase board_posts counts:", counts);
+if (urlMatch && keyMatch) {
+    const supabase = createClient(urlMatch[1].trim(), keyMatch[1].trim());
+    supabase.from('members').select('*').limit(1).then(res => {
+        console.log("Existing columns:", res.data ? Object.keys(res.data[0]) : "No data");
+    });
+} else {
+    console.log("No Supabase config found in .env.local");
 }
-check();
