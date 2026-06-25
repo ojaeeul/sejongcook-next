@@ -223,10 +223,13 @@ async function analyzeImage(base64Data, fileName, imgUrl) {
     let prompt = "";
     if (currentMode === 'phonebook') {
         prompt = `이 이미지는 요리학원의 전화번호부입니다. (사진이 옆으로 누워있거나 90도 회전되어 있을 수 있으니 글씨 방향에 맞춰서 정확히 읽어주세요.)
-목록에서 이름과 전화번호를 추출해주세요. 전화번호 옆에 적힌 '母', '주', '본' 등 관계를 나타내는 글자가 있다면 괄호 안에 그대로 포함해주세요. (예: 010-1234-5678(母))
+목록에서 이름과 전화번호를 추출해주세요.
+- 제일 처음 적힌 번호나 관계 표시가 없는 번호는 '본인전화번호'로 분류하세요.
+- 한문(母, 父)이나 한글(모, 부)로 표시된 번호는 '부모전화번호'로 분류하세요.
+- 한 사람에게 전화번호가 3개 이상 있다면, 본인 번호끼리 또는 부모 번호끼리 콤마(,)로 연결해서 모두 표시하세요. (이름은 중복해서 여러 번 적지 말고 1번만 적어주세요.)
 반드시 다음 JSON 형식의 배열로 반환하세요:
 [
-  {"이름": "홍길동", "전화번호": "010-1234-5678(母)"}
+  {"이름": "민수정", "본인전화번호": "010-1243-6763, 031-888-6763", "부모전화번호": "010-3243-9286"}
 ]
 이름이나 글씨를 절대 유추해서 획일화하지 말고, 적혀있는 그대로(예: 민지영, 민수정, 민원기, 민종훈, 문다빈, 문승희 등) 정확하게 판독하세요. 찾을 수 없으면 빈 배열 []을 반환하세요. JSON 코드 블록 없이 순수 JSON 텍스트만 출력하세요.`;
     } else {
@@ -430,9 +433,10 @@ function renderPhonebookResult(id, dataList) {
     
     dataList.forEach((item, index) => {
         html += `
-            <div style="display:flex; gap:10px; margin-bottom:10px; align-items:center;">
-                <input type="text" id="pb-name-${id}-${index}" value="${item.이름 || ''}" style="width:30%; background:transparent; border:1px solid #334155; color:#fff; padding:5px; border-radius:4px;">
-                <input type="text" id="pb-phone-${id}-${index}" value="${item.전화번호 || ''}" style="flex:1; background:transparent; border:1px solid #334155; color:#fff; padding:5px; border-radius:4px;">
+            <div style="display:flex; gap:10px; margin-bottom:10px; align-items:center; flex-wrap:wrap;">
+                <input type="text" id="pb-name-${id}-${index}" value="${item.이름 || ''}" placeholder="이름" style="width:25%; background:transparent; border:1px solid #334155; color:#fff; padding:5px; border-radius:4px;">
+                <input type="text" id="pb-phone-${id}-${index}" value="${item.본인전화번호 || item.전화번호 || ''}" placeholder="본인연락처" style="width:33%; background:transparent; border:1px solid #334155; color:#fff; padding:5px; border-radius:4px;">
+                <input type="text" id="pb-parent-${id}-${index}" value="${item.부모전화번호 || ''}" placeholder="부모연락처" style="width:33%; background:transparent; border:1px solid #334155; color:#fff; padding:5px; border-radius:4px;">
             </div>
         `;
     });
@@ -544,12 +548,14 @@ async function savePhonebook(id, count) {
         for (let i = 0; i < count; i++) {
             const name = document.getElementById(`pb-name-${id}-${i}`)?.value || '';
             const phone = document.getElementById(`pb-phone-${id}-${i}`)?.value || '';
+            const parentPhone = document.getElementById(`pb-parent-${id}-${i}`)?.value || '';
             
             if (name && !members.find(m => m.name === name && m.phone === phone)) {
                 newItems.push({
                     id: String(Date.now() + i), // Generate ID locally
                     name: name,
                     phone: phone,
+                    phone_guardian: parentPhone,
                     course: "전화번호부 업로드",
                     registeredDate: new Date().toISOString().split('T')[0]
                 });
