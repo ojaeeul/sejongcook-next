@@ -1076,10 +1076,15 @@ async function performRegistration(data, formEl) {
                 window.location.href = 'index.html';
             }
             const paperDate = formEl.querySelector('input[name="paper_date"]')?.value;
+            const startDate = formEl.querySelector('input[name="start_date"]')?.value;
             formEl.reset();
             if (paperDate) {
                 const dateInput = formEl.querySelector('input[name="paper_date"]');
                 if (dateInput) dateInput.value = paperDate;
+            }
+            if (startDate) {
+                const sDateInput = formEl.querySelector('input[name="start_date"]');
+                if (sDateInput) sDateInput.value = startDate;
             }
         } else {
             alert("등록 실패");
@@ -2003,7 +2008,11 @@ function renderMembers() {
                     m.guardianPhone || '',
                     m.studentType || '',
                     m.gender || '',
-                    m.paper_date || ''
+                    m.paper_date || '',
+                    m.school_level ? (m.school_level + ' ' + m.school_level.replace('학교', '학생')) : '',
+                    m.school || '',
+                    m.job || '',
+                    m.type === 'student' ? '학생 student' : (m.type === 'general' ? '일반 일반인 general' : (m.type || ''))
                 ].join(' ').toLowerCase();
                 return searchString.includes(term);
             });
