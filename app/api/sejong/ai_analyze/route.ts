@@ -17,18 +17,37 @@ export async function POST(request: Request) {
         // Use gemini-2.5-flash for speed and accuracy
         const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
         
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(body)
-        });
+        let response;
+        let retries = 3;
+        while (retries > 0) {
+            response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(body)
+            });
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Gemini API Error:', response.status, errorText);
-            return NextResponse.json({ error: `Google API Error: ${response.status}`, details: errorText }, { status: response.status });
+            if (response.ok) {
+                break;
+            }
+
+            if (response.status === 503 || response.status === 429) {
+                console.log(`Gemini API returned ${response.status}. Retrying... (${retries} left)`);
+                retries--;
+                if (retries > 0) {
+                    await new Promise(res => setTimeout(res, 1000));
+                    continue;
+                }
+            }
+            break;
+        }
+
+        if (!response || !response.ok) {
+            const errorText = await (response ? response.text() : 'Unknown error');
+            const status = response ? response.status : 500;
+            console.error('Gemini API Error:', status, errorText);
+            return NextResponse.json({ error: `Google API Error: ${status}`, details: errorText }, { status });
         }
 
         const data = await response.json();
