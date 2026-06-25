@@ -9,12 +9,12 @@
     <title>수강생 등록 - 세종요리제과학원 (김포/세종 요리 전문)</title>
     <meta name="description" content="세종요리제과학원 신규 수강생 등록 페이지입니다. 김포 및 세종 지역에서 요리사의 꿈을 시작하세요.">
     <meta name="keywords" content="세종요리, 김포요리, 세종요리학원, 김포요리학원, 요리학원 등록, 수강생 모집">
-    <link rel="stylesheet" href="style.css?v=20260626-36">
+    <link rel="stylesheet" href="style.css?v=20260626-37">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="script.js?v=20260626-36" defer></script>
-    <script src="questions_data.js?v=20260626-36" defer></script>
+    <script src="script.js?v=20260626-37" defer></script>
+    <script src="questions_data.js?v=20260626-37" defer></script>
     <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 </head>
 
@@ -295,18 +295,6 @@
                                 color: #94a3b8 !important;
                             }
                         </style>
-                        <div style="background: #1e293b; border-radius: 8px; padding: 15px; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 20px; border-left: 5px solid #3b82f6;">
-                            <div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 250px;">
-                                <span class="material-icons" style="color: #60a5fa;">event_available</span>
-                                <label style="color: #e2e8f0; font-weight: bold; font-size: 14px; white-space: nowrap;">시작일</label>
-                                <input type="date" name="start_date" style="flex: 1; background: #334155; border: 1px solid #475569; border-radius: 6px; padding: 10px; color: white; cursor: pointer; font-size: 14px; outline: none;">
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 250px;">
-                                <span class="material-icons" style="color: #60a5fa;">edit_calendar</span>
-                                <label style="color: #e2e8f0; font-weight: bold; font-size: 14px; white-space: nowrap;">등록일</label>
-                                <input type="date" name="paper_date" style="flex: 1; background: #334155; border: 1px solid #475569; border-radius: 6px; padding: 10px; color: white; cursor: pointer; font-size: 14px; outline: none;">
-                            </div>
-                        </div>
                         <div class="result-card">
                             <table class="dark-table">
                                 <tr>
@@ -442,6 +430,12 @@
                                         </button>
                                     </td>
                                 </tr>
+                                <tr>
+                                    <td class="th-dark">시작일</td>
+                                    <td colspan="5">
+                                        <input type="date" name="start_date" style="width: 100%; text-align: center; border: 1px solid #475569; border-radius: 4px; padding: 5px; background: transparent; color: white; cursor: pointer; font-size: 14px; box-sizing: border-box;">
+                                    </td>
+                                </tr>
 
                                 <tr>
                                     <td class="th-dark">비고</td>
@@ -511,8 +505,14 @@
                                     </tr>
                                     <tr>
                                         <td class="th-dark">결제금액</td>
-                                        <td colspan="5" style="text-align: left; padding-left: 10px; padding-right: 10px;">
+                                        <td colspan="2" style="text-align: left; padding-left: 10px; padding-right: 10px;">
                                             <div style="display: flex; align-items: center; height: 35px;">₩ <input type="text" name="paper_total" style="flex: 1; margin-left: 5px;"></div>
+                                        </td>
+                                        <td colspan="3" style="text-align: center;">
+                                            <div style="display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
+                                                <span style="color: #94a3b8; font-size: 14px;">등록일</span>
+                                                <input type="date" name="paper_date" style="text-align: center; border: 1px solid #475569; border-radius: 4px; padding: 2px 10px; background: transparent; color: white; cursor: pointer;">
+                                            </div>
                                         </td>
                                     </tr>
                                 </table>
@@ -577,7 +577,7 @@
         </div>
     </div>
 
-    <script src="sidebar_sync.js?v=20260626-36"></script>
+    <script src="sidebar_sync.js?v=20260626-37"></script>
 </body>
 
 </html>
