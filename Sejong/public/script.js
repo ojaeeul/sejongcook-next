@@ -604,6 +604,21 @@ function openEditModal(memberId) {
         editForm.registeredDate.value = member.registeredDate || '';
         editForm.name.value = member.name || '';
         editForm.resident_num.value = member.resident_num || '';
+        if (editForm.birth_date) editForm.birth_date.value = member.birth_date || '';
+        
+        const rrnDisplay = document.getElementById('resident_num_display');
+        if (rrnDisplay) {
+            rrnDisplay.dataset.focused = 'false';
+            if (window.renderRrnDisplay) window.renderRrnDisplay(rrnDisplay);
+        }
+        
+        if (window.toggleRrnBirth) {
+            if (member.birth_date && !member.resident_num) {
+                window.toggleRrnBirth('birth');
+            } else {
+                window.toggleRrnBirth('rrn');
+            }
+        }
         editForm.address.value = member.address || '';
         editForm.address_detail.value = member.address_detail || '';
         editForm.phone.value = member.phone || '';
@@ -1050,6 +1065,69 @@ window.toggleJobOther = function () {
         } else {
             jobOtherInput.classList.add('hidden');
             jobOtherInput.value = ''; // clear when hidden
+        }
+    }
+};
+
+window.toggleRrnBirth = function(forceShow = null) {
+    const rrnContainer = document.getElementById('rrn_container');
+    const birthContainer = document.getElementById('birth_container');
+    const label = document.getElementById('rrn_birth_label');
+    
+    if (!rrnContainer || !birthContainer || !label) return;
+    
+    let toShow = forceShow;
+    if (!toShow) {
+        toShow = (rrnContainer.style.display !== 'none') ? 'birth' : 'rrn';
+    }
+    
+    if (toShow === 'birth') {
+        rrnContainer.style.display = 'none';
+        birthContainer.style.display = 'flex';
+        label.innerText = '생년월일 (클릭)';
+    } else {
+        rrnContainer.style.display = 'flex';
+        birthContainer.style.display = 'none';
+        label.innerText = '주민등록번호 (클릭)';
+    }
+};
+
+window.handleRrnInput = function(el) {
+    let val = el.value.replace(/[^0-9]/g, '');
+    if (val.length > 13) val = val.substring(0, 13);
+    
+    const hiddenInput = document.getElementById('resident_num');
+    if (hiddenInput) {
+        if (val.length >= 7) {
+            hiddenInput.value = val.substring(0, 6) + '-' + val.substring(6);
+        } else {
+            hiddenInput.value = val;
+        }
+    }
+    
+    window.renderRrnDisplay(el);
+};
+
+window.renderRrnDisplay = function(el) {
+    const hiddenInput = document.getElementById('resident_num');
+    if (!hiddenInput) return;
+    
+    let val = hiddenInput.value.replace(/[^0-9]/g, '');
+    
+    if (el.dataset.focused === 'true') {
+        if (val.length >= 7) {
+            el.value = val.substring(0, 6) + '-' + val.substring(6);
+        } else {
+            el.value = val;
+        }
+    } else {
+        if (val.length >= 7) {
+            let visible = val.substring(0, 6);
+            let hidden = val.substring(6);
+            let masked = hidden.substring(0, 1) + 'x'.repeat(Math.max(0, hidden.length - 1));
+            el.value = visible + '-' + masked;
+        } else {
+            el.value = val;
         }
     }
 };
