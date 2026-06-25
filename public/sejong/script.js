@@ -2009,6 +2009,7 @@ function renderMembers() {
                     m.studentType || '',
                     m.gender || '',
                     m.paper_date || '',
+                    m.start_date || '',
                     m.school_level ? (m.school_level + ' ' + m.school_level.replace('학교', '학생')) : '',
                     m.school || '',
                     m.job || '',
@@ -2501,5 +2502,109 @@ window.initCourseSync = function() {
             window.syncDynamicListToCheckboxes();
         });
         observer.observe(container, { childList: true });
+    }
+};
+
+// --- 3D Swiper Logic ---
+window.closeSwiperModal = function() {
+    const modal = document.getElementById('swiperModal');
+    if (modal) {
+        modal.style.display = 'none';
+        modal.classList.add('hidden');
+    }
+    if (window.mySwiperInstance) {
+        window.mySwiperInstance.destroy(true, true);
+        window.mySwiperInstance = null;
+    }
+};
+
+window.open3DSliderForDate = async function(dateStr) {
+    if (!dateStr) {
+        alert("날짜를 먼저 선택해 주세요.");
+        return;
+    }
+    
+    const wrapper = document.getElementById('swiperWrapperContent');
+    const modal = document.getElementById('swiperModal');
+    const title = document.getElementById('swiperModalTitle');
+    
+    if (!wrapper || !modal) return;
+    
+    try {
+        // Fetch all members to ensure we have fresh data
+        const res = await fetch(`/api/sejong/members?t=${Date.now()}`);
+        const allMembers = await res.json();
+        
+        // Filter by paper_date or start_date matching dateStr
+        const filtered = allMembers.filter(m => (m.paper_date === dateStr) || (m.start_date === dateStr));
+        
+        if (filtered.length === 0) {
+            alert(`${dateStr} 에 등록된 수강생이 없습니다.`);
+            return;
+        }
+        
+        // Populate slides
+        wrapper.innerHTML = '';
+        filtered.forEach(m => {
+            const slide = document.createElement('div');
+            slide.className = 'swiper-slide';
+            slide.innerHTML = `
+                <div style="text-align:center; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:15px; margin-bottom:15px;">
+                    <div style="font-size:1.5rem; font-weight:900; color:#60a5fa;">${m.name}</div>
+                    <div style="font-size:0.9rem; color:#94a3b8; margin-top:5px;">${m.phone || '전화번호 없음'}</div>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:8px; font-size:1rem;">
+                    <div style="display:flex; justify-content:space-between;">
+                        <span style="color:#cbd5e1;">등록일:</span>
+                        <span style="font-weight:700;">${m.paper_date || m.start_date || '-'}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between;">
+                        <span style="color:#cbd5e1;">수강과정:</span>
+                        <span style="font-weight:700; color:#fbbf24;">${m.course || '-'}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between;">
+                        <span style="color:#cbd5e1;">결제금액:</span>
+                        <span style="font-weight:700;">${m.amount ? parseInt(m.amount).toLocaleString() + '원' : '-'}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between;">
+                        <span style="color:#cbd5e1;">수강생 구분:</span>
+                        <span style="font-weight:700;">${m.type || '-'}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between;">
+                        <span style="color:#cbd5e1;">성별:</span>
+                        <span style="font-weight:700;">${m.gender || '-'}</span>
+                    </div>
+                </div>
+            `;
+            wrapper.appendChild(slide);
+        });
+        
+        title.textContent = `${dateStr} 등록자 (${filtered.length}명)`;
+        
+        // Show modal
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+        
+        // Initialize Swiper with 3D Coverflow
+        window.mySwiperInstance = new Swiper('.mySwiper', {
+            effect: 'coverflow',
+            grabCursor: true,
+            centeredSlides: true,
+            slidesPerView: 'auto',
+            coverflowEffect: {
+                rotate: 50,
+                stretch: 0,
+                depth: 100,
+                modifier: 1,
+                slideShadows: true,
+            },
+            pagination: {
+                el: '.swiper-pagination',
+            },
+        });
+        
+    } catch (err) {
+        console.error(err);
+        alert("데이터를 불러오는 중 오류가 발생했습니다.");
     }
 };
