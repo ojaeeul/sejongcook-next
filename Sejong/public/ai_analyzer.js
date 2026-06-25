@@ -1,16 +1,7 @@
 const API_KEYS = [
-    "AIzaSyAbithanLsxpTCThUf6yd_lAiw3fCLkN54",
-    "AIzaSyBn8v_hFyHNQjhbrEBjf7G3iodTY7s5zCI",
-    "AIzaSyBP3YmvRI1XVg6Y4rMTtwLLXMu6mC8AfX8",
-    "AIzaSyDglNiKFOHCXVkAevVB8BVr4oKfDieU5-g",
-    "AIzaSyD8MzvUbpcZOWtMk_vQD4Z3P1ocXJQ-pfU",
-    "AIzaSyBRSlx0rJxcYb60Rs1Wwjz-GY-8bxXSyZk",
-    "AIzaSyAPLn64NWRvp5zriu-bgYLBIlkODaPakWE",
-    "AIzaSyCUi7c-ZLpN_H-wNQxglQMcCj12Ojsv0NI",
-    "AIzaSyDMhvfs3HHb_mI0Cew5dOJFxj7r7vYjxEM"
+    // Keys are now securely managed on the server side
 ];
 
-let keyIdx = 0;
 let currentMode = 'student'; // 'student' or 'phonebook'
 let processingCount = 0;
 let totalFiles = 0;
@@ -254,73 +245,54 @@ async function analyzeImage(base64Data, fileName, imgUrl) {
 }`;
     }
 
+    // Call the local Next.js proxy instead of Google's endpoint directly
     let result = null;
-    let maxRetries = 30;
-    let lastError = "";
-    
-    for (let attempt = 0; attempt < maxRetries; attempt++) {
-        const key = getNextKey();
-        if (!key) {
-            lastError = 'API 키가 모두 소진되었습니다.';
-            break;
-        }
+    let lastError = null;
 
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
-        
-        try {
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{
-                        parts: [
-                            { text: prompt },
-                            { inlineData: { mimeType: "image/jpeg", data: base64Data } }
-                        ]
-                    }],
-                    generationConfig: { temperature: 0.1, responseMimeType: "application/json" }
-                })
-            });
-
-            if (response.status === 200) {
-                const data = await response.json();
-                if (data.candidates && data.candidates.length > 0) {
-                    let text = data.candidates[0].content.parts[0].text;
-                    text = text.replace(/```json/g, '').replace(/```/g, '').trim();
-                    try {
-                        result = JSON.parse(text);
-                        break;
-                    } catch (parseErr) {
-                        console.error('JSON Parse Error:', parseErr, 'Text:', text);
-                        lastError = '결과 데이터 파싱 실패';
-                        await new Promise(r => setTimeout(r, 1000));
-                        continue;
-                    }
-                } else {
-                    lastError = 'AI가 결과를 반환하지 않았습니다.';
-                    await new Promise(r => setTimeout(r, 1000));
-                    continue;
+    try {
+        const response = await fetch('/api/sejong/ai_analyze', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                contents: [{
+                    parts: [
+                        { text: prompt },
+                        { inlineData: { mimeType: 'image/jpeg', data: base64Data } }
+                    ]
+                }],
+                generationConfig: {
+                    temperature: 0.1,
+                    responseMimeType: "application/json"
                 }
-            } else if (response.status === 429) {
-                console.warn('Rate limit exceeded (429), retrying...');
-                lastError = '요청이 너무 많습니다 (429). 재시도 중...';
-                await new Promise(r => setTimeout(r, 3000));
-                continue;
-            } else if ([400, 403, 404].includes(response.status)) {
-                console.warn(`API Error ${response.status} with key... removing key.`);
-                lastError = `API 인증/오류 (${response.status})`;
-                API_KEYS.splice(API_KEYS.indexOf(key), 1);
-                continue;
+            })
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            if (data.candidates && data.candidates.length > 0) {
+                let text = data.candidates[0].content.parts[0].text;
+                text = text.replace(/```json/g, '').replace(/```/g, '').trim();
+                try {
+                    result = JSON.parse(text);
+                } catch (parseErr) {
+                    console.error('JSON Parse Error:', parseErr, 'Text:', text);
+                    lastError = '결과 데이터 파싱 실패';
+                }
             } else {
-                console.warn(`Unexpected status ${response.status}`);
-                lastError = `서버 오류 (${response.status})`;
-                await new Promise(r => setTimeout(r, 1000));
+                lastError = 'AI가 결과를 반환하지 않았습니다.';
             }
-        } catch (e) {
-            console.error('Fetch error:', e);
-            lastError = `네트워크 오류: ${e.message}`;
-            await new Promise(r => setTimeout(r, 1000));
+        } else {
+            const errData = await response.json().catch(() => ({}));
+            lastError = errData.error || `서버 오류 (${response.status})`;
+            if (response.status === 500 && errData.error && errData.error.includes("API Key not configured")) {
+                lastError = "서버에 API 키가 설정되지 않았습니다.";
+            }
         }
+    } catch (e) {
+        console.error('Fetch error:', e);
+        lastError = `네트워크 오류: ${e.message}`;
     }
 
     processingCount++;
