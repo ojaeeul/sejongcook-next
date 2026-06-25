@@ -6,6 +6,13 @@ function getFetchUrl(endpoint, isPost = false) {
 }
 
 const API_BASE = '/api/sejong';
+const ITEMS_PER_PAGE = 30;
+
+// Initialize search term from URL if present
+const initialSearch = new URLSearchParams(window.location.search).get('search');
+window.memberSearchTerm = initialSearch || '';
+
+let searchTimeout;
 
 // 공통으로 사용될 전역 변수들
 window.global_course_options = [];
@@ -249,6 +256,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Search Input Listener
     const searchInput = document.getElementById('memberSearchInput');
     if (searchInput) {
+        if (window.memberSearchTerm) {
+            searchInput.value = window.memberSearchTerm;
+        }
         searchInput.addEventListener('input', (e) => {
             window.memberSearchTerm = e.target.value.trim().toLowerCase();
             renderMembers();
@@ -951,6 +961,16 @@ async function handleRegister(e) {
     e.preventDefault();
     const fd = new FormData(e.target);
     const data = Object.fromEntries(fd.entries());
+
+    if (data.start_date) {
+        const [yy, mm, dd] = data.start_date.split('-');
+        if (yy && mm && dd) {
+            data.start_yy = yy.slice(-2);
+            data.start_mm = mm;
+            data.start_dd = dd;
+        }
+        delete data.start_date;
+    }
 
     // Unified Course + Time Handling
     const courseUnits = document.querySelectorAll('#register_course_container .course-input-row');
