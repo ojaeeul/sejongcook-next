@@ -1011,14 +1011,17 @@ function formatPhoneNumber(val) {
 // Global scope for onclick
 window.toggleMemberType = function () {
     const type = document.getElementById('type').value;
-    const studentFields = document.getElementById('student-fields');
-    const generalFields = document.getElementById('general-fields');
+    // Try both old IDs and new row IDs to maintain compatibility if used elsewhere
+    const studentFields = document.getElementById('student-fields-row') || document.getElementById('student-fields');
+    const generalFields = document.getElementById('general-fields-row') || document.getElementById('general-fields');
 
     console.log('toggleMemberType called. Selected:', type);
 
+    const displayType = studentFields && studentFields.tagName === 'TR' ? 'table-row' : 'block';
+
     if (type === 'student') {
         if (studentFields) {
-            studentFields.style.display = 'block'; // Or flex if preferred
+            studentFields.style.display = displayType;
             studentFields.classList.remove('hidden');
         }
         if (generalFields) {
@@ -1031,7 +1034,7 @@ window.toggleMemberType = function () {
             studentFields.classList.add('hidden');
         }
         if (generalFields) {
-            generalFields.style.display = 'block';
+            generalFields.style.display = displayType;
             generalFields.classList.remove('hidden');
         }
     }
