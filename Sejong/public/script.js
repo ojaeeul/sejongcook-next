@@ -2216,7 +2216,35 @@ const TIME_CHECKBOX_MAP = {
     'time_7': '7시'
 };
 
+window.mergeBakeBreadIfNeeded = function() {
+    const container = document.getElementById('register_course_container');
+    if (!container) return;
+    const rows = Array.from(container.querySelectorAll('.course-input-row'));
+    let bakeRow = null;
+    let breadRow = null;
+    
+    rows.forEach(row => {
+        const nameInput = row.querySelector('.course-edit-name');
+        if (nameInput) {
+            const val = nameInput.value.trim();
+            if (val === '제과기능사') bakeRow = row;
+            if (val === '제빵기능사') breadRow = row;
+        }
+    });
+    
+    if (bakeRow && breadRow && bakeRow !== breadRow) {
+        const bakeTime = bakeRow.querySelector('.course-edit-time') ? bakeRow.querySelector('.course-edit-time').value.trim() : '';
+        const breadTime = breadRow.querySelector('.course-edit-time') ? breadRow.querySelector('.course-edit-time').value.trim() : '';
+        
+        if (bakeTime === breadTime) {
+            bakeRow.querySelector('.course-edit-name').value = '제과제빵기능사';
+            breadRow.remove();
+        }
+    }
+};
+
 window.syncDynamicListToCheckboxes = function() {
+    window.mergeBakeBreadIfNeeded();
     const container = document.getElementById('register_course_container');
     if (!container) return;
     
@@ -2291,10 +2319,19 @@ window.syncCheckboxesToDynamicList = function(changedCbName, isChecked, isTime) 
                 const timeInput = row.querySelector('.course-edit-time');
                 const baseName = courseName.replace('기능사', '');
                 if (nameInput && nameInput.value.trim().includes(baseName)) {
-                    if (timeInput && timeInput.value.trim() !== '') {
-                        nameInput.value = '';
+                    const currentVal = nameInput.value.trim();
+                    if (currentVal.includes('제과제빵')) {
+                        if (baseName === '제과') {
+                            nameInput.value = '제빵기능사';
+                        } else if (baseName === '제빵') {
+                            nameInput.value = '제과기능사';
+                        }
                     } else {
-                        row.remove();
+                        if (timeInput && timeInput.value.trim() !== '') {
+                            nameInput.value = '';
+                        } else {
+                            row.remove();
+                        }
                     }
                 }
             });
@@ -2302,6 +2339,7 @@ window.syncCheckboxesToDynamicList = function(changedCbName, isChecked, isTime) 
                 addRegisterCourseInput();
             }
         }
+        window.mergeBakeBreadIfNeeded();
     } else {
         const timeName = TIME_CHECKBOX_MAP[changedCbName];
         if (isChecked) {
