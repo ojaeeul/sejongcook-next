@@ -9,12 +9,12 @@
     <title>수강생 등록 - 세종요리제과학원 (김포/세종 요리 전문)</title>
     <meta name="description" content="세종요리제과학원 신규 수강생 등록 페이지입니다. 김포 및 세종 지역에서 요리사의 꿈을 시작하세요.">
     <meta name="keywords" content="세종요리, 김포요리, 세종요리학원, 김포요리학원, 요리학원 등록, 수강생 모집">
-    <link rel="stylesheet" href="style.css?v=20260626-14">
+    <link rel="stylesheet" href="style.css?v=20260626-15">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="script.js?v=20260626-14" defer></script>
-    <script src="questions_data.js?v=20260626-14" defer></script>
+    <script src="script.js?v=20260626-15" defer></script>
+    <script src="questions_data.js?v=20260626-15" defer></script>
     <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 </head>
 
@@ -415,21 +415,29 @@
                                     </tr>
                                     <tr>
                                         <td class="th-dark">수강료</td>
-                                        <td colspan="2" style="text-align: left; padding-left: 10px; display: flex; align-items: center; border: none; height: 35px;">₩ <input type="text" name="paper_tuition" style="flex: 1; margin-left: 5px;"></td>
+                                        <td colspan="2" style="text-align: left; padding-left: 10px; padding-right: 10px;">
+                                            <div style="display: flex; align-items: center; height: 35px;">₩ <input type="text" name="paper_tuition" style="flex: 1; margin-left: 5px;"></div>
+                                        </td>
                                         <td class="th-dark" rowspan="2">락카</td>
-                                        <td rowspan="2" colspan="2"><input type="text" name="paper_locker" style="text-align: center;"></td>
+                                        <td rowspan="2" colspan="2"><input type="text" name="paper_locker" style="text-align: center; height: 100%;"></td>
                                     </tr>
                                     <tr>
                                         <td class="th-dark">도구비</td>
-                                        <td style="text-align: left; padding-left: 10px; display: flex; align-items: center; border-right: none; height: 35px;">₩ <input type="text" name="paper_tool_fee" style="width: 80%; margin-left: 5px;"></td>
-                                        <td style="border-left: none; text-align: center;">
-                                            <label style="margin-right: 5px; cursor: pointer;"><input type="checkbox" name="paper_book_prac"> 실기책</label>
-                                            <label style="cursor: pointer;"><input type="checkbox" name="paper_book_theory"> 필기책</label>
+                                        <td colspan="2" style="text-align: left; padding-left: 10px; padding-right: 0;">
+                                            <div style="display: flex; align-items: center; justify-content: space-between; height: 35px;">
+                                                <div style="display: flex; align-items: center; flex: 1;">₩ <input type="text" name="paper_tool_fee" style="flex: 1; margin-left: 5px;"></div>
+                                                <div style="display: flex; align-items: center; gap: 10px; padding-left: 15px; padding-right: 15px; border-left: 1px solid #334155; height: 100%;">
+                                                    <label style="cursor: pointer; display: flex; align-items: center; gap: 4px;"><input type="checkbox" name="paper_book_prac"> 실기책</label>
+                                                    <label style="cursor: pointer; display: flex; align-items: center; gap: 4px;"><input type="checkbox" name="paper_book_theory"> 필기책</label>
+                                                </div>
+                                            </div>
                                         </td>
                                     </tr>
                                     <tr>
                                         <td class="th-dark">결제금액</td>
-                                        <td colspan="2" style="text-align: left; padding-left: 10px; display: flex; align-items: center; border: none; height: 35px;">₩ <input type="text" name="paper_total" style="flex: 1; margin-left: 5px;"></td>
+                                        <td colspan="2" style="text-align: left; padding-left: 10px; padding-right: 10px;">
+                                            <div style="display: flex; align-items: center; height: 35px;">₩ <input type="text" name="paper_total" style="flex: 1; margin-left: 5px;"></div>
+                                        </td>
                                         <td colspan="3" style="text-align: center;">
                                             202 <input type="text" name="paper_year" style="width:30px; text-align: center; border-bottom: 1px solid #475569;"> 년 
                                             <input type="text" name="paper_month" style="width:30px; text-align: center; border-bottom: 1px solid #475569;"> 월 
@@ -498,7 +506,7 @@
         </div>
     </div>
 
-    <script src="sidebar_sync.js?v=20260626-14"></script>
+    <script src="sidebar_sync.js?v=20260626-15"></script>
 </body>
 
 </html>
