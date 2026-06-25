@@ -1039,6 +1039,20 @@ window.toggleMemberType = function () {
         }
     }
 };
+
+window.toggleJobOther = function () {
+    const jobSelect = document.getElementById('job');
+    const jobOtherInput = document.getElementById('job_other');
+    if (jobSelect && jobOtherInput) {
+        if (jobSelect.value === '기타') {
+            jobOtherInput.classList.remove('hidden');
+            jobOtherInput.focus();
+        } else {
+            jobOtherInput.classList.add('hidden');
+            jobOtherInput.value = ''; // clear when hidden
+        }
+    }
+};
 // Sidebar Toggle Logic with localStorage persistence
 window.toggleNavSub = function (el) {
     const isAlreadyActive = el.classList.contains('active');
