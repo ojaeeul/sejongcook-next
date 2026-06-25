@@ -145,8 +145,8 @@ async function processImage(file) {
         reader.onload = (e) => {
             const img = new Image();
             img.onload = async () => {
-                // Resize image to max 750px to speed up upload drastically (Ultra Fast Mode)
-                const maxSize = 750;
+                // Resize image to max 600px for EXTREME upload speed
+                const maxSize = 600;
                 let width = img.width;
                 let height = img.height;
                 
@@ -166,7 +166,7 @@ async function processImage(file) {
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, width, height);
                 
-                const dataUrl = canvas.toDataURL('image/jpeg', 0.5);
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.4);
                 const base64Data = dataUrl.split(',')[1];
                 
                 try {
