@@ -255,7 +255,10 @@ function renderPage() {
                     
                     <!-- Left Column: Name & Reg Date -->
                     <div style="width: 90px; display: flex; flex-direction: column; justify-content: center; border-right: 1px solid #e2e8f0; padding: 0 10px; flex-shrink: 0; height: 100%;">
-                        <span class="member-name" style="font-size: 0.8rem; line-height: 1;">${m.name}</span>
+                        <div style="display: flex; align-items: center; gap: 2px;">
+                            <span onclick="moveToTrashPhonebook('${m.id}')" style="cursor: pointer; color: #ef4444; display: flex; align-items: center;" title="휴지통으로 이동"><i class="material-icons" style="font-size: 0.8rem;">delete</i></span>
+                            <span class="member-name" style="font-size: 0.8rem; line-height: 1;">${m.name}</span>
+                        </div>
                         <span class="member-reg-date" style="margin-top: 2px; font-size: 0.6rem; line-height: 1;">${regDateText}</span>
                     </div>
                     
@@ -417,3 +420,20 @@ function updatePaginationUI() {
         if (controls) controls.style.display = 'none';
     }
 }
+
+window.moveToTrashPhonebook = async function(memberId) {
+    if(!confirm('정말 이 수강생을 휴지통으로 이동하시겠습니까? (이동 시 모든 화면에서 숨김 처리됩니다)')) return;
+    try {
+        const m = members.find(m => String(m.id) === String(memberId));
+        if (m) {
+            m.status = 'trash';
+            await fetch(getFetchUrl('members', true), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(m)
+            });
+            // Update UI by re-fetching
+            fetchMembers();
+        }
+    } catch(e) { console.error(e); }
+};

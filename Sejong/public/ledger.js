@@ -118,6 +118,43 @@ window.moveToTrash = async function(memberId) {
     } catch(e) { console.error(e); }
 };
 
+window.handleTrashAction = async function(memberId, action) {
+    if (!action) return;
+    
+    if (action === 'delete') {
+        if (!confirm('정말 이 수강생을 데이터베이스에서 영구 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) return;
+        try {
+            const url = getFetchUrl('members').includes('?') 
+                ? getFetchUrl('members') + '&id=' + memberId 
+                : getFetchUrl('members') + '?id=' + memberId;
+            await fetch(url, { method: 'DELETE' });
+            membersData = membersData.filter(md => String(md.id) !== String(memberId));
+            renderLedger();
+        } catch(e) { console.error(e); }
+    } else {
+        const statusMap = {
+            'restore': 'active',
+            'completed': 'completed'
+        };
+        const newStatus = statusMap[action];
+        if (newStatus) {
+            try {
+                const m = membersData.find(m => String(m.id) === String(memberId));
+                if (m) {
+                    m.status = newStatus;
+                    await fetch(getFetchUrl('members', true), {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(m)
+                    });
+                    membersData = membersData.filter(md => String(md.id) !== String(memberId));
+                    renderLedger();
+                }
+            } catch(e) { console.error(e); }
+        }
+    }
+};
+
 let currentYear = parseInt(localStorage.getItem('sejong_ledger_currentYear')) || new Date().getFullYear();
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -683,7 +720,15 @@ function renderTable(container, title, members, id) {
             <td style="text-align: center; font-weight: 700; border-right: 1.5px solid #0f172a;">${idx + 1}</td>
             <td style="padding: 6px 4px; border-right: 1.5px solid #0f172a; width: 105px; max-width: 105px; overflow: hidden;">
                 <div style="display: flex; align-items: center; gap: 2px;">
-                    <span onclick="moveToTrash('${m.id}')" style="cursor: pointer; color: #ef4444; font-size: 0.8rem; display: flex; align-items: center;" title="휴지통으로 이동"><span class="material-icons" style="font-size: 0.8rem;">delete</span></span>
+                    ${window.currentFilter === 'trash' ? 
+                       `<select onchange="handleTrashAction('${m.id}', this.value); this.value='';" style="padding:1px; font-size:0.6rem; border:1px solid #cbd5e1; border-radius:2px; max-width:50px;">
+                          <option value="" disabled selected>선택</option>
+                          <option value="restore">복귀</option>
+                          <option value="delete">영구삭제</option>
+                          <option value="completed">수료생</option>
+                       </select>` :
+                       `<span onclick="moveToTrash('${m.id}')" style="cursor: pointer; color: #ef4444; font-size: 0.8rem; display: flex; align-items: center;" title="휴지통으로 이동"><span class="material-icons" style="font-size: 0.8rem;">delete</span></span>`
+                    }
                     <span style="font-weight: 900; font-size: 0.85rem; color: ${(!m.age || isNaN(parseInt(m.age)) || parseInt(m.age) >= 20) ? '#15803d' : '#000'};">${m.name || ''}</span>
                 </div>
                     <span style="font-size: 0.7rem; color: #64748b;">${m.phone || ''}</span>
