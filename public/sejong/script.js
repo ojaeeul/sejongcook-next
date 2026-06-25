@@ -380,6 +380,7 @@ async function handleModalRegister(e) {
     // ------------------------------------------
 
     data.course = courses.join(', ');
+    if (data.gender !== undefined) delete data.gender;
 
     // Basic Validation
     if (!data.name) return alert("이름을 입력해주세요.");
@@ -648,8 +649,8 @@ function openEditModal(memberId) {
     if (!member) return;
 
     if (editForm) {
-        editForm.id.value = member.id;
-        editForm.registeredDate.value = member.registeredDate || '';
+        editForm.elements['id'].value = member.id;
+        editForm.elements['registeredDate'].value = member.registeredDate || '';
         editForm.name.value = member.name || '';
         editForm.resident_num.value = member.resident_num || '';
         if (editForm.birth_date) {
@@ -874,6 +875,7 @@ async function handleEditSubmit(e) {
     // Handle Remarks Type and Cleanup
     const selectedType = document.getElementById('edit_remark_type').value;
     data.type = selectedType;
+    if (data.gender !== undefined) delete data.gender;
 
     if (selectedType === 'student') {
         data.job = '';
@@ -988,6 +990,7 @@ async function handleRegister(e) {
         }
         delete data.start_date;
     }
+    if (data.gender !== undefined) delete data.gender;
 
     // Unified Course + Time Handling
     const courseUnits = document.querySelectorAll('#register_course_container .course-input-row');

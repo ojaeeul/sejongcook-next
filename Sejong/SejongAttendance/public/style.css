@@ -2807,6 +2807,10 @@ label {
     max-width: 500px;
 }
 
+.max-w-800 {
+    max-width: 800px;
+}
+
 .h-80 {
     height: 80px;
 }
