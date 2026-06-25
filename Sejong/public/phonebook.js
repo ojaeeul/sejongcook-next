@@ -30,8 +30,8 @@ async function fetchMembers() {
         const res = await fetch(getFetchUrl('members'));
         members = await res.json();
 
-        // Filter out inactive statuses (keep trash and delete as requested)
-        members = members.filter(m => m.status !== 'completed' && m.status !== 'hold');
+        // Filter out inactive statuses (completed, hold, trash)
+        members = members.filter(m => m.status !== 'completed' && m.status !== 'hold' && m.status !== 'trash');
 
         // Extract unique courses and years
         const courseSet = new Set();
