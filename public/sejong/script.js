@@ -604,7 +604,29 @@ function openEditModal(memberId) {
         editForm.registeredDate.value = member.registeredDate || '';
         editForm.name.value = member.name || '';
         editForm.resident_num.value = member.resident_num || '';
-        if (editForm.birth_date) editForm.birth_date.value = member.birth_date || '';
+        if (editForm.birth_date) {
+            editForm.birth_date.value = member.birth_date || '';
+            if (member.birth_date) {
+                const parts = member.birth_date.split('-');
+                if (parts.length === 3) {
+                    const yyEl = document.getElementById('birth_yy');
+                    const mmEl = document.getElementById('birth_mm');
+                    const ddEl = document.getElementById('birth_dd');
+                    if (yyEl && mmEl && ddEl) {
+                        yyEl.value = parts[0];
+                        mmEl.value = parts[1];
+                        ddEl.value = parts[2];
+                    }
+                }
+            } else {
+                const yyEl = document.getElementById('birth_yy');
+                const mmEl = document.getElementById('birth_mm');
+                const ddEl = document.getElementById('birth_dd');
+                if (yyEl) yyEl.value = '';
+                if (mmEl) mmEl.value = '';
+                if (ddEl) ddEl.value = '';
+            }
+        }
         
         const rrnDisplay = document.getElementById('resident_num_display');
         if (rrnDisplay) {
@@ -1131,6 +1153,59 @@ window.renderRrnDisplay = function(el) {
         }
     }
 };
+
+window.initBirthSelects = function() {
+    const yy = document.getElementById('birth_yy');
+    const mm = document.getElementById('birth_mm');
+    const dd = document.getElementById('birth_dd');
+    if (!yy || !mm || !dd) return;
+    
+    if (yy.options.length <= 1) {
+        const currentYear = new Date().getFullYear();
+        for (let i = currentYear; i >= 1930; i--) {
+            let opt = document.createElement('option');
+            opt.value = i;
+            opt.text = i + '년';
+            yy.appendChild(opt);
+        }
+    }
+    if (mm.options.length <= 1) {
+        for (let i = 1; i <= 12; i++) {
+            let opt = document.createElement('option');
+            let val = i < 10 ? '0' + i : i;
+            opt.value = val;
+            opt.text = i + '월';
+            mm.appendChild(opt);
+        }
+    }
+    if (dd.options.length <= 1) {
+        for (let i = 1; i <= 31; i++) {
+            let opt = document.createElement('option');
+            let val = i < 10 ? '0' + i : i;
+            opt.value = val;
+            opt.text = i + '일';
+            dd.appendChild(opt);
+        }
+    }
+};
+
+window.updateBirthDate = function() {
+    const yy = document.getElementById('birth_yy').value;
+    const mm = document.getElementById('birth_mm').value;
+    const dd = document.getElementById('birth_dd').value;
+    const hidden = document.getElementById('birth_date');
+    if (hidden) {
+        if (yy && mm && dd) {
+            hidden.value = `${yy}-${mm}-${dd}`;
+        } else {
+            hidden.value = '';
+        }
+    }
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    window.initBirthSelects();
+});
 // Sidebar Toggle Logic with localStorage persistence
 window.toggleNavSub = function (el) {
     const isAlreadyActive = el.classList.contains('active');
