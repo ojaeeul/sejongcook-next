@@ -556,7 +556,7 @@ function addCourseInput(value = '') {
     container.appendChild(div);
 }
 
-function addRegisterCourseInput() {
+function addRegisterCourseInput(initialName = '', initialTime = '') {
     const container = document.getElementById('register_course_container');
     if (!container) return;
 
@@ -570,6 +570,7 @@ function addRegisterCourseInput() {
     courseInput.style.flex = '2';
     courseInput.placeholder = '과정명 입력 또는 선택';
     courseInput.setAttribute('list', 'course_datalist_options');
+    courseInput.value = initialName;
 
     const timeInput = document.createElement('input');
     timeInput.type = 'text';
@@ -577,6 +578,7 @@ function addRegisterCourseInput() {
     timeInput.style.flex = '1';
     timeInput.placeholder = '시간/요일 입력';
     timeInput.setAttribute('list', 'time_datalist_options');
+    timeInput.value = initialTime;
 
 
 
@@ -1289,6 +1291,9 @@ window.updateStartDate = function() {
 
 document.addEventListener('DOMContentLoaded', () => {
     window.initDateSelects();
+    if (typeof window.initCourseSync === 'function') {
+        window.initCourseSync();
+    }
 });
 
 window.handlePaperEmailDomainChange = function() {
@@ -2194,3 +2199,184 @@ if (typeof window.openSettingsModal === 'undefined') {
         }
     };
 }
+
+const COURSE_CHECKBOX_MAP = {
+    'course_bake': '제과',
+    'course_bread': '제빵',
+    'course_korean': '한식',
+    'course_western': '양식',
+    'course_japanese': '일식',
+    'course_chinese': '중식',
+    'course_puffer': '복어'
+};
+
+const TIME_CHECKBOX_MAP = {
+    'time_10': '10시',
+    'time_5': '5시',
+    'time_7': '7시'
+};
+
+window.syncDynamicListToCheckboxes = function() {
+    const container = document.getElementById('register_course_container');
+    if (!container) return;
+    
+    // First, uncheck all course and time checkboxes
+    Object.keys(COURSE_CHECKBOX_MAP).forEach(name => {
+        const cb = document.querySelector(`input[name="${name}"]`);
+        if (cb) cb.checked = false;
+    });
+    Object.keys(TIME_CHECKBOX_MAP).forEach(name => {
+        const cb = document.querySelector(`input[name="${name}"]`);
+        if (cb) cb.checked = false;
+    });
+    
+    // Iterate over rows and check matching ones
+    const rows = container.querySelectorAll('.course-input-row');
+    rows.forEach(row => {
+        const nameInput = row.querySelector('.course-edit-name');
+        const timeInput = row.querySelector('.course-edit-time');
+        
+        if (nameInput && nameInput.value) {
+            const courseVal = nameInput.value.trim();
+            for (const [cbName, courseName] of Object.entries(COURSE_CHECKBOX_MAP)) {
+                if (courseVal === courseName) {
+                    const cb = document.querySelector(`input[name="${cbName}"]`);
+                    if (cb) cb.checked = true;
+                }
+            }
+        }
+        
+        if (timeInput && timeInput.value) {
+            const timeVal = timeInput.value.trim();
+            for (const [cbName, timeName] of Object.entries(TIME_CHECKBOX_MAP)) {
+                if (timeVal === timeName) {
+                    const cb = document.querySelector(`input[name="${cbName}"]`);
+                    if (cb) cb.checked = true;
+                }
+            }
+        }
+    });
+};
+
+window.syncCheckboxesToDynamicList = function(changedCbName, isChecked, isTime) {
+    const container = document.getElementById('register_course_container');
+    if (!container) return;
+    
+    const rows = Array.from(container.querySelectorAll('.course-input-row'));
+    
+    if (!isTime) {
+        const courseName = COURSE_CHECKBOX_MAP[changedCbName];
+        if (isChecked) {
+            const exists = rows.some(row => {
+                const input = row.querySelector('.course-edit-name');
+                return input && input.value.trim() === courseName;
+            });
+            if (!exists) {
+                let emptyRow = rows.find(row => {
+                    const input = row.querySelector('.course-edit-name');
+                    return input && input.value.trim() === '';
+                });
+                
+                if (emptyRow) {
+                    emptyRow.querySelector('.course-edit-name').value = courseName;
+                } else {
+                    addRegisterCourseInput(courseName, '');
+                }
+            }
+        } else {
+            rows.forEach(row => {
+                const nameInput = row.querySelector('.course-edit-name');
+                const timeInput = row.querySelector('.course-edit-time');
+                if (nameInput && nameInput.value.trim() === courseName) {
+                    if (timeInput && timeInput.value.trim() !== '') {
+                        nameInput.value = '';
+                    } else {
+                        row.remove();
+                    }
+                }
+            });
+            if (container.children.length === 0) {
+                addRegisterCourseInput();
+            }
+        }
+    } else {
+        const timeName = TIME_CHECKBOX_MAP[changedCbName];
+        if (isChecked) {
+            const exists = rows.some(row => {
+                const input = row.querySelector('.course-edit-time');
+                return input && input.value.trim() === timeName;
+            });
+            if (!exists) {
+                let emptyTimeRow = rows.find(row => {
+                    const nameInput = row.querySelector('.course-edit-name');
+                    const timeInput = row.querySelector('.course-edit-time');
+                    return nameInput && nameInput.value.trim() !== '' && timeInput && timeInput.value.trim() === '';
+                });
+                
+                if (emptyTimeRow) {
+                    emptyTimeRow.querySelector('.course-edit-time').value = timeName;
+                } else {
+                    let emptyRow = rows.find(row => {
+                        const nameInput = row.querySelector('.course-edit-name');
+                        const timeInput = row.querySelector('.course-edit-time');
+                        return (!nameInput || nameInput.value.trim() === '') && (!timeInput || timeInput.value.trim() === '');
+                    });
+                    if (emptyRow) {
+                        emptyRow.querySelector('.course-edit-time').value = timeName;
+                    } else {
+                        addRegisterCourseInput('', timeName);
+                    }
+                }
+            }
+        } else {
+            rows.forEach(row => {
+                const nameInput = row.querySelector('.course-edit-name');
+                const timeInput = row.querySelector('.course-edit-time');
+                if (timeInput && timeInput.value.trim() === timeName) {
+                    if (nameInput && nameInput.value.trim() !== '') {
+                        timeInput.value = '';
+                    } else {
+                        row.remove();
+                    }
+                }
+            });
+            if (container.children.length === 0) {
+                addRegisterCourseInput();
+            }
+        }
+    }
+};
+
+window.initCourseSync = function() {
+    Object.keys(COURSE_CHECKBOX_MAP).forEach(name => {
+        const cb = document.querySelector(`input[name="${name}"]`);
+        if (cb) {
+            cb.addEventListener('change', () => {
+                window.syncCheckboxesToDynamicList(name, cb.checked, false);
+            });
+        }
+    });
+    
+    Object.keys(TIME_CHECKBOX_MAP).forEach(name => {
+        const cb = document.querySelector(`input[name="${name}"]`);
+        if (cb) {
+            cb.addEventListener('change', () => {
+                window.syncCheckboxesToDynamicList(name, cb.checked, true);
+            });
+        }
+    });
+    
+    const container = document.getElementById('register_course_container');
+    if (container) {
+        container.addEventListener('input', (e) => {
+            if (e.target.classList.contains('course-edit-name') || e.target.classList.contains('course-edit-time')) {
+                window.syncDynamicListToCheckboxes();
+            }
+        });
+        
+        const observer = new MutationObserver(() => {
+            window.syncDynamicListToCheckboxes();
+        });
+        observer.observe(container, { childList: true });
+    }
+};
