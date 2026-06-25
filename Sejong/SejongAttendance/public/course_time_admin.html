@@ -422,6 +422,7 @@
             renderCourses();
             renderCutoffs();
             renderAttendanceCutoffs();
+            saveSettings();
         }
 
         function removeCourse(idx) {
@@ -429,6 +430,7 @@
             renderCourses();
             renderCutoffs();
             renderAttendanceCutoffs();
+            saveSettings();
         }
 
         function renderTimes() {
@@ -460,11 +462,13 @@
             if (times.includes(val)) return alert("이미 등록된 시간입니다.");
             times.push(val);
             renderTimes();
+            saveSettings();
         }
 
         function removeTime(idx) {
             times.splice(idx, 1);
             renderTimes();
+            saveSettings();
         }
 
         function renderCutoffs() {
@@ -628,6 +632,6 @@
             }
         });
     </script>
-    <script src="sidebar_sync.js?v=20260626-28"></script>
+    <script src="sidebar_sync.js?v=20260626-29"></script>
 </body>
 </html>
