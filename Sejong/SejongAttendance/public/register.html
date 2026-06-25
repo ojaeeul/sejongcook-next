@@ -9,12 +9,12 @@
     <title>수강생 등록 - 세종요리제과학원 (김포/세종 요리 전문)</title>
     <meta name="description" content="세종요리제과학원 신규 수강생 등록 페이지입니다. 김포 및 세종 지역에서 요리사의 꿈을 시작하세요.">
     <meta name="keywords" content="세종요리, 김포요리, 세종요리학원, 김포요리학원, 요리학원 등록, 수강생 모집">
-    <link rel="stylesheet" href="style.css?v=20260626-39">
+    <link rel="stylesheet" href="style.css?v=20260626-40">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="script.js?v=20260626-39" defer></script>
-    <script src="questions_data.js?v=20260626-39" defer></script>
+    <script src="script.js?v=20260626-40" defer></script>
+    <script src="questions_data.js?v=20260626-40" defer></script>
     <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 </head>
 
@@ -199,6 +199,45 @@
                 </div>
                 <div class="header-actions"></div>
             </header>
+
+            <!-- Master Date Selector -->
+            <div style="background: #1e3a8a; color: white; padding: 20px; border-radius: 12px; font-weight: 700; display: flex; flex-direction: column; align-items: stretch; gap: 10px; margin: 20px 20px 0 20px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                <div style="display:flex; align-items:center; gap:15px; justify-content: center;">
+                    <i class="material-icons" style="font-size: 28px;">calendar_today</i>
+                    <input type="date" id="masterDateSelector" style="background:#2563eb; color:inherit; border:none; border-radius: 8px; font-size:1.5rem; font-weight:700; font-family:inherit; outline:none; cursor:pointer; padding:10px 15px; letter-spacing: 1px;" onchange="syncMasterDateToForm(this.value)">
+                </div>
+                <div style="text-align: center; font-size: 1rem; color: #93c5fd; margin-top: 5px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); padding: 8px; border-radius: 6px;">
+                    수강생 등록일
+                </div>
+            </div>
+
+            <script>
+                function syncMasterDateToForm(dateStr) {
+                    const form = document.getElementById('regForm');
+                    if (form) {
+                        const start = form.querySelector('input[name="start_date"]');
+                        const paper = form.querySelector('input[name="paper_date"]');
+                        if (start) start.value = dateStr;
+                        if (paper) paper.value = dateStr;
+                    }
+                }
+                
+                // 오늘 날짜로 초기화
+                document.addEventListener('DOMContentLoaded', () => {
+                    const now = new Date();
+                    const kstOptions = { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' };
+                    const parts = new Intl.DateTimeFormat('ko-KR', kstOptions).formatToParts(now);
+                    const y = parts.find(p => p.type === 'year').value;
+                    const m = parts.find(p => p.type === 'month').value;
+                    const d = parts.find(p => p.type === 'day').value;
+                    const todayStr = `${y}-${m}-${d}`;
+                    const masterSelector = document.getElementById('masterDateSelector');
+                    if(masterSelector) {
+                        masterSelector.value = todayStr;
+                        syncMasterDateToForm(todayStr);
+                    }
+                });
+            </script>
 
             <div class="content-scroll">
                 <div class="search-section" style="padding: 20px 20px 0 20px;">
@@ -577,7 +616,7 @@
         </div>
     </div>
 
-    <script src="sidebar_sync.js?v=20260626-39"></script>
+    <script src="sidebar_sync.js?v=20260626-40"></script>
 </body>
 
 </html>
