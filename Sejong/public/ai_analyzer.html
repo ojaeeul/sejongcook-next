@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>AI 스마트 원서 분석 - 세종요리제과학원</title>
-    <link rel="stylesheet" href="style.css?v=20260627-5">
+    <link rel="stylesheet" href="style.css?v=20260627-6">
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -196,6 +196,66 @@
             border-radius: 8px;
             margin-bottom: 15px;
             border: 1px solid #334155;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .image-preview:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+        
+        .editable-input {
+            width: 100%;
+            background: transparent;
+            border: 1px solid transparent;
+            color: #fff;
+            font-size: 11px;
+            padding: 4px;
+            border-radius: 4px;
+            transition: all 0.2s;
+            box-sizing: border-box;
+        }
+        .editable-input:hover {
+            border: 1px solid #475569;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .editable-input:focus {
+            outline: none;
+            border: 1px solid #4ade80;
+            background: rgba(15, 23, 42, 0.9);
+            box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.2);
+        }
+        
+        /* Image Modal */
+        .image-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            cursor: zoom-out;
+        }
+        .image-modal img {
+            max-width: 95%;
+            max-height: 95%;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            object-fit: contain;
+        }
+        .image-modal-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: #fff;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
         }
         
         .card-actions {
@@ -338,8 +398,8 @@
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
     <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';</script>
-    <script src="sidebar_sync.js?v=20260627-5"></script>
-    <script src="ai_analyzer.js?v=20260627-5"></script>
+    <script src="sidebar_sync.js?v=20260627-6"></script>
+    <script src="ai_analyzer.js?v=20260627-6"></script>
     <script>
         function toggleSidebar() {
             document.querySelector('.sidebar').classList.toggle('active');
@@ -353,5 +413,10 @@
             }
         }
     </script>
+    <!-- Image Zoom Modal -->
+    <div class="image-modal" id="imageModal" onclick="this.style.display='none'">
+        <span class="image-modal-close">&times;</span>
+        <img id="imageModalImg" src="" alt="확대 이미지">
+    </div>
 </body>
 </html>
