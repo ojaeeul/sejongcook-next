@@ -219,7 +219,7 @@ function createCardUI(title, imgUrl, id) {
     return card;
 }
 
-const CONCURRENCY_LIMIT = 5;
+const CONCURRENCY_LIMIT = 2;
 let activeRequests = 0;
 const requestQueue = [];
 
@@ -313,13 +313,38 @@ async function executeAnalysis(base64Data, fileName, imgUrl) {
         if (response.ok) {
             const data = await response.json();
             if (data.candidates && data.candidates.length > 0) {
-                let text = data.candidates[0].content.parts[0].text;
-                text = text.replace(/```json/g, '').replace(/```/g, '').trim();
-                try {
-                    result = JSON.parse(text);
-                } catch (parseErr) {
-                    console.error('JSON Parse Error:', parseErr, 'Text:', text);
-                    lastError = '결과 데이터 파싱 실패';
+                let contentNode = data.candidates[0].content;
+                if (!contentNode || !contentNode.parts || contentNode.parts.length === 0) {
+                    lastError = 'AI가 응답 텍스트를 생성하지 못했습니다 (안전 필터 등에 의해 차단되었을 수 있습니다).';
+                } else {
+                    let text = contentNode.parts[0].text || '';
+                    text = text.replace(/```json/gi, '').replace(/```/g, '').trim();
+                    try {
+                        const jsonStartObj = text.indexOf('{');
+                        const jsonStartArr = text.indexOf('[');
+                        const jsonEndObj = text.lastIndexOf('}');
+                        const jsonEndArr = text.lastIndexOf(']');
+                        
+                        let jsonStart = -1;
+                        let jsonEnd = -1;
+                        
+                        if (currentMode === 'phonebook' && jsonStartArr !== -1) {
+                            jsonStart = jsonStartArr;
+                            jsonEnd = jsonEndArr;
+                        } else if (jsonStartObj !== -1) {
+                            jsonStart = jsonStartObj;
+                            jsonEnd = jsonEndObj;
+                        }
+                        
+                        if (jsonStart !== -1 && jsonEnd !== -1) {
+                            text = text.substring(jsonStart, jsonEnd + 1);
+                        }
+                        
+                        result = JSON.parse(text);
+                    } catch (parseErr) {
+                        console.error('JSON Parse Error:', parseErr, 'Text:', text);
+                        lastError = '결과 데이터 파싱 실패: ' + parseErr.message;
+                    }
                 }
             } else {
                 lastError = 'AI가 결과를 반환하지 않았습니다.';
