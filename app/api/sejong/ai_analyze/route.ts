@@ -14,15 +14,18 @@ export async function POST(request: Request) {
         }
 
         const keys = envKeys.split(',').map(k => k.trim()).filter(k => k);
-        const apiKey = keys[Math.floor(Math.random() * keys.length)];
-
-        // Use gemini-1.5-pro for maximum accuracy and reasoning
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${apiKey}`;
+        // Use gemini-1.5-pro-latest for maximum accuracy and reasoning
         
         let response;
-        let retries = 1;
+        let retries = 3;
         let delay = 1000;
-        while (retries >= 0) {
+        let lastErrorText = '';
+        let lastStatus = 500;
+
+        for (let i = 0; i <= retries; i++) {
+            const apiKey = keys[Math.floor(Math.random() * keys.length)];
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key=${apiKey}`;
+            
             response = await fetch(url, {
                 method: 'POST',
                 headers: {
@@ -35,15 +38,13 @@ export async function POST(request: Request) {
                 break;
             }
 
-            if (response.status === 503 || response.status === 429) {
-                console.log(`Gemini API returned ${response.status}. Retrying... (${retries} left)`);
-                if (retries > 0) {
-                    await new Promise(res => setTimeout(res, delay));
-                }
-                retries--;
-                continue;
+            lastStatus = response.status;
+            lastErrorText = await response.text();
+            console.log(`Gemini API returned ${lastStatus}: ${lastErrorText}. Retrying... (${retries - i} left)`);
+            
+            if (i < retries) {
+                await new Promise(res => setTimeout(res, delay));
             }
-            break;
         }
 
         if (!response || !response.ok) {
