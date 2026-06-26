@@ -1259,11 +1259,35 @@ window.handleRrnInput = function(el) {
     window.renderRrnDisplay(el);
 };
 
+window.toggleRrnDisplayMode = function(el) {
+    const hiddenInput = document.getElementById('resident_num');
+    if (!hiddenInput || !hiddenInput.value) return;
+    
+    if (el.dataset.displayMode === 'dob') {
+        el.dataset.displayMode = 'rrn';
+        el.readOnly = false;
+    } else {
+        el.dataset.displayMode = 'dob';
+        el.readOnly = true;
+    }
+    window.renderRrnDisplay(el);
+};
+
 window.renderRrnDisplay = function(el) {
     const hiddenInput = document.getElementById('resident_num');
     if (!hiddenInput) return;
     
     let val = hiddenInput.value.replace(/[^0-9]/g, '');
+    
+    if (el.dataset.displayMode === 'dob' && val.length >= 6) {
+        let yy = val.substring(0, 2);
+        let mm = val.substring(2, 4);
+        let dd = val.substring(4, 6);
+        let genderDigit = val.length > 6 ? val[6] : '1';
+        let prefix = (genderDigit === '3' || genderDigit === '4' || genderDigit === '7' || genderDigit === '8') ? '20' : '19';
+        el.value = `${prefix}${yy}-${mm}-${dd}`;
+        return;
+    }
     
     if (el.dataset.focused === 'true') {
         if (val.length >= 7) {
@@ -1272,6 +1296,8 @@ window.renderRrnDisplay = function(el) {
             el.value = val;
         }
     } else {
+        el.dataset.displayMode = 'rrn'; // reset mode on blur
+        el.readOnly = false;
         if (val.length >= 7) {
             let visible = val.substring(0, 6);
             let hidden = val.substring(6);
