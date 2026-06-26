@@ -377,51 +377,51 @@ function renderStudentResult(id, data) {
     
     content.innerHTML = `
         <div class="result-table-wrapper" style="margin-bottom: 15px;">
-            <table style="width: 100%; border-collapse: collapse; font-size: 13px; color: #fff; text-align: center; border: 1px solid #334155;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 12px; color: #fff; text-align: center; border: 1px solid #334155;">
                 <tr>
                     <td style="border: 1px solid #334155; padding: 5px; background: #1e293b; width: 15%;">성명</td>
-                    <td style="border: 1px solid #334155; padding: 5px;"><input type="text" id="name-${id}" value="${data.성명 || ''}" style="width: 100%; background: transparent; border: none; color: #fff; text-align: center;"></td>
+                    <td style="border: 1px solid #334155; padding: 5px;"><input type="text" id="name-${id}" value="${data.성명 || ''}" style="width: 100%; background: transparent; border: none; color: #fff; text-align: center; font-size: 12px;"></td>
                     <td style="border: 1px solid #334155; padding: 5px; background: #1e293b; width: 10%;">성별</td>
-                    <td style="border: 1px solid #334155; padding: 5px; width: 10%;"><input type="text" id="gender-${id}" value="${data.성별 || ''}" style="width: 100%; background: transparent; border: none; color: #fff; text-align: center;"></td>
+                    <td style="border: 1px solid #334155; padding: 5px; width: 10%;"><input type="text" id="gender-${id}" value="${data.성별 || ''}" style="width: 100%; background: transparent; border: none; color: #fff; text-align: center; font-size: 12px;"></td>
                     <td style="border: 1px solid #334155; padding: 5px; background: #1e293b; width: 15%;">생년월일</td>
-                    <td style="border: 1px solid #334155; padding: 5px;"><input type="text" id="birth-${id}" value="${data.생년월일 || ''}" style="width: 100%; background: transparent; border: none; color: #fff; text-align: center;"></td>
+                    <td style="border: 1px solid #334155; padding: 5px;"><input type="text" id="birth-${id}" value="${data.생년월일 || ''}" style="width: 100%; background: transparent; border: none; color: #fff; text-align: center; font-size: 12px;"></td>
                 </tr>
                 <tr>
                     <td style="border: 1px solid #334155; padding: 5px; background: #1e293b;">주소</td>
-                    <td colspan="5" style="border: 1px solid #334155; padding: 5px;"><input type="text" id="address-${id}" value="${data.주소 || ''}" style="width: 100%; background: transparent; border: none; color: #fff;"></td>
+                    <td colspan="5" style="border: 1px solid #334155; padding: 5px;"><input type="text" id="address-${id}" value="${data.주소 || ''}" style="width: 100%; background: transparent; border: none; color: #fff; font-size: 12px;"></td>
                 </tr>
                 <tr>
                     <td rowspan="2" style="border: 1px solid #334155; padding: 5px; background: #1e293b;">연락처</td>
                     <td style="border: 1px solid #334155; padding: 5px; background: #1e293b;">본인</td>
-                    <td colspan="4" style="border: 1px solid #334155; padding: 5px;"><input type="text" id="phone-${id}" value="${data.학생연락처 || ''}" style="width: 100%; background: transparent; border: none; color: #fff;"></td>
+                    <td colspan="4" style="border: 1px solid #334155; padding: 5px;"><input type="text" id="phone-${id}" value="${data.학생연락처 || ''}" style="width: 100%; background: transparent; border: none; color: #fff; font-size: 12px;"></td>
                 </tr>
                 <tr>
                     <td style="border: 1px solid #334155; padding: 5px; background: #1e293b;">부모</td>
-                    <td colspan="4" style="border: 1px solid #334155; padding: 5px;"><input type="text" id="parentPhone-${id}" value="${data.부모연락처 || ''}" style="width: 100%; background: transparent; border: none; color: #fff;"></td>
+                    <td colspan="4" style="border: 1px solid #334155; padding: 5px;"><input type="text" id="parentPhone-${id}" value="${data.부모연락처 || ''}" style="width: 100%; background: transparent; border: none; color: #fff; font-size: 12px;"></td>
                 </tr>
                 <tr>
                     <td style="border: 1px solid #334155; padding: 5px; background: #1e293b;">학교</td>
-                    <td colspan="5" style="border: 1px solid #334155; padding: 5px;"><input type="text" id="school-${id}" value="${data.학교 || ''}" style="width: 100%; background: transparent; border: none; color: #fff;"></td>
+                    <td colspan="5" style="border: 1px solid #334155; padding: 5px;"><input type="text" id="school-${id}" value="${data.학교 || ''}" style="width: 100%; background: transparent; border: none; color: #fff; font-size: 12px;"></td>
                 </tr>
                 <tr>
                     <td style="border: 1px solid #334155; padding: 5px; background: #1e293b;">수강과목</td>
-                    <td colspan="5" style="border: 1px solid #334155; padding: 5px;"><input type="text" id="courseName-${id}" value="${data.수강과목 || ''}" style="width: 100%; background: transparent; border: none; color: #fff;"></td>
+                    <td colspan="5" style="border: 1px solid #334155; padding: 5px;"><input type="text" id="courseName-${id}" value="${data.수강과목 || ''}" style="width: 100%; background: transparent; border: none; color: #fff; font-size: 12px;"></td>
                 </tr>
                 <tr>
                     <td style="border: 1px solid #334155; padding: 5px; background: #1e293b;">시작일</td>
-                    <td colspan="5" style="border: 1px solid #334155; padding: 5px;"><input type="text" id="startDate-${id}" value="${data.수강시작일 || ''}" style="width: 100%; background: transparent; border: none; color: #fff;"></td>
+                    <td colspan="5" style="border: 1px solid #334155; padding: 5px;"><input type="text" id="startDate-${id}" value="${data.수강시작일 || ''}" style="width: 100%; background: transparent; border: none; color: #fff; font-size: 12px;"></td>
                 </tr>
                 <tr>
                     <td style="border: 1px solid #334155; padding: 5px; background: #1e293b;">수강료</td>
-                    <td style="border: 1px solid #334155; padding: 5px;"><input type="text" id="fee-${id}" value="${data.수강료 || ''}" style="width: 100%; background: transparent; border: none; color: #fff; text-align: center;"></td>
+                    <td style="border: 1px solid #334155; padding: 5px;"><input type="text" id="fee-${id}" value="${data.수강료 || ''}" style="width: 100%; background: transparent; border: none; color: #fff; text-align: center; font-size: 12px;"></td>
                     <td style="border: 1px solid #334155; padding: 5px; background: #1e293b;">도구비</td>
-                    <td style="border: 1px solid #334155; padding: 5px;"><input type="text" id="toolFee-${id}" value="${data.도구비 || ''}" style="width: 100%; background: transparent; border: none; color: #fff; text-align: center;"></td>
+                    <td style="border: 1px solid #334155; padding: 5px;"><input type="text" id="toolFee-${id}" value="${data.도구비 || ''}" style="width: 100%; background: transparent; border: none; color: #fff; text-align: center; font-size: 12px;"></td>
                     <td style="border: 1px solid #334155; padding: 5px; background: #1e293b;">결제금액</td>
-                    <td style="border: 1px solid #334155; padding: 5px;"><input type="text" id="totalFee-${id}" value="${data.결제금액 || ''}" style="width: 100%; background: transparent; border: none; color: #fff; text-align: center;"></td>
+                    <td style="border: 1px solid #334155; padding: 5px;"><input type="text" id="totalFee-${id}" value="${data.결제금액 || ''}" style="width: 100%; background: transparent; border: none; color: #fff; text-align: center; font-size: 12px;"></td>
                 </tr>
                 <tr>
                     <td style="border: 1px solid #334155; padding: 5px; background: #1e293b;">체크과정</td>
-                    <td colspan="5" style="border: 1px solid #334155; padding: 5px;"><input type="text" id="course-${id}" value="${combinedCourse}" style="width: 100%; background: transparent; border: none; color: #fff;"></td>
+                    <td colspan="5" style="border: 1px solid #334155; padding: 5px;"><input type="text" id="course-${id}" value="${combinedCourse}" style="width: 100%; background: transparent; border: none; color: #fff; font-size: 12px;"></td>
                 </tr>
             </table>
         </div>
