@@ -2148,7 +2148,7 @@ function renderMembers() {
                 } else if (originalRrn.length >= 6) {
                     maskedRrn = originalRrn.substring(0, 6) + '-xxxxxxx';
                 }
-                rrnHtml = `<span style="cursor: pointer; text-decoration: underline; text-decoration-style: dotted;" data-masked="${maskedRrn}" data-original="${originalRrn}" onclick="event.stopPropagation(); this.textContent = this.textContent === this.dataset.masked ? this.dataset.original : this.dataset.masked;" title="클릭하여 전체 번호 보기/숨기기">${maskedRrn}</span>`;
+                rrnHtml = `<span style="cursor: pointer; text-decoration: underline; text-decoration-style: dotted;" data-masked="${maskedRrn}" data-original="${originalRrn}" onclick="event.stopPropagation(); const span = this; const isMasked = span.textContent === span.dataset.masked; span.textContent = isMasked ? span.dataset.original : span.dataset.masked; clearTimeout(span.timer); if(isMasked) { span.timer = setTimeout(function(){ span.textContent = span.dataset.masked; }, 300000); }" title="클릭하여 전체 번호 보기/숨기기">${maskedRrn}</span>`;
             }
 
             tr.innerHTML = `
