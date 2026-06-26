@@ -24,7 +24,7 @@ export async function POST(request: Request) {
 
         for (let i = 0; i <= retries; i++) {
             const apiKey = keys[Math.floor(Math.random() * keys.length)];
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
             
             response = await fetch(url, {
                 method: 'POST',
@@ -48,10 +48,8 @@ export async function POST(request: Request) {
         }
 
         if (!response || !response.ok) {
-            const errorText = await (response ? response.text() : 'Unknown error');
-            const status = response ? response.status : 500;
-            console.error('Gemini API Error:', status, errorText);
-            return NextResponse.json({ error: `Google API Error: ${status}`, details: errorText }, { status });
+            console.error('Gemini API Error:', lastStatus, lastErrorText);
+            return NextResponse.json({ error: `Google API Error: ${lastStatus}`, details: lastErrorText }, { status: lastStatus });
         }
 
         const data = await response.json();
