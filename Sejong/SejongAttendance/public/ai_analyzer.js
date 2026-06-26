@@ -224,6 +224,7 @@ function createCardUI(title, imgUrl, id) {
 }
 
 let currentModalRotation = 0;
+let currentModalScale = 1;
 
 function openImageModal(src) {
     const modal = document.getElementById('imageModal');
@@ -231,8 +232,12 @@ function openImageModal(src) {
     if(modal && modalImg) {
         modalImg.src = src;
         currentModalRotation = 0;
+        currentModalScale = 1;
+        modalImg.style.maxWidth = '90vw';
+        modalImg.style.maxHeight = '90vh';
+        modalImg.style.width = 'auto';
         modalImg.style.transform = `rotate(0deg)`;
-        modal.style.display = 'flex';
+        modal.style.display = 'block';
     }
 }
 
@@ -248,6 +253,25 @@ function rotateModalImage(degrees) {
     if(modalImg) {
         currentModalRotation += degrees;
         modalImg.style.transform = `rotate(${currentModalRotation}deg)`;
+    }
+}
+
+function zoomModalImage(delta) {
+    const modalImg = document.getElementById('imageModalImg');
+    if(modalImg) {
+        currentModalScale += delta;
+        if(currentModalScale < 0.5) currentModalScale = 0.5;
+        if(currentModalScale > 5) currentModalScale = 5;
+        
+        if (currentModalScale > 1) {
+            modalImg.style.maxWidth = 'none';
+            modalImg.style.maxHeight = 'none';
+            modalImg.style.width = `${currentModalScale * 90}vw`; 
+        } else {
+            modalImg.style.maxWidth = '90vw';
+            modalImg.style.maxHeight = '90vh';
+            modalImg.style.width = 'auto';
+        }
     }
 }
 
