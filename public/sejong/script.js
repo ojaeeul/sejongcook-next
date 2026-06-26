@@ -2139,9 +2139,21 @@ function renderMembers() {
             const safeNotes = (member.notes || '').replace(/"/g, '&quot;');
             const nameHtml = `${member.name}${safeNotes ? `<span class="notes-indicator" data-notes="${safeNotes}">🗒️</span>` : ''}`;
 
+            let rrnHtml = '';
+            if (member.resident_num) {
+                const originalRrn = member.resident_num;
+                let maskedRrn = originalRrn;
+                if (originalRrn.includes('-')) {
+                    maskedRrn = originalRrn.split('-')[0] + '-xxxxxxx';
+                } else if (originalRrn.length >= 6) {
+                    maskedRrn = originalRrn.substring(0, 6) + '-xxxxxxx';
+                }
+                rrnHtml = `<span style="cursor: pointer; text-decoration: underline; text-decoration-style: dotted;" data-masked="${maskedRrn}" data-original="${originalRrn}" onclick="event.stopPropagation(); this.textContent = this.textContent === this.dataset.masked ? this.dataset.original : this.dataset.masked;" title="클릭하여 전체 번호 보기/숨기기">${maskedRrn}</span>`;
+            }
+
             tr.innerHTML = `
                 <td>${nameHtml}</td>
-                <td>${member.resident_num || ''}</td>
+                <td>${rrnHtml}</td>
                 <td>${member.address || ''} ${member.address_detail || ''}</td>
                 <td>${member.phone || ''}</td>
                 <td>${member.phone_guardian || ''}</td>
