@@ -219,7 +219,7 @@ function createCardUI(title, imgUrl, id) {
     return card;
 }
 
-const CONCURRENCY_LIMIT = 1;
+const CONCURRENCY_LIMIT = 3;
 let activeRequests = 0;
 const requestQueue = [];
 
