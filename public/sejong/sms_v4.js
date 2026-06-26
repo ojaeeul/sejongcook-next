@@ -1,5 +1,6 @@
 function getFetchUrl(endpoint, isPost = false) {
-    const url = `/api/sejong/${endpoint}`;
+    let url = `/api/sejong/${endpoint}`;
+    if (endpoint === 'members') url += '?includePhonebook=true';
     return isPost ? url : url + (url.includes('?') ? '&' : '?') + `t=${Date.now()}`;
 }
 

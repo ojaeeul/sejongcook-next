@@ -4,13 +4,22 @@ import { supabase } from '@/lib/sejongDataHandler';
 import fs from 'fs';
 
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+    const { searchParams } = new URL(req.url);
+    const includePhonebook = searchParams.get('includePhonebook');
+
     const { data: list, error } = await supabase.from('members').select('*');
     if (error) {
         console.error("GET Members Error:", error);
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
-    return NextResponse.json(list || []);
+    
+    let filteredList = list || [];
+    if (includePhonebook !== 'true') {
+        filteredList = filteredList.filter(m => m.course !== '전화번호부 업로드');
+    }
+    
+    return NextResponse.json(filteredList);
 }
 
 export async function POST(req: NextRequest) {
