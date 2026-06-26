@@ -219,12 +219,31 @@ function createCardUI(title, imgUrl, id) {
     return card;
 }
 
+let currentModalRotation = 0;
+
 function openImageModal(src) {
     const modal = document.getElementById('imageModal');
     const modalImg = document.getElementById('imageModalImg');
     if(modal && modalImg) {
         modalImg.src = src;
+        currentModalRotation = 0;
+        modalImg.style.transform = `rotate(0deg)`;
         modal.style.display = 'flex';
+    }
+}
+
+function closeImageModal() {
+    const modal = document.getElementById('imageModal');
+    if(modal) {
+        modal.style.display = 'none';
+    }
+}
+
+function rotateModalImage(degrees) {
+    const modalImg = document.getElementById('imageModalImg');
+    if(modalImg) {
+        currentModalRotation += degrees;
+        modalImg.style.transform = `rotate(${currentModalRotation}deg)`;
     }
 }
 
