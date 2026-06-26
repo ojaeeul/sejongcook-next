@@ -17,8 +17,7 @@ export async function POST(request: Request) {
         // Use gemini-1.5-flash-latest for 3x faster speed and no hallucination
         
         let response;
-        let retries = 3;
-        let delay = 1000;
+        let retries = Math.max(5, keys.length * 2);
         let lastErrorText = '';
         let lastStatus = 500;
 
@@ -43,7 +42,8 @@ export async function POST(request: Request) {
             console.log(`Gemini API returned ${lastStatus}: ${lastErrorText}. Retrying... (${retries - i} left)`);
             
             if (i < retries) {
-                await new Promise(res => setTimeout(res, delay));
+                // 키가 여러 개면 바로 교체해서 찔러보도록 딜레이 대폭 축소 (1000ms -> 300ms)
+                await new Promise(res => setTimeout(res, 300));
             }
         }
 

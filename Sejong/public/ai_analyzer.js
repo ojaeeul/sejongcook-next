@@ -335,7 +335,7 @@ async function executeAnalysis(base64Data, fileName, imgUrl) {
     while (retryCount <= maxRetries && !result) {
         if (retryCount > 0) {
             updateCardStatus(id, 'processing', `서버 지연... 재시도 중 (${retryCount}/${maxRetries})`);
-            await new Promise(resolve => setTimeout(resolve, 2000 * retryCount));
+            await new Promise(resolve => setTimeout(resolve, 1000));
         }
 
         try {
