@@ -17,12 +17,19 @@ export async function POST(request: Request) {
         // Use gemini-1.5-flash-latest for 3x faster speed and no hallucination
         
         let response;
-        let retries = Math.max(5, keys.length * 2);
+        let validKeys = [...keys];
+        let retries = Math.max(10, keys.length * 3);
         let lastErrorText = '';
         let lastStatus = 500;
 
         for (let i = 0; i <= retries; i++) {
-            const apiKey = keys[Math.floor(Math.random() * keys.length)];
+            if (validKeys.length === 0) {
+                lastErrorText = "등록된 모든 API 키가 유효하지 않거나 한도를 초과했습니다.";
+                lastStatus = 401;
+                break;
+            }
+
+            const apiKey = validKeys[Math.floor(Math.random() * validKeys.length)];
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
             
             response = await fetch(url, {
@@ -39,10 +46,14 @@ export async function POST(request: Request) {
 
             lastStatus = response.status;
             lastErrorText = await response.text();
-            console.log(`Gemini API returned ${lastStatus}: ${lastErrorText}. Retrying... (${retries - i} left)`);
+            console.log(`Gemini API returned ${lastStatus}: ${lastErrorText.substring(0, 100)}... Retrying... (${retries - i} left)`);
             
-            if (i < retries) {
-                // 키가 여러 개면 바로 교체해서 찔러보도록 딜레이 대폭 축소 (1000ms -> 300ms)
+            // 401(인증 실패), 400(잘못된 키), 403(권한 없음)인 경우 해당 키는 완전히 폐기
+            if (lastStatus === 401 || lastStatus === 400 || lastStatus === 403) {
+                validKeys = validKeys.filter(k => k !== apiKey);
+            }
+
+            if (i < retries && validKeys.length > 0) {
                 await new Promise(res => setTimeout(res, 300));
             }
         }

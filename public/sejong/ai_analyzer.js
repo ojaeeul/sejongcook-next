@@ -330,12 +330,13 @@ async function executeAnalysis(base64Data, fileName, imgUrl) {
     let lastError = null;
 
     let retryCount = 0;
-    const maxRetries = 15;
+    const maxRetries = 20; // 무료 한도(429) 회피를 위해 최대 20번까지 재시도
 
     while (retryCount <= maxRetries && !result) {
         if (retryCount > 0) {
-            updateCardStatus(id, 'processing', `서버 지연... 재시도 중 (${retryCount}/${maxRetries})`);
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            updateCardStatus(id, 'processing', `무료 한도 초과 방어... 우회 시도 중 (${retryCount}/${maxRetries})`);
+            // 한도 초과(429)를 우회하기 위해 3초 대기 후 다른 키로 찌르기 유도
+            await new Promise(resolve => setTimeout(resolve, 3000));
         }
 
         try {
