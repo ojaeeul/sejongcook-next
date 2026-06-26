@@ -2148,7 +2148,20 @@ function renderMembers() {
                 } else if (originalRrn.length >= 6) {
                     maskedRrn = originalRrn.substring(0, 6) + '-xxxxxxx';
                 }
-                rrnHtml = `<span style="cursor: pointer; text-decoration: underline; text-decoration-style: dotted;" data-masked="${maskedRrn}" data-original="${originalRrn}" onclick="event.stopPropagation(); const span = this; const isMasked = span.textContent === span.dataset.masked; span.textContent = isMasked ? span.dataset.original : span.dataset.masked; clearTimeout(span.timer); if(isMasked) { span.timer = setTimeout(function(){ span.textContent = span.dataset.masked; }, 300000); }" title="클릭하여 전체 번호 보기/숨기기">${maskedRrn}</span>`;
+                
+                let dob = member.birth_date || '';
+                if (!dob && originalRrn.length >= 6) {
+                    let yy = originalRrn.substring(0, 2);
+                    let mm = originalRrn.substring(2, 4);
+                    let dd = originalRrn.substring(4, 6);
+                    let genderDigit = originalRrn.includes('-') ? originalRrn.split('-')[1][0] : (originalRrn.length > 6 ? originalRrn[6] : '1');
+                    let prefix = (genderDigit === '3' || genderDigit === '4' || genderDigit === '7' || genderDigit === '8') ? '20' : '19';
+                    dob = `${prefix}${yy}-${mm}-${dd}`;
+                }
+                
+                const onclickJs = `event.stopPropagation(); const span = this; const states = [span.dataset.masked, span.dataset.dob, span.dataset.original]; let idx = states.indexOf(span.textContent); idx = (idx + 1) % 3; span.textContent = states[idx]; clearTimeout(span.timer); if(idx === 2) { span.timer = setTimeout(function(){ span.textContent = span.dataset.masked; }, 300000); }`;
+                
+                rrnHtml = `<span style="cursor: pointer; text-decoration: underline; text-decoration-style: dotted;" data-masked="${maskedRrn}" data-original="${originalRrn}" data-dob="${dob}" onclick="${onclickJs}" title="클릭: 마스킹 -> 생년월일 -> 전체번호">${maskedRrn}</span>`;
             }
 
             tr.innerHTML = `
