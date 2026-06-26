@@ -463,51 +463,51 @@ function renderStudentResult(id, data) {
     
     content.innerHTML = `
         <div class="result-table-wrapper" style="margin-bottom: 15px;">
-            <table style="width: 100%; border-collapse: collapse; font-size: 11px; color: #fff; text-align: center; border: 1px solid #334155;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 11px; color: #1e293b; text-align: center; border: 1px solid #cbd5e1;">
                 <tr>
-                    <td style="border: 1px solid #334155; padding: 5px; background: #1e293b; width: 15%;">성명</td>
-                    <td style="border: 1px solid #334155; padding: 5px;"><input type="text" id="name-${id}" value="${data.성명 || ''}" class="editable-input" style="text-align: center;"></td>
-                    <td style="border: 1px solid #334155; padding: 5px; background: #1e293b; width: 10%;">성별</td>
-                    <td style="border: 1px solid #334155; padding: 5px; width: 10%;"><input type="text" id="gender-${id}" value="${data.성별 || ''}" class="editable-input" style="text-align: center;"></td>
-                    <td style="border: 1px solid #334155; padding: 5px; background: #1e293b; width: 15%;">생년월일</td>
-                    <td style="border: 1px solid #334155; padding: 5px;"><input type="text" id="birth-${id}" value="${data.생년월일 || ''}" class="editable-input" style="text-align: center;"></td>
+                    <td style="border: 1px solid #cbd5e1; padding: 5px; background: #f8fafc; width: 15%; font-weight: 600;">성명</td>
+                    <td style="border: 1px solid #cbd5e1; padding: 5px;"><input type="text" id="name-${id}" value="${data.성명 || ''}" class="editable-input" style="text-align: center;"></td>
+                    <td style="border: 1px solid #cbd5e1; padding: 5px; background: #f8fafc; width: 10%; font-weight: 600;">성별</td>
+                    <td style="border: 1px solid #cbd5e1; padding: 5px; width: 10%;"><input type="text" id="gender-${id}" value="${data.성별 || ''}" class="editable-input" style="text-align: center;"></td>
+                    <td style="border: 1px solid #cbd5e1; padding: 5px; background: #f8fafc; width: 15%; font-weight: 600;">생년월일</td>
+                    <td style="border: 1px solid #cbd5e1; padding: 5px;"><input type="text" id="birth-${id}" value="${data.생년월일 || ''}" class="editable-input" style="text-align: center;"></td>
                 </tr>
                 <tr>
-                    <td style="border: 1px solid #334155; padding: 5px; background: #1e293b;">주소</td>
-                    <td colspan="5" style="border: 1px solid #334155; padding: 5px;"><input type="text" id="address-${id}" value="${data.주소 || ''}" class="editable-input"></td>
+                    <td style="border: 1px solid #cbd5e1; padding: 5px; background: #f8fafc; font-weight: 600;">주소</td>
+                    <td colspan="5" style="border: 1px solid #cbd5e1; padding: 5px;"><input type="text" id="address-${id}" value="${data.주소 || ''}" class="editable-input"></td>
                 </tr>
                 <tr>
-                    <td rowspan="2" style="border: 1px solid #334155; padding: 5px; background: #1e293b;">연락처</td>
-                    <td style="border: 1px solid #334155; padding: 5px; background: #1e293b;">본인</td>
-                    <td colspan="4" style="border: 1px solid #334155; padding: 5px;"><input type="text" id="phone-${id}" value="${data.학생연락처 || ''}" class="editable-input"></td>
+                    <td rowspan="2" style="border: 1px solid #cbd5e1; padding: 5px; background: #f8fafc; font-weight: 600;">연락처</td>
+                    <td style="border: 1px solid #cbd5e1; padding: 5px; background: #f8fafc; font-weight: 600;">본인</td>
+                    <td colspan="4" style="border: 1px solid #cbd5e1; padding: 5px;"><input type="text" id="phone-${id}" value="${data.학생연락처 || ''}" class="editable-input"></td>
                 </tr>
                 <tr>
-                    <td style="border: 1px solid #334155; padding: 5px; background: #1e293b;">부모</td>
-                    <td colspan="4" style="border: 1px solid #334155; padding: 5px;"><input type="text" id="parentPhone-${id}" value="${data.부모연락처 || ''}" class="editable-input"></td>
+                    <td style="border: 1px solid #cbd5e1; padding: 5px; background: #f8fafc; font-weight: 600;">부모</td>
+                    <td colspan="4" style="border: 1px solid #cbd5e1; padding: 5px;"><input type="text" id="parentPhone-${id}" value="${data.부모연락처 || ''}" class="editable-input"></td>
                 </tr>
                 <tr>
-                    <td style="border: 1px solid #334155; padding: 5px; background: #1e293b;">학교</td>
-                    <td colspan="5" style="border: 1px solid #334155; padding: 5px;"><input type="text" id="school-${id}" value="${data.학교 || ''}" class="editable-input"></td>
+                    <td style="border: 1px solid #cbd5e1; padding: 5px; background: #f8fafc; font-weight: 600;">학교</td>
+                    <td colspan="5" style="border: 1px solid #cbd5e1; padding: 5px;"><input type="text" id="school-${id}" value="${data.학교 || ''}" class="editable-input"></td>
                 </tr>
                 <tr>
-                    <td style="border: 1px solid #334155; padding: 5px; background: #1e293b;">수강과목</td>
-                    <td colspan="5" style="border: 1px solid #334155; padding: 5px;"><input type="text" id="courseName-${id}" value="${data.수강과목 || ''}" class="editable-input"></td>
+                    <td style="border: 1px solid #cbd5e1; padding: 5px; background: #f8fafc; font-weight: 600;">수강과목</td>
+                    <td colspan="5" style="border: 1px solid #cbd5e1; padding: 5px;"><input type="text" id="courseName-${id}" value="${data.수강과목 || ''}" class="editable-input"></td>
                 </tr>
                 <tr>
-                    <td style="border: 1px solid #334155; padding: 5px; background: #1e293b;">시작일</td>
-                    <td colspan="5" style="border: 1px solid #334155; padding: 5px;"><input type="text" id="startDate-${id}" value="${data.수강시작일 || ''}" class="editable-input"></td>
+                    <td style="border: 1px solid #cbd5e1; padding: 5px; background: #f8fafc; font-weight: 600;">시작일</td>
+                    <td colspan="5" style="border: 1px solid #cbd5e1; padding: 5px;"><input type="text" id="startDate-${id}" value="${data.수강시작일 || ''}" class="editable-input"></td>
                 </tr>
                 <tr>
-                    <td style="border: 1px solid #334155; padding: 5px; background: #1e293b;">수강료</td>
-                    <td style="border: 1px solid #334155; padding: 5px;"><input type="text" id="fee-${id}" value="${data.수강료 || ''}" class="editable-input" style="text-align: center;"></td>
-                    <td style="border: 1px solid #334155; padding: 5px; background: #1e293b;">도구비</td>
-                    <td style="border: 1px solid #334155; padding: 5px;"><input type="text" id="toolFee-${id}" value="${data.도구비 || ''}" class="editable-input" style="text-align: center;"></td>
-                    <td style="border: 1px solid #334155; padding: 5px; background: #1e293b;">결제금액</td>
-                    <td style="border: 1px solid #334155; padding: 5px;"><input type="text" id="totalFee-${id}" value="${data.결제금액 || ''}" class="editable-input" style="text-align: center;"></td>
+                    <td style="border: 1px solid #cbd5e1; padding: 5px; background: #f8fafc; font-weight: 600;">수강료</td>
+                    <td style="border: 1px solid #cbd5e1; padding: 5px;"><input type="text" id="fee-${id}" value="${data.수강료 || ''}" class="editable-input" style="text-align: center;"></td>
+                    <td style="border: 1px solid #cbd5e1; padding: 5px; background: #f8fafc; font-weight: 600;">도구비</td>
+                    <td style="border: 1px solid #cbd5e1; padding: 5px;"><input type="text" id="toolFee-${id}" value="${data.도구비 || ''}" class="editable-input" style="text-align: center;"></td>
+                    <td style="border: 1px solid #cbd5e1; padding: 5px; background: #f8fafc; font-weight: 600;">결제금액</td>
+                    <td style="border: 1px solid #cbd5e1; padding: 5px;"><input type="text" id="totalFee-${id}" value="${data.결제금액 || ''}" class="editable-input" style="text-align: center;"></td>
                 </tr>
                 <tr>
-                    <td style="border: 1px solid #334155; padding: 5px; background: #1e293b;">체크과정</td>
-                    <td colspan="5" style="border: 1px solid #334155; padding: 5px;"><input type="text" id="course-${id}" value="${combinedCourse}" class="editable-input"></td>
+                    <td style="border: 1px solid #cbd5e1; padding: 5px; background: #f8fafc; font-weight: 600;">체크과정</td>
+                    <td colspan="5" style="border: 1px solid #cbd5e1; padding: 5px;"><input type="text" id="course-${id}" value="${combinedCourse}" class="editable-input"></td>
                 </tr>
             </table>
         </div>
@@ -528,14 +528,14 @@ function renderPhonebookResult(id, dataList) {
     updateCardStatus(id, 'success', `${dataList.length}명 추출됨`);
     const content = document.getElementById(`content-${id}`);
     
-    let html = '<div style="max-height:200px; overflow-y:auto; margin-bottom:15px; border:1px solid #334155; border-radius:6px; padding:10px; background:#0f172a;">';
+    let html = '<div style="max-height:200px; overflow-y:auto; margin-bottom:15px; border:1px solid #cbd5e1; border-radius:6px; padding:10px; background:#f8fafc;">';
     
     dataList.forEach((item, index) => {
         html += `
             <div style="display:flex; gap:10px; margin-bottom:10px; align-items:center; flex-wrap:wrap;">
-                <input type="text" id="pb-name-${id}-${index}" value="${item.이름 || ''}" placeholder="이름" style="width:25%; background:transparent; border:1px solid #334155; color:#fff; padding:5px; border-radius:4px;">
-                <input type="text" id="pb-phone-${id}-${index}" value="${item.본인전화번호 || item.전화번호 || ''}" placeholder="본인연락처" style="width:33%; background:transparent; border:1px solid #334155; color:#fff; padding:5px; border-radius:4px;">
-                <input type="text" id="pb-parent-${id}-${index}" value="${item.부모전화번호 || ''}" placeholder="부모연락처" style="width:33%; background:transparent; border:1px solid #334155; color:#fff; padding:5px; border-radius:4px;">
+                <input type="text" id="pb-name-${id}-${index}" value="${item.이름 || ''}" placeholder="이름" style="width:25%; background:transparent; border:1px solid #cbd5e1; color:#1e293b; padding:5px; border-radius:4px;">
+                <input type="text" id="pb-phone-${id}-${index}" value="${item.본인전화번호 || item.전화번호 || ''}" placeholder="본인연락처" style="width:33%; background:transparent; border:1px solid #cbd5e1; color:#1e293b; padding:5px; border-radius:4px;">
+                <input type="text" id="pb-parent-${id}-${index}" value="${item.부모전화번호 || ''}" placeholder="부모연락처" style="width:33%; background:transparent; border:1px solid #cbd5e1; color:#1e293b; padding:5px; border-radius:4px;">
             </div>
         `;
     });

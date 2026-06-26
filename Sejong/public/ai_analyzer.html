@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>AI 스마트 원서 분석 - 세종요리제과학원</title>
-    <link rel="stylesheet" href="style.css?v=20260627-19">
+    <link rel="stylesheet" href="style.css?v=20260627-20">
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -19,7 +19,7 @@
             border-radius: 16px;
             padding: 60px 20px;
             text-align: center;
-            background: rgba(74, 222, 128, 0.05);
+            background: #ffffff;
             transition: all 0.3s ease;
             cursor: pointer;
             margin-bottom: 30px;
@@ -39,12 +39,12 @@
         
         .upload-text {
             font-size: 1.2rem;
-            color: #e2e8f0;
+            color: #1e293b;
             margin-bottom: 10px;
         }
         
         .upload-subtext {
-            color: #94a3b8;
+            color: #64748b;
             font-size: 0.9rem;
         }
         
@@ -56,9 +56,9 @@
         }
         
         .mode-btn {
-            background: #1e293b;
-            border: 1px solid #334155;
-            color: #94a3b8;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            color: #64748b;
             padding: 12px 24px;
             border-radius: 8px;
             cursor: pointer;
@@ -69,7 +69,7 @@
         
         .mode-btn.active {
             background: #4ade80;
-            color: #0f172a;
+            color: #ffffff;
             border-color: #4ade80;
             box-shadow: 0 0 15px rgba(74, 222, 128, 0.3);
         }
@@ -82,8 +82,8 @@
         }
         
         .result-card {
-            background: #1e293b;
-            border: 1px solid #334155;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
             border-radius: 12px;
             padding: 20px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
@@ -117,13 +117,13 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 15px;
-            border-bottom: 1px solid #334155;
+            border-bottom: 1px solid #cbd5e1;
             padding-bottom: 10px;
         }
         
         .result-title {
             font-weight: 600;
-            color: #f8fafc;
+            color: #1e293b;
             font-size: 1.1rem;
         }
         
@@ -133,9 +133,9 @@
             border-radius: 4px;
         }
         
-        .status-processing { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
-        .status-success { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
-        .status-error { background: rgba(239,68,68,0.2); color: #fca5a5; }
+        .status-processing { background: rgba(251, 191, 36, 0.2); color: #d97706; }
+        .status-success { background: rgba(74, 222, 128, 0.2); color: #15803d; }
+        .status-error { background: rgba(239,68,68,0.2); color: #b91c1c; }
 
         /* Scanner Animation */
         .image-container {
@@ -169,15 +169,15 @@
         .form-group label {
             display: block;
             font-size: 0.85rem;
-            color: #94a3b8;
+            color: #64748b;
             margin-bottom: 4px;
         }
         
         .form-group input {
             width: 100%;
-            background: #0f172a;
-            border: 1px solid #334155;
-            color: #f8fafc;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            color: #1e293b;
             padding: 8px 12px;
             border-radius: 6px;
             font-family: inherit;
@@ -195,7 +195,7 @@
             object-fit: cover;
             border-radius: 8px;
             margin-bottom: 15px;
-            border: 1px solid #334155;
+            border: 1px solid #cbd5e1;
             cursor: pointer;
             transition: transform 0.2s;
         }
@@ -301,13 +301,13 @@
             gap: 10px;
             margin-top: 15px;
             padding-top: 15px;
-            border-top: 1px solid #334155;
+            border-top: 1px solid #cbd5e1;
         }
         
         .btn-save {
             flex: 1;
             background: #4ade80;
-            color: #0f172a;
+            color: #ffffff;
             border: none;
             padding: 10px;
             border-radius: 6px;
@@ -340,7 +340,7 @@
         }
         
         .progress-bar-bg {
-            background: #1e293b;
+            background: #e2e8f0;
             height: 10px;
             border-radius: 5px;
             overflow: hidden;
@@ -436,8 +436,8 @@
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
     <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';</script>
-    <script src="sidebar_sync.js?v=20260627-19"></script>
-    <script src="ai_analyzer.js?v=20260627-19"></script>
+    <script src="sidebar_sync.js?v=20260627-20"></script>
+    <script src="ai_analyzer.js?v=20260627-20"></script>
     <script>
         function toggleSidebar() {
             document.querySelector('.sidebar').classList.toggle('active');
