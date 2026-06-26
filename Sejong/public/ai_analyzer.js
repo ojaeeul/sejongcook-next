@@ -247,7 +247,7 @@ function rotateModalImage(degrees) {
     }
 }
 
-const CONCURRENCY_LIMIT = 10;
+const CONCURRENCY_LIMIT = 2;
 let activeRequests = 0;
 const requestQueue = [];
 
