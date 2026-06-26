@@ -290,75 +290,95 @@ async function executeAnalysis(base64Data, fileName, imgUrl) {
     let result = null;
     let lastError = null;
 
-    try {
-        const response = await fetch('/api/sejong/ai_analyze', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                contents: [{
-                    parts: [
-                        { text: prompt },
-                        { inlineData: { mimeType: 'image/jpeg', data: base64Data } }
-                    ]
-                }],
-                generationConfig: {
-                    temperature: 0.1,
-                    responseMimeType: "application/json"
-                }
-            })
-        });
+    let retryCount = 0;
+    const maxRetries = 3;
 
-        if (response.ok) {
-            const data = await response.json();
-            if (data.candidates && data.candidates.length > 0) {
-                let contentNode = data.candidates[0].content;
-                if (!contentNode || !contentNode.parts || contentNode.parts.length === 0) {
-                    lastError = 'AI가 응답 텍스트를 생성하지 못했습니다 (안전 필터 등에 의해 차단되었을 수 있습니다).';
-                } else {
-                    let text = contentNode.parts[0].text || '';
-                    text = text.replace(/```json/gi, '').replace(/```/g, '').trim();
-                    try {
-                        const jsonStartObj = text.indexOf('{');
-                        const jsonStartArr = text.indexOf('[');
-                        const jsonEndObj = text.lastIndexOf('}');
-                        const jsonEndArr = text.lastIndexOf(']');
-                        
-                        let jsonStart = -1;
-                        let jsonEnd = -1;
-                        
-                        if (currentMode === 'phonebook' && jsonStartArr !== -1) {
-                            jsonStart = jsonStartArr;
-                            jsonEnd = jsonEndArr;
-                        } else if (jsonStartObj !== -1) {
-                            jsonStart = jsonStartObj;
-                            jsonEnd = jsonEndObj;
-                        }
-                        
-                        if (jsonStart !== -1 && jsonEnd !== -1) {
-                            text = text.substring(jsonStart, jsonEnd + 1);
-                        }
-                        
-                        result = JSON.parse(text);
-                    } catch (parseErr) {
-                        console.error('JSON Parse Error:', parseErr, 'Text:', text);
-                        lastError = '결과 데이터 파싱 실패: ' + parseErr.message;
+    while (retryCount <= maxRetries && !result) {
+        if (retryCount > 0) {
+            updateCardStatus(id, 'processing', `서버 지연... 재시도 중 (${retryCount}/${maxRetries})`);
+            await new Promise(resolve => setTimeout(resolve, 2000 * retryCount));
+        }
+
+        try {
+            const response = await fetch('/api/sejong/ai_analyze', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [
+                            { text: prompt },
+                            { inlineData: { mimeType: 'image/jpeg', data: base64Data } }
+                        ]
+                    }],
+                    generationConfig: {
+                        temperature: 0.1,
+                        responseMimeType: "application/json"
                     }
+                })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.candidates && data.candidates.length > 0) {
+                    let contentNode = data.candidates[0].content;
+                    if (!contentNode || !contentNode.parts || contentNode.parts.length === 0) {
+                        lastError = 'AI가 응답 텍스트를 생성하지 못했습니다 (안전 필터 등에 의해 차단되었을 수 있습니다).';
+                        break;
+                    } else {
+                        let text = contentNode.parts[0].text || '';
+                        text = text.replace(/```json/gi, '').replace(/```/g, '').trim();
+                        try {
+                            result = JSON.parse(text);
+                        } catch (parseErr) {
+                            try {
+                                const jsonStartArr = text.indexOf('[');
+                                const jsonEndArr = text.lastIndexOf(']');
+                                const jsonStartObj = text.indexOf('{');
+                                const jsonEndObj = text.lastIndexOf('}');
+                                
+                                let extracted = '';
+                                if (currentMode === 'phonebook' && jsonStartArr !== -1 && jsonEndArr !== -1) {
+                                    extracted = text.substring(jsonStartArr, jsonEndArr + 1);
+                                } else if (jsonStartObj !== -1 && jsonEndObj !== -1) {
+                                    if (jsonStartArr !== -1 && jsonEndArr !== -1 && jsonStartArr < jsonStartObj && jsonEndArr > jsonEndObj) {
+                                        extracted = text.substring(jsonStartArr, jsonEndArr + 1);
+                                    } else {
+                                        extracted = text.substring(jsonStartObj, jsonEndObj + 1);
+                                    }
+                                }
+                                
+                                if (extracted) {
+                                    result = JSON.parse(extracted);
+                                } else {
+                                    throw new Error("No JSON structure found");
+                                }
+                            } catch (fallbackErr) {
+                                console.error('JSON Parse Error:', fallbackErr, 'Text:', text);
+                                lastError = '결과 데이터 파싱 실패: ' + fallbackErr.message;
+                                break;
+                            }
+                        }
+                    }
+                } else {
+                    lastError = 'AI가 결과를 반환하지 않았습니다.';
+                    retryCount++;
                 }
             } else {
-                lastError = 'AI가 결과를 반환하지 않았습니다.';
+                const errData = await response.json().catch(() => ({}));
+                lastError = errData.error || `서버 오류 (${response.status})`;
+                if (response.status === 429 || response.status === 503 || response.status === 504 || response.status === 500) {
+                    retryCount++;
+                } else {
+                    break;
+                }
             }
-        } else {
-            const errData = await response.json().catch(() => ({}));
-            lastError = errData.error || `서버 오류 (${response.status})`;
-            if (response.status === 500 && errData.error && errData.error.includes("API Key not configured")) {
-                lastError = "서버에 API 키가 설정되지 않았습니다.";
-            }
+        } catch (e) {
+            console.error('Fetch error:', e);
+            lastError = `네트워크 오류: ${e.message}`;
+            retryCount++;
         }
-    } catch (e) {
-        console.error('Fetch error:', e);
-        lastError = `네트워크 오류: ${e.message}`;
     }
 
     processingCount++;
@@ -368,6 +388,9 @@ async function executeAnalysis(base64Data, fileName, imgUrl) {
         if (currentMode === 'phonebook' && Array.isArray(result)) {
             renderPhonebookResult(id, result);
         } else if (currentMode === 'student') {
+            if (Array.isArray(result) && result.length > 0) {
+                result = result[0];
+            }
             renderStudentResult(id, result);
         } else {
             updateCardStatus(id, 'error', '결과 형식 오류');
