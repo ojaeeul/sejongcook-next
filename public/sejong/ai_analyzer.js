@@ -75,15 +75,19 @@ async function handleFiles(files) {
     totalFiles += validFiles.length;
     updateProgress();
 
-    const promises = [];
-    for (let file of validFiles) {
-        if (file.type === 'application/pdf') {
-            promises.push(processPDF(file));
-        } else {
-            promises.push(processImage(file));
-        }
+    // 최적의 속도와 API 차단을 막기 위해 5개씩 묶어서(Chunk) 동시 처리
+    const CONCURRENCY_LIMIT = 5;
+    for (let i = 0; i < validFiles.length; i += CONCURRENCY_LIMIT) {
+        const chunk = validFiles.slice(i, i + CONCURRENCY_LIMIT);
+        const promises = chunk.map(file => {
+            if (file.type === 'application/pdf') {
+                return processPDF(file);
+            } else {
+                return processImage(file);
+            }
+        });
+        await Promise.all(promises);
     }
-    await Promise.all(promises);
 }
 
 function updateProgress() {
