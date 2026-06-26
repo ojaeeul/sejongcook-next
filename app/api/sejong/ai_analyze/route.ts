@@ -14,8 +14,8 @@ export async function POST(request: Request) {
         const keys = envKeys.split(',').map(k => k.trim()).filter(k => k);
         const apiKey = keys[Math.floor(Math.random() * keys.length)];
 
-        // Use gemini-2.5-flash for speed and accuracy
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+        // Use gemini-2.5-pro for the absolute highest OCR and handwriting accuracy (최신 기술 적용)
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${apiKey}`;
         
         let response;
         let retries = 1;
