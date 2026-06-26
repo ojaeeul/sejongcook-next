@@ -888,8 +888,8 @@ async function handleEditSubmit(e) {
         if (data.job === '기타' && data.job_other) {
             data.job = `기타(${data.job_other})`;
         }
-        delete data.job_other;
     }
+    if (data.job_other !== undefined) delete data.job_other;
 
     // ------------------------------------------
     // Data Preservation Logic: Merge new data into existing member object 
