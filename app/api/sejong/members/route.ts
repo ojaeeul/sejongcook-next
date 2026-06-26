@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/sejongDataHandler';
+import fs from 'fs';
 
 
 export async function GET() {
@@ -36,6 +37,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ success: true, data });
     } catch (e: any) {
         console.error("POST Members Error:", e);
+        try { fs.writeFileSync('/tmp/sejong_error.log', JSON.stringify({ error: e.message, data: typeof data !== 'undefined' ? data : null }, null, 2)); } catch(err){}
         return NextResponse.json({ error: e.message }, { status: 500 });
     }
 }

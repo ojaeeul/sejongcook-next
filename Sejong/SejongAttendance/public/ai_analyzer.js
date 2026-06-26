@@ -54,6 +54,15 @@ document.addEventListener('DOMContentLoaded', () => {
             handleFiles(e.target.files);
         }
     });
+
+    const folderInput = document.getElementById('folderInput');
+    if (folderInput) {
+        folderInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFiles(e.target.files);
+            }
+        });
+    }
 });
 
 async function handleFiles(files) {
