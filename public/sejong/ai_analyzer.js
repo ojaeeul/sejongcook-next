@@ -275,7 +275,7 @@ function zoomModalImage(delta) {
     }
 }
 
-const CONCURRENCY_LIMIT = 2;
+const CONCURRENCY_LIMIT = 5;
 let activeRequests = 0;
 const requestQueue = [];
 
