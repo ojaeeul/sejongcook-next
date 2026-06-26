@@ -228,7 +228,7 @@ function openImageModal(src) {
     }
 }
 
-const CONCURRENCY_LIMIT = 5;
+const CONCURRENCY_LIMIT = 3;
 let activeRequests = 0;
 const requestQueue = [];
 
