@@ -14,7 +14,7 @@ export async function POST(request: Request) {
         }
 
         const keys = envKeys.split(',').map(k => k.trim()).filter(k => k);
-        // Use gemini-1.5-pro-latest for maximum accuracy and reasoning
+        // Use gemini-1.5-flash-latest for 3x faster speed and no hallucination
         
         let response;
         let retries = 3;
@@ -24,7 +24,7 @@ export async function POST(request: Request) {
 
         for (let i = 0; i <= retries; i++) {
             const apiKey = keys[Math.floor(Math.random() * keys.length)];
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key=${apiKey}`;
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
             
             response = await fetch(url, {
                 method: 'POST',
