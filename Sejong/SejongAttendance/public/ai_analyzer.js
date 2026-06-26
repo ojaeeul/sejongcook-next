@@ -219,7 +219,7 @@ function createCardUI(title, imgUrl, id) {
     return card;
 }
 
-const CONCURRENCY_LIMIT = 2;
+const CONCURRENCY_LIMIT = 1;
 let activeRequests = 0;
 const requestQueue = [];
 
@@ -291,7 +291,7 @@ async function executeAnalysis(base64Data, fileName, imgUrl) {
     let lastError = null;
 
     let retryCount = 0;
-    const maxRetries = 3;
+    const maxRetries = 15;
 
     while (retryCount <= maxRetries && !result) {
         if (retryCount > 0) {
@@ -324,8 +324,9 @@ async function executeAnalysis(base64Data, fileName, imgUrl) {
                 if (data.candidates && data.candidates.length > 0) {
                     let contentNode = data.candidates[0].content;
                     if (!contentNode || !contentNode.parts || contentNode.parts.length === 0) {
-                        lastError = 'AI가 응답 텍스트를 생성하지 못했습니다 (안전 필터 등에 의해 차단되었을 수 있습니다).';
-                        break;
+                        lastError = 'AI가 응답 텍스트를 생성하지 못했습니다. (재시도 중)';
+                        retryCount++;
+                        continue;
                     } else {
                         let text = contentNode.parts[0].text || '';
                         text = text.replace(/```json/gi, '').replace(/```/g, '').trim();
@@ -357,7 +358,8 @@ async function executeAnalysis(base64Data, fileName, imgUrl) {
                             } catch (fallbackErr) {
                                 console.error('JSON Parse Error:', fallbackErr, 'Text:', text);
                                 lastError = '결과 데이터 파싱 실패: ' + fallbackErr.message;
-                                break;
+                                retryCount++;
+                                continue;
                             }
                         }
                     }
@@ -368,11 +370,7 @@ async function executeAnalysis(base64Data, fileName, imgUrl) {
             } else {
                 const errData = await response.json().catch(() => ({}));
                 lastError = errData.error || `서버 오류 (${response.status})`;
-                if (response.status === 429 || response.status === 503 || response.status === 504 || response.status === 500) {
-                    retryCount++;
-                } else {
-                    break;
-                }
+                retryCount++;
             }
         } catch (e) {
             console.error('Fetch error:', e);
