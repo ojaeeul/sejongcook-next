@@ -7,12 +7,12 @@
     <meta http-equiv="Expires" content="0">    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>문자 발송 - 세종요리</title>
-    <link rel="stylesheet" href="style.css?v=20260627-27">
+    <link rel="stylesheet" href="style.css?v=20260627-28">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="shared_calc.js?v=20260627-27"></script>
-    <script src="sms_expected.js?v=20260627-27" defer></script>
+    <script src="shared_calc.js?v=20260627-28"></script>
+    <script src="sms_expected.js?v=20260627-28" defer></script>
     <style>
         .sms-container {
             display: flex;
@@ -1149,110 +1149,118 @@
                         }
                     });
                 // === BEGIN LEDGER EXACT MATCH LOGIC ===
-                for (let i = 1; i <= 12; i++) monthCountsSim[i] = 0;
-                
-                function _getLedgerMonthStatsForSim(memberId, targetYear, targetMonth, courseFilter) {
-                    const syncKey = `${memberId}_${targetYear}_${targetMonth}_${courseFilter || 'all'}`;
-                    let syncData = {};
-                    try {
-                        const parsed = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
-                        syncData = window.ledgerSyncData || parsed || {};
-                    } catch(e) {}
+                try {
+                    for (let i = 1; i <= 12; i++) monthCountsSim[i] = 0;
                     
-                    let realEighthDays = [];
-                    let hasRealFromSync = false;
-                    if (syncData && syncData[syncKey]) {
-                        const rawSync = syncData[syncKey];
-                        realEighthDays = Array.isArray(rawSync) ? rawSync : (typeof rawSync === 'number' ? [rawSync] : []);
-                        if (realEighthDays.length > 0) hasRealFromSync = true;
+                    function _getLedgerMonthStatsForSim(memberId, targetYear, targetMonth, courseFilter) {
+                        const syncKey = `${memberId}_${targetYear}_${targetMonth}_${courseFilter || 'all'}`;
+                        let syncData = {};
+                        try {
+                            const parsed = JSON.parse(localStorage.getItem('sejong_ledger_sync') || '{}');
+                            syncData = window.ledgerSyncData || parsed || {};
+                        } catch(e) {}
+                        
+                        let realEighthDays = [];
+                        let hasRealFromSync = false;
+                        if (syncData && syncData[syncKey]) {
+                            const rawSync = syncData[syncKey];
+                            realEighthDays = Array.isArray(rawSync) ? rawSync : (typeof rawSync === 'number' ? [rawSync] : []);
+                            if (realEighthDays.length > 0) hasRealFromSync = true;
+                        }
+
+                        const m = allMembers.find(m => String(m.id) === String(memberId));
+                        let simAtts = [];
+                        let calcHasAny = false;
+                        let monthMilestones = [];
+                        let calcEighthDays = [];
+                        let calcIsSimulated = false;
+
+                        if (typeof window.calculateRedBoxesForMonth === 'function' && m) {
+                            const result = window.calculateRedBoxesForMonth(m, targetYear, targetMonth, typeof attendanceData !== 'undefined' ? attendanceData : [], courseFilter, typeof window.GLOBAL_DATA_ADJUSTMENTS !== 'undefined' ? window.GLOBAL_DATA_ADJUSTMENTS : {}, typeof paymentsData !== 'undefined' ? paymentsData : []);
+                            calcHasAny = result.hasAnyAttendance;
+                            simAtts = result.simulatedAttendances || [];
+                            if (result && result.allMilestones && result.allMilestones.length > 0) {
+                                monthMilestones = result.allMilestones.filter(ms => ms.year === targetYear && ms.month === targetMonth);
+                            }
+                            if (result && result.redDays && result.redDays.length > 0) {
+                                calcEighthDays = result.redDays;
+                                calcIsSimulated = result.isSimulated;
+                            }
+                        }
+                        
+                        if (hasRealFromSync) {
+                            return { eighthDays: realEighthDays, eighthMonth: targetMonth, isSimulated: false, hasAnyAttendance: true, simulatedAttendances: simAtts, milestones: monthMilestones.length > 0 ? monthMilestones : realEighthDays.map(d => ({ year: targetYear, month: targetMonth, day: d, isReal: true })) };
+                        } else {
+                            if (monthMilestones.length > 0) {
+                                return { milestones: monthMilestones, hasAnyAttendance: calcHasAny, simulatedAttendances: simAtts };
+                            }
+                            if (calcEighthDays.length > 0) {
+                                return { eighthDays: calcEighthDays, eighthMonth: targetMonth, isSimulated: calcIsSimulated, hasAnyAttendance: calcHasAny, simulatedAttendances: simAtts };
+                            }
+                            if (simAtts.length > 0) {
+                                return { eighthDays: [], eighthMonth: targetMonth, isSimulated: calcIsSimulated, hasAnyAttendance: calcHasAny, simulatedAttendances: simAtts, milestones: [] };
+                            }
+                        }
+                        return { eighthDays: [], eighthMonth: targetMonth, isSimulated: false, hasAnyAttendance: false, milestones: [], simulatedAttendances: [] };
                     }
 
-                    const m = allMembers.find(m => String(m.id) === String(memberId));
-                    let simAtts = [];
-                    let calcHasAny = false;
-                    let monthMilestones = [];
-                    let calcEighthDays = [];
-                    let calcIsSimulated = false;
+                    function _getAllLedgerMonthStatsForSim(memberId, year, month) {
+                        const member = allMembers.find(m => String(m.id) === String(memberId));
+                        if (!member || !member.course) return [];
 
-                    if (typeof window.calculateRedBoxesForMonth === 'function' && m) {
-                        const result = window.calculateRedBoxesForMonth(m, targetYear, targetMonth, typeof attendanceData !== 'undefined' ? attendanceData : [], courseFilter, typeof window.GLOBAL_DATA_ADJUSTMENTS !== 'undefined' ? window.GLOBAL_DATA_ADJUSTMENTS : {}, typeof paymentsData !== 'undefined' ? paymentsData : []);
-                        calcHasAny = result.hasAnyAttendance;
-                        simAtts = result.simulatedAttendances || [];
-                        if (result && result.allMilestones && result.allMilestones.length > 0) {
-                            monthMilestones = result.allMilestones.filter(ms => ms.year === targetYear && ms.month === targetMonth);
+                        let courses = String(member.course).split(',').map(c => c.trim()).filter(c => c && !c.includes('[삭제]')).map(c => c.split('(')[0]);
+                        const hasJeggwa = courses.some(c => c.includes('제과') && !c.includes('제과제빵'));
+                        const hasJeppang = courses.some(c => c.includes('제빵') && !c.includes('제과제빵'));
+                        if (hasJeggwa && hasJeppang) {
+                            courses = courses.filter(c => !c.includes('제과') && !c.includes('제빵'));
+                            courses.push('제과제빵기능사');
                         }
-                        if (result && result.redDays && result.redDays.length > 0) {
-                            calcEighthDays = result.redDays;
-                            calcIsSimulated = result.isSimulated;
-                        }
+                        courses = [...new Set(courses)];
+
+                        const results = [];
+                        courses.forEach(courseName => {
+                            const stats = _getLedgerMonthStatsForSim(memberId, year, month, courseName);
+                            if (stats.milestones && stats.milestones.length > 0) {
+                                stats.milestones.forEach(ms => {
+                                    results.push({ course: courseName, eighthDay: ms.day, eighthMonth: ms.month, isSimulated: !ms.isReal });
+                                });
+                            } else if (stats.eighthDays && stats.eighthDays.length > 0) {
+                                stats.eighthDays.forEach(day => {
+                                    results.push({ course: courseName, eighthDay: day, eighthMonth: stats.eighthMonth, isSimulated: stats.isSimulated });
+                                });
+                            }
+                        });
+                        return results;
                     }
-                    
-                    if (hasRealFromSync) {
-                        return { eighthDays: realEighthDays, eighthMonth: targetMonth, isSimulated: false, hasAnyAttendance: true, simulatedAttendances: simAtts, milestones: monthMilestones.length > 0 ? monthMilestones : realEighthDays.map(d => ({ year: targetYear, month: targetMonth, day: d, isReal: true })) };
-                    } else {
-                        if (monthMilestones.length > 0) {
-                            return { milestones: monthMilestones, hasAnyAttendance: calcHasAny, simulatedAttendances: simAtts };
-                        }
-                        if (calcEighthDays.length > 0) {
-                            return { eighthDays: calcEighthDays, eighthMonth: targetMonth, isSimulated: calcIsSimulated, hasAnyAttendance: calcHasAny, simulatedAttendances: simAtts };
-                        }
-                        if (simAtts.length > 0) {
-                            return { eighthDays: [], eighthMonth: targetMonth, isSimulated: calcIsSimulated, hasAnyAttendance: calcHasAny, simulatedAttendances: simAtts, milestones: [] };
-                        }
-                    }
-                    return { eighthDays: [], eighthMonth: targetMonth, isSimulated: false, hasAnyAttendance: false, milestones: [], simulatedAttendances: [] };
-                }
 
-                function _getAllLedgerMonthStatsForSim(memberId, year, month) {
-                    const member = allMembers.find(m => String(m.id) === String(memberId));
-                    if (!member || !member.course) return [];
-
-                    let courses = member.course.split(',').map(c => c.trim()).filter(c => c && !c.includes('[삭제]')).map(c => c.split('(')[0]);
-                    const hasJeggwa = courses.some(c => c.includes('제과') && !c.includes('제과제빵'));
-                    const hasJeppang = courses.some(c => c.includes('제빵') && !c.includes('제과제빵'));
-                    if (hasJeggwa && hasJeppang) {
-                        courses = courses.filter(c => !c.includes('제과') && !c.includes('제빵'));
-                        courses.push('제과제빵기능사');
-                    }
-                    courses = [...new Set(courses)];
-
-                    const results = [];
-                    courses.forEach(courseName => {
-                        const stats = _getLedgerMonthStatsForSim(memberId, year, month, courseName);
-                        if (stats.milestones && stats.milestones.length > 0) {
-                            stats.milestones.forEach(ms => {
-                                results.push({ course: courseName, eighthDay: ms.day, eighthMonth: ms.month, isSimulated: !ms.isReal });
-                            });
-                        } else if (stats.eighthDays && stats.eighthDays.length > 0) {
-                            stats.eighthDays.forEach(day => {
-                                results.push({ course: courseName, eighthDay: day, eighthMonth: stats.eighthMonth, isSimulated: stats.isSimulated });
-                            });
-                        }
-                    });
-                    return results;
-                }
-
-                if (typeof allMembers !== 'undefined') {
-                    allMembers.forEach(m => {
-                        if (m.status === 'trash' || m.status === 'delete' || m.status === 'completed' || m.status === 'hold') return;
-                        for (let month = 1; month <= 12; month++) {
-                            const schedules = _getAllLedgerMonthStatsForSim(m.id, cy, month);
-                            schedules.forEach(s => {
-                                if (s.eighthDay && !isNaN(parseInt(s.eighthDay)) && Number(s.eighthDay) > 0) {
-                                    const isPaid = (typeof paymentsData !== 'undefined' ? paymentsData : window.paymentsData || []).some(p =>
-                                        String(p.memberId) === String(m.id) &&
-                                        String(p.year) === String(cy) &&
-                                        String(p.month) === String(month) &&
-                                        p.status === 'paid' &&
-                                        (!p.course || p.course === 'null' || p.course === 'undefined' || p.course === '' || !s.course || p.course.includes(s.course) || s.course.includes(p.course))
-                                    );
-                                    if (!isPaid && s.isSimulated) {
-                                        monthCountsSim[month]++;
+                    if (typeof allMembers !== 'undefined') {
+                        allMembers.forEach(m => {
+                            if (m.status === 'trash' || m.status === 'delete' || m.status === 'completed' || m.status === 'hold') return;
+                            for (let month = 1; month <= 12; month++) {
+                                const schedules = _getAllLedgerMonthStatsForSim(m.id, parseInt(cy, 10), month);
+                                schedules.forEach(s => {
+                                    if (s.eighthDay && !isNaN(parseInt(s.eighthDay)) && Number(s.eighthDay) > 0) {
+                                        const isPaid = (typeof paymentsData !== 'undefined' ? paymentsData : window.paymentsData || []).some(p =>
+                                            String(p.memberId) === String(m.id) &&
+                                            String(p.year) === String(cy) &&
+                                            String(p.month) === String(month) &&
+                                            p.status === 'paid' &&
+                                            (!p.course || p.course === 'null' || p.course === 'undefined' || p.course === '' || !s.course || String(p.course).includes(s.course) || String(s.course).includes(p.course))
+                                        );
+                                        if (!isPaid && s.isSimulated) {
+                                            monthCountsSim[month]++;
+                                        }
                                     }
-                                }
-                            });
-                        }
-                    });
+                                });
+                            }
+                        });
+                    }
+                } catch (internalErr) {
+                    console.error("LEDGER EXACT ERROR: ", internalErr);
+                    if (!window.hasAlertedLedgerError) {
+                        alert("예정결재일 뱃지 계산 중 오류가 발생했습니다: " + internalErr.message);
+                        window.hasAlertedLedgerError = true;
+                    }
                 }
                 // === END LEDGER EXACT MATCH LOGIC ===
 
@@ -1331,7 +1339,7 @@
             }, 500);
         });
     </script>
-    <script src="sidebar_sync.js?v=20260627-27"></script>
+    <script src="sidebar_sync.js?v=20260627-28"></script>
 </body>
 
 </html>
