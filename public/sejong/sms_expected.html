@@ -7,12 +7,12 @@
     <meta http-equiv="Expires" content="0">    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>문자 발송 - 세종요리</title>
-    <link rel="stylesheet" href="style.css?v=20260627-29">
+    <link rel="stylesheet" href="style.css?v=20260627-30">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="shared_calc.js?v=20260627-29"></script>
-    <script src="sms_expected.js?v=20260627-29" defer></script>
+    <script src="shared_calc.js?v=20260627-30"></script>
+    <script src="sms_expected.js?v=20260627-30" defer></script>
     <style>
         .sms-container {
             display: flex;
@@ -1169,7 +1169,7 @@
                             if (realEighthDays.length > 0) hasRealFromSync = true;
                         }
 
-                        const m = allMembers.find(m => String(m.id) === String(memberId));
+                        const m = (typeof membersDataRaw !== 'undefined' ? membersDataRaw : allMembers).find(m => String(m.id) === String(memberId));
                         let simAtts = [];
                         let calcHasAny = false;
                         let monthMilestones = [];
@@ -1206,7 +1206,7 @@
                     }
 
                     function _getAllLedgerMonthStatsForSim(memberId, year, month) {
-                        const member = allMembers.find(m => String(m.id) === String(memberId));
+                        const member = (typeof membersDataRaw !== 'undefined' ? membersDataRaw : allMembers).find(m => String(m.id) === String(memberId));
                         if (!member || !member.course) return [];
 
                         let courses = String(member.course).split(',').map(c => c.trim()).filter(c => c && !c.includes('[삭제]')).map(c => c.split('(')[0]);
@@ -1234,8 +1234,9 @@
                         return results;
                     }
 
-                    if (typeof allMembers !== 'undefined') {
-                        allMembers.forEach(m => {
+                    const sourceMembers = typeof membersDataRaw !== 'undefined' && membersDataRaw.length > 0 ? membersDataRaw : (typeof allMembers !== 'undefined' ? allMembers : []);
+                    if (sourceMembers.length > 0) {
+                        sourceMembers.forEach(m => {
                             if (m.status === 'trash' || m.status === 'delete' || m.status === 'completed' || m.status === 'hold') return;
                             for (let month = 1; month <= 12; month++) {
                                 const schedules = _getAllLedgerMonthStatsForSim(m.id, parseInt(cy, 10), month);
@@ -1340,7 +1341,7 @@
             }, 500);
         });
     </script>
-    <script src="sidebar_sync.js?v=20260627-29"></script>
+    <script src="sidebar_sync.js?v=20260627-30"></script>
 </body>
 
 </html>

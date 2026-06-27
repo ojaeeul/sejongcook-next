@@ -8,6 +8,7 @@ const API_BASE = '/api/sejong';
 
 const GLOBAL_DATA_ADJUSTMENTS = {};
 let allMembers = [];
+let membersDataRaw = [];
 let paymentsData = [];
 let attendanceData = [];
 let holidaysData = [];
@@ -324,6 +325,7 @@ async function fetchAllData() {
 
         if (results[0].status === 'fulfilled') {
             const raw = results[0].value;
+            membersDataRaw = Array.isArray(raw) ? raw : [];
             allMembers = Array.isArray(raw) ? raw.filter(m => !['trash', 'delete', 'completed', 'archive', 'hold'].includes(m.status)) : [];
         }
         if (results[1].status === 'fulfilled') paymentsData = results[1].value;
