@@ -7,12 +7,12 @@
     <meta http-equiv="Expires" content="0">    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>문자 발송 - 세종요리</title>
-    <link rel="stylesheet" href="style.css?v=20260627-25">
+    <link rel="stylesheet" href="style.css?v=20260627-26">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="shared_calc.js?v=20260627-25"></script>
-    <script src="sms_expected.js?v=20260627-25" defer></script>
+    <script src="shared_calc.js?v=20260627-26"></script>
+    <script src="sms_expected.js?v=20260627-26" defer></script>
     <style>
         .sms-container {
             display: flex;
@@ -1069,18 +1069,18 @@
                     allMembers.forEach(m => {
                         if (m.status === 'trash' || m.status === 'delete' || m.status === 'completed' || m.status === 'hold') return;
                         
-                        let courses = (m.course || '').split(',').map(c => c.trim()).filter(c => c !== '' && !c.includes('[삭제]'));
+                        let courses = (m.course || '').split(',').map(c => c.trim()).filter(c => c !== '' && !c.includes('[삭제]')).map(c => c.split('(')[0].trim());
                         const hasJeggwa = courses.some(c => c.includes('제과') && !c.includes('제과제빵'));
                         const hasJeppang = courses.some(c => c.includes('제빵') && !c.includes('제과제빵'));
                         if (hasJeggwa && hasJeppang) {
                             courses = courses.filter(c => !c.includes('제과') && !c.includes('제빵'));
                             courses.push('제과제빵기능사');
                         }
+                        courses = [...new Set(courses)];
                         
                         if (courses.length > 0) {
-                            courses.forEach(courseFull => {
-                                let courseName = courseFull.replace(/\([^)]*\)/g, '').trim();
-                                allCourseRows.push({ member: m, courseName: courseName });
+                            courses.forEach(cName => {
+                                allCourseRows.push({ member: m, courseName: cName });
                             });
                         }
                     });
@@ -1226,7 +1226,7 @@
             }, 500);
         });
     </script>
-    <script src="sidebar_sync.js?v=20260627-25"></script>
+    <script src="sidebar_sync.js?v=20260627-26"></script>
 </body>
 
 </html>
