@@ -2012,8 +2012,8 @@ function renderMembers() {
             displayMembers = members.filter(m => m.status === 'trash' || m.status === 'delete' || (m.course && m.course.includes('[삭제]')));
             if (document.getElementById('pageTitle')) document.getElementById('pageTitle').textContent = '휴 지 통';
         } else {
-            // Show Active (exclude completed/hold, but KEEP trash/delete as requested)
-            displayMembers = members.filter(m => m.status !== 'completed' && m.status !== 'hold');
+            // Show Active (exclude completed/hold/trash/delete)
+            displayMembers = members.filter(m => m.status !== 'completed' && m.status !== 'hold' && m.status !== 'trash' && m.status !== 'delete');
 
             // Dynamic Title based on course filter
             let title = '수 강 생 대 장';
