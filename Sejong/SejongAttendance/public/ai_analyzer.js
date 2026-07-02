@@ -588,7 +588,26 @@ function renderStudentResult(id, data) {
             schoolName = schoolName.replace("대학교", "").replace(/대$/, "").trim();
         }
     }
+    const courseStr = (data.수강과목 || '') + ' ' + (data.과정체크 || '');
     
+    const isBake = courseStr.includes('제과');
+    const isBread = courseStr.includes('제빵');
+    const isKorean = courseStr.includes('한식');
+    const isWestern = courseStr.includes('양식');
+    const isJapanese = courseStr.includes('일식');
+    const isChinese = courseStr.includes('중식');
+    const isPuffer = courseStr.includes('복어');
+
+    const is10 = courseStr.includes('10시');
+    const is5 = courseStr.includes('5시');
+    const is7 = courseStr.includes('7시');
+    
+    // 시간이 안써있으면 5시,7시 체크
+    const hasTime = is10 || is5 || is7;
+    const check10 = is10;
+    const check5 = is5 || (!hasTime);
+    const check7 = is7 || (!hasTime);
+
     content.innerHTML = `
         <div class="result-table-wrapper" style="margin-bottom: 15px; text-align: left;">
             <table class="dark-table">
@@ -773,22 +792,22 @@ function renderStudentResult(id, data) {
                 </table>
                 <table class="dark-table" style="border-top: none; width: 100%; border-collapse: collapse; font-size: 13px;">
                     <tr class="th-dark">
-                        <td style="width: 14.2%;"><label style="cursor: pointer;"><input type="checkbox" id="course_bake-${id}"> 제과</label></td>
-                        <td style="width: 14.2%;"><label style="cursor: pointer;"><input type="checkbox" id="course_bread-${id}"> 제빵</label></td>
-                        <td style="width: 14.2%;"><label style="cursor: pointer;"><input type="checkbox" id="course_korean-${id}"> 한식</label></td>
-                        <td style="width: 14.2%;"><label style="cursor: pointer;"><input type="checkbox" id="course_western-${id}"> 양식</label></td>
-                        <td style="width: 14.2%;"><label style="cursor: pointer;"><input type="checkbox" id="course_japanese-${id}"> 일식</label></td>
-                        <td style="width: 14.2%;"><label style="cursor: pointer;"><input type="checkbox" id="course_chinese-${id}"> 중식</label></td>
-                        <td style="width: 14.8%;"><label style="cursor: pointer;"><input type="checkbox" id="course_puffer-${id}"> 복어</label></td>
+                        <td style="width: 14.2%;"><label style="cursor: pointer;"><input type="checkbox" id="course_bake-${id}" ${isBake ? 'checked' : ''}> 제과</label></td>
+                        <td style="width: 14.2%;"><label style="cursor: pointer;"><input type="checkbox" id="course_bread-${id}" ${isBread ? 'checked' : ''}> 제빵</label></td>
+                        <td style="width: 14.2%;"><label style="cursor: pointer;"><input type="checkbox" id="course_korean-${id}" ${isKorean ? 'checked' : ''}> 한식</label></td>
+                        <td style="width: 14.2%;"><label style="cursor: pointer;"><input type="checkbox" id="course_western-${id}" ${isWestern ? 'checked' : ''}> 양식</label></td>
+                        <td style="width: 14.2%;"><label style="cursor: pointer;"><input type="checkbox" id="course_japanese-${id}" ${isJapanese ? 'checked' : ''}> 일식</label></td>
+                        <td style="width: 14.2%;"><label style="cursor: pointer;"><input type="checkbox" id="course_chinese-${id}" ${isChinese ? 'checked' : ''}> 중식</label></td>
+                        <td style="width: 14.8%;"><label style="cursor: pointer;"><input type="checkbox" id="course_puffer-${id}" ${isPuffer ? 'checked' : ''}> 복어</label></td>
                     </tr>
                     <tr class="th-dark">
-                        <td colspan="3"><label style="cursor: pointer;"><input type="checkbox" id="time_10-${id}"> 10시</label></td>
-                        <td colspan="2"><label style="cursor: pointer;"><input type="checkbox" id="time_5-${id}"> 5시</label></td>
-                        <td colspan="2"><label style="cursor: pointer;"><input type="checkbox" id="time_7-${id}"> 7시</label></td>
+                        <td colspan="3"><label style="cursor: pointer;"><input type="checkbox" id="time_10-${id}" ${check10 ? 'checked' : ''}> 10시</label></td>
+                        <td colspan="2"><label style="cursor: pointer;"><input type="checkbox" id="time_5-${id}" ${check5 ? 'checked' : ''}> 5시</label></td>
+                        <td colspan="2"><label style="cursor: pointer;"><input type="checkbox" id="time_7-${id}" ${check7 ? 'checked' : ''}> 7시</label></td>
                     </tr>
                     <tr>
                         <td colspan="7" style="height: 120px; vertical-align: top; text-align: left; padding: 15px;">
-                            <textarea id="paper_notes-${id}" style="width:100%; height:100%; background:transparent; border:none; color:#1e293b; resize:none; font-size: 14px; outline: none; font-family: inherit;" placeholder="메모 및 비고 입력..."></textarea>
+                            <textarea id="paper_notes-${id}" style="width:100%; height:100%; background:transparent; border:none; color:#1e293b; resize:none; font-size: 14px; outline: none; font-family: inherit;" placeholder="메모 및 비고 입력...">${data.비고 || ''}</textarea>
                         </td>
                     </tr>
                     <tr class="th-dark">
