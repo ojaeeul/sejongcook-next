@@ -2109,8 +2109,8 @@ function renderMembers() {
             // Status Select Options
             const statuses = [
                 { val: 'taking', text: '수강중' },
-                { val: 'completed', text: '수료' },
                 { val: 'retaking', text: '재수강' },
+                { val: 'completed', text: '수료' },
                 { val: 'trash', text: '휴지통' }
             ];
 
