@@ -1256,6 +1256,53 @@ window.handleRrnInput = function(el) {
         }
     }
     
+    // Auto-fill birthdate and gender
+    if (val.length >= 7) {
+        const yearPrefixStr = val.substring(0, 2);
+        const monthStr = val.substring(2, 4);
+        const dayStr = val.substring(4, 6);
+        const genderDigit = val.charAt(6);
+        
+        let yearPrefix = '';
+        let genderVal = '';
+        
+        if (['1', '2', '5', '6'].includes(genderDigit)) {
+            yearPrefix = '19';
+        } else if (['3', '4', '7', '8'].includes(genderDigit)) {
+            yearPrefix = '20';
+        }
+        
+        if (['1', '3', '5', '7'].includes(genderDigit)) {
+            genderVal = '남';
+        } else if (['2', '4', '6', '8'].includes(genderDigit)) {
+            genderVal = '여';
+        }
+        
+        if (yearPrefix) {
+            const fullYear = yearPrefix + yearPrefixStr;
+            const fullMonth = monthStr;
+            const fullDay = dayStr;
+            
+            const yySelect = document.getElementById('birth_yy');
+            const mmSelect = document.getElementById('birth_mm');
+            const ddSelect = document.getElementById('birth_dd');
+            
+            // gender might be 'edit_gender' (in index.html) or 'gender' (in register.html)
+            const genderSelect = document.getElementById('edit_gender') || document.getElementById('gender');
+            
+            if (yySelect) yySelect.value = fullYear;
+            if (mmSelect) mmSelect.value = fullMonth;
+            if (ddSelect) ddSelect.value = fullDay;
+            
+            if (genderSelect && genderVal) {
+                genderSelect.value = genderVal;
+            }
+            
+            if (window.updateBirthDate) window.updateBirthDate();
+            if (window.updateEditBirthDate) window.updateEditBirthDate();
+        }
+    }
+    
     window.renderRrnDisplay(el);
 };
 
