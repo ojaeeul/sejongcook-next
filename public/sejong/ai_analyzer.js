@@ -575,9 +575,11 @@ function renderStudentResult(id, data) {
                 </tr>
                 <tr>
                     <td class="th-dark">주소</td>
-                    <td colspan="5" style="text-align: left; display: flex; align-items: center; border-bottom: none; padding-right: 5px;">
-                        <input type="text" id="address-${id}" value="${data.주소 || ''}" placeholder="상세 주소 입력" style="flex: 1; text-align: left; background: transparent; border: none; outline: none; font-family: inherit; padding: 0 5px;">
-                        <button type="button" class="address-btn" style="background: #3b82f6; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 12px; min-width: 40px;">검색</button>
+                    <td colspan="5" style="text-align: left; padding: 0;">
+                        <div style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 5px;">
+                            <input type="text" id="address-${id}" value="${data.주소 || ''}" placeholder="상세 주소 입력" style="flex: 1; text-align: left; background: transparent; border: none; outline: none; font-family: inherit; padding: 0 5px; min-width: 0;">
+                            <button type="button" class="address-btn" style="background: #3b82f6; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 12px; min-width: 40px; margin-left: 5px;">검색</button>
+                        </div>
                     </td>
                 </tr>
                 <tr>
