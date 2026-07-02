@@ -36,7 +36,7 @@ async function fetchMembers() {
         if (showingTrash) {
             members = allMembers.filter(m => m.status === 'trash');
         } else {
-            members = allMembers.filter(m => m.status !== 'completed' && m.status !== 'hold' && m.status !== 'trash');
+            members = allMembers.filter(m => m.status !== 'completed' && m.status !== 'trash');
         }
 
         // Extract unique courses and years

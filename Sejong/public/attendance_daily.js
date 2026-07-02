@@ -136,7 +136,7 @@ function renderCourseList() {
     courseNames.forEach(cName => {
         let membersInCourse = groupedCourses[cName];
         if (!includeInactive) {
-            membersInCourse = membersInCourse.filter(m => m.status !== 'trash' && m.status !== 'delete' && m.status !== 'completed' && m.status !== 'hold');
+            membersInCourse = membersInCourse.filter(m => m.status !== 'trash' && m.status !== 'completed');
         }
 
         if (membersInCourse.length === 0) return;
@@ -214,7 +214,7 @@ function renderAttendanceTbody() {
     let membersToRender = groupedCourses[activeCourse];
 
     if (!includeInactive) {
-        membersToRender = membersToRender.filter(m => m.status !== 'trash' && m.status !== 'delete' && m.status !== 'completed' && m.status !== 'hold');
+        membersToRender = membersToRender.filter(m => m.status !== 'trash' && m.status !== 'completed');
     }
 
     document.getElementById('totalStudentsCount').textContent = `총원 ${membersToRender.length}명`;
@@ -365,7 +365,7 @@ window.markAllPresent = function () {
     let membersToRender = groupedCourses[activeCourse];
     const includeInactive = document.getElementById('includeInactive').checked;
     if (!includeInactive) {
-        membersToRender = membersToRender.filter(m => m.status !== 'trash' && m.status !== 'delete' && m.status !== 'completed' && m.status !== 'hold');
+        membersToRender = membersToRender.filter(m => m.status !== 'trash' && m.status !== 'completed');
     }
 
     membersToRender.forEach(m => {
@@ -385,7 +385,7 @@ function updateStats() {
         let membersToRender = groupedCourses[activeCourse];
         const includeInactive = document.getElementById('includeInactive').checked;
         if (!includeInactive) {
-            membersToRender = membersToRender.filter(m => m.status !== 'trash' && m.status !== 'delete' && m.status !== 'completed' && m.status !== 'hold');
+            membersToRender = membersToRender.filter(m => m.status !== 'trash' && m.status !== 'completed');
         }
 
         membersToRender.forEach(m => {
@@ -416,7 +416,7 @@ window.saveDailyAttendance = async function () {
     let membersToRender = groupedCourses[activeCourse];
     const includeInactive = document.getElementById('includeInactive').checked;
     if (!includeInactive) {
-        membersToRender = membersToRender.filter(m => m.status !== 'trash' && m.status !== 'delete' && m.status !== 'completed' && m.status !== 'hold');
+        membersToRender = membersToRender.filter(m => m.status !== 'trash' && m.status !== 'completed');
     }
 
     let savedCount = 0;
