@@ -944,7 +944,7 @@ async function saveStudent(id) {
         start_date: document.getElementById(`startDate-${id}`)?.value || '',
         course: finalCourse,
         notes: combinedNotes,
-        registeredDate: new Date().toISOString().split('T')[0],
+        registeredDate: document.getElementById(`paper_date-${id}`)?.value || new Date().toISOString().split('T')[0],
         type: document.getElementById(`type-${id}`)?.value || 'student',
         school_level: document.getElementById(`schoolLevel-${id}`)?.value || '',
         grade: document.getElementById(`grade-${id}`)?.value || ''

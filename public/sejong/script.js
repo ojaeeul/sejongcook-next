@@ -2656,8 +2656,8 @@ window.open3DSliderForDate = async function(dateStr) {
         const res = await fetch(`/api/sejong/members?t=${Date.now()}`);
         const allMembers = await res.json();
         
-        // Filter by paper_date or start_date matching dateStr
-        const filtered = allMembers.filter(m => (m.paper_date === dateStr) || (m.start_date === dateStr));
+        // Filter by registeredDate or start_date matching dateStr
+        const filtered = allMembers.filter(m => (m.registeredDate === dateStr) || (m.start_date === dateStr));
         
         if (filtered.length === 0) {
             alert(`${dateStr} 에 등록된 수강생이 없습니다.`);
