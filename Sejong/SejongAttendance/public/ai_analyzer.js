@@ -124,7 +124,7 @@ async function processPDF(file) {
             const analyzePromises = [];
             for (let i = 1; i <= pdf.numPages; i++) {
                 const page = await pdf.getPage(i);
-                const viewport = page.getViewport({ scale: 1.5 });
+                const viewport = page.getViewport({ scale: 2.5 });
                 const canvas = document.createElement('canvas');
                 const context = canvas.getContext('2d');
                 canvas.height = viewport.height;
@@ -132,7 +132,7 @@ async function processPDF(file) {
 
                 await page.render({ canvasContext: context, viewport: viewport }).promise;
                 
-                const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
                 const base64Data = dataUrl.split(',')[1];
                 analyzePromises.push(analyzeImage(base64Data, `${file.name} (페이지 ${i})`, dataUrl));
             }
@@ -152,8 +152,8 @@ async function processImage(file) {
         reader.onload = (e) => {
             const img = new Image();
             img.onload = async () => {
-                // Resize image to max 600px for EXTREME upload speed
-                const maxSize = 600;
+                // Resize image to max 2048px for OCR clarity
+                const maxSize = 2048;
                 let width = img.width;
                 let height = img.height;
                 
@@ -173,7 +173,7 @@ async function processImage(file) {
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, width, height);
                 
-                const dataUrl = canvas.toDataURL('image/jpeg', 0.4);
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
                 const base64Data = dataUrl.split(',')[1];
                 
                 try {
