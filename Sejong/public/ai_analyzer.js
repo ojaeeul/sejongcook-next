@@ -555,86 +555,127 @@ function renderStudentResult(id, data) {
     const combinedCourse = [data.수강과목, data.과정체크].filter(x => x).join(' / ');
     
     content.innerHTML = `
-        <div class="result-table-wrapper" style="margin-bottom: 15px;">
+        <div class="result-table-wrapper" style="margin-bottom: 15px; text-align: left;">
             <table class="dark-table">
                 <tr>
-                    <td class="th-dark" style="width: 15%;">성명</td>
-                    <td><input type="text" id="name-${id}" value="${data.성명 || ''}" style="text-align: center;"></td>
+                    <td class="th-dark" style="width: 15%;">성명 <span class="required" style="color:#ef4444">*</span></td>
+                    <td><input type="text" id="name-${id}" value="${data.성명 || ''}" required placeholder="이름 입력" style="text-align: center; width: 100%; background: transparent; border: none; outline: none; font-family: inherit;"></td>
                     <td class="th-dark" style="width: 10%;">성별</td>
-                    <td style="width: 15%;"><input type="text" id="gender-${id}" value="${data.성별 || ''}" style="text-align: center;"></td>
-                    <td class="th-dark" style="width: 15%;">생년월일</td>
-                    <td><input type="text" id="birth-${id}" value="${data.생년월일 || ''}" style="text-align: center;"></td>
+                    <td style="width: 15%;">
+                        <select id="gender-${id}" style="text-align: center; text-align-last: center; width: 100%; background: transparent; border: none; outline: none; font-family: inherit;">
+                            <option value="">선택</option>
+                            <option value="여" ${data.성별 === '여' ? 'selected' : ''}>여</option>
+                            <option value="남" ${data.성별 === '남' ? 'selected' : ''}>남</option>
+                        </select>
+                    </td>
+                    <td class="th-dark" style="width: 15%;">주민등록번호</td>
+                    <td>
+                        <input type="text" id="birth-${id}" value="${data.생년월일 || ''}" placeholder="000000-0000000" style="text-align: center; width: 100%; background: transparent; border: none; outline: none; font-family: inherit;">
+                    </td>
                 </tr>
                 <tr>
                     <td class="th-dark">주소</td>
-                    <td colspan="5" style="text-align: left; padding-left: 10px;">
-                        <input type="text" id="address-${id}" value="${data.주소 || ''}">
+                    <td colspan="5" style="text-align: left; display: flex; align-items: center; border-bottom: none; padding-right: 5px;">
+                        <input type="text" id="address-${id}" value="${data.주소 || ''}" placeholder="상세 주소 입력" style="flex: 1; text-align: left; background: transparent; border: none; outline: none; font-family: inherit; padding: 0 5px;">
+                        <button type="button" class="address-btn" style="background: #3b82f6; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 12px; min-width: 40px;">검색</button>
                     </td>
                 </tr>
                 <tr>
                     <td rowspan="2" class="th-dark">연락처</td>
                     <td class="th-dark">본인</td>
-                    <td colspan="4" style="text-align: center;">
-                        <input type="text" id="phone-${id}" value="${data.학생연락처 || ''}" style="text-align: center;">
+                    <td colspan="4" style="text-align: center; padding: 0;">
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 5px; height: 100%; min-height: 35px;">
+                            <span style="color: #94a3b8; font-weight: 500;">010 - </span>
+                            <input type="tel" id="phone-${id}" value="${(data.학생연락처 || '').replace(/^010-?/, '')}" maxlength="9" placeholder="0000-0000" style="width: 120px; text-align: center; background: transparent; border: none; outline: none; font-family: inherit;">
+                        </div>
                     </td>
                 </tr>
                 <tr>
                     <td class="th-dark">보호자 / 자택</td>
-                    <td colspan="4" style="text-align: center;">
-                        <input type="text" id="parentPhone-${id}" value="${data.부모연락처 || ''}" style="text-align: center;">
+                    <td colspan="2" style="text-align: center; padding: 0;">
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 5px; height: 100%; min-height: 35px;">
+                            <span style="color: #94a3b8; font-weight: 500; font-size: 12px; margin-right: 5px; white-space: nowrap;">보호자</span>
+                            <span style="color: #94a3b8; font-weight: 500; white-space: nowrap;">010 - </span>
+                            <input type="tel" id="parentPhone-${id}" value="${(data.부모연락처 || '').replace(/^010-?/, '')}" maxlength="9" placeholder="0000-0000" style="width: 100px; text-align: center; background: transparent; border: none; outline: none; font-family: inherit;">
+                        </div>
+                    </td>
+                    <td colspan="2" style="text-align: center; padding: 0;">
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 5px; height: 100%; min-height: 35px;">
+                            <span style="color: #94a3b8; font-weight: 500; font-size: 12px; margin-right: 5px; white-space: nowrap;">자택</span>
+                            <span style="color: #94a3b8; font-weight: 500; white-space: nowrap;">02 - </span>
+                            <input type="tel" id="homePhone-${id}" value="" maxlength="9" placeholder="0000-0000" style="width: 100px; text-align: center; background: transparent; border: none; outline: none; font-family: inherit;">
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="th-dark">회원구분</td>
+                    <td colspan="5">
+                        <select id="type-${id}" style="text-align: center; text-align-last: center; width: 100%; background: transparent; border: none; outline: none; font-family: inherit;">
+                            <option value="student">학생</option>
+                            <option value="general">일반인</option>
+                        </select>
                     </td>
                 </tr>
                 <tr>
                     <td class="th-dark">학교</td>
-                    <td colspan="5" style="text-align: left; padding-left: 10px;">
-                        <input type="text" id="school-${id}" value="${data.학교 || ''}">
+                    <td colspan="2"><input type="text" id="school-${id}" value="${data.학교 || ''}" placeholder="학교명" style="text-align: center; width: 100%; background: transparent; border: none; outline: none; font-family: inherit;"></td>
+                    <td colspan="3" style="border: none; padding: 5px;">
+                        <div style="display: flex; gap: 5px; width: 100%;">
+                            <select id="schoolLevel-${id}" style="flex: 1; border: 1px solid #cbd5e1; border-radius: 4px; padding: 5px; box-sizing: border-box; background: transparent; outline: none; font-family: inherit;">
+                                <option value="">구분</option>
+                                <option value="고등학교">고등학교</option>
+                                <option value="중학교">중학교</option>
+                                <option value="초등학교">초등학교</option>
+                                <option value="대학교">대학교</option>
+                            </select>
+                            <select id="grade-${id}" style="flex: 1; border: 1px solid #cbd5e1; border-radius: 4px; padding: 5px; box-sizing: border-box; background: transparent; outline: none; font-family: inherit;">
+                                <option value="">학년</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                                <option value="6">6</option>
+                            </select>
+                        </div>
                     </td>
                 </tr>
                 <tr>
                     <td class="th-dark">수강과목</td>
-                    <td colspan="5" style="text-align: left; padding-left: 10px;">
-                        <input type="text" id="courseName-${id}" value="${data.수강과목 || ''}">
+                    <td colspan="5" style="text-align: left; padding: 5px;">
+                        <div style="display: flex; gap: 5px; width: 100%;">
+                            <input type="text" id="courseName-${id}" value="${data.수강과목 || ''}" placeholder="과정명 입력 또는 선택" style="flex: 2; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; background: #f8fafc; outline: none; font-family: inherit;">
+                            <input type="text" id="courseTime-${id}" placeholder="시간/요일 입력" style="flex: 1; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; background: #f8fafc; outline: none; font-family: inherit;">
+                            <button type="button" style="background: #ef4444; color: white; border: none; border-radius: 4px; width: 30px; cursor: pointer; font-weight: bold;">-</button>
+                        </div>
+                        <button type="button" style="margin-top: 5px; padding: 6px; border-radius: 4px; background: #3b82f6; color: white; border: none; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px; justify-content: center; width: 100%;">
+                            <i class="fas fa-plus" style="font-size: 14px;"></i> 과정 추가
+                        </button>
                     </td>
                 </tr>
                 <tr>
                     <td class="th-dark">시작일</td>
-                    <td colspan="5" style="text-align: center;">
-                        <input type="text" id="startDate-${id}" value="${data.수강시작일 || ''}" style="text-align: center;">
+                    <td colspan="5">
+                        <input type="date" id="startDate-${id}" value="${data.수강시작일 ? data.수강시작일.replace(/\./g, '-') : ''}" style="width: 100%; text-align: center; border: 1px solid #cbd5e1; border-radius: 4px; padding: 5px; background: transparent; cursor: pointer; font-size: 14px; box-sizing: border-box; outline: none; font-family: inherit;">
+                    </td>
+                </tr>
+                <tr>
+                    <td class="th-dark">비고</td>
+                    <td colspan="5"><input type="text" id="course-${id}" value="${combinedCourse}" placeholder="특이사항 입력" style="text-align: left; padding-left: 10px; width: 100%; background: transparent; border: none; outline: none; font-family: inherit;"></td>
+                </tr>
+                <tr style="border-top: 2px dashed #cbd5e1; background: #f8fafc;">
+                    <td class="th-dark" style="font-size: 11px;">결제정보<br>(AI추출)</td>
+                    <td colspan="5" style="display: flex; border: none;">
+                        <input type="text" id="fee-${id}" value="${data.수강료 || ''}" placeholder="수강료" style="flex: 1; text-align: center; background: transparent; border: none; border-right: 1px solid #cbd5e1; outline: none; font-family: inherit; font-size: 11px;">
+                        <input type="text" id="toolFee-${id}" value="${data.도구비 || ''}" placeholder="도구비" style="flex: 1; text-align: center; background: transparent; border: none; border-right: 1px solid #cbd5e1; outline: none; font-family: inherit; font-size: 11px;">
+                        <input type="text" id="totalFee-${id}" value="${data.결제금액 || ''}" placeholder="결제금액" style="flex: 1; text-align: center; background: transparent; border: none; outline: none; font-family: inherit; font-size: 11px;">
                     </td>
                 </tr>
             </table>
-
-            <!-- Premium Paper Form UI -->
-            <div style="margin-top: 20px; border-top: 2px dashed #475569; padding-top: 20px;">
-                <table class="dark-table" style="margin-bottom: 0;">
-                    <tr>
-                        <td class="th-dark" style="width: 15%;">수강료</td>
-                        <td colspan="2" style="text-align: left; padding-left: 10px;">
-                            <div style="display: flex; align-items: center;">₩ <input type="text" id="fee-${id}" value="${data.수강료 || ''}" style="margin-left: 5px;"></div>
-                        </td>
-                        <td class="th-dark" style="width: 15%;">도구비</td>
-                        <td colspan="2" style="text-align: left; padding-left: 10px;">
-                            <div style="display: flex; align-items: center;">₩ <input type="text" id="toolFee-${id}" value="${data.도구비 || ''}" style="margin-left: 5px;"></div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="th-dark">총결제금액</td>
-                        <td colspan="5" style="text-align: left; padding-left: 10px;">
-                            <div style="display: flex; align-items: center;">₩ <input type="text" id="totalFee-${id}" value="${data.결제금액 || ''}" style="margin-left: 5px;"></div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="th-dark">체크과정</td>
-                        <td colspan="5" style="text-align: left; padding-left: 10px;">
-                            <input type="text" id="course-${id}" value="${combinedCourse}">
-                        </td>
-                    </tr>
-                </table>
-            </div>
         </div>
-        <div class="card-actions" style="margin-top: 15px;">
-            <button class="btn-save" onclick="saveStudent('${id}')"><i class="fas fa-save"></i> 명단에 등록</button>
-            <button class="btn-delete" onclick="removeCard('${id}')"><i class="fas fa-trash"></i></button>
+        <div class="card-actions" style="display: flex; gap: 10px;">
+            <button class="btn-save" onclick="saveStudent('${id}')" style="background: #4ade80; color: #064e3b; flex: 1; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 14px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px;"><i class="fas fa-save"></i> 명단에 등록</button>
+            <button class="btn-delete" onclick="removeCard('${id}')" style="background: #3f3f46; color: #f87171; flex: 0 0 50px; padding: 12px; border-radius: 8px; border: none; cursor: pointer;"><i class="fas fa-trash"></i></button>
         </div>
     `;
 }
