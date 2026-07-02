@@ -1927,25 +1927,36 @@ window.handleStatusChange = async function (e, memberId) {
 // Fixed Update Status Function (Appended)
 async function updateMemberStatus(member, status) {
     member.status = status;
-    if (status === 'completed' && !member.completedDate) {
+    
+    // 수료 처리 시, notes에 수료일 기록 (Supabase members 테이블에 completedDate 컬럼이 없으므로)
+    if (status === 'completed' && !(member.notes || '').includes('[수료일:')) {
         const d = new Date();
         const yy = d.getFullYear();
         const mm = String(d.getMonth() + 1).padStart(2, '0');
         const dd = String(d.getDate()).padStart(2, '0');
-        member.completedDate = `${yy}-${mm}-${dd}`;
+        member.notes = (member.notes ? member.notes + '\n' : '') + `[수료일: ${yy}-${mm}-${dd}]`;
     }
+
     try {
-        await fetch(getFetchUrl('members', true), {
+        const res = await fetch(getFetchUrl('members', true), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(member)
         });
+        
+        if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            alert("상태 변경 실패: " + (errData.error || "서버 오류가 발생했습니다."));
+            console.error("Update failed:", errData);
+            return;
+        }
+
         await fetchData();
         renderMembers();
         updateSummary();
     } catch (e) {
         console.error('Failed to update status', e);
-        alert("상태 업데이트 중 오류 발생");
+        alert("상태 업데이트 중 통신 오류 발생");
         renderMembers();
     }
 }
