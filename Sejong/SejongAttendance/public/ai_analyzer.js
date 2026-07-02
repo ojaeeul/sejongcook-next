@@ -680,25 +680,29 @@ function renderStudentResult(id, data) {
                 <tr>
                     <td class="th-dark">수강과목</td>
                     <td colspan="5" style="text-align: left; padding: 5px;">
-                        <div style="display: flex; gap: 5px; width: 100%;">
-                            <input type="text" id="courseName-${id}" value="${data.수강과목 || ''}" placeholder="과정명 입력 또는 선택" style="flex: 2; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; background: #f8fafc; outline: none; font-family: inherit;">
-                            <input type="text" id="courseTime-${id}" placeholder="시간/요일 입력" style="flex: 1; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; background: #f8fafc; outline: none; font-family: inherit;">
-                            <button type="button" style="background: #ef4444; color: white; border: none; border-radius: 4px; width: 30px; cursor: pointer; font-weight: bold;">-</button>
+                        <div id="course-container-${id}">
+                            <div class="course-row-${id}" style="display: flex; gap: 5px; width: 100%; margin-bottom: 5px;">
+                                <input type="text" class="courseName-${id}" value="${data.수강과목 || ''}" placeholder="과정명 입력 또는 선택" list="course_datalist_options" style="flex: 2; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; background: transparent; outline: none; font-family: inherit;">
+                                <input type="text" class="courseTime-${id}" value="${data.과정체크 || ''}" placeholder="시간/요일 입력" list="time_datalist_options" style="flex: 1; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; background: transparent; outline: none; font-family: inherit;">
+                                <button type="button" onclick="this.parentElement.remove()" style="background: #ef4444; color: white; border: none; border-radius: 4px; width: 30px; cursor: pointer; font-weight: bold; font-size: 16px; padding: 0;">-</button>
+                            </div>
                         </div>
-                        <button type="button" style="margin-top: 5px; padding: 6px; border-radius: 4px; background: #3b82f6; color: white; border: none; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px; justify-content: center; width: 100%;">
-                            <i class="fas fa-plus" style="font-size: 14px;"></i> 과정 추가
+                        <button type="button" onclick="addAICourseRow('${id}')" style="margin-top: 5px; padding: 6px; border-radius: 4px; background: #3b82f6; color: white; border: none; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 4px; justify-content: center; width: 100%;">
+                            <span style="font-weight: bold; font-size: 14px;">+</span> 과정 추가
                         </button>
                     </td>
                 </tr>
                 <tr>
                     <td class="th-dark">시작일</td>
-                    <td colspan="5">
-                        <input type="date" id="startDate-${id}" value="${data.수강시작일 ? data.수강시작일.replace(/\./g, '-') : ''}" style="width: 100%; text-align: center; border: 1px solid #cbd5e1; border-radius: 4px; padding: 5px; background: transparent; cursor: pointer; font-size: 14px; box-sizing: border-box; outline: none; font-family: inherit;">
+                    <td colspan="5" style="padding: 5px;">
+                        <input type="date" id="startDate-${id}" value="${data.수강시작일 ? data.수강시작일.replace(/\./g, '-') : ''}" style="width: 100%; text-align: left; border: 1px solid #cbd5e1; border-radius: 4px; padding: 6px 10px; background: transparent; cursor: pointer; font-size: 14px; box-sizing: border-box; outline: none; font-family: inherit;">
                     </td>
                 </tr>
                 <tr>
                     <td class="th-dark">비고</td>
-                    <td colspan="5"><input type="text" id="course-${id}" value="${combinedCourse}" placeholder="특이사항 입력" style="text-align: left; padding-left: 10px; width: 100%; background: transparent; border: none; outline: none; font-family: inherit;"></td>
+                    <td colspan="5" style="padding: 5px;">
+                        <input type="text" id="notes-${id}" value="" placeholder="특이사항 입력" style="width: 100%; text-align: left; background: transparent; border: 1px solid transparent; outline: none; font-family: inherit; padding: 6px 5px;">
+                    </td>
                 </tr>
                 <tr style="border-top: 2px dashed #cbd5e1; background: #f8fafc;">
                     <td class="th-dark" style="font-size: 11px;">결제정보<br>(AI추출)</td>
@@ -754,10 +758,41 @@ function removeCard(id) {
     document.getElementById(`card-${id}`).remove();
 }
 
+function addAICourseRow(id) {
+    const container = document.getElementById(`course-container-${id}`);
+    if (!container) return;
+
+    const div = document.createElement('div');
+    div.className = `course-row-${id}`;
+    div.style.cssText = 'display: flex; gap: 5px; width: 100%; margin-bottom: 5px;';
+
+    div.innerHTML = `
+        <input type="text" class="courseName-${id}" placeholder="과정명 입력 또는 선택" list="course_datalist_options" style="flex: 2; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; background: transparent; outline: none; font-family: inherit;">
+        <input type="text" class="courseTime-${id}" placeholder="시간/요일 입력" list="time_datalist_options" style="flex: 1; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; background: transparent; outline: none; font-family: inherit;">
+        <button type="button" onclick="this.parentElement.remove()" style="background: #ef4444; color: white; border: none; border-radius: 4px; width: 30px; cursor: pointer; font-weight: bold; font-size: 16px; padding: 0;">-</button>
+    `;
+
+    container.appendChild(div);
+}
+
 async function saveStudent(id) {
     const nameInput = document.getElementById(`name-${id}`);
     const phoneInput = document.getElementById(`phone-${id}`);
-    const courseInput = document.getElementById(`course-${id}`);
+    
+    // Gather all course rows
+    const courseNameInputs = document.querySelectorAll(`.courseName-${id}`);
+    const courseTimeInputs = document.querySelectorAll(`.courseTime-${id}`);
+    
+    let courseList = [];
+    for (let i = 0; i < courseNameInputs.length; i++) {
+        let cName = courseNameInputs[i].value.trim();
+        let cTime = courseTimeInputs[i].value.trim();
+        if (cName) {
+            let timeStr = cTime ? `(${cTime})` : '';
+            courseList.push(`${cName}${timeStr}`);
+        }
+    }
+    const finalCourse = courseList.join(' / ');
     
     if (!nameInput.value || !phoneInput.value) {
         alert('이름과 전화번호는 필수입니다.');
@@ -770,7 +805,9 @@ async function saveStudent(id) {
     const toolFee = document.getElementById(`toolFee-${id}`)?.value || '';
     const totalFee = document.getElementById(`totalFee-${id}`)?.value || '';
     
-    let notes = `[AI분석] 성별: ${gender}, 생년월일: ${birth}\n수강료: ${fee}, 도구비: ${toolFee}, 총결제금액: ${totalFee}`;
+    let aiNotes = `[AI분석] 성별: ${gender}, 생년월일: ${birth}\n수강료: ${fee}, 도구비: ${toolFee}, 총결제금액: ${totalFee}`;
+    let userNotes = document.getElementById(`notes-${id}`)?.value || '';
+    let combinedNotes = userNotes ? (userNotes + '\n' + aiNotes) : aiNotes;
 
     const studentData = {
         id: String(Date.now()), // Generate ID locally
@@ -779,10 +816,10 @@ async function saveStudent(id) {
         phone_guardian: document.getElementById(`parentPhone-${id}`)?.value || '',
         address: document.getElementById(`address-${id}`)?.value || '',
         school: document.getElementById(`school-${id}`)?.value || '',
-        course_select: document.getElementById(`courseName-${id}`)?.value || '',
+        course_select: '', // Usually unused if course is populated
         start_date: document.getElementById(`startDate-${id}`)?.value || '',
-        course: courseInput?.value || '',
-        notes: notes,
+        course: finalCourse,
+        notes: combinedNotes,
         registeredDate: new Date().toISOString().split('T')[0],
         type: document.getElementById(`type-${id}`)?.value || 'student',
         school_level: document.getElementById(`schoolLevel-${id}`)?.value || '',
