@@ -556,55 +556,83 @@ function renderStudentResult(id, data) {
     
     content.innerHTML = `
         <div class="result-table-wrapper" style="margin-bottom: 15px;">
-            <table style="width: 100%; border-collapse: collapse; font-size: 11px; color: #1e293b; text-align: center; border: 1px solid #cbd5e1;">
+            <table class="dark-table">
                 <tr>
-                    <td style="border: 1px solid #cbd5e1; padding: 5px; background: #f8fafc; width: 15%; font-weight: 600;">성명</td>
-                    <td style="border: 1px solid #cbd5e1; padding: 5px;"><input type="text" id="name-${id}" value="${data.성명 || ''}" class="editable-input" style="text-align: center;"></td>
-                    <td style="border: 1px solid #cbd5e1; padding: 5px; background: #f8fafc; width: 10%; font-weight: 600;">성별</td>
-                    <td style="border: 1px solid #cbd5e1; padding: 5px; width: 10%;"><input type="text" id="gender-${id}" value="${data.성별 || ''}" class="editable-input" style="text-align: center;"></td>
-                    <td style="border: 1px solid #cbd5e1; padding: 5px; background: #f8fafc; width: 15%; font-weight: 600;">생년월일</td>
-                    <td style="border: 1px solid #cbd5e1; padding: 5px;"><input type="text" id="birth-${id}" value="${data.생년월일 || ''}" class="editable-input" style="text-align: center;"></td>
+                    <td class="th-dark" style="width: 15%;">성명</td>
+                    <td><input type="text" id="name-${id}" value="${data.성명 || ''}" style="text-align: center;"></td>
+                    <td class="th-dark" style="width: 10%;">성별</td>
+                    <td style="width: 15%;"><input type="text" id="gender-${id}" value="${data.성별 || ''}" style="text-align: center;"></td>
+                    <td class="th-dark" style="width: 15%;">생년월일</td>
+                    <td><input type="text" id="birth-${id}" value="${data.생년월일 || ''}" style="text-align: center;"></td>
                 </tr>
                 <tr>
-                    <td style="border: 1px solid #cbd5e1; padding: 5px; background: #f8fafc; font-weight: 600;">주소</td>
-                    <td colspan="5" style="border: 1px solid #cbd5e1; padding: 5px;"><input type="text" id="address-${id}" value="${data.주소 || ''}" class="editable-input"></td>
+                    <td class="th-dark">주소</td>
+                    <td colspan="5" style="text-align: left; padding-left: 10px;">
+                        <input type="text" id="address-${id}" value="${data.주소 || ''}">
+                    </td>
                 </tr>
                 <tr>
-                    <td rowspan="2" style="border: 1px solid #cbd5e1; padding: 5px; background: #f8fafc; font-weight: 600;">연락처</td>
-                    <td style="border: 1px solid #cbd5e1; padding: 5px; background: #f8fafc; font-weight: 600;">본인</td>
-                    <td colspan="4" style="border: 1px solid #cbd5e1; padding: 5px;"><input type="text" id="phone-${id}" value="${data.학생연락처 || ''}" class="editable-input"></td>
+                    <td rowspan="2" class="th-dark">연락처</td>
+                    <td class="th-dark">본인</td>
+                    <td colspan="4" style="text-align: center;">
+                        <input type="text" id="phone-${id}" value="${data.학생연락처 || ''}" style="text-align: center;">
+                    </td>
                 </tr>
                 <tr>
-                    <td style="border: 1px solid #cbd5e1; padding: 5px; background: #f8fafc; font-weight: 600;">부모</td>
-                    <td colspan="4" style="border: 1px solid #cbd5e1; padding: 5px;"><input type="text" id="parentPhone-${id}" value="${data.부모연락처 || ''}" class="editable-input"></td>
+                    <td class="th-dark">보호자 / 자택</td>
+                    <td colspan="4" style="text-align: center;">
+                        <input type="text" id="parentPhone-${id}" value="${data.부모연락처 || ''}" style="text-align: center;">
+                    </td>
                 </tr>
                 <tr>
-                    <td style="border: 1px solid #cbd5e1; padding: 5px; background: #f8fafc; font-weight: 600;">학교</td>
-                    <td colspan="5" style="border: 1px solid #cbd5e1; padding: 5px;"><input type="text" id="school-${id}" value="${data.학교 || ''}" class="editable-input"></td>
+                    <td class="th-dark">학교</td>
+                    <td colspan="5" style="text-align: left; padding-left: 10px;">
+                        <input type="text" id="school-${id}" value="${data.학교 || ''}">
+                    </td>
                 </tr>
                 <tr>
-                    <td style="border: 1px solid #cbd5e1; padding: 5px; background: #f8fafc; font-weight: 600;">수강과목</td>
-                    <td colspan="5" style="border: 1px solid #cbd5e1; padding: 5px;"><input type="text" id="courseName-${id}" value="${data.수강과목 || ''}" class="editable-input"></td>
+                    <td class="th-dark">수강과목</td>
+                    <td colspan="5" style="text-align: left; padding-left: 10px;">
+                        <input type="text" id="courseName-${id}" value="${data.수강과목 || ''}">
+                    </td>
                 </tr>
                 <tr>
-                    <td style="border: 1px solid #cbd5e1; padding: 5px; background: #f8fafc; font-weight: 600;">시작일</td>
-                    <td colspan="5" style="border: 1px solid #cbd5e1; padding: 5px;"><input type="text" id="startDate-${id}" value="${data.수강시작일 || ''}" class="editable-input"></td>
-                </tr>
-                <tr>
-                    <td style="border: 1px solid #cbd5e1; padding: 5px; background: #f8fafc; font-weight: 600;">수강료</td>
-                    <td style="border: 1px solid #cbd5e1; padding: 5px;"><input type="text" id="fee-${id}" value="${data.수강료 || ''}" class="editable-input" style="text-align: center;"></td>
-                    <td style="border: 1px solid #cbd5e1; padding: 5px; background: #f8fafc; font-weight: 600;">도구비</td>
-                    <td style="border: 1px solid #cbd5e1; padding: 5px;"><input type="text" id="toolFee-${id}" value="${data.도구비 || ''}" class="editable-input" style="text-align: center;"></td>
-                    <td style="border: 1px solid #cbd5e1; padding: 5px; background: #f8fafc; font-weight: 600;">결제금액</td>
-                    <td style="border: 1px solid #cbd5e1; padding: 5px;"><input type="text" id="totalFee-${id}" value="${data.결제금액 || ''}" class="editable-input" style="text-align: center;"></td>
-                </tr>
-                <tr>
-                    <td style="border: 1px solid #cbd5e1; padding: 5px; background: #f8fafc; font-weight: 600;">체크과정</td>
-                    <td colspan="5" style="border: 1px solid #cbd5e1; padding: 5px;"><input type="text" id="course-${id}" value="${combinedCourse}" class="editable-input"></td>
+                    <td class="th-dark">시작일</td>
+                    <td colspan="5" style="text-align: center;">
+                        <input type="text" id="startDate-${id}" value="${data.수강시작일 || ''}" style="text-align: center;">
+                    </td>
                 </tr>
             </table>
+
+            <!-- Premium Paper Form UI -->
+            <div style="margin-top: 20px; border-top: 2px dashed #475569; padding-top: 20px;">
+                <table class="dark-table" style="margin-bottom: 0;">
+                    <tr>
+                        <td class="th-dark" style="width: 15%;">수강료</td>
+                        <td colspan="2" style="text-align: left; padding-left: 10px;">
+                            <div style="display: flex; align-items: center;">₩ <input type="text" id="fee-${id}" value="${data.수강료 || ''}" style="margin-left: 5px;"></div>
+                        </td>
+                        <td class="th-dark" style="width: 15%;">도구비</td>
+                        <td colspan="2" style="text-align: left; padding-left: 10px;">
+                            <div style="display: flex; align-items: center;">₩ <input type="text" id="toolFee-${id}" value="${data.도구비 || ''}" style="margin-left: 5px;"></div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="th-dark">총결제금액</td>
+                        <td colspan="5" style="text-align: left; padding-left: 10px;">
+                            <div style="display: flex; align-items: center;">₩ <input type="text" id="totalFee-${id}" value="${data.결제금액 || ''}" style="margin-left: 5px;"></div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="th-dark">체크과정</td>
+                        <td colspan="5" style="text-align: left; padding-left: 10px;">
+                            <input type="text" id="course-${id}" value="${combinedCourse}">
+                        </td>
+                    </tr>
+                </table>
+            </div>
         </div>
-        <div class="card-actions">
+        <div class="card-actions" style="margin-top: 15px;">
             <button class="btn-save" onclick="saveStudent('${id}')"><i class="fas fa-save"></i> 명단에 등록</button>
             <button class="btn-delete" onclick="removeCard('${id}')"><i class="fas fa-trash"></i></button>
         </div>

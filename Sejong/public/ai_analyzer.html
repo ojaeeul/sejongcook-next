@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>AI 스마트 원서 분석 - 세종요리제과학원</title>
-    <link rel="stylesheet" href="style.css?v=20260703-15">
+    <link rel="stylesheet" href="style.css?v=20260703-16">
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -202,6 +202,41 @@
         .image-preview:hover {
             transform: scale(1.02);
             box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+        
+        .dark-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            color: #1f2937;
+            text-align: center;
+            border: 1px solid #64748b;
+            margin-bottom: 15px;
+        }
+        .dark-table td {
+            border: 1px solid #64748b;
+            padding: 8px 5px;
+        }
+        .dark-table .th-dark {
+            background: #f8fafc;
+            font-weight: bold;
+            color: #334155;
+        }
+        .dark-table input[type="text"], .dark-table input[type="tel"], .dark-table input[type="date"], .dark-table select {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: #1f2937;
+            font-family: inherit;
+            font-size: 13px;
+            outline: none;
+        }
+        .dark-table input::placeholder {
+            color: #9ca3af;
+        }
+        .dark-table select option {
+            background: #ffffff;
+            color: #1f2937;
         }
         
         .editable-input {
@@ -448,8 +483,8 @@
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
     <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';</script>
-    <script src="sidebar_sync.js?v=20260703-15"></script>
-    <script src="ai_analyzer.js?v=20260703-15"></script>
+    <script src="sidebar_sync.js?v=20260703-16"></script>
+    <script src="ai_analyzer.js?v=20260703-16"></script>
     <script>
         function toggleSidebar() {
             document.querySelector('.sidebar').classList.toggle('active');
