@@ -7,16 +7,16 @@
     <meta http-equiv="Expires" content="0">    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>세종요리 출결관리</title>
-    <link rel="stylesheet" href="style.css?v=20260703-13">
-    <link rel="stylesheet" href="exam_view.css?v=20260703-13">
+    <link rel="stylesheet" href="style.css?v=20260703-14">
+    <link rel="stylesheet" href="exam_view.css?v=20260703-14">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
         rel="stylesheet">
     <!-- Google Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <!-- Swiper CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-    <script src="script.js?v=20260703-13" defer></script>
-    <script src="questions_data.js?v=20260703-13" defer></script>
+    <script src="script.js?v=20260703-14" defer></script>
+    <script src="questions_data.js?v=20260703-14" defer></script>
     <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#ffffff">
@@ -423,23 +423,25 @@
                     <tr id="edit_student-fields-row">
                         <td class="th-dark">학교</td>
                         <td colspan="2"><input type="text" id="edit_school" name="school" placeholder="학교명" style="text-align: center;"></td>
-                        <td colspan="3" style="display: flex; gap: 5px; border: none;">
-                            <select id="edit_school_level" name="school_level" style="border: 1px solid #475569; border-radius: 4px; padding: 2px;">
-                                <option value="">구분</option>
-                                <option value="고등학교">고등학교</option>
-                                <option value="중학교">중학교</option>
-                                <option value="초등학교">초등학교</option>
-                                <option value="대학교">대학교</option>
-                            </select>
-                            <select id="edit_grade" name="grade" style="border: 1px solid #475569; border-radius: 4px; padding: 2px;">
-                                <option value="">학년</option>
-                                <option value="1">1</option>
-                                <option value="2">2</option>
-                                <option value="3">3</option>
-                                <option value="4">4</option>
-                                <option value="5">5</option>
-                                <option value="6">6</option>
-                            </select>
+                        <td colspan="3" style="border: none; padding: 5px;">
+                            <div style="display: flex; gap: 5px; width: 100%;">
+                                <select id="edit_school_level" name="school_level" style="flex: 1; border: 1px solid #475569; border-radius: 4px; padding: 5px; box-sizing: border-box;">
+                                    <option value="">구분</option>
+                                    <option value="고등학교">고등학교</option>
+                                    <option value="중학교">중학교</option>
+                                    <option value="초등학교">초등학교</option>
+                                    <option value="대학교">대학교</option>
+                                </select>
+                                <select id="edit_grade" name="grade" style="flex: 1; border: 1px solid #475569; border-radius: 4px; padding: 5px; box-sizing: border-box;">
+                                    <option value="">학년</option>
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4</option>
+                                    <option value="5">5</option>
+                                    <option value="6">6</option>
+                                </select>
+                            </div>
                         </td>
                     </tr>
                     <tr id="edit_general-fields-row" class="hidden">
@@ -684,6 +686,6 @@
 
     <!-- Swiper JS -->
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-    <script src="sidebar_sync.js?v=20260703-13"></script>
+    <script src="sidebar_sync.js?v=20260703-14"></script>
 </body>
 </html>
