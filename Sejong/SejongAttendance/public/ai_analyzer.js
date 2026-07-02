@@ -598,9 +598,9 @@ function renderStudentResult(id, data) {
     const isChinese = courseStr.includes('중식');
     const isPuffer = courseStr.includes('복어');
 
-    const is10 = courseStr.includes('10시');
-    const is5 = courseStr.includes('5시');
-    const is7 = courseStr.includes('7시');
+    const is10 = courseStr.includes('10시') || /9[:시]\s*[0-9]*/.test(courseStr) || /10[:시]/.test(courseStr);
+    const is5 = courseStr.includes('5시') || /4[:시]\s*[0-9]*/.test(courseStr) || /16[:시]/.test(courseStr) || /17[:시]/.test(courseStr);
+    const is7 = courseStr.includes('7시') || /6[:시]\s*[0-9]*/.test(courseStr) || /18[:시]/.test(courseStr) || /19[:시]/.test(courseStr);
     
     // 시간이 안써있으면 5시,7시 체크
     const hasTime = is10 || is5 || is7;
