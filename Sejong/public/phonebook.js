@@ -443,10 +443,58 @@ window.addNewPhoneMember = function() {
     document.getElementById('addMemberPhone').value = '';
     document.getElementById('addMemberGuardian').value = '';
     document.getElementById('addMemberCourse').value = '';
+    
+    // Populate course dropdown dynamically
+    const courseDropdown = document.getElementById('dropdownCourse');
+    if (courseDropdown) {
+        courseDropdown.innerHTML = ''; // clear
+        if (typeof uniqueCourses !== 'undefined' && uniqueCourses.length > 0) {
+            uniqueCourses.forEach(c => {
+                if (!c) return;
+                const div = document.createElement('div');
+                div.className = 'dropdown-item';
+                div.textContent = c;
+                div.onmousedown = function(e) {
+                    e.preventDefault(); // keep input focused
+                    toggleCourseSelection(c);
+                };
+                courseDropdown.appendChild(div);
+            });
+        } else {
+            const div = document.createElement('div');
+            div.className = 'dropdown-item';
+            div.style.color = '#94a3b8';
+            div.textContent = '등록된 과정이 없습니다';
+            courseDropdown.appendChild(div);
+        }
+    }
+
     const modal = document.getElementById('addMemberModal');
     if(modal) {
         modal.style.display = 'flex';
     }
+};
+
+window.toggleCourseSelection = function(courseStr) {
+    const input = document.getElementById('addMemberCourse');
+    if (!input) return;
+    let courses = input.value.split(',').map(s => s.trim()).filter(s => s);
+    
+    if (courses.includes(courseStr)) {
+        courses = courses.filter(c => c !== courseStr);
+    } else {
+        if (courses.length >= 3) {
+            alert('최대 3개까지만 선택할 수 있습니다.');
+            return;
+        }
+        courses.push(courseStr);
+    }
+    input.value = courses.join(', ');
+};
+
+window.showCourseDropdown = function() {
+    const el = document.getElementById('dropdownCourse');
+    if(el) el.classList.add('show');
 };
 
 window.closeAddMemberModal = function() {
