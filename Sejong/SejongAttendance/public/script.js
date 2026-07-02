@@ -2182,6 +2182,15 @@ function renderMembers() {
             } else {
                 remarks = member.job || '';
             }
+            
+            // Append notes to remarks so it is visible in the table column
+            if (member.notes) {
+                // To keep it clean, replace newlines with spaces for the table view
+                const inlineNotes = member.notes.replace(/\n/g, ' / ').replace(/\[AI분석\].*/g, '').trim();
+                if (inlineNotes) {
+                    remarks = remarks ? `${remarks} / ${inlineNotes}` : inlineNotes;
+                }
+            }
 
             const tr = document.createElement('tr');
 

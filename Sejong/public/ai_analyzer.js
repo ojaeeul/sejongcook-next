@@ -806,7 +806,7 @@ function renderStudentResult(id, data) {
                         <td colspan="3" style="text-align: left; padding: 4px; white-space: nowrap;">
                             <div style="display: flex; align-items: center; justify-content: flex-start; gap: 4px;">
                                 <span style="color: #64748b; font-size: 11px; white-space: nowrap;">등록일</span>
-                                <input type="date" id="paper_date-${id}" value="${new Date().toISOString().split('T')[0]}" style="flex: 1; text-align: center; border: 1px solid #cbd5e1; border-radius: 4px; padding: 1px 4px; background: transparent; color: #1e293b; cursor: pointer; font-family: inherit; font-size: 11px;">
+                                <input type="date" id="paper_date-${id}" value="${document.getElementById('masterDateSelector')?.value || new Date().toISOString().split('T')[0]}" style="flex: 1; text-align: center; border: 1px solid #cbd5e1; border-radius: 4px; padding: 1px 4px; background: transparent; color: #1e293b; cursor: pointer; font-family: inherit; font-size: 11px;">
                             </div>
                         </td>
                     </tr>
