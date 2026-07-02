@@ -66,9 +66,14 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function handleFiles(files) {
-    const validFiles = Array.from(files).filter(f => f.type.startsWith('image/') || f.type === 'application/pdf');
+    const validFiles = Array.from(files).filter(f => {
+        const typeValid = f.type.startsWith('image/') || f.type === 'application/pdf';
+        const extValid = f.name.toLowerCase().match(/\.(jpg|jpeg|png|pdf|heic)$/);
+        return typeValid || extValid;
+    });
+    
     if (validFiles.length === 0) {
-        alert('이미지(JPG, PNG) 또는 PDF 파일만 업로드 가능합니다.');
+        alert('폴더 또는 파일에 처리 가능한 이미지/PDF 파일이 없습니다. (JPG, PNG, PDF 지원)');
         return;
     }
 
