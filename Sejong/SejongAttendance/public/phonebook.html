@@ -7,11 +7,11 @@
     <meta http-equiv="Expires" content="0">    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>전화번호부 - 세종요리</title>
-    <link rel="stylesheet" href="style.css?v=20260702-5">
+    <link rel="stylesheet" href="style.css?v=20260702-6">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="phonebook.js?v=20260702-5" defer></script>
+    <script src="phonebook.js?v=20260702-6" defer></script>
     <style>
                 .notebook-wrapper {
             display: block;
@@ -724,6 +724,14 @@
     </div>
 
     <!-- Add Member Modal -->
+    <datalist id="phonePrefixes">
+        <option value="010-">
+        <option value="02-">
+        <option value="031-">
+        <option value="032-">
+        <option value="044-">
+    </datalist>
+
     <div id="addMemberModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center; backdrop-filter: blur(2px);">
         <div style="background: white; width: 90%; max-width: 400px; border-radius: 12px; padding: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
             <h3 style="margin: 0 0 20px 0; color: #1e293b; font-size: 1.25rem;">새 수강생 추가</h3>
@@ -734,11 +742,11 @@
                 </div>
                 <div>
                     <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #475569; margin-bottom: 4px;">본인 전화번호</label>
-                    <input type="text" id="addMemberPhone" placeholder="예: 010-1234-5678" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.9rem; outline: none; box-sizing: border-box;">
+                    <input type="text" id="addMemberPhone" list="phonePrefixes" oninput="formatPhoneNumber(this)" placeholder="예: 010-1234-5678" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.9rem; outline: none; box-sizing: border-box;">
                 </div>
                 <div>
                     <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #475569; margin-bottom: 4px;">부모님 전화번호</label>
-                    <input type="text" id="addMemberGuardian" placeholder="예: 010-9876-5432" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.9rem; outline: none; box-sizing: border-box;">
+                    <input type="text" id="addMemberGuardian" list="phonePrefixes" oninput="formatPhoneNumber(this)" placeholder="예: 010-9876-5432" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.9rem; outline: none; box-sizing: border-box;">
                 </div>
                 <div>
                     <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #475569; margin-bottom: 4px;">과정명</label>
@@ -763,7 +771,7 @@
             el.nextElementSibling.classList.toggle('show');
         }
     </script>
-    <script src="sidebar_sync.js?v=20260702-5"></script>
+    <script src="sidebar_sync.js?v=20260702-6"></script>
 </body>
 
 </html>

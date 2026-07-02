@@ -513,3 +513,39 @@ window.editPhonebookNumber = async function(memberId, field) {
         }
     }
 };
+
+window.formatPhoneNumber = function(input) {
+    let value = input.value.replace(/[^0-9]/g, '');
+    let formatted = '';
+    
+    if (value.startsWith('02')) {
+        if (value.length <= 2) {
+            formatted = value;
+        } else if (value.length <= 5) {
+            formatted = value.slice(0, 2) + '-' + value.slice(2);
+        } else if (value.length <= 9) {
+            formatted = value.slice(0, 2) + '-' + value.slice(2, 5) + '-' + value.slice(5);
+        } else {
+            formatted = value.slice(0, 2) + '-' + value.slice(2, 6) + '-' + value.slice(6, 10);
+        }
+    } else {
+        if (value.length <= 3) {
+            formatted = value;
+        } else if (value.length <= 6) {
+            formatted = value.slice(0, 3) + '-' + value.slice(3);
+        } else if (value.length <= 10) {
+            formatted = value.slice(0, 3) + '-' + value.slice(3, 6) + '-' + value.slice(6);
+        } else {
+            formatted = value.slice(0, 3) + '-' + value.slice(3, 7) + '-' + value.slice(7, 11);
+        }
+    }
+    
+    // Allow ending with hyphen if user types it manually (for UX smoothness)
+    if (input.value.endsWith('-') && value.length === 3 && !value.startsWith('02')) {
+        formatted += '-';
+    } else if (input.value.endsWith('-') && value.length === 2 && value.startsWith('02')) {
+        formatted += '-';
+    }
+
+    input.value = formatted;
+};
