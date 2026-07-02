@@ -67,6 +67,41 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+window.selectFolderNative = async function() {
+    if (window.showDirectoryPicker) {
+        try {
+            const dirHandle = await window.showDirectoryPicker();
+            const files = [];
+            
+            async function getFiles(dirHandle, path = '') {
+                for await (const entry of dirHandle.values()) {
+                    if (entry.kind === 'file') {
+                        const file = await entry.getFile();
+                        files.push(file);
+                    } else if (entry.kind === 'directory') {
+                        await getFiles(entry, path + entry.name + '/');
+                    }
+                }
+            }
+            
+            await getFiles(dirHandle);
+            
+            if (files.length > 0) {
+                handleFiles(files);
+            } else {
+                alert("선택한 폴더에 파일이 없습니다.");
+            }
+        } catch (err) {
+            if (err.name !== 'AbortError') {
+                console.warn("showDirectoryPicker failed, falling back to input.", err);
+                document.getElementById('folderInput').click();
+            }
+        }
+    } else {
+        document.getElementById('folderInput').click();
+    }
+};
+
 async function handleFiles(files) {
     const validFiles = Array.from(files).filter(f => {
         const typeValid = f.type.startsWith('image/') || f.type === 'application/pdf';
