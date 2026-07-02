@@ -623,21 +623,21 @@ function renderStudentResult(id, data) {
     const check7 = is7 || (!hasTime);
 
     content.innerHTML = `
-        <div class="result-table-wrapper" style="margin-bottom: 15px; text-align: left;">
-            <table class="dark-table">
+        <div class="result-table-wrapper" style="margin-bottom: 15px; text-align: left; overflow-x: auto; width: 100%;">
+            <table class="dark-table" style="width: 100%; min-width: 450px; table-layout: fixed;">
                 <tr>
-                    <td class="th-dark" style="width: 12%; white-space: nowrap;">성명 <span class="required" style="color:#ef4444">*</span></td>
-                    <td style="width: 18%;"><input type="text" id="name-${id}" value="${data.성명 || ''}" required placeholder="이름 입력" style="text-align: center; width: 100%; background: transparent; border: none; outline: none; font-family: inherit; font-size: 13px;"></td>
-                    <td class="th-dark" style="width: 8%; white-space: nowrap;">성별</td>
-                    <td style="width: 12%;">
-                        <select id="gender-${id}" style="text-align: center; text-align-last: center; width: 100%; background: transparent; border: none; outline: none; font-family: inherit; font-size: 13px;">
+                    <td class="th-dark" style="width: 13%; padding: 4px; font-size: 12px; word-break: keep-all;">성명 <span class="required" style="color:#ef4444">*</span></td>
+                    <td style="width: 20%; padding: 2px;"><input type="text" id="name-${id}" value="${data.성명 || ''}" required placeholder="이름 입력" style="text-align: center; width: 100%; background: transparent; border: none; outline: none; font-family: inherit; font-size: 13px;"></td>
+                    <td class="th-dark" style="width: 10%; padding: 4px; font-size: 12px; word-break: keep-all;">성별</td>
+                    <td style="width: 15%; padding: 2px;">
+                        <select id="gender-${id}" style="text-align: center; text-align-last: center; width: 100%; background: transparent; border: none; outline: none; font-family: inherit; font-size: 13px; padding: 0;">
                             <option value="">선택</option>
                             <option value="여" ${data.성별 === '여' ? 'selected' : ''}>여</option>
                             <option value="남" ${data.성별 === '남' ? 'selected' : ''}>남</option>
                         </select>
                     </td>
-                    <td class="th-dark" style="width: 18%; white-space: nowrap;">생년/주민번호</td>
-                    <td style="width: 32%;">
+                    <td class="th-dark" style="width: 17%; padding: 4px; font-size: 11px; line-height: 1.2; word-break: keep-all;">생년월일<br>주민번호</td>
+                    <td style="width: 25%; padding: 2px;">
                         <input type="text" id="birth-${id}" value="${data.생년월일 || ''}" placeholder="000000-0000000" style="text-align: center; width: 100%; background: transparent; border: none; outline: none; font-family: inherit; font-size: 13px;">
                     </td>
                 </tr>
@@ -748,8 +748,8 @@ function renderStudentResult(id, data) {
             </table>
             
             <!-- Premium Paper Form UI -->
-            <div style="margin-top: 10px; border-top: 2px dashed #cbd5e1; padding-top: 10px;">
-                <table class="dark-table" style="margin-bottom: 0; width: 100%; border-collapse: collapse; font-size: 12px;">
+            <div style="margin-top: 10px; border-top: 2px dashed #cbd5e1; padding-top: 10px; overflow-x: auto;">
+                <table class="dark-table" style="margin-bottom: 0; width: 100%; min-width: 450px; border-collapse: collapse; font-size: 12px; table-layout: fixed;">
                     <tr>
                         <td class="th-dark" style="width: 15%; padding: 4px;">I.D</td>
                         <td colspan="2" style="padding: 4px;"><input type="text" id="paper_id-${id}" style="text-align: center; width: 100%; background: transparent; border: none; outline: none; font-family: inherit;"></td>
@@ -811,7 +811,7 @@ function renderStudentResult(id, data) {
                         </td>
                     </tr>
                 </table>
-                <table class="dark-table" style="border-top: none; width: 100%; border-collapse: collapse; font-size: 12px;">
+                <table class="dark-table" style="border-top: none; width: 100%; min-width: 450px; border-collapse: collapse; font-size: 12px; table-layout: fixed;">
                     <tr class="th-dark">
                         <td style="width: 14.2%; padding: 4px;"><label style="cursor: pointer;"><input type="checkbox" id="course_bake-${id}" ${isBake ? 'checked' : ''} style="margin:0;"> 제과</label></td>
                         <td style="width: 14.2%; padding: 4px;"><label style="cursor: pointer;"><input type="checkbox" id="course_bread-${id}" ${isBread ? 'checked' : ''} style="margin:0;"> 제빵</label></td>

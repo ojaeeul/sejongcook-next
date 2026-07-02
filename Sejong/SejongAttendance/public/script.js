@@ -2687,14 +2687,14 @@ window.open3DSliderForDate = async function(dateStr) {
                     <div style="font-size: 1.5rem; font-weight: 800; color: #1e3a8a; margin-bottom: 15px; text-align: center;">
                         ${m.name} <span style="font-size: 0.9rem; color: #64748b; font-weight: 500;">(${m.paper_date || m.start_date || '등록일 없음'})</span>
                     </div>
-                    <table class="dark-table" style="background: white; width: 100%; border-collapse: collapse; font-size: 13px;">
+                    <table class="dark-table" style="background: white; width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed;">
                         <tr>
-                            <td class="th-dark" style="width: 12%; white-space: nowrap;">성명</td>
-                            <td style="text-align: center; width: 18%; white-space: nowrap; font-size: 13px;">${m.name}</td>
-                            <td class="th-dark" style="width: 8%; white-space: nowrap;">성별</td>
-                            <td style="text-align: center; width: 12%; white-space: nowrap; font-size: 13px;">${m.gender || '-'}</td>
-                            <td class="th-dark" style="width: 18%; white-space: nowrap;">주민등록번호</td>
-                            <td style="text-align: center; width: 32%; white-space: nowrap; font-size: 13px;">${m.resident_num || '-'}</td>
+                            <td class="th-dark" style="width: 13%; padding: 4px; font-size: 12px; word-break: keep-all;">성명</td>
+                            <td style="text-align: center; width: 20%; padding: 2px; font-size: 13px;">${m.name}</td>
+                            <td class="th-dark" style="width: 10%; padding: 4px; font-size: 12px; word-break: keep-all;">성별</td>
+                            <td style="text-align: center; width: 15%; padding: 2px; font-size: 13px;">${m.gender || '-'}</td>
+                            <td class="th-dark" style="width: 17%; padding: 4px; font-size: 11px; line-height: 1.2; word-break: keep-all;">생년월일<br>주민번호</td>
+                            <td style="text-align: center; width: 25%; padding: 2px; font-size: 13px;">${m.resident_num || '-'}</td>
                         </tr>
                         <tr>
                             <td class="th-dark">주소</td>
@@ -2740,7 +2740,7 @@ window.open3DSliderForDate = async function(dateStr) {
                         </tr>
                     </table>
                     
-                    <table class="dark-table" style="background: white; width: 100%; border-collapse: collapse; font-size: 13px; border-top: none;">
+                    <table class="dark-table" style="background: white; width: 100%; border-collapse: collapse; font-size: 13px; border-top: none; table-layout: fixed;">
                         <tr>
                             <td class="th-dark" style="width: 15%;">수강료</td>
                             <td colspan="2" style="text-align: left; padding: 8px;">${m.tuition ? Number(m.tuition).toLocaleString() + '원' : '-'}</td>
