@@ -1012,6 +1012,18 @@ async function handleRegister(e) {
     if (data.gender !== undefined) delete data.gender;
     if (data.birth_date !== undefined) delete data.birth_date;
 
+    // Remove any premium paper UI fields from data payload because DB members table doesn't have them
+    const uiFieldsToRemove = [
+        'paper_date', 'paper_id', 'paper_pw', 'paper_email_id', 'paper_email_domain_select', 
+        'paper_email_domain_manual', 'paper_locker', 'paper_book_prac', 'paper_book_theory', 
+        'paper_book_price', 'paper_notes', 'paper_tuition', 'paper_tool_fee', 'paper_total',
+        'course_bake', 'course_bread', 'course_korean', 'course_western', 'course_japanese', 
+        'course_chinese', 'course_puffer', 'time_10', 'time_5', 'time_7'
+    ];
+    uiFieldsToRemove.forEach(field => {
+        if (data[field] !== undefined) delete data[field];
+    });
+
     // Unified Course + Time Handling
     const courseUnits = document.querySelectorAll('#register_course_container .course-input-row');
     const selectedCourses = [];

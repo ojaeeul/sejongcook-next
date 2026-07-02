@@ -947,8 +947,7 @@ async function saveStudent(id) {
         registeredDate: new Date().toISOString().split('T')[0],
         type: document.getElementById(`type-${id}`)?.value || 'student',
         school_level: document.getElementById(`schoolLevel-${id}`)?.value || '',
-        grade: document.getElementById(`grade-${id}`)?.value || '',
-        paper_date: document.getElementById(`paper_date-${id}`)?.value || ''
+        grade: document.getElementById(`grade-${id}`)?.value || ''
     };
 
     try {
