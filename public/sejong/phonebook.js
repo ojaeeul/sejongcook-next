@@ -6,7 +6,9 @@ function getFetchUrl(endpoint, isPost = false) {
 
 const API_BASE = '/api/sejong';
 
+let allMembers = [];
 let members = [];
+let showingTrash = false;
 let uniqueCourses = [];
 let uniqueYears = [];
 
@@ -27,11 +29,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function fetchMembers() {
     try {
-        const res = await fetch(getFetchUrl('members'));
-        members = await res.json();
-
-        // Filter out inactive statuses (completed, hold, trash)
-        members = members.filter(m => m.status !== 'completed' && m.status !== 'hold' && m.status !== 'trash');
+        const response = await fetch(getFetchUrl('members'));
+        allMembers = await response.json();
+        
+        // Filter based on view mode
+        if (showingTrash) {
+            members = allMembers.filter(m => m.status === 'trash');
+        } else {
+            members = allMembers.filter(m => m.status !== 'completed' && m.status !== 'hold' && m.status !== 'trash');
+        }
 
         // Extract unique courses and years
         const courseSet = new Set();
@@ -282,8 +288,13 @@ function renderPage() {
 
                     <!-- Action Column: Edit & Delete -->
                     <div style="width: 70px; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 0 10px; flex-shrink: 0; height: 100%;">
-                        <span onclick="openEditMemberModal('${m.id}')" style="cursor: pointer; color: #3b82f6;" title="정보 수정"><i class="material-icons" style="font-size: 1.1rem;">edit</i></span>
-                        <span onclick="moveToTrashPhonebook('${m.id}')" style="cursor: pointer; color: #ef4444;" title="삭제"><i class="material-icons" style="font-size: 1.1rem;">delete</i></span>
+                        ${showingTrash ? `
+                            <span onclick="restorePhonebookMember('${m.id}')" style="cursor: pointer; color: #10b981;" title="복구"><i class="material-icons" style="font-size: 1.1rem;">restore</i></span>
+                            <span onclick="deletePermanentPhonebook('${m.id}')" style="cursor: pointer; color: #ef4444;" title="완전 삭제"><i class="material-icons" style="font-size: 1.1rem;">delete_forever</i></span>
+                        ` : `
+                            <span onclick="openEditMemberModal('${m.id}')" style="cursor: pointer; color: #3b82f6;" title="정보 수정"><i class="material-icons" style="font-size: 1.1rem;">edit</i></span>
+                            <span onclick="moveToTrashPhonebook('${m.id}')" style="cursor: pointer; color: #ef4444;" title="삭제"><i class="material-icons" style="font-size: 1.1rem;">delete</i></span>
+                        `}
                     </div>
                 </div>
             `;
@@ -671,5 +682,50 @@ window.selectPrefix = function(inputId, prefix) {
         input.focus();
         // Fire input event to format
         formatPhoneNumber(input);
+    }
+};
+
+window.toggleTrashViewPhonebook = function() {
+    showingTrash = !showingTrash;
+    const btn = document.getElementById('trashViewBtn');
+    if (showingTrash) {
+        if(btn) btn.innerHTML = `<span class="material-icons" style="font-size: 1.1rem;">arrow_back</span> 전화번호부로`;
+        if(btn) btn.style.background = '#64748b'; // slate
+        document.querySelector('.page-title').textContent = '전화번호부 휴지통';
+    } else {
+        if(btn) btn.innerHTML = `<span class="material-icons" style="font-size: 1.1rem;">delete_outline</span> 휴지통`;
+        if(btn) btn.style.background = '#ef4444'; // red
+        document.querySelector('.page-title').textContent = '전화번호부';
+    }
+    
+    fetchMembers();
+};
+
+window.restorePhonebookMember = async function(id) {
+    if(!confirm("이 수강생을 다시 복구하시겠습니까?")) return;
+    const m = allMembers.find(m => String(m.id) === String(id));
+    if(m) {
+        m.status = 'registered';
+        try {
+            await fetch(getFetchUrl('members', true), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(m)
+            });
+            fetchMembers();
+        } catch(e) {
+            console.error(e);
+        }
+    }
+};
+
+window.deletePermanentPhonebook = async function(id) {
+    if(!confirm("이 수강생을 완전히 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.")) return;
+    try {
+        await fetch(getFetchUrl(`members?id=${id}`, true), { method: 'DELETE' });
+        fetchMembers();
+    } catch(e) {
+        console.error(e);
+        alert('삭제 실패');
     }
 };
