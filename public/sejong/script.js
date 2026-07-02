@@ -1841,7 +1841,7 @@ window.handleStatusChange = async function (e, memberId) {
             async () => {
                 await updateMemberStatus(member, 'completed');
                 closeStatusModal();
-                loadArchive();
+                window.location.href = 'index.html?filter=archive';
             }
         );
 
