@@ -948,30 +948,8 @@ async function saveStudent(id) {
         type: document.getElementById(`type-${id}`)?.value || 'student',
         school_level: document.getElementById(`schoolLevel-${id}`)?.value || '',
         grade: document.getElementById(`grade-${id}`)?.value || '',
-        
-        // Premium Paper Form Fields
-        paper_id: document.getElementById(`paper_id-${id}`)?.value || '',
-        paper_pw: document.getElementById(`paper_pw-${id}`)?.value || '',
-        paper_email: paper_email,
-        paper_tuition: fee,
-        paper_locker: document.getElementById(`paper_locker-${id}`)?.value || '',
-        paper_tool_fee: toolFee,
-        paper_book_price: document.getElementById(`paper_book_price-${id}`)?.value || '',
-        paper_total: totalFee,
         paper_date: document.getElementById(`paper_date-${id}`)?.value || '',
-        paper_book_prac: document.getElementById(`paper_book_prac-${id}`)?.checked ? 'on' : '',
-        paper_book_theory: document.getElementById(`paper_book_theory-${id}`)?.checked ? 'on' : '',
-        course_bake: document.getElementById(`course_bake-${id}`)?.checked ? 'on' : '',
-        course_bread: document.getElementById(`course_bread-${id}`)?.checked ? 'on' : '',
-        course_korean: document.getElementById(`course_korean-${id}`)?.checked ? 'on' : '',
-        course_western: document.getElementById(`course_western-${id}`)?.checked ? 'on' : '',
-        course_japanese: document.getElementById(`course_japanese-${id}`)?.checked ? 'on' : '',
-        course_chinese: document.getElementById(`course_chinese-${id}`)?.checked ? 'on' : '',
-        course_puffer: document.getElementById(`course_puffer-${id}`)?.checked ? 'on' : '',
-        time_10: document.getElementById(`time_10-${id}`)?.checked ? 'on' : '',
-        time_5: document.getElementById(`time_5-${id}`)?.checked ? 'on' : '',
-        time_7: document.getElementById(`time_7-${id}`)?.checked ? 'on' : '',
-        paper_notes: document.getElementById(`paper_notes-${id}`)?.value || ''
+        amount: totalFee ? totalFee.replace(/[^0-9]/g, '') : null
     };
 
     try {
@@ -1006,11 +984,13 @@ async function saveStudent(id) {
             btn.innerHTML = '<i class="fas fa-check"></i> 등록 완료';
             btn.style.background = '#334155';
             btn.style.color = '#94a3b8';
+            if (window.notifyMemberUpdate) window.notifyMemberUpdate();
         } else {
-            throw new Error('Save failed');
+            const errJson = await saveRes.json();
+            throw new Error(errJson.error || 'Save failed');
         }
     } catch (e) {
-        alert('저장에 실패했습니다.');
+        alert('저장에 실패했습니다: ' + e.message);
         console.error(e);
         const btn = document.querySelector(`#card-${id} .btn-save`);
         btn.innerHTML = '<i class="fas fa-save"></i> 명단에 등록';
