@@ -704,15 +704,99 @@ function renderStudentResult(id, data) {
                         <input type="text" id="notes-${id}" value="" placeholder="특이사항 입력" style="width: 100%; text-align: left; background: transparent; border: 1px solid transparent; outline: none; font-family: inherit; padding: 6px 5px;">
                     </td>
                 </tr>
-                <tr style="border-top: 2px dashed #cbd5e1; background: #f8fafc;">
-                    <td class="th-dark" style="font-size: 11px;">결제정보<br>(AI추출)</td>
-                    <td colspan="5" style="display: flex; border: none;">
-                        <input type="text" id="fee-${id}" value="${data.수강료 || ''}" placeholder="수강료" style="flex: 1; text-align: center; background: transparent; border: none; border-right: 1px solid #cbd5e1; outline: none; font-family: inherit; font-size: 11px;">
-                        <input type="text" id="toolFee-${id}" value="${data.도구비 || ''}" placeholder="도구비" style="flex: 1; text-align: center; background: transparent; border: none; border-right: 1px solid #cbd5e1; outline: none; font-family: inherit; font-size: 11px;">
-                        <input type="text" id="totalFee-${id}" value="${data.결제금액 || ''}" placeholder="결제금액" style="flex: 1; text-align: center; background: transparent; border: none; outline: none; font-family: inherit; font-size: 11px;">
-                    </td>
-                </tr>
+                <!-- Removed old AI fee row -->
             </table>
+            
+            <!-- Premium Paper Form UI -->
+            <div style="margin-top: 15px; border-top: 2px dashed #cbd5e1; padding-top: 15px;">
+                <table class="dark-table" style="margin-bottom: 0; width: 100%; border-collapse: collapse; font-size: 13px;">
+                    <tr>
+                        <td class="th-dark" style="width: 15%;">I.D</td>
+                        <td colspan="2"><input type="text" id="paper_id-${id}" style="text-align: center; width: 100%; background: transparent; border: none; outline: none; font-family: inherit;"></td>
+                        <td class="th-dark" rowspan="2" style="width: 15%;">전자메일</td>
+                        <td rowspan="2" colspan="2" style="padding: 0;">
+                            <div style="display: flex; align-items: center; justify-content: center; gap: 4px; padding: 0 5px; width: 100%;">
+                                <input type="text" id="paper_email_id-${id}" style="flex: 1; text-align: right; font-size: 13px; min-width: 40px; background: transparent; border: 1px solid transparent; outline: none; font-family: inherit;">
+                                <span style="font-weight: bold; color: #475569;">@</span>
+                                <input type="text" id="paper_email_domain_manual-${id}" style="display: none; flex: 1.2; text-align: left; font-size: 13px; min-width: 50px; background: transparent; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px;" placeholder="직접 입력">
+                                <select id="paper_email_domain_select-${id}" style="flex: 1.2; padding: 5px 2px; box-sizing: border-box; font-family: inherit; font-size: 13px; min-width: 70px; background: transparent; border: 1px solid #cbd5e1; border-radius: 4px;" onchange="if(this.value==='direct'){document.getElementById('paper_email_domain_manual-${id}').style.display='block';this.style.display='none';}">
+                                    <option value="">도메인 선택</option>
+                                    <option value="naver.com">naver.com</option>
+                                    <option value="gmail.com">gmail.com</option>
+                                    <option value="daum.net">daum.net</option>
+                                    <option value="hanmail.net">hanmail.net</option>
+                                    <option value="nate.com">nate.com</option>
+                                    <option value="direct">직접 입력</option>
+                                </select>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="th-dark">비밀번호</td>
+                        <td colspan="2"><input type="text" id="paper_pw-${id}" style="text-align: center; width: 100%; background: transparent; border: none; outline: none; font-family: inherit;"></td>
+                    </tr>
+                    <tr>
+                        <td class="th-dark">수강료</td>
+                        <td colspan="2" style="text-align: left; padding-left: 10px; padding-right: 10px;">
+                            <div style="display: flex; align-items: center; height: 35px;">₩ <input type="text" id="paper_tuition-${id}" value="${data.수강료 || ''}" style="flex: 1; margin-left: 5px; background: transparent; border: none; outline: none; font-family: inherit;"></div>
+                        </td>
+                        <td class="th-dark">락카</td>
+                        <td colspan="2"><input type="text" id="paper_locker-${id}" style="text-align: center; height: 100%; width: 100%; background: transparent; border: none; outline: none; font-family: inherit;"></td>
+                    </tr>
+                    <tr>
+                        <td class="th-dark">도구비</td>
+                        <td colspan="2" style="text-align: left; padding-left: 10px; padding-right: 10px;">
+                            <div style="display: flex; align-items: center; height: 35px;">₩ <input type="text" id="paper_tool_fee-${id}" value="${data.도구비 || ''}" style="flex: 1; margin-left: 5px; background: transparent; border: none; outline: none; font-family: inherit;"></div>
+                        </td>
+                        <td class="th-dark" style="font-size: 12px; line-height: 1.2; padding: 5px;">
+                            <div style="display: flex; flex-direction: column; align-items: flex-start; justify-content: center; height: 100%; gap: 3px;">
+                                <label style="cursor: pointer; display: flex; align-items: center; gap: 4px;"><input type="checkbox" id="paper_book_prac-${id}"> 실기책</label>
+                                <label style="cursor: pointer; display: flex; align-items: center; gap: 4px;"><input type="checkbox" id="paper_book_theory-${id}"> 필기책</label>
+                            </div>
+                        </td>
+                        <td colspan="2" style="text-align: left; padding-left: 10px; padding-right: 10px;">
+                            <div style="display: flex; align-items: center; height: 35px;">₩ <input type="text" id="paper_book_price-${id}" style="flex: 1; margin-left: 5px; background: transparent; border: none; outline: none; font-family: inherit;"></div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="th-dark">결제금액</td>
+                        <td colspan="2" style="text-align: left; padding-left: 10px; padding-right: 10px;">
+                            <div style="display: flex; align-items: center; height: 35px;">₩ <input type="text" id="paper_total-${id}" value="${data.결제금액 || ''}" style="flex: 1; margin-left: 5px; background: transparent; border: none; outline: none; font-family: inherit;"></div>
+                        </td>
+                        <td colspan="3" style="text-align: left; padding-left: 15px; padding-right: 15px; white-space: nowrap;">
+                            <div style="display: flex; align-items: center; justify-content: flex-start; gap: 8px;">
+                                <span style="color: #64748b; font-size: 13px; white-space: nowrap;">등록일</span>
+                                <input type="date" id="paper_date-${id}" value="${new Date().toISOString().split('T')[0]}" style="flex: 1; text-align: center; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 10px; background: transparent; color: #1e293b; cursor: pointer; font-family: inherit;">
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+                <table class="dark-table" style="border-top: none; width: 100%; border-collapse: collapse; font-size: 13px;">
+                    <tr class="th-dark">
+                        <td style="width: 14.2%;"><label style="cursor: pointer;"><input type="checkbox" id="course_bake-${id}"> 제과</label></td>
+                        <td style="width: 14.2%;"><label style="cursor: pointer;"><input type="checkbox" id="course_bread-${id}"> 제빵</label></td>
+                        <td style="width: 14.2%;"><label style="cursor: pointer;"><input type="checkbox" id="course_korean-${id}"> 한식</label></td>
+                        <td style="width: 14.2%;"><label style="cursor: pointer;"><input type="checkbox" id="course_western-${id}"> 양식</label></td>
+                        <td style="width: 14.2%;"><label style="cursor: pointer;"><input type="checkbox" id="course_japanese-${id}"> 일식</label></td>
+                        <td style="width: 14.2%;"><label style="cursor: pointer;"><input type="checkbox" id="course_chinese-${id}"> 중식</label></td>
+                        <td style="width: 14.8%;"><label style="cursor: pointer;"><input type="checkbox" id="course_puffer-${id}"> 복어</label></td>
+                    </tr>
+                    <tr class="th-dark">
+                        <td colspan="3"><label style="cursor: pointer;"><input type="checkbox" id="time_10-${id}"> 10시</label></td>
+                        <td colspan="2"><label style="cursor: pointer;"><input type="checkbox" id="time_5-${id}"> 5시</label></td>
+                        <td colspan="2"><label style="cursor: pointer;"><input type="checkbox" id="time_7-${id}"> 7시</label></td>
+                    </tr>
+                    <tr>
+                        <td colspan="7" style="height: 120px; vertical-align: top; text-align: left; padding: 15px;">
+                            <textarea id="paper_notes-${id}" style="width:100%; height:100%; background:transparent; border:none; color:#1e293b; resize:none; font-size: 14px; outline: none; font-family: inherit;" placeholder="메모 및 비고 입력..."></textarea>
+                        </td>
+                    </tr>
+                    <tr class="th-dark">
+                        <td colspan="4" style="text-align: left; padding-left: 15px; border-right: none; font-size: 13px; letter-spacing: 1px;">세종요리제과기술학원</td>
+                        <td colspan="3" style="text-align: right; padding-right: 15px; border-left: none; font-size: 13px; letter-spacing: 1px;">031)986-1933</td>
+                    </tr>
+                </table>
+            </div>
         </div>
         <div class="card-actions" style="display: flex; gap: 10px;">
             <button class="btn-save" onclick="saveStudent('${id}')" style="background: #4ade80; color: #064e3b; flex: 1; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 14px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px;"><i class="fas fa-save"></i> 명단에 등록</button>
@@ -801,13 +885,20 @@ async function saveStudent(id) {
 
     const gender = document.getElementById(`gender-${id}`)?.value || '';
     const birth = document.getElementById(`birth-${id}`)?.value || '';
-    const fee = document.getElementById(`fee-${id}`)?.value || '';
-    const toolFee = document.getElementById(`toolFee-${id}`)?.value || '';
-    const totalFee = document.getElementById(`totalFee-${id}`)?.value || '';
+    const fee = document.getElementById(`paper_tuition-${id}`)?.value || '';
+    const toolFee = document.getElementById(`paper_tool_fee-${id}`)?.value || '';
+    const totalFee = document.getElementById(`paper_total-${id}`)?.value || '';
     
     let aiNotes = `[AI분석] 성별: ${gender}, 생년월일: ${birth}\n수강료: ${fee}, 도구비: ${toolFee}, 총결제금액: ${totalFee}`;
     let userNotes = document.getElementById(`notes-${id}`)?.value || '';
     let combinedNotes = userNotes ? (userNotes + '\n' + aiNotes) : aiNotes;
+
+    const emailId = document.getElementById(`paper_email_id-${id}`)?.value || '';
+    const domainSelect = document.getElementById(`paper_email_domain_select-${id}`)?.value || '';
+    const domainManual = document.getElementById(`paper_email_domain_manual-${id}`)?.value || '';
+    let domain = domainSelect === 'direct' ? domainManual : domainSelect;
+    let paper_email = '';
+    if (emailId && domain) paper_email = `${emailId}@${domain}`;
 
     const studentData = {
         id: String(Date.now()), // Generate ID locally
@@ -823,7 +914,31 @@ async function saveStudent(id) {
         registeredDate: new Date().toISOString().split('T')[0],
         type: document.getElementById(`type-${id}`)?.value || 'student',
         school_level: document.getElementById(`schoolLevel-${id}`)?.value || '',
-        grade: document.getElementById(`grade-${id}`)?.value || ''
+        grade: document.getElementById(`grade-${id}`)?.value || '',
+        
+        // Premium Paper Form Fields
+        paper_id: document.getElementById(`paper_id-${id}`)?.value || '',
+        paper_pw: document.getElementById(`paper_pw-${id}`)?.value || '',
+        paper_email: paper_email,
+        paper_tuition: fee,
+        paper_locker: document.getElementById(`paper_locker-${id}`)?.value || '',
+        paper_tool_fee: toolFee,
+        paper_book_price: document.getElementById(`paper_book_price-${id}`)?.value || '',
+        paper_total: totalFee,
+        paper_date: document.getElementById(`paper_date-${id}`)?.value || '',
+        paper_book_prac: document.getElementById(`paper_book_prac-${id}`)?.checked ? 'on' : '',
+        paper_book_theory: document.getElementById(`paper_book_theory-${id}`)?.checked ? 'on' : '',
+        course_bake: document.getElementById(`course_bake-${id}`)?.checked ? 'on' : '',
+        course_bread: document.getElementById(`course_bread-${id}`)?.checked ? 'on' : '',
+        course_korean: document.getElementById(`course_korean-${id}`)?.checked ? 'on' : '',
+        course_western: document.getElementById(`course_western-${id}`)?.checked ? 'on' : '',
+        course_japanese: document.getElementById(`course_japanese-${id}`)?.checked ? 'on' : '',
+        course_chinese: document.getElementById(`course_chinese-${id}`)?.checked ? 'on' : '',
+        course_puffer: document.getElementById(`course_puffer-${id}`)?.checked ? 'on' : '',
+        time_10: document.getElementById(`time_10-${id}`)?.checked ? 'on' : '',
+        time_5: document.getElementById(`time_5-${id}`)?.checked ? 'on' : '',
+        time_7: document.getElementById(`time_7-${id}`)?.checked ? 'on' : '',
+        paper_notes: document.getElementById(`paper_notes-${id}`)?.value || ''
     };
 
     try {
