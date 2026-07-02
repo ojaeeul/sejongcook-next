@@ -414,7 +414,8 @@ async function executeAnalysis(base64Data, fileName, imgUrl) {
     "수강료": "숫자만 (예: 250000)",
     "도구비": "숫자만",
     "결제금액": "숫자만",
-    "과정체크": "하단 표에서 펜으로 동그라미 쳐진 과목명과 시간을 결합 (예: 한식(10시), 양식(5시)). 여러 개면 콤마로 연결.",
+    "과정체크": "하단 표에서 펜으로 동그라미 쳐진 과목명과 시간 (예: 제과, 7시). 동그라미 쳐지지 않은 인쇄된 글자는 절대 추출하지 마세요.",
+    "비고": "하단 빈 공간(메모란)에 적힌 글씨 (예: 6:30~40사이)",
     "회전": "이미지의 글자가 올바른 정방향이면 0, 거꾸로(180도) 뒤집혀 있으면 180, 오른쪽으로 누워있으면 90, 왼쪽이면 270을 숫자로 반환"
 }`;
     }
@@ -598,7 +599,9 @@ function renderStudentResult(id, data) {
             schoolName = schoolName.replace("대학교", "").replace(/대$/, "").trim();
         }
     }
-    const courseStr = (data.수강과목 || '') + ' ' + (data.과정체크 || '');
+    
+    // 수강과목, 과정체크, 그리고 비고(메모)까지 모두 합쳐서 시간을 판별합니다.
+    const courseStr = (data.수강과목 || '') + ' ' + (data.과정체크 || '') + ' ' + (data.비고 || '');
     
     const isBake = courseStr.includes('제과');
     const isBread = courseStr.includes('제빵');
@@ -608,9 +611,10 @@ function renderStudentResult(id, data) {
     const isChinese = courseStr.includes('중식');
     const isPuffer = courseStr.includes('복어');
 
-    const is10 = courseStr.includes('10시') || /9[:시]\s*[0-9]*/.test(courseStr) || /10[:시]/.test(courseStr);
-    const is5 = courseStr.includes('5시') || /4[:시]\s*[0-9]*/.test(courseStr) || /16[:시]/.test(courseStr) || /17[:시]/.test(courseStr);
-    const is7 = courseStr.includes('7시') || /6[:시]\s*[0-9]*/.test(courseStr) || /18[:시]/.test(courseStr) || /19[:시]/.test(courseStr);
+    // 스마트 시간 인지 정규식 (앞뒤 공백 무시하고 정확히 숫자와 콜론/시 매칭)
+    const is10 = /(?:10|9)[:시]\s*[0-9]*/.test(courseStr) || courseStr.includes('10시');
+    const is5 = /(?:16|17|4)[:시]\s*[0-9]*/.test(courseStr) || courseStr.includes('5시');
+    const is7 = /(?:18|19|6)[:시]\s*[0-9]*/.test(courseStr) || courseStr.includes('7시');
     
     // 시간이 안써있으면 5시,7시 체크
     const hasTime = is10 || is5 || is7;
