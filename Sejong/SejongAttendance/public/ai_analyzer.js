@@ -727,18 +727,18 @@ function renderStudentResult(id, data) {
             </table>
             
             <!-- Premium Paper Form UI -->
-            <div style="margin-top: 15px; border-top: 2px dashed #cbd5e1; padding-top: 15px;">
-                <table class="dark-table" style="margin-bottom: 0; width: 100%; border-collapse: collapse; font-size: 13px;">
+            <div style="margin-top: 10px; border-top: 2px dashed #cbd5e1; padding-top: 10px;">
+                <table class="dark-table" style="margin-bottom: 0; width: 100%; border-collapse: collapse; font-size: 12px;">
                     <tr>
-                        <td class="th-dark" style="width: 15%;">I.D</td>
-                        <td colspan="2"><input type="text" id="paper_id-${id}" style="text-align: center; width: 100%; background: transparent; border: none; outline: none; font-family: inherit;"></td>
-                        <td class="th-dark" rowspan="2" style="width: 15%;">전자메일</td>
-                        <td rowspan="2" colspan="2" style="padding: 0;">
-                            <div style="display: flex; align-items: center; justify-content: center; gap: 4px; padding: 0 5px; width: 100%;">
-                                <input type="text" id="paper_email_id-${id}" style="flex: 1; text-align: right; font-size: 13px; min-width: 40px; background: transparent; border: 1px solid transparent; outline: none; font-family: inherit;">
+                        <td class="th-dark" style="width: 15%; padding: 4px;">I.D</td>
+                        <td colspan="2" style="padding: 4px;"><input type="text" id="paper_id-${id}" style="text-align: center; width: 100%; background: transparent; border: none; outline: none; font-family: inherit;"></td>
+                        <td class="th-dark" rowspan="2" style="width: 15%; padding: 4px;">전자메일</td>
+                        <td rowspan="2" colspan="2" style="padding: 2px;">
+                            <div style="display: flex; align-items: center; justify-content: center; gap: 4px; padding: 0 2px; width: 100%;">
+                                <input type="text" id="paper_email_id-${id}" style="flex: 1; text-align: right; font-size: 12px; min-width: 40px; background: transparent; border: 1px solid transparent; outline: none; font-family: inherit;">
                                 <span style="font-weight: bold; color: #475569;">@</span>
-                                <input type="text" id="paper_email_domain_manual-${id}" style="display: none; flex: 1.2; text-align: left; font-size: 13px; min-width: 50px; background: transparent; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px;" placeholder="직접 입력">
-                                <select id="paper_email_domain_select-${id}" style="flex: 1.2; padding: 5px 2px; box-sizing: border-box; font-family: inherit; font-size: 13px; min-width: 70px; background: transparent; border: 1px solid #cbd5e1; border-radius: 4px;" onchange="if(this.value==='direct'){document.getElementById('paper_email_domain_manual-${id}').style.display='block';this.style.display='none';}">
+                                <input type="text" id="paper_email_domain_manual-${id}" style="display: none; flex: 1.2; text-align: left; font-size: 12px; min-width: 50px; background: transparent; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px;" placeholder="직접 입력">
+                                <select id="paper_email_domain_select-${id}" style="flex: 1.2; padding: 2px; box-sizing: border-box; font-family: inherit; font-size: 12px; min-width: 70px; background: transparent; border: 1px solid #cbd5e1; border-radius: 4px;" onchange="if(this.value==='direct'){document.getElementById('paper_email_domain_manual-${id}').style.display='block';this.style.display='none';}">
                                     <option value="">도메인 선택</option>
                                     <option value="naver.com">naver.com</option>
                                     <option value="gmail.com">gmail.com</option>
@@ -751,68 +751,68 @@ function renderStudentResult(id, data) {
                         </td>
                     </tr>
                     <tr>
-                        <td class="th-dark">비밀번호</td>
-                        <td colspan="2"><input type="text" id="paper_pw-${id}" style="text-align: center; width: 100%; background: transparent; border: none; outline: none; font-family: inherit;"></td>
+                        <td class="th-dark" style="padding: 4px;">비밀번호</td>
+                        <td colspan="2" style="padding: 4px;"><input type="text" id="paper_pw-${id}" style="text-align: center; width: 100%; background: transparent; border: none; outline: none; font-family: inherit;"></td>
                     </tr>
                     <tr>
-                        <td class="th-dark">수강료</td>
-                        <td colspan="2" style="text-align: left; padding-left: 10px; padding-right: 10px;">
-                            <div style="display: flex; align-items: center; height: 35px;">₩ <input type="text" id="paper_tuition-${id}" value="${data.수강료 || ''}" style="flex: 1; margin-left: 5px; background: transparent; border: none; outline: none; font-family: inherit;"></div>
+                        <td class="th-dark" style="padding: 4px;">수강료</td>
+                        <td colspan="2" style="text-align: left; padding: 4px;">
+                            <div style="display: flex; align-items: center; height: 22px;">₩ <input type="text" id="paper_tuition-${id}" value="${data.수강료 || ''}" style="flex: 1; margin-left: 5px; background: transparent; border: none; outline: none; font-family: inherit;"></div>
                         </td>
-                        <td class="th-dark">락카</td>
-                        <td colspan="2"><input type="text" id="paper_locker-${id}" style="text-align: center; height: 100%; width: 100%; background: transparent; border: none; outline: none; font-family: inherit;"></td>
+                        <td class="th-dark" style="padding: 4px;">락카</td>
+                        <td colspan="2" style="padding: 4px;"><input type="text" id="paper_locker-${id}" style="text-align: center; height: 100%; width: 100%; background: transparent; border: none; outline: none; font-family: inherit;"></td>
                     </tr>
                     <tr>
-                        <td class="th-dark">도구비</td>
-                        <td colspan="2" style="text-align: left; padding-left: 10px; padding-right: 10px;">
-                            <div style="display: flex; align-items: center; height: 35px;">₩ <input type="text" id="paper_tool_fee-${id}" value="${data.도구비 || ''}" style="flex: 1; margin-left: 5px; background: transparent; border: none; outline: none; font-family: inherit;"></div>
+                        <td class="th-dark" style="padding: 4px;">도구비</td>
+                        <td colspan="2" style="text-align: left; padding: 4px;">
+                            <div style="display: flex; align-items: center; height: 22px;">₩ <input type="text" id="paper_tool_fee-${id}" value="${data.도구비 || ''}" style="flex: 1; margin-left: 5px; background: transparent; border: none; outline: none; font-family: inherit;"></div>
                         </td>
-                        <td class="th-dark" style="font-size: 12px; line-height: 1.2; padding: 5px;">
-                            <div style="display: flex; flex-direction: column; align-items: flex-start; justify-content: center; height: 100%; gap: 3px;">
-                                <label style="cursor: pointer; display: flex; align-items: center; gap: 4px;"><input type="checkbox" id="paper_book_prac-${id}"> 실기책</label>
-                                <label style="cursor: pointer; display: flex; align-items: center; gap: 4px;"><input type="checkbox" id="paper_book_theory-${id}"> 필기책</label>
+                        <td class="th-dark" style="font-size: 11px; line-height: 1.1; padding: 2px;">
+                            <div style="display: flex; flex-direction: column; align-items: flex-start; justify-content: center; height: 100%; gap: 1px;">
+                                <label style="cursor: pointer; display: flex; align-items: center; gap: 2px;"><input type="checkbox" id="paper_book_prac-${id}" style="margin:0;"> 실기책</label>
+                                <label style="cursor: pointer; display: flex; align-items: center; gap: 2px;"><input type="checkbox" id="paper_book_theory-${id}" style="margin:0;"> 필기책</label>
                             </div>
                         </td>
-                        <td colspan="2" style="text-align: left; padding-left: 10px; padding-right: 10px;">
-                            <div style="display: flex; align-items: center; height: 35px;">₩ <input type="text" id="paper_book_price-${id}" style="flex: 1; margin-left: 5px; background: transparent; border: none; outline: none; font-family: inherit;"></div>
+                        <td colspan="2" style="text-align: left; padding: 4px;">
+                            <div style="display: flex; align-items: center; height: 22px;">₩ <input type="text" id="paper_book_price-${id}" style="flex: 1; margin-left: 5px; background: transparent; border: none; outline: none; font-family: inherit;"></div>
                         </td>
                     </tr>
                     <tr>
-                        <td class="th-dark">결제금액</td>
-                        <td colspan="2" style="text-align: left; padding-left: 10px; padding-right: 10px;">
-                            <div style="display: flex; align-items: center; height: 35px;">₩ <input type="text" id="paper_total-${id}" value="${data.결제금액 || ''}" style="flex: 1; margin-left: 5px; background: transparent; border: none; outline: none; font-family: inherit;"></div>
+                        <td class="th-dark" style="padding: 4px;">결제금액</td>
+                        <td colspan="2" style="text-align: left; padding: 4px;">
+                            <div style="display: flex; align-items: center; height: 22px;">₩ <input type="text" id="paper_total-${id}" value="${data.결제금액 || ''}" style="flex: 1; margin-left: 5px; background: transparent; border: none; outline: none; font-family: inherit;"></div>
                         </td>
-                        <td colspan="3" style="text-align: left; padding-left: 15px; padding-right: 15px; white-space: nowrap;">
-                            <div style="display: flex; align-items: center; justify-content: flex-start; gap: 8px;">
-                                <span style="color: #64748b; font-size: 13px; white-space: nowrap;">등록일</span>
-                                <input type="date" id="paper_date-${id}" value="${new Date().toISOString().split('T')[0]}" style="flex: 1; text-align: center; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 10px; background: transparent; color: #1e293b; cursor: pointer; font-family: inherit;">
+                        <td colspan="3" style="text-align: left; padding: 4px; white-space: nowrap;">
+                            <div style="display: flex; align-items: center; justify-content: flex-start; gap: 4px;">
+                                <span style="color: #64748b; font-size: 11px; white-space: nowrap;">등록일</span>
+                                <input type="date" id="paper_date-${id}" value="${new Date().toISOString().split('T')[0]}" style="flex: 1; text-align: center; border: 1px solid #cbd5e1; border-radius: 4px; padding: 1px 4px; background: transparent; color: #1e293b; cursor: pointer; font-family: inherit; font-size: 11px;">
                             </div>
                         </td>
                     </tr>
                 </table>
-                <table class="dark-table" style="border-top: none; width: 100%; border-collapse: collapse; font-size: 13px;">
+                <table class="dark-table" style="border-top: none; width: 100%; border-collapse: collapse; font-size: 12px;">
                     <tr class="th-dark">
-                        <td style="width: 14.2%;"><label style="cursor: pointer;"><input type="checkbox" id="course_bake-${id}" ${isBake ? 'checked' : ''}> 제과</label></td>
-                        <td style="width: 14.2%;"><label style="cursor: pointer;"><input type="checkbox" id="course_bread-${id}" ${isBread ? 'checked' : ''}> 제빵</label></td>
-                        <td style="width: 14.2%;"><label style="cursor: pointer;"><input type="checkbox" id="course_korean-${id}" ${isKorean ? 'checked' : ''}> 한식</label></td>
-                        <td style="width: 14.2%;"><label style="cursor: pointer;"><input type="checkbox" id="course_western-${id}" ${isWestern ? 'checked' : ''}> 양식</label></td>
-                        <td style="width: 14.2%;"><label style="cursor: pointer;"><input type="checkbox" id="course_japanese-${id}" ${isJapanese ? 'checked' : ''}> 일식</label></td>
-                        <td style="width: 14.2%;"><label style="cursor: pointer;"><input type="checkbox" id="course_chinese-${id}" ${isChinese ? 'checked' : ''}> 중식</label></td>
-                        <td style="width: 14.8%;"><label style="cursor: pointer;"><input type="checkbox" id="course_puffer-${id}" ${isPuffer ? 'checked' : ''}> 복어</label></td>
+                        <td style="width: 14.2%; padding: 4px;"><label style="cursor: pointer;"><input type="checkbox" id="course_bake-${id}" ${isBake ? 'checked' : ''} style="margin:0;"> 제과</label></td>
+                        <td style="width: 14.2%; padding: 4px;"><label style="cursor: pointer;"><input type="checkbox" id="course_bread-${id}" ${isBread ? 'checked' : ''} style="margin:0;"> 제빵</label></td>
+                        <td style="width: 14.2%; padding: 4px;"><label style="cursor: pointer;"><input type="checkbox" id="course_korean-${id}" ${isKorean ? 'checked' : ''} style="margin:0;"> 한식</label></td>
+                        <td style="width: 14.2%; padding: 4px;"><label style="cursor: pointer;"><input type="checkbox" id="course_western-${id}" ${isWestern ? 'checked' : ''} style="margin:0;"> 양식</label></td>
+                        <td style="width: 14.2%; padding: 4px;"><label style="cursor: pointer;"><input type="checkbox" id="course_japanese-${id}" ${isJapanese ? 'checked' : ''} style="margin:0;"> 일식</label></td>
+                        <td style="width: 14.2%; padding: 4px;"><label style="cursor: pointer;"><input type="checkbox" id="course_chinese-${id}" ${isChinese ? 'checked' : ''} style="margin:0;"> 중식</label></td>
+                        <td style="width: 14.8%; padding: 4px;"><label style="cursor: pointer;"><input type="checkbox" id="course_puffer-${id}" ${isPuffer ? 'checked' : ''} style="margin:0;"> 복어</label></td>
                     </tr>
                     <tr class="th-dark">
-                        <td colspan="3"><label style="cursor: pointer;"><input type="checkbox" id="time_10-${id}" ${check10 ? 'checked' : ''}> 10시</label></td>
-                        <td colspan="2"><label style="cursor: pointer;"><input type="checkbox" id="time_5-${id}" ${check5 ? 'checked' : ''}> 5시</label></td>
-                        <td colspan="2"><label style="cursor: pointer;"><input type="checkbox" id="time_7-${id}" ${check7 ? 'checked' : ''}> 7시</label></td>
+                        <td colspan="3" style="padding: 4px;"><label style="cursor: pointer;"><input type="checkbox" id="time_10-${id}" ${check10 ? 'checked' : ''} style="margin:0;"> 10시</label></td>
+                        <td colspan="2" style="padding: 4px;"><label style="cursor: pointer;"><input type="checkbox" id="time_5-${id}" ${check5 ? 'checked' : ''} style="margin:0;"> 5시</label></td>
+                        <td colspan="2" style="padding: 4px;"><label style="cursor: pointer;"><input type="checkbox" id="time_7-${id}" ${check7 ? 'checked' : ''} style="margin:0;"> 7시</label></td>
                     </tr>
                     <tr>
-                        <td colspan="7" style="height: 120px; vertical-align: top; text-align: left; padding: 15px;">
-                            <textarea id="paper_notes-${id}" style="width:100%; height:100%; background:transparent; border:none; color:#1e293b; resize:none; font-size: 14px; outline: none; font-family: inherit;" placeholder="메모 및 비고 입력...">${data.비고 || ''}</textarea>
+                        <td colspan="7" style="height: 60px; vertical-align: top; text-align: left; padding: 5px;">
+                            <textarea id="paper_notes-${id}" style="width:100%; height:100%; background:transparent; border:none; color:#1e293b; resize:none; font-size: 12px; outline: none; font-family: inherit;" placeholder="메모 및 비고 입력...">${data.비고 || ''}</textarea>
                         </td>
                     </tr>
                     <tr class="th-dark">
-                        <td colspan="4" style="text-align: left; padding-left: 15px; border-right: none; font-size: 13px; letter-spacing: 1px;">세종요리제과기술학원</td>
-                        <td colspan="3" style="text-align: right; padding-right: 15px; border-left: none; font-size: 13px; letter-spacing: 1px;">031)986-1933</td>
+                        <td colspan="4" style="text-align: left; padding-left: 10px; border-right: none; font-size: 11px; letter-spacing: 1px; padding: 4px;">세종요리제과기술학원</td>
+                        <td colspan="3" style="text-align: right; padding-right: 10px; border-left: none; font-size: 11px; letter-spacing: 1px; padding: 4px;">031)986-1933</td>
                     </tr>
                 </table>
             </div>
