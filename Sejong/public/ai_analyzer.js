@@ -277,17 +277,17 @@ function createCardUI(title, imgUrl, id) {
 let currentModalRotation = 0;
 let currentModalScale = 1;
 
-function openImageModal(src) {
+function openImageModal(src, startRotation = 0) {
     const modal = document.getElementById('imageModal');
     const modalImg = document.getElementById('imageModalImg');
     if(modal && modalImg) {
         modalImg.src = src;
-        currentModalRotation = 0;
+        currentModalRotation = startRotation;
         currentModalScale = 1;
         modalImg.style.maxWidth = '90vw';
         modalImg.style.maxHeight = '90vh';
         modalImg.style.width = 'auto';
-        modalImg.style.transform = `rotate(0deg)`;
+        modalImg.style.transform = `rotate(${startRotation}deg)`;
         modal.style.display = 'block';
     }
 }
@@ -414,7 +414,8 @@ async function executeAnalysis(base64Data, fileName, imgUrl) {
     "수강료": "숫자만 (예: 250000)",
     "도구비": "숫자만",
     "결제금액": "숫자만",
-    "과정체크": "하단 표에서 펜으로 동그라미 쳐진 과목명과 시간을 결합 (예: 한식(10시), 양식(5시)). 여러 개면 콤마로 연결."
+    "과정체크": "하단 표에서 펜으로 동그라미 쳐진 과목명과 시간을 결합 (예: 한식(10시), 양식(5시)). 여러 개면 콤마로 연결.",
+    "회전": "이미지의 글자가 올바른 정방향이면 0, 거꾸로(180도) 뒤집혀 있으면 180, 오른쪽으로 누워있으면 90, 왼쪽이면 270을 숫자로 반환"
 }`;
     }
 
@@ -550,6 +551,15 @@ function updateCardStatus(id, status, message) {
 function renderStudentResult(id, data) {
     updateCardStatus(id, 'success', '분석 완료');
     const content = document.getElementById(`content-${id}`);
+    
+    // 회전값 적용
+    let rotateDeg = parseInt(data.회전) || 0;
+    const cardImg = document.querySelector(`#card-${id} .image-preview`);
+    if (cardImg && rotateDeg !== 0) {
+        cardImg.style.transform = `rotate(${rotateDeg}deg)`;
+        // 모달 열릴 때도 해당 회전값 적용되도록 onclick 덮어쓰기
+        cardImg.onclick = function() { openImageModal(this.src, rotateDeg); };
+    }
     
     // Convert course info for saving
     const combinedCourse = [data.수강과목, data.과정체크].filter(x => x).join(' / ');
