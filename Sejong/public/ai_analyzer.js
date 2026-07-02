@@ -53,6 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.target.files.length > 0) {
             handleFiles(e.target.files);
         }
+        e.target.value = '';
     });
 
     const folderInput = document.getElementById('folderInput');
@@ -61,6 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (e.target.files.length > 0) {
                 handleFiles(e.target.files);
             }
+            e.target.value = '';
         });
     }
 });

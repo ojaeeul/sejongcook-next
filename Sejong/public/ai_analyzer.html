@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>AI 스마트 원서 분석 - 세종요리제과학원</title>
-    <link rel="stylesheet" href="style.css?v=20260703-8">
+    <link rel="stylesheet" href="style.css?v=20260703-9">
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -426,8 +426,8 @@
                     <div class="upload-text">수강생 원서나 사진을 드래그 앤 드롭 하세요</div>
                     <div class="upload-subtext">아래 버튼을 클릭하여 선택 (JPG, PNG, PDF 지원, 여러 장 한 번에 가능)</div>
                     <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: center; position: relative; z-index: 10;">
-                        <button type="button" onclick="event.stopPropagation(); document.getElementById('fileInput').click();" style="padding: 8px 16px; border-radius: 4px; border: 1px solid #475569; background: white; cursor: pointer; font-family: 'Suit', sans-serif;">파일 선택</button>
-                        <button type="button" onclick="event.stopPropagation(); document.getElementById('folderInput').click();" style="padding: 8px 16px; border-radius: 4px; border: 1px solid #475569; background: white; cursor: pointer; font-family: 'Suit', sans-serif;">폴더 선택</button>
+                        <label for="fileInput" onclick="event.stopPropagation();" style="padding: 8px 16px; border-radius: 4px; border: 1px solid #475569; background: white; cursor: pointer; font-family: 'Suit', sans-serif; display: inline-block;">파일 선택</label>
+                        <label for="folderInput" onclick="event.stopPropagation();" style="padding: 8px 16px; border-radius: 4px; border: 1px solid #475569; background: white; cursor: pointer; font-family: 'Suit', sans-serif; display: inline-block;">폴더 선택</label>
                     </div>
                 </div>
                 
@@ -448,8 +448,8 @@
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
     <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';</script>
-    <script src="sidebar_sync.js?v=20260703-8"></script>
-    <script src="ai_analyzer.js?v=20260703-8"></script>
+    <script src="sidebar_sync.js?v=20260703-9"></script>
+    <script src="ai_analyzer.js?v=20260703-9"></script>
     <script>
         function toggleSidebar() {
             document.querySelector('.sidebar').classList.toggle('active');
