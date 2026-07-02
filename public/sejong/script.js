@@ -1854,7 +1854,8 @@ window.handleStatusChange = async function (e, memberId) {
 
         const modal = document.getElementById('statusModal');
         if (modal) {
-            const cancelBtn = modal.querySelector('.btn-secondary');
+            const cancelBtns = Array.from(modal.querySelectorAll('.btn-secondary'));
+            const cancelBtn = cancelBtns.find(b => b.textContent.trim() === '취소');
             if (cancelBtn) {
                 cancelBtn.onclick = () => {
                     selectEl.value = prevStatus;
@@ -1877,7 +1878,8 @@ window.handleStatusChange = async function (e, memberId) {
         );
         const modal = document.getElementById('statusModal');
         if (modal) {
-            const cancelBtn = modal.querySelector('.btn-secondary');
+            const cancelBtns = Array.from(modal.querySelectorAll('.btn-secondary'));
+            const cancelBtn = cancelBtns.find(b => b.textContent.trim() === '취소');
             if (cancelBtn) {
                 cancelBtn.onclick = () => {
                     selectEl.value = prevStatus;
@@ -1908,7 +1910,8 @@ window.handleStatusChange = async function (e, memberId) {
         );
         const modal = document.getElementById('statusModal');
         if (modal) {
-            const cancelBtn = modal.querySelector('.btn-secondary');
+            const cancelBtns = Array.from(modal.querySelectorAll('.btn-secondary'));
+            const cancelBtn = cancelBtns.find(b => b.textContent.trim() === '취소');
             if (cancelBtn) {
                 cancelBtn.onclick = () => {
                     selectEl.value = prevStatus;
