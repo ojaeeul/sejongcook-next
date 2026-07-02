@@ -948,8 +948,7 @@ async function saveStudent(id) {
         type: document.getElementById(`type-${id}`)?.value || 'student',
         school_level: document.getElementById(`schoolLevel-${id}`)?.value || '',
         grade: document.getElementById(`grade-${id}`)?.value || '',
-        paper_date: document.getElementById(`paper_date-${id}`)?.value || '',
-        amount: totalFee ? totalFee.replace(/[^0-9]/g, '') : null
+        paper_date: document.getElementById(`paper_date-${id}`)?.value || ''
     };
 
     try {
