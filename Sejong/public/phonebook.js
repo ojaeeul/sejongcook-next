@@ -256,7 +256,6 @@ function renderPage() {
                     <!-- Left Column: Name & Reg Date -->
                     <div style="width: 90px; display: flex; flex-direction: column; justify-content: center; border-right: 1px solid #e2e8f0; padding: 0 10px; flex-shrink: 0; height: 100%;">
                         <div style="display: flex; align-items: center; gap: 2px;">
-                            <span onclick="moveToTrashPhonebook('${m.id}')" style="cursor: pointer; color: #ef4444; display: flex; align-items: center;" title="휴지통으로 이동"><i class="material-icons" style="font-size: 0.8rem;">delete</i></span>
                             <span class="member-name" style="font-size: 0.8rem; line-height: 1;">${m.name}</span>
                         </div>
                         <span class="member-reg-date" style="margin-top: 2px; font-size: 0.6rem; line-height: 1;">${regDateText}</span>
@@ -277,8 +276,14 @@ function renderPage() {
                     </div>
 
                     <!-- Right Column: Courses -->
-                    <div class="course-badge-list" style="width: 180px; display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: flex-end; padding: 0 10px; gap: 2px; overflow: hidden; margin-left: auto; cursor: pointer; height: 100%;" onclick="showCourseOverlay(this, '${m.name}', '${coursesStr}')" title="크게 보기">
+                    <div class="course-badge-list" style="flex: 1; min-width: 120px; display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: flex-end; padding: 0 10px; gap: 2px; overflow: hidden; margin-left: auto; cursor: pointer; height: 100%; border-right: 1px solid #e2e8f0;" onclick="showCourseOverlay(this, '${m.name}', '${coursesStr}')" title="크게 보기">
                         ${courseBadges}
+                    </div>
+
+                    <!-- Action Column: Edit & Delete -->
+                    <div style="width: 70px; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 0 10px; flex-shrink: 0; height: 100%;">
+                        <span onclick="openEditMemberModal('${m.id}')" style="cursor: pointer; color: #3b82f6;" title="정보 수정"><i class="material-icons" style="font-size: 1.1rem;">edit</i></span>
+                        <span onclick="moveToTrashPhonebook('${m.id}')" style="cursor: pointer; color: #ef4444;" title="삭제"><i class="material-icons" style="font-size: 1.1rem;">delete</i></span>
                     </div>
                 </div>
             `;
@@ -438,13 +443,45 @@ window.moveToTrashPhonebook = async function(memberId) {
     } catch(e) { console.error(e); }
 };
 
+let currentEditMemberId = null;
+
 window.addNewPhoneMember = function() {
+    currentEditMemberId = null;
+    document.getElementById('modalTitle').textContent = '새 수강생 추가';
+    document.getElementById('modalSubmitBtn').textContent = '추가하기';
     document.getElementById('addMemberName').value = '';
     document.getElementById('addMemberPhone').value = '';
     document.getElementById('addMemberGuardian').value = '';
     document.getElementById('addMemberCourse').value = '';
     
-    // Populate course dropdown dynamically
+    populateCourseDropdown();
+    const modal = document.getElementById('addMemberModal');
+    if(modal) {
+        modal.style.display = 'flex';
+    }
+};
+
+window.openEditMemberModal = function(id) {
+    currentEditMemberId = id;
+    const m = members.find(m => String(m.id) === String(id));
+    if (!m) return;
+
+    document.getElementById('modalTitle').textContent = '수강생 정보 수정';
+    document.getElementById('modalSubmitBtn').textContent = '저장하기';
+    
+    document.getElementById('addMemberName').value = m.name || '';
+    document.getElementById('addMemberPhone').value = m.phone || '';
+    document.getElementById('addMemberGuardian').value = m.phone_guardian || '';
+    document.getElementById('addMemberCourse').value = m.course || '';
+
+    populateCourseDropdown();
+    const modal = document.getElementById('addMemberModal');
+    if(modal) {
+        modal.style.display = 'flex';
+    }
+};
+
+window.populateCourseDropdown = function() {
     const courseDropdown = document.getElementById('dropdownCourse');
     if (courseDropdown) {
         courseDropdown.innerHTML = ''; // clear
@@ -467,11 +504,6 @@ window.addNewPhoneMember = function() {
             div.textContent = '등록된 과정이 없습니다';
             courseDropdown.appendChild(div);
         }
-    }
-
-    const modal = document.getElementById('addMemberModal');
-    if(modal) {
-        modal.style.display = 'flex';
     }
 };
 
@@ -515,26 +547,49 @@ window.submitAddMember = async function() {
     const guardian = document.getElementById('addMemberGuardian').value.trim();
     const course = document.getElementById('addMemberCourse').value.trim();
 
-    const newMember = {
-        name: name,
-        phone: phone,
-        phone_guardian: guardian,
-        course: course,
-        registeredDate: new Date().toISOString().split('T')[0],
-        status: 'registered'
-    };
+    if (currentEditMemberId) {
+        const m = members.find(m => String(m.id) === String(currentEditMemberId));
+        if (m) {
+            m.name = name;
+            m.phone = phone;
+            m.phone_guardian = guardian;
+            m.course = course;
+            
+            try {
+                await fetch(getFetchUrl('members', true), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(m)
+                });
+                renderPhonebook();
+                closeAddMemberModal();
+            } catch(e) {
+                console.error(e);
+                alert('수정 실패');
+            }
+        }
+    } else {
+        const newMember = {
+            name: name,
+            phone: phone,
+            phone_guardian: guardian,
+            course: course,
+            registeredDate: new Date().toISOString().split('T')[0],
+            status: 'registered'
+        };
 
-    try {
-        await fetch(getFetchUrl('members', true), {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(newMember)
-        });
-        fetchMembers();
-        closeAddMemberModal();
-    } catch(e) {
-        console.error(e);
-        alert('추가 실패');
+        try {
+            await fetch(getFetchUrl('members', true), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newMember)
+            });
+            fetchMembers();
+            closeAddMemberModal();
+        } catch(e) {
+            console.error(e);
+            alert('추가 실패');
+        }
     }
 };
 
