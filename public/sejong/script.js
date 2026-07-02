@@ -2689,12 +2689,12 @@ window.open3DSliderForDate = async function(dateStr) {
                     </div>
                     <table class="dark-table" style="background: white; width: 100%; border-collapse: collapse; font-size: 13px;">
                         <tr>
-                            <td class="th-dark" style="width: 15%; white-space: nowrap;">성명</td>
-                            <td style="text-align: center; width: 15%; white-space: nowrap;">${m.name}</td>
-                            <td class="th-dark" style="width: 10%; white-space: nowrap;">성별</td>
-                            <td style="text-align: center; width: 15%; white-space: nowrap;">${m.gender || '-'}</td>
-                            <td class="th-dark" style="width: 20%; white-space: nowrap;">주민등록번호</td>
-                            <td style="text-align: center; width: 25%; white-space: nowrap;">${m.resident_num || '-'}</td>
+                            <td class="th-dark" style="width: 12%; white-space: nowrap;">성명</td>
+                            <td style="text-align: center; width: 18%; white-space: nowrap; font-size: 13px;">${m.name}</td>
+                            <td class="th-dark" style="width: 8%; white-space: nowrap;">성별</td>
+                            <td style="text-align: center; width: 12%; white-space: nowrap; font-size: 13px;">${m.gender || '-'}</td>
+                            <td class="th-dark" style="width: 18%; white-space: nowrap;">주민등록번호</td>
+                            <td style="text-align: center; width: 32%; white-space: nowrap; font-size: 13px;">${m.resident_num || '-'}</td>
                         </tr>
                         <tr>
                             <td class="th-dark">주소</td>
