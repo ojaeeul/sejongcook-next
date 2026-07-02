@@ -14,6 +14,23 @@ window.memberSearchTerm = initialSearch || '';
 
 let searchTimeout;
 
+// --- Realtime 2-Way Sync via BroadcastChannel ---
+const sejongSyncChannel = new BroadcastChannel('sejong_sync');
+sejongSyncChannel.onmessage = function(event) {
+    if (event.data === 'MEMBER_UPDATED') {
+        console.log('[Sync] Received MEMBER_UPDATED. Reloading members...');
+        if (typeof fetchData === 'function') {
+            fetchData();
+        } else if (typeof renderMembers === 'function') {
+            renderMembers();
+        }
+    }
+};
+window.notifyMemberUpdate = function() {
+    sejongSyncChannel.postMessage('MEMBER_UPDATED');
+};
+// ------------------------------------------------
+
 // 공통으로 사용될 전역 변수들
 window.global_course_options = [];
 window.global_time_options = [];
@@ -2641,31 +2658,34 @@ window.open3DSliderForDate = async function(dateStr) {
             const slide = document.createElement('div');
             slide.className = 'swiper-slide';
             slide.innerHTML = `
-                <div style="text-align:center; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:15px; margin-bottom:15px;">
-                    <div style="font-size:1.5rem; font-weight:900; color:#60a5fa;">${m.name}</div>
-                    <div style="font-size:0.9rem; color:#94a3b8; margin-top:5px;">${m.phone || '전화번호 없음'}</div>
+                <div style="text-align:center; border-bottom:2px solid #e2e8f0; padding-bottom:15px; margin-bottom:20px;">
+                    <div style="font-size:1.8rem; font-weight:800; color:#1e3a8a; letter-spacing: -0.5px;">${m.name}</div>
+                    <div style="font-size:1rem; color:#64748b; margin-top:5px; font-weight: 500;">${m.phone || '전화번호 없음'}</div>
                 </div>
-                <div style="display:flex; flex-direction:column; gap:8px; font-size:1rem;">
-                    <div style="display:flex; justify-content:space-between;">
-                        <span style="color:#cbd5e1;">등록일:</span>
-                        <span style="font-weight:700;">${m.paper_date || m.start_date || '-'}</span>
+                <div style="display:flex; flex-direction:column; gap:12px; font-size:1.05rem;">
+                    <div style="display:flex; justify-content:space-between; align-items: center; background: #f8fafc; padding: 8px 12px; border-radius: 6px;">
+                        <span style="color:#475569; font-size: 0.95rem;">등록일</span>
+                        <span style="font-weight:700; color: #0f172a;">${m.paper_date || m.start_date || '-'}</span>
                     </div>
-                    <div style="display:flex; justify-content:space-between;">
-                        <span style="color:#cbd5e1;">수강과정:</span>
-                        <span style="font-weight:700; color:#fbbf24;">${m.course || '-'}</span>
+                    <div style="display:flex; justify-content:space-between; align-items: center; background: #f8fafc; padding: 8px 12px; border-radius: 6px;">
+                        <span style="color:#475569; font-size: 0.95rem;">수강과정</span>
+                        <span style="font-weight:800; color:#2563eb;">${m.course || '-'}</span>
                     </div>
-                    <div style="display:flex; justify-content:space-between;">
-                        <span style="color:#cbd5e1;">결제금액:</span>
-                        <span style="font-weight:700;">${m.amount ? parseInt(m.amount).toLocaleString() + '원' : '-'}</span>
+                    <div style="display:flex; justify-content:space-between; align-items: center; background: #f8fafc; padding: 8px 12px; border-radius: 6px;">
+                        <span style="color:#475569; font-size: 0.95rem;">결제금액</span>
+                        <span style="font-weight:700; color: #ef4444;">${m.amount ? parseInt(m.amount).toLocaleString() + '원' : '-'}</span>
                     </div>
-                    <div style="display:flex; justify-content:space-between;">
-                        <span style="color:#cbd5e1;">수강생 구분:</span>
-                        <span style="font-weight:700;">${m.type || '-'}</span>
+                    <div style="display:flex; justify-content:space-between; align-items: center; background: #f8fafc; padding: 8px 12px; border-radius: 6px;">
+                        <span style="color:#475569; font-size: 0.95rem;">구분/성별</span>
+                        <span style="font-weight:700; color: #0f172a;">${m.type || '-'} / ${m.gender || '-'}</span>
                     </div>
-                    <div style="display:flex; justify-content:space-between;">
-                        <span style="color:#cbd5e1;">성별:</span>
-                        <span style="font-weight:700;">${m.gender || '-'}</span>
+                    <div style="margin-top: 15px; border-top: 1px dashed #cbd5e1; padding-top: 15px;">
+                        <div style="color:#64748b; font-size: 0.85rem; margin-bottom: 5px;">비고/메모</div>
+                        <div style="font-size: 0.95rem; color: #334155; line-height: 1.4;">${m.notes || '기록된 메모가 없습니다.'}</div>
                     </div>
+                </div>
+                <div style="position: absolute; right: 20px; top: 20px; opacity: 0.1;">
+                    <i class="material-icons" style="font-size: 48px;">description</i>
                 </div>
             `;
             wrapper.appendChild(slide);
@@ -2679,16 +2699,12 @@ window.open3DSliderForDate = async function(dateStr) {
         
         // Initialize Swiper with 3D Coverflow
         window.mySwiperInstance = new Swiper('.mySwiper', {
-            effect: 'coverflow',
+            effect: 'cards',
             grabCursor: true,
-            centeredSlides: true,
-            slidesPerView: 'auto',
-            coverflowEffect: {
-                rotate: 50,
-                stretch: 0,
-                depth: 100,
-                modifier: 1,
+            cardsEffect: {
                 slideShadows: true,
+                perSlideOffset: 8,
+                perSlideRotate: 2,
             },
             pagination: {
                 el: '.swiper-pagination',
