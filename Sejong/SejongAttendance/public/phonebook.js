@@ -266,12 +266,12 @@ function renderPage() {
                     <div style="flex: 1; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 1px; border-right: 1px solid #e2e8f0; min-width: 200px; padding: 0 10px; height: 100%;">
                         <div class="contact-box" style="display: flex; align-items: center; height: auto; width: 100%;">
                             <span style="font-size: 0.7rem; font-weight: 700; color: #1e40af; width: 22px; flex-shrink: 0; line-height: 1;">(본)</span>
-                            <span class="phone-number" style="margin-left: 2px; flex-shrink: 0; width: 95px; font-size: 0.75rem; line-height: 1;">${m.phone || '-'}</span>
+                            <span class="phone-number" style="margin-left: 2px; flex-shrink: 0; width: 95px; font-size: 0.75rem; line-height: 1; cursor: pointer; text-decoration: underline; text-decoration-color: #cbd5e1; text-underline-offset: 2px;" onclick="editPhonebookNumber('${m.id}', 'phone')" title="전화번호 수정">${m.phone || '-'}</span>
                             ${getPhoneButtons(m.phone, coursesStr)}
                         </div>
                         <div class="contact-box" style="display: flex; align-items: center; height: auto; width: 100%;">
                             <span style="font-size: 0.7rem; font-weight: 700; color: #475569; width: 22px; flex-shrink: 0; line-height: 1;">(부)</span>
-                            <span class="phone-number" style="margin-left: 2px; flex-shrink: 0; width: 95px; font-size: 0.75rem; line-height: 1;">${m.phone_guardian || '-'}</span>
+                            <span class="phone-number" style="margin-left: 2px; flex-shrink: 0; width: 95px; font-size: 0.75rem; line-height: 1; cursor: pointer; text-decoration: underline; text-decoration-color: #cbd5e1; text-underline-offset: 2px;" onclick="editPhonebookNumber('${m.id}', 'phone_guardian')" title="부모님 전화번호 수정">${m.phone_guardian || '-'}</span>
                             ${getPhoneButtons(m.phone_guardian, coursesStr)}
                         </div>
                     </div>
@@ -436,4 +436,57 @@ window.moveToTrashPhonebook = async function(memberId) {
             fetchMembers();
         }
     } catch(e) { console.error(e); }
+};
+
+window.addNewPhoneMember = async function() {
+    const name = prompt("추가할 수강생의 이름을 입력하세요:");
+    if (!name || !name.trim()) return;
+    
+    const phone = prompt("본인 전화번호를 입력하세요 (예: 010-1234-5678):");
+    if (!phone && phone !== "") return; // cancelled
+
+    const newMember = {
+        name: name.trim(),
+        phone: phone ? phone.trim() : '',
+        phone_guardian: '',
+        course: '',
+        registeredDate: new Date().toISOString().split('T')[0],
+        status: 'registered'
+    };
+
+    try {
+        await fetch(getFetchUrl('members', true), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newMember)
+        });
+        fetchMembers();
+    } catch(e) {
+        console.error(e);
+        alert('추가 실패');
+    }
+};
+
+window.editPhonebookNumber = async function(memberId, field) {
+    const m = members.find(m => String(m.id) === String(memberId));
+    if (!m) return;
+    
+    const label = field === 'phone' ? '본인 전화번호' : '부모님 전화번호';
+    const currentVal = m[field] || '';
+    const newVal = prompt(`${m.name}의 ${label}를 수정하세요:`, currentVal);
+    
+    if (newVal !== null && newVal !== currentVal) {
+        m[field] = newVal.trim();
+        try {
+            await fetch(getFetchUrl('members', true), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(m)
+            });
+            renderPhonebook();
+        } catch(e) {
+            console.error(e);
+            alert('수정 실패');
+        }
+    }
 };
