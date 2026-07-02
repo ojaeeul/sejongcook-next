@@ -1832,48 +1832,7 @@ window.handleStatusChange = async function (e, memberId) {
         }
     }
 
-    if (newStatus === 'hold') {
-        openStatusModal(
-            "보류 사유 입력",
-            `<textarea id="holdReason" style="width:100%; height:100px; padding:10px; border-radius:8px; border:1px solid #ddd;" placeholder="보류 사유를 입력하세요..."></textarea>
-             <button type="button" id="moveToArchiveBtn" class="btn-secondary" style="width:100%; margin-top:10px; background-color:#f0f9ff; color:#0369a1; border-color:#0369a1;">수료생 보관함으로 이동</button>`,
-            () => {
-                const reason = document.getElementById('holdReason').value;
-                if (reason.trim()) {
-                    member.notes = (member.notes || '') + '\n ' + reason;
-                    updateMemberStatus(member, 'hold');
-                    closeStatusModal();
-                } else {
-                    alert("사유를 입력해주세요.");
-                }
-            }
-        );
-
-        // Add handler for Archive button
-        const archiveBtn = document.getElementById('moveToArchiveBtn');
-        if (archiveBtn) {
-            archiveBtn.onclick = async () => {
-                const reason = document.getElementById('holdReason').value;
-                if (reason.trim()) {
-                    member.notes = (member.notes || '') + '\n ' + reason;
-                }
-                selectEl.value = 'completed';
-                member.status = 'completed';
-                await updateMemberStatus(member, 'completed');
-                closeStatusModal();
-                loadArchive();
-            };
-        }
-
-        const cancelBtn = modal.querySelector('.btn-secondary:not(#moveToArchiveBtn)');
-        if (cancelBtn) {
-            cancelBtn.onclick = () => {
-                selectEl.value = prevStatus;
-                closeStatusModal();
-            };
-        }
-    }
-    else if (newStatus === 'completed') {
+    if (newStatus === 'completed') {
         openStatusModal(
             "수료 처리 확인",
             `<p style="margin:0;">수료 처리하시겠습니까?</p>
@@ -2004,16 +1963,16 @@ function renderMembers() {
 
         // 1. Filter by Status (Archive vs Trash vs Active)
         if (currentFilter === 'archive') {
-            // Show ONLY completed or hold
-            displayMembers = members.filter(m => m.status === 'completed' || m.status === 'hold');
-            if (document.getElementById('pageTitle')) document.getElementById('pageTitle').textContent = '수 료 생 및 보 류 명 단';
+            // Show ONLY completed
+            displayMembers = members.filter(m => m.status === 'completed');
+            if (document.getElementById('pageTitle')) document.getElementById('pageTitle').textContent = '수 료 생 명 단';
         } else if (currentFilter === 'trash') {
             // Show ONLY trash or delete, or members with [삭제] courses
-            displayMembers = members.filter(m => m.status === 'trash' || m.status === 'delete' || (m.course && m.course.includes('[삭제]')));
+            displayMembers = members.filter(m => m.status === 'trash' || (m.course && m.course.includes('[삭제]')));
             if (document.getElementById('pageTitle')) document.getElementById('pageTitle').textContent = '휴 지 통';
         } else {
-            // Show Active (exclude completed/hold/trash/delete)
-            displayMembers = members.filter(m => m.status !== 'completed' && m.status !== 'hold' && m.status !== 'trash' && m.status !== 'delete');
+            // Show Active (exclude completed/trash)
+            displayMembers = members.filter(m => m.status !== 'completed' && m.status !== 'trash');
 
             // Dynamic Title based on course filter
             let title = '수 강 생 대 장';
@@ -2152,9 +2111,7 @@ function renderMembers() {
                 { val: 'taking', text: '수강중' },
                 { val: 'completed', text: '수료' },
                 { val: 'retaking', text: '재수강' },
-                { val: 'hold', text: '보류' },
-                { val: 'trash', text: '휴지통' },
-                { val: 'delete', text: '삭제' }
+                { val: 'trash', text: '휴지통' }
             ];
 
             const optionsHtml = statuses.map(s =>
@@ -2246,7 +2203,7 @@ renderMembers = function () {
     }
 
     memberListEl.innerHTML = '';
-    let displayMembers = members.filter(m => m.status !== 'hold' && m.status !== 'completed');
+    let displayMembers = members.filter(m => m.status !== 'completed' && m.status !== 'trash');
 
     // Apply Search Term if exists
     if (window.memberSearchTerm) {
