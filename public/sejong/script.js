@@ -2172,24 +2172,28 @@ function renderMembers() {
                 'hold': 'status-hold'
             }[status] || 'status-taking';
 
-            // Remarks
+            // Remarks (Used as Member Category by the user)
             let remarks = '';
             if (member.type === 'student') {
                 const schoolName = member.school || '';
-                const schoolLevel = member.school_level ? `(${member.school_level})` : '';
-                const grade = member.grade ? `${member.grade}학년` : '';
-                remarks = `${schoolName} ${schoolLevel} ${grade}`.trim();
-            } else {
-                remarks = member.job || '';
-            }
-            
-            // Append notes to remarks so it is visible in the table column
-            if (member.notes) {
-                // To keep it clean, replace newlines with spaces for the table view
-                const inlineNotes = member.notes.replace(/\n/g, ' / ').replace(/\[AI분석\].*/g, '').trim();
-                if (inlineNotes) {
-                    remarks = remarks ? `${remarks} / ${inlineNotes}` : inlineNotes;
+                let schoolLevel = member.school_level || '';
+                
+                // If there's no specific school name, just show the category nicely
+                if (!schoolName && schoolLevel) {
+                    if (schoolLevel === '대학교') remarks = '대학생';
+                    else if (schoolLevel === '고등학교') remarks = '고등학생';
+                    else if (schoolLevel === '중학교') remarks = '중학생';
+                    else if (schoolLevel === '초등학교') remarks = '초등학생';
+                    else remarks = schoolLevel;
+                    
+                    if (member.grade) remarks += ` ${member.grade}학년`;
+                } else {
+                    const levelStr = schoolLevel ? `(${schoolLevel})` : '';
+                    const gradeStr = member.grade ? `${member.grade}학년` : '';
+                    remarks = `${schoolName} ${levelStr} ${gradeStr}`.trim();
                 }
+            } else {
+                remarks = member.job || '일반';
             }
 
             const tr = document.createElement('tr');
