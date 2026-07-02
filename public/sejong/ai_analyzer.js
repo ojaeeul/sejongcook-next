@@ -732,7 +732,7 @@ function renderStudentResult(id, data) {
                             if (!data.수강시작일) return '';
                             let match = data.수강시작일.match(/(\d{4})[년\-.\/]\s*(\d{1,2})[월\-.\/]\s*(\d{1,2})/);
                             if (match) {
-                                return \`\${match[1]}-\${match[2].padStart(2, '0')}-\${match[3].padStart(2, '0')}\`;
+                                return match[1] + '-' + match[2].padStart(2, '0') + '-' + match[3].padStart(2, '0');
                             }
                             return '';
                         })()}" style="width: 100%; text-align: left; border: 1px solid #cbd5e1; border-radius: 4px; padding: 6px 10px; background: transparent; cursor: pointer; font-size: 14px; box-sizing: border-box; outline: none; font-family: inherit;">
