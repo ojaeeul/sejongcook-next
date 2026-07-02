@@ -404,7 +404,7 @@ async function executeAnalysis(base64Data, fileName, imgUrl) {
 {
     "성명": "이름 추출 (주소나 번호 절대 금지)",
     "성별": "남 또는 여 (동그라미 쳐진 것)",
-    "생년월일": "YYYY년 M월 D일 형식",
+    "생년월일": "원서에 적힌 그대로 추출 (주민등록번호가 적혀있으면 주민번호 그대로, 생년월일이 적혀있으면 생년월일 그대로. 임의 변환 금지)",
     "주소": "순수 주소 텍스트만 (전화번호가 포함되어 있으면 전화번호는 완전히 제거할 것)",
     "학생연락처": "수강생 본인 연락처 (연락처 란 또는 주소 란에서 찾은 학생 본인의 번호)",
     "부모연락처": "부모 연락처 (연락처 란 또는 주소 란에서 찾은 부모님 번호)",
@@ -626,18 +626,18 @@ function renderStudentResult(id, data) {
         <div class="result-table-wrapper" style="margin-bottom: 15px; text-align: left;">
             <table class="dark-table">
                 <tr>
-                    <td class="th-dark" style="width: 15%;">성명 <span class="required" style="color:#ef4444">*</span></td>
+                    <td class="th-dark" style="width: 15%; white-space: nowrap;">성명 <span class="required" style="color:#ef4444">*</span></td>
                     <td><input type="text" id="name-${id}" value="${data.성명 || ''}" required placeholder="이름 입력" style="text-align: center; width: 100%; background: transparent; border: none; outline: none; font-family: inherit;"></td>
-                    <td class="th-dark" style="width: 10%;">성별</td>
-                    <td style="width: 15%;">
+                    <td class="th-dark" style="width: 8%; white-space: nowrap;">성별</td>
+                    <td style="width: 12%;">
                         <select id="gender-${id}" style="text-align: center; text-align-last: center; width: 100%; background: transparent; border: none; outline: none; font-family: inherit;">
                             <option value="">선택</option>
                             <option value="여" ${data.성별 === '여' ? 'selected' : ''}>여</option>
                             <option value="남" ${data.성별 === '남' ? 'selected' : ''}>남</option>
                         </select>
                     </td>
-                    <td class="th-dark" style="width: 15%;">주민등록번호</td>
-                    <td>
+                    <td class="th-dark" style="width: 18%; white-space: nowrap;">생년/주민번호</td>
+                    <td style="width: 25%;">
                         <input type="text" id="birth-${id}" value="${data.생년월일 || ''}" placeholder="000000-0000000" style="text-align: center; width: 100%; background: transparent; border: none; outline: none; font-family: inherit;">
                     </td>
                 </tr>
