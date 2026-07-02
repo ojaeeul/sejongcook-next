@@ -438,18 +438,40 @@ window.moveToTrashPhonebook = async function(memberId) {
     } catch(e) { console.error(e); }
 };
 
-window.addNewPhoneMember = async function() {
-    const name = prompt("추가할 수강생의 이름을 입력하세요:");
-    if (!name || !name.trim()) return;
+window.addNewPhoneMember = function() {
+    document.getElementById('addMemberName').value = '';
+    document.getElementById('addMemberPhone').value = '';
+    document.getElementById('addMemberGuardian').value = '';
+    document.getElementById('addMemberCourse').value = '';
+    const modal = document.getElementById('addMemberModal');
+    if(modal) {
+        modal.style.display = 'flex';
+    }
+};
+
+window.closeAddMemberModal = function() {
+    const modal = document.getElementById('addMemberModal');
+    if(modal) {
+        modal.style.display = 'none';
+    }
+};
+
+window.submitAddMember = async function() {
+    const name = document.getElementById('addMemberName').value.trim();
+    if (!name) {
+        alert("이름을 입력해주세요.");
+        return;
+    }
     
-    const phone = prompt("본인 전화번호를 입력하세요 (예: 010-1234-5678):");
-    if (!phone && phone !== "") return; // cancelled
+    const phone = document.getElementById('addMemberPhone').value.trim();
+    const guardian = document.getElementById('addMemberGuardian').value.trim();
+    const course = document.getElementById('addMemberCourse').value.trim();
 
     const newMember = {
-        name: name.trim(),
-        phone: phone ? phone.trim() : '',
-        phone_guardian: '',
-        course: '',
+        name: name,
+        phone: phone,
+        phone_guardian: guardian,
+        course: course,
         registeredDate: new Date().toISOString().split('T')[0],
         status: 'registered'
     };
@@ -461,6 +483,7 @@ window.addNewPhoneMember = async function() {
             body: JSON.stringify(newMember)
         });
         fetchMembers();
+        closeAddMemberModal();
     } catch(e) {
         console.error(e);
         alert('추가 실패');

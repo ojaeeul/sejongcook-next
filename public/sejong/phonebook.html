@@ -7,11 +7,11 @@
     <meta http-equiv="Expires" content="0">    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>전화번호부 - 세종요리</title>
-    <link rel="stylesheet" href="style.css?v=20260702-4">
+    <link rel="stylesheet" href="style.css?v=20260702-5">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="phonebook.js?v=20260702-4" defer></script>
+    <script src="phonebook.js?v=20260702-5" defer></script>
     <style>
                 .notebook-wrapper {
             display: block;
@@ -723,6 +723,35 @@
         </main>
     </div>
 
+    <!-- Add Member Modal -->
+    <div id="addMemberModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center; backdrop-filter: blur(2px);">
+        <div style="background: white; width: 90%; max-width: 400px; border-radius: 12px; padding: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+            <h3 style="margin: 0 0 20px 0; color: #1e293b; font-size: 1.25rem;">새 수강생 추가</h3>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div>
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #475569; margin-bottom: 4px;">이름 <span style="color: #ef4444;">*</span></label>
+                    <input type="text" id="addMemberName" placeholder="예: 홍길동" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.9rem; outline: none; box-sizing: border-box;">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #475569; margin-bottom: 4px;">본인 전화번호</label>
+                    <input type="text" id="addMemberPhone" placeholder="예: 010-1234-5678" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.9rem; outline: none; box-sizing: border-box;">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #475569; margin-bottom: 4px;">부모님 전화번호</label>
+                    <input type="text" id="addMemberGuardian" placeholder="예: 010-9876-5432" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.9rem; outline: none; box-sizing: border-box;">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #475569; margin-bottom: 4px;">과정명</label>
+                    <input type="text" id="addMemberCourse" placeholder="예: 제과,제빵" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.9rem; outline: none; box-sizing: border-box;">
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 24px; justify-content: flex-end;">
+                <button onclick="closeAddMemberModal()" style="padding: 10px 16px; border: none; background: #f1f5f9; color: #475569; border-radius: 8px; font-weight: 600; cursor: pointer;">취소</button>
+                <button onclick="submitAddMember()" style="padding: 10px 16px; border: none; background: #3b82f6; color: white; border-radius: 8px; font-weight: 600; cursor: pointer;">추가하기</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Sidebar toggle helper matching script.js
         function toggleSidebar() {
@@ -734,7 +763,7 @@
             el.nextElementSibling.classList.toggle('show');
         }
     </script>
-    <script src="sidebar_sync.js?v=20260702-4"></script>
+    <script src="sidebar_sync.js?v=20260702-5"></script>
 </body>
 
 </html>
