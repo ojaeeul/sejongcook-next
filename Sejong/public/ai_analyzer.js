@@ -553,6 +553,41 @@ function renderStudentResult(id, data) {
     
     // Convert course info for saving
     const combinedCourse = [data.수강과목, data.과정체크].filter(x => x).join(' / ');
+
+    // Parse member type and school info
+    let memberType = "student";
+    let schoolName = (data.학교 || '').trim();
+    let schoolLevel = "";
+    let grade = "";
+
+    if (schoolName === "일반" || schoolName === "일반인" || schoolName === "성인" || schoolName === "일반(성인)") {
+        memberType = "general";
+        schoolName = "";
+    } else if (schoolName) {
+        // Extract grade (e.g., "3학년" or "3")
+        const gradeMatch = schoolName.match(/([1-6])\s*학년/);
+        if (gradeMatch) {
+            grade = gradeMatch[1];
+            schoolName = schoolName.replace(gradeMatch[0], "").trim();
+        }
+        
+        schoolName = schoolName.replace(/,/g, '').trim();
+
+        // Detect and separate school level
+        if (schoolName.includes("초등")) {
+            schoolLevel = "초등학교";
+            schoolName = schoolName.replace("초등학교", "").replace("초등", "").trim();
+        } else if (schoolName.includes("중학") || schoolName.match(/중$/)) {
+            schoolLevel = "중학교";
+            schoolName = schoolName.replace("중학교", "").replace(/중$/, "").trim();
+        } else if (schoolName.includes("고등") || schoolName.match(/고$/)) {
+            schoolLevel = "고등학교";
+            schoolName = schoolName.replace("고등학교", "").replace(/고$/, "").trim();
+        } else if (schoolName.includes("대학") || schoolName.match(/대$/)) {
+            schoolLevel = "대학교";
+            schoolName = schoolName.replace("대학교", "").replace(/대$/, "").trim();
+        }
+    }
     
     content.innerHTML = `
         <div class="result-table-wrapper" style="margin-bottom: 15px; text-align: left;">
@@ -613,31 +648,31 @@ function renderStudentResult(id, data) {
                     <td class="th-dark">회원구분</td>
                     <td colspan="5">
                         <select id="type-${id}" style="text-align: center; text-align-last: center; width: 100%; background: transparent; border: none; outline: none; font-family: inherit;">
-                            <option value="student">학생</option>
-                            <option value="general">일반인</option>
+                            <option value="student" ${memberType === 'student' ? 'selected' : ''}>학생</option>
+                            <option value="general" ${memberType === 'general' ? 'selected' : ''}>일반인</option>
                         </select>
                     </td>
                 </tr>
                 <tr>
                     <td class="th-dark">학교</td>
-                    <td colspan="2"><input type="text" id="school-${id}" value="${data.학교 || ''}" placeholder="학교명" style="text-align: center; width: 100%; background: transparent; border: none; outline: none; font-family: inherit;"></td>
+                    <td colspan="2"><input type="text" id="school-${id}" value="${schoolName}" placeholder="학교명" style="text-align: center; width: 100%; background: transparent; border: none; outline: none; font-family: inherit;"></td>
                     <td colspan="3" style="border: none; padding: 5px;">
                         <div style="display: flex; gap: 5px; width: 100%;">
                             <select id="schoolLevel-${id}" style="flex: 1; border: 1px solid #cbd5e1; border-radius: 4px; padding: 5px; box-sizing: border-box; background: transparent; outline: none; font-family: inherit;">
                                 <option value="">구분</option>
-                                <option value="고등학교">고등학교</option>
-                                <option value="중학교">중학교</option>
-                                <option value="초등학교">초등학교</option>
-                                <option value="대학교">대학교</option>
+                                <option value="고등학교" ${schoolLevel === '고등학교' ? 'selected' : ''}>고등학교</option>
+                                <option value="중학교" ${schoolLevel === '중학교' ? 'selected' : ''}>중학교</option>
+                                <option value="초등학교" ${schoolLevel === '초등학교' ? 'selected' : ''}>초등학교</option>
+                                <option value="대학교" ${schoolLevel === '대학교' ? 'selected' : ''}>대학교</option>
                             </select>
                             <select id="grade-${id}" style="flex: 1; border: 1px solid #cbd5e1; border-radius: 4px; padding: 5px; box-sizing: border-box; background: transparent; outline: none; font-family: inherit;">
                                 <option value="">학년</option>
-                                <option value="1">1</option>
-                                <option value="2">2</option>
-                                <option value="3">3</option>
-                                <option value="4">4</option>
-                                <option value="5">5</option>
-                                <option value="6">6</option>
+                                <option value="1" ${grade === '1' ? 'selected' : ''}>1</option>
+                                <option value="2" ${grade === '2' ? 'selected' : ''}>2</option>
+                                <option value="3" ${grade === '3' ? 'selected' : ''}>3</option>
+                                <option value="4" ${grade === '4' ? 'selected' : ''}>4</option>
+                                <option value="5" ${grade === '5' ? 'selected' : ''}>5</option>
+                                <option value="6" ${grade === '6' ? 'selected' : ''}>6</option>
                             </select>
                         </div>
                     </td>
@@ -748,7 +783,10 @@ async function saveStudent(id) {
         start_date: document.getElementById(`startDate-${id}`)?.value || '',
         course: courseInput?.value || '',
         notes: notes,
-        registeredDate: new Date().toISOString().split('T')[0]
+        registeredDate: new Date().toISOString().split('T')[0],
+        type: document.getElementById(`type-${id}`)?.value || 'student',
+        school_level: document.getElementById(`schoolLevel-${id}`)?.value || '',
+        grade: document.getElementById(`grade-${id}`)?.value || ''
     };
 
     try {
