@@ -728,7 +728,14 @@ function renderStudentResult(id, data) {
                 <tr>
                     <td class="th-dark">시작일</td>
                     <td colspan="5" style="padding: 5px;">
-                        <input type="date" id="startDate-${id}" value="${data.수강시작일 ? data.수강시작일.replace(/\./g, '-') : ''}" style="width: 100%; text-align: left; border: 1px solid #cbd5e1; border-radius: 4px; padding: 6px 10px; background: transparent; cursor: pointer; font-size: 14px; box-sizing: border-box; outline: none; font-family: inherit;">
+                        <input type="date" id="startDate-${id}" value="${(() => {
+                            if (!data.수강시작일) return '';
+                            let match = data.수강시작일.match(/(\d{4})[년\-.\/]\s*(\d{1,2})[월\-.\/]\s*(\d{1,2})/);
+                            if (match) {
+                                return \`\${match[1]}-\${match[2].padStart(2, '0')}-\${match[3].padStart(2, '0')}\`;
+                            }
+                            return '';
+                        })()}" style="width: 100%; text-align: left; border: 1px solid #cbd5e1; border-radius: 4px; padding: 6px 10px; background: transparent; cursor: pointer; font-size: 14px; box-sizing: border-box; outline: none; font-family: inherit;">
                     </td>
                 </tr>
                 <tr>
@@ -901,6 +908,7 @@ async function saveStudent(id) {
     const courseTimeInputs = document.querySelectorAll(`.courseTime-${id}`);
     
     let courseList = [];
+    // 1. Gather from old dynamic rows
     for (let i = 0; i < courseNameInputs.length; i++) {
         let cName = courseNameInputs[i].value.trim();
         let cTime = courseTimeInputs[i].value.trim();
@@ -909,7 +917,31 @@ async function saveStudent(id) {
             courseList.push(`${cName}${timeStr}`);
         }
     }
-    const finalCourse = courseList.join(' / ');
+    
+    // 2. Gather from Premium Checkboxes
+    let premiumCourses = [];
+    const courseMap = {
+        'bake': '제과', 'bread': '제빵', 'korean': '한식', 
+        'western': '양식', 'japanese': '일식', 'chinese': '중식', 'puffer': '복어'
+    };
+    for (const [key, val] of Object.entries(courseMap)) {
+        if (document.getElementById(`course_${key}-${id}`)?.checked) {
+            premiumCourses.push(val);
+        }
+    }
+    
+    let premiumTimes = [];
+    if (document.getElementById(`time_10-${id}`)?.checked) premiumTimes.push('10시');
+    if (document.getElementById(`time_5-${id}`)?.checked) premiumTimes.push('5시');
+    if (document.getElementById(`time_7-${id}`)?.checked) premiumTimes.push('7시');
+    
+    if (premiumCourses.length > 0) {
+        let timeSuffix = premiumTimes.length > 0 ? `(${premiumTimes.join(', ')})` : '';
+        courseList.push(premiumCourses.join(', ') + timeSuffix);
+    }
+    
+    // Remove duplicates and join
+    const finalCourse = [...new Set(courseList)].join(' / ');
     
     if (!nameInput.value || !phoneInput.value) {
         alert('이름과 전화번호는 필수입니다.');
@@ -924,7 +956,13 @@ async function saveStudent(id) {
     
     let aiNotes = `[AI분석] 성별: ${gender}, 생년월일: ${birth}\n수강료: ${fee}, 도구비: ${toolFee}, 총결제금액: ${totalFee}`;
     let userNotes = document.getElementById(`notes-${id}`)?.value || '';
-    let combinedNotes = userNotes ? (userNotes + '\n' + aiNotes) : aiNotes;
+    let paperNotes = document.getElementById(`paper_notes-${id}`)?.value || '';
+    
+    let notesArr = [];
+    if (userNotes) notesArr.push(userNotes);
+    if (paperNotes) notesArr.push(paperNotes);
+    notesArr.push(aiNotes);
+    let combinedNotes = notesArr.join('\n');
 
     const emailId = document.getElementById(`paper_email_id-${id}`)?.value || '';
     const domainSelect = document.getElementById(`paper_email_domain_select-${id}`)?.value || '';
