@@ -2683,34 +2683,75 @@ window.open3DSliderForDate = async function(dateStr) {
             const slide = document.createElement('div');
             slide.className = 'swiper-slide';
             slide.innerHTML = `
-                <div style="text-align:center; border-bottom:2px solid #e2e8f0; padding-bottom:15px; margin-bottom:20px;">
-                    <div style="font-size:1.8rem; font-weight:800; color:#1e3a8a; letter-spacing: -0.5px;">${m.name}</div>
-                    <div style="font-size:1rem; color:#64748b; margin-top:5px; font-weight: 500;">${m.phone || '전화번호 없음'}</div>
-                </div>
-                <div style="display:flex; flex-direction:column; gap:12px; font-size:1.05rem;">
-                    <div style="display:flex; justify-content:space-between; align-items: center; background: #f8fafc; padding: 8px 12px; border-radius: 6px;">
-                        <span style="color:#475569; font-size: 0.95rem;">등록일</span>
-                        <span style="font-weight:700; color: #0f172a;">${m.paper_date || m.start_date || '-'}</span>
+                <div style="transform: scale(0.85); transform-origin: top center; width: 117%; margin-left: -8.5%; padding-bottom: 10px;">
+                    <div style="font-size: 1.5rem; font-weight: 800; color: #1e3a8a; margin-bottom: 15px; text-align: center;">
+                        ${m.name} <span style="font-size: 0.9rem; color: #64748b; font-weight: 500;">(${m.paper_date || m.start_date || '등록일 없음'})</span>
                     </div>
-                    <div style="display:flex; justify-content:space-between; align-items: center; background: #f8fafc; padding: 8px 12px; border-radius: 6px;">
-                        <span style="color:#475569; font-size: 0.95rem;">수강과정</span>
-                        <span style="font-weight:800; color:#2563eb;">${m.course || '-'}</span>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; align-items: center; background: #f8fafc; padding: 8px 12px; border-radius: 6px;">
-                        <span style="color:#475569; font-size: 0.95rem;">결제금액</span>
-                        <span style="font-weight:700; color: #ef4444;">${m.amount ? parseInt(m.amount).toLocaleString() + '원' : '-'}</span>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; align-items: center; background: #f8fafc; padding: 8px 12px; border-radius: 6px;">
-                        <span style="color:#475569; font-size: 0.95rem;">구분/성별</span>
-                        <span style="font-weight:700; color: #0f172a;">${m.type || '-'} / ${m.gender || '-'}</span>
-                    </div>
-                    <div style="margin-top: 15px; border-top: 1px dashed #cbd5e1; padding-top: 15px;">
-                        <div style="color:#64748b; font-size: 0.85rem; margin-bottom: 5px;">비고/메모</div>
-                        <div style="font-size: 0.95rem; color: #334155; line-height: 1.4;">${m.notes || '기록된 메모가 없습니다.'}</div>
-                    </div>
-                </div>
-                <div style="position: absolute; right: 20px; top: 20px; opacity: 0.1;">
-                    <i class="material-icons" style="font-size: 48px;">description</i>
+                    <table class="dark-table" style="background: white; width: 100%; border-collapse: collapse; font-size: 13px;">
+                        <tr>
+                            <td class="th-dark" style="width: 15%;">성명</td>
+                            <td style="text-align: center;">${m.name}</td>
+                            <td class="th-dark" style="width: 10%;">성별</td>
+                            <td style="text-align: center; width: 15%;">${m.gender || '-'}</td>
+                            <td class="th-dark" style="width: 20%;">주민등록번호</td>
+                            <td style="text-align: center;">${m.resident_num || '-'}</td>
+                        </tr>
+                        <tr>
+                            <td class="th-dark">주소</td>
+                            <td colspan="5" style="text-align: left; padding: 8px;">${m.address || '-'}</td>
+                        </tr>
+                        <tr>
+                            <td rowspan="2" class="th-dark">연락처</td>
+                            <td class="th-dark">본인</td>
+                            <td colspan="4" style="text-align: center; padding: 8px;">${m.phone || '-'}</td>
+                        </tr>
+                        <tr>
+                            <td class="th-dark">보호자 / 자택</td>
+                            <td colspan="2" style="text-align: center; padding: 8px;">보호자: ${m.parent_phone || '-'}</td>
+                            <td colspan="2" style="text-align: center; padding: 8px;">자택: ${m.home_phone || '-'}</td>
+                        </tr>
+                        <tr>
+                            <td class="th-dark">회원구분</td>
+                            <td colspan="5" style="text-align: center; padding: 8px;">
+                                ${m.type === 'student' ? '학생' : '일반인'}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="th-dark">학교</td>
+                            <td colspan="2" style="text-align: center; padding: 8px;">${m.school || '-'}</td>
+                            <td colspan="3" style="text-align: center; padding: 8px;">
+                                <div style="display:flex; justify-content:space-around;">
+                                    <span>구분: ${m.school_level || '-'}</span>
+                                    <span>학년: ${m.grade ? m.grade + '학년' : '-'}</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="th-dark">수강과목</td>
+                            <td colspan="5" style="text-align: left; padding: 8px;">${m.course ? m.course.replace(/\n/g, '<br>') : '-'}</td>
+                        </tr>
+                        <tr>
+                            <td class="th-dark">시작일</td>
+                            <td colspan="5" style="text-align: left; padding: 8px;">${m.start_date || '-'}</td>
+                        </tr>
+                        <tr>
+                            <td class="th-dark">비고</td>
+                            <td colspan="5" style="text-align: left; padding: 8px;">${m.notes ? m.notes.replace(/\n/g, '<br>') : '-'}</td>
+                        </tr>
+                    </table>
+                    
+                    <table class="dark-table" style="background: white; width: 100%; border-collapse: collapse; font-size: 13px; border-top: none;">
+                        <tr>
+                            <td class="th-dark" style="width: 15%;">수강료</td>
+                            <td colspan="2" style="text-align: left; padding: 8px;">${m.tuition ? Number(m.tuition).toLocaleString() + '원' : '-'}</td>
+                            <td class="th-dark" style="width: 15%;">도구비</td>
+                            <td colspan="2" style="text-align: left; padding: 8px;">${m.tool_fee ? Number(m.tool_fee).toLocaleString() + '원' : '-'}</td>
+                        </tr>
+                        <tr>
+                            <td class="th-dark">결제금액</td>
+                            <td colspan="5" style="text-align: left; padding: 8px; font-weight: bold; color: #ef4444;">${m.amount ? Number(m.amount).toLocaleString() + '원' : '-'}</td>
+                        </tr>
+                    </table>
                 </div>
             `;
             wrapper.appendChild(slide);
