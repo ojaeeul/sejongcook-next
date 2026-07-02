@@ -549,3 +549,24 @@ window.formatPhoneNumber = function(input) {
 
     input.value = formatted;
 };
+
+window.showPhoneDropdown = function(id) {
+    const el = document.getElementById(id);
+    if(el) el.classList.add('show');
+};
+
+window.hidePhoneDropdown = function(id) {
+    const el = document.getElementById(id);
+    if(el) el.classList.remove('show');
+};
+
+window.selectPrefix = function(inputId, prefix) {
+    const input = document.getElementById(inputId);
+    if(input) {
+        input.value = prefix;
+        // Focus the input first to trigger any cursor positioning
+        input.focus();
+        // Fire input event to format
+        formatPhoneNumber(input);
+    }
+};
