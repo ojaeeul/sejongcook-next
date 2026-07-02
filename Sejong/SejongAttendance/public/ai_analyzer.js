@@ -122,19 +122,28 @@ async function processPDF(file) {
             updateProgress();
 
             const analyzePromises = [];
-            for (let i = 1; i <= pdf.numPages; i++) {
-                const page = await pdf.getPage(i);
-                const viewport = page.getViewport({ scale: 2.5 });
-                const canvas = document.createElement('canvas');
-                const context = canvas.getContext('2d');
-                canvas.height = viewport.height;
-                canvas.width = viewport.width;
+            // OOM(메모리 초과) 방지를 위해 PDF 렌더링을 3장씩 끊어서 처리합니다.
+            for (let i = 1; i <= pdf.numPages; i += 3) {
+                const chunkPromises = [];
+                for (let j = i; j < i + 3 && j <= pdf.numPages; j++) {
+                    const page = await pdf.getPage(j);
+                    const viewport = page.getViewport({ scale: 2.5 });
+                    const canvas = document.createElement('canvas');
+                    const context = canvas.getContext('2d');
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
 
-                await page.render({ canvasContext: context, viewport: viewport }).promise;
+                    await page.render({ canvasContext: context, viewport: viewport }).promise;
+                    
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+                    const base64Data = dataUrl.split(',')[1];
+                    chunkPromises.push(analyzeImage(base64Data, `${file.name} (페이지 ${j})`, dataUrl));
+                }
+                analyzePromises.push(...chunkPromises);
                 
-                const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
-                const base64Data = dataUrl.split(',')[1];
-                analyzePromises.push(analyzeImage(base64Data, `${file.name} (페이지 ${i})`, dataUrl));
+                // Wait for this chunk of rendering to avoid storing 100+ high-res canvases in memory at once
+                // We don't await the analyzeImage (which is queued), we just yield the event loop
+                await new Promise(r => setTimeout(r, 100));
             }
             await Promise.all(analyzePromises);
         };
@@ -324,6 +333,7 @@ async function executeAnalysis(base64Data, fileName, imgUrl) {
 [절대 주의사항]
 1. 사진에 없는 내용이나 이름(예: 김아영 등)을 절대 지어내지 마세요. (No Hallucination)
 2. 글씨를 알아볼 수 없거나 비어있는 칸은 무조건 빈칸("")으로 처리하세요.
+3. 이름 끝에 마침표(.)나 특수기호가 잘못 인식되어 있다면 제외하고 순수 이름만 추출하세요.
 
 반드시 다음 JSON 형식의 배열로 반환하세요:
 [
@@ -346,6 +356,7 @@ async function executeAnalysis(base64Data, fileName, imgUrl) {
    - 관계 표시가 없는 번호나 본인 번호는 '학생연락처'입니다.
 3. 성명은 표의 맨 위 좌측 '성명' 란에 있는 이름을 추출합니다. 주소를 이름으로 착각해서는 절대 안 됩니다.
 4. 글씨를 알아볼 수 없거나 비어있는 칸은 무조건 빈칸("")으로 처리하세요. 사진에 없는 내용을 지어내지 마세요. (No Hallucination)
+5. 이름 끝에 마침표(.)나 특수기호가 잘못 인식되어 있다면 제외하고 순수 이름만 추출하세요.
 
 다음 정보를 추출하여 정확히 아래 형식의 JSON 객체로 반환하세요. JSON 코드 블록 없이 순수 JSON 텍스트만 출력하세요.
 {
