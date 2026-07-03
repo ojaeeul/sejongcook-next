@@ -494,7 +494,13 @@ async function executeAnalysis(base64Data, fileName, imgUrl) {
                     generationConfig: {
                         temperature: 0.0,
                         responseMimeType: "application/json"
-                    }
+                    },
+                    safetySettings: [
+                        { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+                        { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+                        { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+                        { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
+                    ]
                 })
             });
 
@@ -549,6 +555,10 @@ async function executeAnalysis(base64Data, fileName, imgUrl) {
             } else {
                 const errData = await response.json().catch(() => ({}));
                 lastError = errData.error || `서버 오류 (${response.status})`;
+                if (response.status === 400) {
+                    // 구글 필터링(Safety) 등에 걸린 경우 재시도해도 의미 없음
+                    break;
+                }
                 retryCount++;
             }
         } catch (e) {

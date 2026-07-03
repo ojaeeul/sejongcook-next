@@ -21,8 +21,8 @@ export async function POST(request: Request) {
 
         for (let i = 0; i < 20; i++) {
             if (validKeys.length === 0) {
-                lastErrorText = "모든 API 키가 한도를 초과했거나 유효하지 않습니다. 1분 후 다시 시도해주세요.";
-                lastStatus = 429;
+                lastErrorText = lastErrorText || "모든 API 키가 한도를 초과했거나 유효하지 않습니다.";
+                // 429로 덮어쓰지 않고 원래 에러 코드를 유지합니다.
                 break;
             }
 
@@ -46,14 +46,21 @@ export async function POST(request: Request) {
             console.log(`Gemini API returned ${lastStatus}: ${lastErrorText.substring(0, 100)}... Retrying...`);
             
             if (lastStatus === 429) {
+                // Rate limit: remove this key from current request, try others
                 validKeys = validKeys.filter(k => k !== apiKey);
                 await new Promise(res => setTimeout(res, 1500)); 
             }
-            else if (lastStatus === 401 || lastStatus === 400 || lastStatus === 403) {
+            else if (lastStatus === 401 || lastStatus === 403) {
+                // Invalid or disabled key
                 validKeys = validKeys.filter(k => k !== apiKey);
             }
+            else if (lastStatus === 400) {
+                // Bad request (e.g. safety filter, invalid payload). Retrying won't help.
+                break;
+            }
             else {
-                await new Promise(res => setTimeout(res, 1000));
+                // Server errors (500, 503). Wait and retry with the same key.
+                await new Promise(res => setTimeout(res, 2000));
             }
         }
 
