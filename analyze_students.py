@@ -23,8 +23,9 @@ prompt = """이 이미지는 요리학원의 수강생 등록 원서입니다.
 [데이터 추출 규칙 및 절대 주의사항]
 1. 전화번호는 주소 필드에 절대 입력하지 마세요. 주소 란에 전화번호(예: 010-XXXX-XXXX)가 적혀 있다면, 해당 번호를 주소에서 완전히 삭제하고 순수 주소만 남기세요.
 2. 주소 란이나 다른 곳에서 발견된 모든 전화번호는 반드시 '학생연락처'나 '부모연락처' 필드로 이동시키세요.
-3. 성명은 표의 맨 위 좌측 '성명' 란에 있는 이름을 추출합니다.
-4. 글씨를 알아볼 수 없거나 비어있는 칸은 무조건 빈칸("")으로 처리하세요.
+3. 성명은 표의 맨 위 좌측 '성명' 란에 있는 이름을 추출합니다. 이름에 숫자나 특수문자가 들어가는 등 판독이 도저히 불가능한 경우는 지어내지 말고 무조건 빈칸("")으로 두세요.
+4. 전화번호가 '010-' 이나 불완전한 상태로 쓰여있거나 지워진 흔적만 있다면 가짜 데이터를 만들지 말고 무조건 빈칸("")으로 두세요.
+5. 글씨를 알아볼 수 없거나 비어있는 칸은 무조건 빈칸("")으로 처리하세요. 절대 유추하거나 지어내지 마세요.
 
 다음 정보를 추출하여 정확히 아래 형식의 JSON 객체로 반환하세요. JSON 코드 블록 없이 순수 JSON 텍스트만 출력하세요.
 {
@@ -96,16 +97,36 @@ def analyze_image(image_bytes, mime_type, filename, page_num=None):
                         print(f"Success for {file_id}: {parsed_json.get('성명', '')}")
                         
                         name = parsed_json.get('성명', '')
-                        phone = parsed_json.get('학생연락처', '') or parsed_json.get('부모연락처', '')
-                        course = parsed_json.get('수강과목', '')
-                        time_val = parsed_json.get('과정체크', '')
+                        dob = parsed_json.get('생년월일', '')
+                        phone = parsed_json.get('학생연락처', '')
+                        parent_phone = parsed_json.get('부모연락처', '')
+                        address = parsed_json.get('주소', '')
+                        start_date = parsed_json.get('수강시작일', '')
+                        
+                        # 비고(일반,학년)
+                        school = parsed_json.get('학교', '')
+                        note = parsed_json.get('비고', '')
+                        
+                        remark_parts = []
+                        if school:
+                            remark_parts.append(school)
+                        elif not note:
+                            # if no school and no note, maybe guess "일반" but AI might not be sure.
+                            remark_parts.append("일반")
+                            
+                        if note:
+                            remark_parts.append(note)
+                            
+                        remark = ", ".join(remark_parts)
                         
                         results.append({
                             "이름": name,
+                            "주민등록번호-생년월일": dob,
                             "전화번호": phone,
-                            "과정명": course,
-                            "시간": time_val,
-                            "비고": parsed_json.get('비고', ''),
+                            "부모 전화번호": parent_phone,
+                            "주소": address,
+                            "수강시작일": start_date,
+                            "비고(일반,학년)": remark,
                             "원본파일": file_id
                         })
                         return True
@@ -124,7 +145,7 @@ def analyze_image(image_bytes, mime_type, filename, page_num=None):
             print(f"Exception for {file_id}: {e}")
         
         print(f"Retrying... ({attempt+1}/{max_retries})")
-        time.sleep(10)
+        time.sleep(3)
     return False
 
 for file_path in files:
@@ -139,7 +160,7 @@ for file_path in files:
                 pix = page.get_pixmap(matrix=fitz.Matrix(2, 2))  # 2x zoom for better OCR
                 image_bytes = pix.tobytes("jpeg")
                 analyze_image(image_bytes, "image/jpeg", filename, page_num + 1)
-                time.sleep(6)  # 6 seconds delay between pages to respect rate limits (10 RPM)
+                time.sleep(2)  # 2 seconds delay
             doc.close()
         except Exception as e:
             print(f"Failed to process PDF {filename}: {e}")
@@ -147,7 +168,7 @@ for file_path in files:
         with open(file_path, 'rb') as f:
             image_bytes = f.read()
         analyze_image(image_bytes, "image/jpeg", filename)
-        time.sleep(6)
+        time.sleep(2)
 
 df = pd.DataFrame(results)
 output_path = "/Users/ojaeeul/Downloads/수강생분석.xlsx"
