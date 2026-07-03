@@ -746,7 +746,7 @@ function renderStudentResult(id, data) {
                             <option value="남" ${data.성별 === '남' ? 'selected' : ''}>남</option>
                         </select>
                     </td>
-                    <td class="th-dark" style="width: 16%; padding: 4px; font-size: 11px; line-height: 1.2; word-break: keep-all; white-space: nowrap;">생년월일<br>주민번호</td>
+                    <td class="th-dark" style="width: 16%; padding: 4px; font-size: 11px; line-height: 1.2; word-break: keep-all; white-space: nowrap;">주민등록번호</td>
                     <td style="width: 28%; padding: 2px;">
                         <input type="text" id="birth-${id}" value="${data.생년월일 || ''}" placeholder="000000-0000000" style="text-align: center; width: 100%; background: transparent; border: none; outline: none; font-family: inherit; font-size: 13px;">
                     </td>
@@ -955,7 +955,7 @@ function renderStudentResult(id, data) {
             </div>
         </div>
         <div class="card-actions" style="display: flex; gap: 10px;">
-            <button class="btn-save" onclick="saveStudent('${id}')" style="background: #4ade80; color: #064e3b; flex: 1; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 14px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px;"><i class="fas fa-save"></i> 명단에 등록</button>
+            <button class="btn-save" onclick="saveStudent('${id}')" style="background: #4ade80; color: #064e3b; flex: 1; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 14px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px;"><i class="fas fa-save"></i> 수강생 대장등록</button>
             <button class="btn-delete" onclick="removeCard('${id}')" style="background: #3f3f46; color: #f87171; flex: 0 0 50px; padding: 12px; border-radius: 8px; border: none; cursor: pointer;"><i class="fas fa-trash"></i></button>
         </div>
     `;
@@ -1087,6 +1087,8 @@ async function saveStudent(id) {
     let paper_email = '';
     if (emailId && domain) paper_email = `${emailId}@${domain}`;
 
+    const birthValue = document.getElementById(`birth-${id}`)?.value || '';
+
     const studentData = {
         id: String(Date.now()), // Generate ID locally
         name: nameInput?.value || '',
@@ -1101,7 +1103,9 @@ async function saveStudent(id) {
         registeredDate: document.getElementById(`paper_date-${id}`)?.value || new Date().toISOString().split('T')[0],
         type: document.getElementById(`type-${id}`)?.value || 'student',
         school_level: document.getElementById(`schoolLevel-${id}`)?.value || '',
-        grade: document.getElementById(`grade-${id}`)?.value || ''
+        grade: document.getElementById(`grade-${id}`)?.value || '',
+        resident_num: birthValue,
+        birth_date: birthValue
     };
 
     try {
@@ -1119,7 +1123,7 @@ async function saveStudent(id) {
         let exists = members.find(m => m.name === studentData.name && m.phone === studentData.phone);
         if (exists) {
             alert('이미 등록된 수강생입니다.');
-            btn.innerHTML = '<i class="fas fa-save"></i> 명단에 등록';
+            btn.innerHTML = '<i class="fas fa-save"></i> 수강생 대장등록';
             btn.disabled = false;
             return;
         }
@@ -1145,7 +1149,7 @@ async function saveStudent(id) {
         alert('저장에 실패했습니다: ' + e.message);
         console.error(e);
         const btn = document.querySelector(`#card-${id} .btn-save`);
-        btn.innerHTML = '<i class="fas fa-save"></i> 명단에 등록';
+        btn.innerHTML = '<i class="fas fa-save"></i> 수강생 대장등록';
         btn.disabled = false;
     }
 }
