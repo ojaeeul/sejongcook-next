@@ -117,8 +117,8 @@ async function handleFiles(files) {
     totalFiles += validFiles.length;
     updateProgress();
 
-    // API 차단을 막기 위해 2개씩 묶어서(Chunk) 동시 처리하고 약간의 텀을 둡니다.
-    const CONCURRENCY_LIMIT = 2;
+    // 6개의 멀티 API 키를 활용하여 6개씩 초고속 동시 처리 (속도 대폭 향상)
+    const CONCURRENCY_LIMIT = 6;
     for (let i = 0; i < validFiles.length; i += CONCURRENCY_LIMIT) {
         const chunk = validFiles.slice(i, i + CONCURRENCY_LIMIT);
         const promises = chunk.map(file => {
@@ -129,10 +129,6 @@ async function handleFiles(files) {
             }
         });
         await Promise.all(promises);
-        // 구글 무료 한도(분당 15회) 방어를 위해 청크 사이에 2초 대기
-        if (i + CONCURRENCY_LIMIT < validFiles.length) {
-            await new Promise(resolve => setTimeout(resolve, 2000));
-        }
     }
 }
 
