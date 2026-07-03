@@ -154,47 +154,64 @@ function updateProgress() {
 }
 
 async function processPDF(file) {
-    try {
-        const fileReader = new FileReader();
-        fileReader.onload = async function() {
-            const typedarray = new Uint8Array(this.result);
-            const pdf = await pdfjsLib.getDocument(typedarray).promise;
-            
-            totalFiles += pdf.numPages - 1; // Adjust total files for PDF pages
-            updateProgress();
-
-            const analyzePromises = [];
-            // OOM(메모리 초과) 방지를 위해 PDF 렌더링을 3장씩 끊어서 처리합니다.
-            for (let i = 1; i <= pdf.numPages; i += 3) {
-                const chunkPromises = [];
-                for (let j = i; j < i + 3 && j <= pdf.numPages; j++) {
-                    const page = await pdf.getPage(j);
-                    const viewport = page.getViewport({ scale: 2.5 });
-                    const canvas = document.createElement('canvas');
-                    const context = canvas.getContext('2d');
-                    canvas.height = viewport.height;
-                    canvas.width = viewport.width;
-
-                    await page.render({ canvasContext: context, viewport: viewport }).promise;
+    return new Promise((resolve, reject) => {
+        try {
+            const fileReader = new FileReader();
+            fileReader.onload = async function() {
+                try {
+                    const typedarray = new Uint8Array(this.result);
+                    const pdf = await pdfjsLib.getDocument(typedarray).promise;
                     
-                    const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
-                    const base64Data = dataUrl.split(',')[1];
-                    chunkPromises.push(analyzeImage(base64Data, `${file.name} (페이지 ${j})`, dataUrl));
+                    totalFiles += pdf.numPages - 1; // Adjust total files for PDF pages
+                    updateProgress();
+
+                    const analyzePromises = [];
+                    // OOM(메모리 초과) 방지를 위해 PDF 렌더링을 3장씩 끊어서 처리합니다.
+                    for (let i = 1; i <= pdf.numPages; i += 3) {
+                        const chunkPromises = [];
+                        for (let j = i; j < i + 3 && j <= pdf.numPages; j++) {
+                            const page = await pdf.getPage(j);
+                            const viewport = page.getViewport({ scale: 2.5 });
+                            const canvas = document.createElement('canvas');
+                            const context = canvas.getContext('2d');
+                            canvas.height = viewport.height;
+                            canvas.width = viewport.width;
+
+                            await page.render({ canvasContext: context, viewport: viewport }).promise;
+                            
+                            const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+                            const base64Data = dataUrl.split(',')[1];
+                            chunkPromises.push(analyzeImage(base64Data, `${file.name} (페이지 ${j})`, dataUrl));
+                        }
+                        analyzePromises.push(...chunkPromises);
+                        
+                        // Wait for this chunk of rendering to avoid storing 100+ high-res canvases in memory at once
+                        // We don't await the analyzeImage (which is queued), we just yield the event loop
+                        await new Promise(r => setTimeout(r, 100));
+                    }
+                    await Promise.all(analyzePromises);
+                    resolve();
+                } catch (e) {
+                    console.error('PDF 페이지 처리 실패', e);
+                    processingCount++;
+                    updateProgress();
+                    resolve();
                 }
-                analyzePromises.push(...chunkPromises);
-                
-                // Wait for this chunk of rendering to avoid storing 100+ high-res canvases in memory at once
-                // We don't await the analyzeImage (which is queued), we just yield the event loop
-                await new Promise(r => setTimeout(r, 100));
+            };
+            fileReader.onerror = function() {
+                console.error('FileReader 에러');
+                processingCount++;
+                updateProgress();
+                resolve();
             }
-            await Promise.all(analyzePromises);
-        };
-        fileReader.readAsArrayBuffer(file);
-    } catch (e) {
-        console.error('PDF 처리 실패', e);
-        processingCount++;
-        updateProgress();
-    }
+            fileReader.readAsArrayBuffer(file);
+        } catch (e) {
+            console.error('PDF 처리 실패', e);
+            processingCount++;
+            updateProgress();
+            resolve();
+        }
+    });
 }
 
 async function processImage(file) {
@@ -414,6 +431,7 @@ async function executeAnalysis(base64Data, fileName, imgUrl) {
     "수강료": "숫자만 (예: 250000)",
     "도구비": "숫자만",
     "결제금액": "숫자만",
+    "등록일": "YYYY년 M월 D일 형식 (원서 작성일자 또는 등록일자)",
     "과정체크": "하단 표에서 펜으로 동그라미 쳐진 과목명과 시간 (예: 제과, 7시). 동그라미 쳐지지 않은 인쇄된 글자는 절대 추출하지 마세요.",
     "비고": "하단 빈 공간(메모란)에 적힌 글씨 (예: 6:30~40사이)",
     "회전": "이미지의 글자가 올바른 정방향이면 0, 거꾸로(180도) 뒤집혀 있으면 180, 오른쪽으로 누워있으면 90, 왼쪽이면 270을 숫자로 반환"
@@ -624,20 +642,20 @@ function renderStudentResult(id, data) {
 
     content.innerHTML = `
         <div class="result-table-wrapper" style="margin-bottom: 15px; text-align: left; overflow-x: auto; width: 100%;">
-            <table class="dark-table" style="width: 100%; min-width: 450px; table-layout: fixed;">
+            <table class="dark-table" style="width: auto; min-width: unset; margin: 0 auto;">
                 <tr>
-                    <td class="th-dark" style="width: 13%; padding: 4px; font-size: 12px; word-break: keep-all;">성명 <span class="required" style="color:#ef4444">*</span></td>
-                    <td style="width: 20%; padding: 2px;"><input type="text" id="name-${id}" value="${data.성명 || ''}" required placeholder="이름 입력" style="text-align: center; width: 100%; background: transparent; border: none; outline: none; font-family: inherit; font-size: 13px;"></td>
-                    <td class="th-dark" style="width: 10%; padding: 4px; font-size: 12px; word-break: keep-all;">성별</td>
-                    <td style="width: 15%; padding: 2px;">
+                    <td class="th-dark" style="padding: 4px; font-size: 12px; word-break: keep-all; white-space: nowrap;">성명 <span class="required" style="color:#ef4444">*</span></td>
+                    <td style="padding: 2px;"><input type="text" id="name-${id}" value="${data.성명 || ''}" required placeholder="이름 입력" style="text-align: center; width: 100%; background: transparent; border: none; outline: none; font-family: inherit; font-size: 13px;"></td>
+                    <td class="th-dark" style="padding: 4px; font-size: 12px; word-break: keep-all; white-space: nowrap;">성별</td>
+                    <td style="padding: 2px;">
                         <select id="gender-${id}" style="text-align: center; text-align-last: center; width: 100%; background: transparent; border: none; outline: none; font-family: inherit; font-size: 13px; padding: 0;">
                             <option value="">선택</option>
                             <option value="여" ${data.성별 === '여' ? 'selected' : ''}>여</option>
                             <option value="남" ${data.성별 === '남' ? 'selected' : ''}>남</option>
                         </select>
                     </td>
-                    <td class="th-dark" style="width: 17%; padding: 4px; font-size: 11px; line-height: 1.2; word-break: keep-all;">생년월일<br>주민번호</td>
-                    <td style="width: 25%; padding: 2px;">
+                    <td class="th-dark" style="padding: 4px; font-size: 11px; line-height: 1.2; word-break: keep-all; white-space: nowrap;">생년월일<br>주민번호</td>
+                    <td style="padding: 2px;">
                         <input type="text" id="birth-${id}" value="${data.생년월일 || ''}" placeholder="000000-0000000" style="text-align: center; width: 100%; background: transparent; border: none; outline: none; font-family: inherit; font-size: 13px;">
                     </td>
                 </tr>
@@ -749,7 +767,7 @@ function renderStudentResult(id, data) {
             
             <!-- Premium Paper Form UI -->
             <div style="margin-top: 10px; border-top: 2px dashed #cbd5e1; padding-top: 10px; overflow-x: auto;">
-                <table class="dark-table" style="margin-bottom: 0; width: 100%; min-width: 450px; border-collapse: collapse; font-size: 12px; table-layout: fixed;">
+                <table class="dark-table" style="border-top: none; margin: 0 auto; border-collapse: collapse; font-size: 12px;">
                     <tr>
                         <td class="th-dark" style="width: 15%; padding: 4px;">I.D</td>
                         <td colspan="2" style="padding: 4px;"><input type="text" id="paper_id-${id}" style="text-align: center; width: 100%; background: transparent; border: none; outline: none; font-family: inherit;"></td>
@@ -806,12 +824,18 @@ function renderStudentResult(id, data) {
                         <td colspan="3" style="text-align: left; padding: 4px; white-space: nowrap;">
                             <div style="display: flex; align-items: center; justify-content: flex-start; gap: 4px;">
                                 <span style="color: #64748b; font-size: 11px; white-space: nowrap;">등록일</span>
-                                <input type="date" id="paper_date-${id}" value="${document.getElementById('masterDateSelector')?.value || new Date().toISOString().split('T')[0]}" style="flex: 1; text-align: center; border: 1px solid #cbd5e1; border-radius: 4px; padding: 1px 4px; background: transparent; color: #1e293b; cursor: pointer; font-family: inherit; font-size: 11px;">
+                                <input type="date" id="paper_date-${id}" value="${(() => {
+                                    if (data.등록일) {
+                                        let match = data.등록일.match(/(\d{4})[년\-.\/]\s*(\d{1,2})[월\-.\/]\s*(\d{1,2})/);
+                                        if (match) return match[1] + '-' + match[2].padStart(2, '0') + '-' + match[3].padStart(2, '0');
+                                    }
+                                    return document.getElementById('masterDateSelector')?.value || new Date().toISOString().split('T')[0];
+                                })()}" style="flex: 1; text-align: center; border: 1px solid #cbd5e1; border-radius: 4px; padding: 1px 4px; background: transparent; color: #1e293b; cursor: pointer; font-family: inherit; font-size: 11px;">
                             </div>
                         </td>
                     </tr>
                 </table>
-                <table class="dark-table" style="border-top: none; width: 100%; min-width: 450px; border-collapse: collapse; font-size: 12px; table-layout: fixed;">
+                <table class="dark-table" style="border-top: none; width: auto; min-width: unset; margin: 0 auto; border-collapse: collapse; font-size: 12px;">
                     <tr class="th-dark">
                         <td style="width: 14.2%; padding: 4px;"><label style="cursor: pointer;"><input type="checkbox" id="course_bake-${id}" ${isBake ? 'checked' : ''} style="margin:0;"> 제과</label></td>
                         <td style="width: 14.2%; padding: 4px;"><label style="cursor: pointer;"><input type="checkbox" id="course_bread-${id}" ${isBread ? 'checked' : ''} style="margin:0;"> 제빵</label></td>
