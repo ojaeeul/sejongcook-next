@@ -725,20 +725,20 @@ function renderStudentResult(id, data) {
 
     content.innerHTML = `
         <div class="result-table-wrapper" style="margin-bottom: 15px; text-align: left; overflow-x: auto; width: 100%;">
-            <table class="dark-table" style="width: auto; min-width: unset; margin: 0 auto;">
+            <table class="dark-table" style="width: 100%; min-width: 550px; margin: 0 auto; table-layout: fixed;">
                 <tr>
-                    <td class="th-dark" style="padding: 4px; font-size: 12px; word-break: keep-all; white-space: nowrap;">성명 <span class="required" style="color:#ef4444">*</span></td>
-                    <td style="padding: 2px;"><input type="text" id="name-${id}" value="${data.성명 || ''}" required placeholder="이름 입력" style="text-align: center; width: 100%; background: transparent; border: none; outline: none; font-family: inherit; font-size: 13px;"></td>
-                    <td class="th-dark" style="padding: 4px; font-size: 12px; word-break: keep-all; white-space: nowrap;">성별</td>
-                    <td style="padding: 2px;">
+                    <td class="th-dark" style="width: 14%; padding: 4px; font-size: 12px; word-break: keep-all; white-space: nowrap;">성명 <span class="required" style="color:#ef4444">*</span></td>
+                    <td style="width: 20%; padding: 2px;"><input type="text" id="name-${id}" value="${data.성명 || ''}" required placeholder="이름 입력" style="text-align: center; width: 100%; background: transparent; border: none; outline: none; font-family: inherit; font-size: 13px;"></td>
+                    <td class="th-dark" style="width: 10%; padding: 4px; font-size: 12px; word-break: keep-all; white-space: nowrap;">성별</td>
+                    <td style="width: 12%; padding: 2px;">
                         <select id="gender-${id}" style="text-align: center; text-align-last: center; width: 100%; background: transparent; border: none; outline: none; font-family: inherit; font-size: 13px; padding: 0;">
                             <option value="">선택</option>
                             <option value="여" ${data.성별 === '여' ? 'selected' : ''}>여</option>
                             <option value="남" ${data.성별 === '남' ? 'selected' : ''}>남</option>
                         </select>
                     </td>
-                    <td class="th-dark" style="padding: 4px; font-size: 11px; line-height: 1.2; word-break: keep-all; white-space: nowrap;">생년월일<br>주민번호</td>
-                    <td style="padding: 2px;">
+                    <td class="th-dark" style="width: 16%; padding: 4px; font-size: 11px; line-height: 1.2; word-break: keep-all; white-space: nowrap;">생년월일<br>주민번호</td>
+                    <td style="width: 28%; padding: 2px;">
                         <input type="text" id="birth-${id}" value="${data.생년월일 || ''}" placeholder="000000-0000000" style="text-align: center; width: 100%; background: transparent; border: none; outline: none; font-family: inherit; font-size: 13px;">
                     </td>
                 </tr>
