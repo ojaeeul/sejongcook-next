@@ -2683,18 +2683,18 @@ window.open3DSliderForDate = async function(dateStr) {
             const slide = document.createElement('div');
             slide.className = 'swiper-slide';
             slide.innerHTML = `
-                <div style="transform: scale(0.85); transform-origin: top center; width: 117%; margin-left: -8.5%; padding-bottom: 10px;">
+                <div style="width: 100%; padding-bottom: 10px; overflow-x: auto;">
                     <div style="font-size: 1.5rem; font-weight: 800; color: #1e3a8a; margin-bottom: 15px; text-align: center;">
                         ${m.name} <span style="font-size: 0.9rem; color: #64748b; font-weight: 500;">(${m.paper_date || m.start_date || '등록일 없음'})</span>
                     </div>
-                    <table class="dark-table" style="background: white; width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed;">
+                    <table class="dark-table" style="background: white; width: auto; min-width: unset; margin: 0 auto; border-collapse: collapse; font-size: 13px;">
                         <tr>
-                            <td class="th-dark" style="width: 13%; padding: 4px; font-size: 12px; word-break: keep-all;">성명</td>
-                            <td style="text-align: center; width: 20%; padding: 2px; font-size: 13px;">${m.name}</td>
-                            <td class="th-dark" style="width: 10%; padding: 4px; font-size: 12px; word-break: keep-all;">성별</td>
-                            <td style="text-align: center; width: 15%; padding: 2px; font-size: 13px;">${m.gender || '-'}</td>
-                            <td class="th-dark" style="width: 17%; padding: 4px; font-size: 11px; line-height: 1.2; word-break: keep-all;">생년월일<br>주민번호</td>
-                            <td style="text-align: center; width: 25%; padding: 2px; font-size: 13px;">${m.resident_num || '-'}</td>
+                            <td class="th-dark" style="padding: 4px; font-size: 12px; word-break: keep-all; white-space: nowrap;">성명</td>
+                            <td style="text-align: center; padding: 4px; font-size: 13px;">${m.name}</td>
+                            <td class="th-dark" style="padding: 4px; font-size: 12px; word-break: keep-all; white-space: nowrap;">성별</td>
+                            <td style="text-align: center; padding: 4px; font-size: 13px;">${m.gender || '-'}</td>
+                            <td class="th-dark" style="padding: 4px; font-size: 11px; line-height: 1.2; word-break: keep-all; white-space: nowrap;">생년월일<br>주민번호</td>
+                            <td style="text-align: center; padding: 4px; font-size: 13px;">${m.resident_num || '-'}</td>
                         </tr>
                         <tr>
                             <td class="th-dark">주소</td>
@@ -2740,15 +2740,15 @@ window.open3DSliderForDate = async function(dateStr) {
                         </tr>
                     </table>
                     
-                    <table class="dark-table" style="background: white; width: 100%; border-collapse: collapse; font-size: 13px; border-top: none; table-layout: fixed;">
+                    <table class="dark-table" style="background: white; width: auto; min-width: unset; margin: 0 auto; border-collapse: collapse; font-size: 13px; border-top: none;">
                         <tr>
-                            <td class="th-dark" style="width: 15%;">수강료</td>
+                            <td class="th-dark" style="padding: 4px; white-space: nowrap;">수강료</td>
                             <td colspan="2" style="text-align: left; padding: 8px;">${m.tuition ? Number(m.tuition).toLocaleString() + '원' : '-'}</td>
-                            <td class="th-dark" style="width: 15%;">도구비</td>
+                            <td class="th-dark" style="padding: 4px; white-space: nowrap;">도구비</td>
                             <td colspan="2" style="text-align: left; padding: 8px;">${m.tool_fee ? Number(m.tool_fee).toLocaleString() + '원' : '-'}</td>
                         </tr>
                         <tr>
-                            <td class="th-dark">결제금액</td>
+                            <td class="th-dark" style="white-space: nowrap;">결제금액</td>
                             <td colspan="5" style="text-align: left; padding: 8px; font-weight: bold; color: #ef4444;">${m.amount ? Number(m.amount).toLocaleString() + '원' : '-'}</td>
                         </tr>
                     </table>
