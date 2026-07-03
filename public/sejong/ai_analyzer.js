@@ -558,7 +558,7 @@ async function executeAnalysis(base64Data, fileName, imgUrl) {
         }
         
         if (!result && retryCount <= maxRetries) {
-            updateCardStatus(id, 'processing', `일시적 통신 지연... 재시도 중 (${retryCount}/${maxRetries})`);
+            updateCardStatus(id, 'processing', `일시적 통신 지연... 재시도 중 (${retryCount}/${maxRetries}) [사유: ${lastError}]`);
             await new Promise(resolve => setTimeout(resolve, 3000));
         }
     }
