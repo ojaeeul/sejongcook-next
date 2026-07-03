@@ -28,7 +28,8 @@ export async function POST(request: Request) {
 
             const keyIndex = (nextKeyIndex++) % validKeys.length;
             const apiKey = validKeys[keyIndex];
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${apiKey}`;
+            const targetModel = body.model || 'gemini-2.5-flash';
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${targetModel}:generateContent?key=${apiKey}`;
             
             response = await fetch(url, {
                 method: 'POST',
