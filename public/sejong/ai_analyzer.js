@@ -117,8 +117,8 @@ async function handleFiles(files) {
     totalFiles += validFiles.length;
     updateProgress();
 
-    // 최적의 속도와 API 차단을 막기 위해 5개씩 묶어서(Chunk) 동시 처리
-    const CONCURRENCY_LIMIT = 5;
+    // API 차단을 막기 위해 2개씩 묶어서(Chunk) 동시 처리하고 약간의 텀을 둡니다.
+    const CONCURRENCY_LIMIT = 2;
     for (let i = 0; i < validFiles.length; i += CONCURRENCY_LIMIT) {
         const chunk = validFiles.slice(i, i + CONCURRENCY_LIMIT);
         const promises = chunk.map(file => {
@@ -129,6 +129,10 @@ async function handleFiles(files) {
             }
         });
         await Promise.all(promises);
+        // 구글 무료 한도(분당 15회) 방어를 위해 청크 사이에 2초 대기
+        if (i + CONCURRENCY_LIMIT < validFiles.length) {
+            await new Promise(resolve => setTimeout(resolve, 2000));
+        }
     }
 }
 
@@ -465,13 +469,13 @@ async function executeAnalysis(base64Data, fileName, imgUrl) {
     let lastError = null;
 
     let retryCount = 0;
-    const maxRetries = 20; // 무료 한도(429) 회피를 위해 최대 20번까지 재시도
+    const maxRetries = 40; // 무료 한도(429) 회피를 위해 최대 40번까지 재시도 (약 3분 이상 대기 가능)
 
     while (retryCount <= maxRetries && !result) {
         if (retryCount > 0) {
-            updateCardStatus(id, 'processing', `무료 한도 초과 방어... 우회 시도 중 (${retryCount}/${maxRetries})`);
-            // 한도 초과(429)를 우회하기 위해 3초 대기 후 다른 키로 찌르기 유도
-            await new Promise(resolve => setTimeout(resolve, 3000));
+            updateCardStatus(id, 'processing', `구글 무료 한도 초과(429) 방어 중... 자동 대기 및 재시도 (${retryCount}/${maxRetries})`);
+            // 한도 초과(429)를 우회하기 위해 5초 씩 천천히 대기
+            await new Promise(resolve => setTimeout(resolve, 5000));
         }
 
         try {
