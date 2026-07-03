@@ -28,7 +28,7 @@ export async function POST(request: Request) {
 
             const keyIndex = (nextKeyIndex++) % validKeys.length;
             const apiKey = validKeys[keyIndex];
-            const targetModel = body.model || 'gemini-2.5-flash';
+            const targetModel = body.model || 'gemini-1.5-flash';
             const url = `https://generativelanguage.googleapis.com/v1beta/models/${targetModel}:generateContent?key=${apiKey}`;
             
             response = await fetch(url, {
@@ -54,8 +54,8 @@ export async function POST(request: Request) {
                 // Invalid or disabled key
                 validKeys = validKeys.filter(k => k !== apiKey);
             }
-            else if (lastStatus === 400) {
-                // Bad request (e.g. safety filter, invalid payload). Retrying won't help.
+            else if (lastStatus === 400 || lastStatus === 404) {
+                // Bad request or Not Found (invalid model). Retrying won't help.
                 break;
             }
             else {

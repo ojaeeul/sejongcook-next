@@ -545,8 +545,8 @@ async function executeAnalysis(base64Data, fileName, imgUrl) {
             } else {
                 const errData = await response.json().catch(() => ({}));
                 lastError = errData.error || `서버 오류 (${response.status})`;
-                if (response.status === 400 || response.status === 401 || response.status === 403) {
-                    // 구글 필터링, 키 오류 등 치명적 오류는 재시도 불가
+                if (response.status === 400 || response.status === 401 || response.status === 403 || response.status === 404) {
+                    // 치명적 오류(잘못된 요청, 인증 실패, 모델 없음 등)는 재시도 불가
                     break;
                 }
                 retryCount++;
