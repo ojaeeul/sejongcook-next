@@ -468,12 +468,6 @@ async function executeAnalysis(base64Data, fileName, imgUrl) {
     const maxRetries = 40; // 무료 한도(429) 회피를 위해 최대 40번까지 재시도 (약 3분 이상 대기 가능)
 
     while (retryCount <= maxRetries && !result) {
-        if (retryCount > 0) {
-            updateCardStatus(id, 'processing', `구글 무료 한도 초과(429) 방어 중... 자동 대기 및 재시도 (${retryCount}/${maxRetries})`);
-            // 한도 초과(429)를 우회하기 위해 5초 씩 천천히 대기
-            await new Promise(resolve => setTimeout(resolve, 5000));
-        }
-
         try {
             const response = await fetch('/api/sejong/ai_analyze', {
                 method: 'POST',
@@ -551,8 +545,8 @@ async function executeAnalysis(base64Data, fileName, imgUrl) {
             } else {
                 const errData = await response.json().catch(() => ({}));
                 lastError = errData.error || `서버 오류 (${response.status})`;
-                if (response.status === 400) {
-                    // 구글 필터링(Safety) 등에 걸린 경우 재시도해도 의미 없음
+                if (response.status === 400 || response.status === 401 || response.status === 403) {
+                    // 구글 필터링, 키 오류 등 치명적 오류는 재시도 불가
                     break;
                 }
                 retryCount++;
@@ -561,6 +555,11 @@ async function executeAnalysis(base64Data, fileName, imgUrl) {
             console.error('Fetch error:', e);
             lastError = `네트워크 오류: ${e.message}`;
             retryCount++;
+        }
+        
+        if (!result && retryCount <= maxRetries) {
+            updateCardStatus(id, 'processing', `일시적 통신 지연... 재시도 중 (${retryCount}/${maxRetries})`);
+            await new Promise(resolve => setTimeout(resolve, 3000));
         }
     }
 
