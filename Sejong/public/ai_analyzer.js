@@ -399,6 +399,28 @@ async function executeAnalysis(base64Data, fileName, imgUrl) {
   {"이름": "민수정", "본인전화번호": "010-1243-6763, 031-888-6763", "부모전화번호": "010-3243-9286"}
 ]
 이름이나 글씨를 절대 유추해서 획일화하지 말고, 적혀있는 그대로(예: 민지영, 민수정, 민원기, 민종훈, 문다빈, 문승희 등) 정확하게 판독하세요. 찾을 수 없으면 빈 배열 []을 반환하세요. JSON 코드 블록 없이 순수 JSON 텍스트만 출력하세요.`;
+    } else if (currentMode === 'exam') {
+        prompt = `이 이미지는 요리학원 수강생의 시험지(또는 평가지)입니다.
+사진이 거꾸로(180도) 찍혀 있거나 옆으로 돌아가 있을 수 있으니, 글자 방향을 스스로 판단하여 이미지를 회전시킨 상태로 읽어주세요.
+사용자가 직접 펜으로 적은 글씨와 평가 내용, 점수 등을 완벽하게 인식해주세요.
+
+[중요 지시사항: 2~3번 교차 검증]
+이미지를 단번에 판단하지 말고, 2~3번에 걸쳐서 꼼꼼히 다시 읽고 확인하며 분석하세요.
+특히 시험 점수나 합격/불합격 여부를 절대 헷갈리지 않게 정확히 추출하세요.
+
+[데이터 추출 규칙 및 절대 주의사항]
+1. 글씨를 알아볼 수 없거나 비어있는 칸은 무조건 빈칸("")으로 처리하세요. 사진에 없는 내용을 지어내지 마세요. (No Hallucination)
+2. 이름에 숫자나 특수문자가 들어가는 등 판독이 도저히 불가능한 경우는 지어내지 말고 무조건 빈칸("")으로 두세요.
+
+다음 정보를 추출하여 정확히 아래 형식의 JSON 객체로 반환하세요. JSON 코드 블록 없이 순수 JSON 텍스트만 출력하세요.
+{
+    "성명": "응시자 이름",
+    "시험명": "시험 과목 또는 종류 (없으면 빈칸)",
+    "시험일자": "시험을 본 날짜 (YYYY-MM-DD 형식, 없으면 빈칸)",
+    "점수": "시험 점수 (숫자만, 없으면 빈칸)",
+    "결과": "합격 또는 불합격 (없으면 빈칸)",
+    "피드백": "강사 코멘트나 메모, 감점 사유 등 (없으면 빈칸)"
+}`;
     } else {
         prompt = `이 이미지는 요리학원의 수강생 등록 원서입니다. 
 사진이 거꾸로(180도) 찍혀 있거나 옆으로 돌아가 있을 수 있으니, 글자 방향을 스스로 판단하여 이미지를 회전시킨 상태로 읽어주세요.
@@ -538,6 +560,11 @@ async function executeAnalysis(base64Data, fileName, imgUrl) {
     if (result) {
         if (currentMode === 'phonebook' && Array.isArray(result)) {
             renderPhonebookResult(id, result);
+        } else if (currentMode === 'exam') {
+            if (Array.isArray(result) && result.length > 0) {
+                result = result[0];
+            }
+            renderExamResult(id, result);
         } else if (currentMode === 'student') {
             if (Array.isArray(result) && result.length > 0) {
                 result = result[0];
@@ -552,6 +579,62 @@ async function executeAnalysis(base64Data, fileName, imgUrl) {
         document.getElementById(`content-${id}`).innerHTML = `<p style="text-align:center;color:#ef4444;">분석에 실패했습니다.<br>사유: ${lastError}</p>`;
     }
 }
+
+function renderExamResult(id, data) {
+    updateCardStatus(id, 'success', '분석 완료');
+    const content = document.getElementById(`content-${id}`);
+    
+    const html = `
+        <table class="dark-table" style="margin-top:10px;">
+            <tr>
+                <td class="th-dark" style="width:30%;">성명</td>
+                <td><input type="text" class="result-input" data-id="${id}" data-field="성명" value="${data['성명'] || ''}"></td>
+            </tr>
+            <tr>
+                <td class="th-dark">시험명</td>
+                <td><input type="text" class="result-input" data-id="${id}" data-field="시험명" value="${data['시험명'] || ''}"></td>
+            </tr>
+            <tr>
+                <td class="th-dark">시험일자</td>
+                <td><input type="text" class="result-input" data-id="${id}" data-field="시험일자" value="${data['시험일자'] || ''}"></td>
+            </tr>
+            <tr>
+                <td class="th-dark">점수</td>
+                <td><input type="text" class="result-input" data-id="${id}" data-field="점수" value="${data['점수'] || ''}"></td>
+            </tr>
+            <tr>
+                <td class="th-dark">결과</td>
+                <td><input type="text" class="result-input" data-id="${id}" data-field="결과" value="${data['결과'] || ''}"></td>
+            </tr>
+            <tr>
+                <td class="th-dark">피드백</td>
+                <td><input type="text" class="result-input" data-id="${id}" data-field="피드백" value="${data['피드백'] || ''}"></td>
+            </tr>
+        </table>
+        <div style="display:flex; justify-content:flex-end; margin-top:10px; gap:8px;">
+            <button onclick="copyExamData('${id}')" style="background:#475569; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:0.85rem;">복사하기</button>
+        </div>
+    `;
+    
+    content.innerHTML = html;
+}
+
+window.copyExamData = function(id) {
+    const inputs = document.querySelectorAll(`.result-input[data-id="${id}"]`);
+    let dataMap = {};
+    inputs.forEach(inp => {
+        dataMap[inp.dataset.field] = inp.value;
+    });
+    
+    const copyText = `성명: ${dataMap['성명']}\\n시험명: ${dataMap['시험명']}\\n시험일자: ${dataMap['시험일자']}\\n점수: ${dataMap['점수']}\\n결과: ${dataMap['결과']}\\n피드백: ${dataMap['피드백']}`;
+    
+    navigator.clipboard.writeText(copyText).then(() => {
+        alert('시험지 결과가 복사되었습니다!');
+    }).catch(err => {
+        console.error('Copy failed', err);
+        alert('복사 실패');
+    });
+};
 
 function updateCardStatus(id, status, message) {
     const card = document.getElementById(`card-${id}`);
