@@ -397,6 +397,7 @@ async function handleModalRegister(e) {
     // ------------------------------------------
 
     data.course = courses.join(', ');
+    if (data.birth_date && !data.resident_num) data.resident_num = data.birth_date;
     if (data.gender !== undefined) delete data.gender;
     if (data.birth_date !== undefined) delete data.birth_date;
 
@@ -893,6 +894,7 @@ async function handleEditSubmit(e) {
     // Handle Remarks Type and Cleanup
     const selectedType = document.getElementById('edit_remark_type').value;
     data.type = selectedType;
+    if (data.birth_date && !data.resident_num) data.resident_num = data.birth_date;
     if (data.gender !== undefined) delete data.gender;
     if (data.birth_date !== undefined) delete data.birth_date;
 
@@ -1009,6 +1011,7 @@ async function handleRegister(e) {
         }
         delete data.start_date;
     }
+    if (data.birth_date && !data.resident_num) data.resident_num = data.birth_date;
     if (data.gender !== undefined) delete data.gender;
     if (data.birth_date !== undefined) delete data.birth_date;
 
@@ -1273,10 +1276,17 @@ window.toggleRrnBirth = function(forceShow = null) {
 };
 
 window.handleRrnInput = function(el) {
+    const hiddenInput = document.getElementById('resident_num');
+    
+    // Check if the user is typing a date format manually
+    if (el.value.match(/^\d{4}[-.]\s?\d{2}[-.]\s?\d{2}/)) {
+        if (hiddenInput) hiddenInput.value = el.value;
+        return; // Don't autofill gender/dob from this yet as it's not an RRN
+    }
+
     let val = el.value.replace(/[^0-9]/g, '');
     if (val.length > 13) val = val.substring(0, 13);
     
-    const hiddenInput = document.getElementById('resident_num');
     if (hiddenInput) {
         if (val.length >= 7) {
             hiddenInput.value = val.substring(0, 6) + '-' + val.substring(6);
@@ -1352,6 +1362,14 @@ window.toggleRrnDisplayMode = function(el) {
 window.renderRrnDisplay = function(el) {
     const hiddenInput = document.getElementById('resident_num');
     if (!hiddenInput) return;
+    
+    // Check if the original value is a date format
+    if (hiddenInput.value.match(/^\d{4}[-.]\s?\d{2}[-.]\s?\d{2}/)) {
+        el.value = hiddenInput.value;
+        if (el.dataset.displayMode !== 'dob') el.dataset.displayMode = 'rrn';
+        el.readOnly = false;
+        return;
+    }
     
     let val = hiddenInput.value.replace(/[^0-9]/g, '');
     
