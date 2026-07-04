@@ -2253,7 +2253,12 @@ function renderMembers() {
                 // If resident_num is actually a YYYY-MM-DD date or similar
                 if (originalRrn.match(/^\d{4}[-.]\s?\d{2}[-.]\s?\d{2}/)) {
                     maskedRrn = originalRrn;
-                    if (!dob) dob = originalRrn;
+                    let numOnly = originalRrn.replace(/[^0-9]/g, '');
+                    if (numOnly.length >= 8) {
+                        dob = numOnly.substring(2, 8) + '-xxxxxxx';
+                    } else {
+                        dob = originalRrn;
+                    }
                 } else {
                     if (originalRrn.includes('-')) {
                         maskedRrn = originalRrn.split('-')[0] + '-xxxxxxx';
