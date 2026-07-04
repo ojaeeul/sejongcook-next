@@ -2214,7 +2214,8 @@ function renderMembers() {
                 { val: 'taking', text: '수강중' },
                 { val: 'retaking', text: '재수강' },
                 { val: 'completed', text: '수료' },
-                { val: 'trash', text: '휴지통' }
+                { val: 'trash', text: '휴지통' },
+                { val: 'delete', text: '삭제' }
             ];
 
             const optionsHtml = statuses.map(s =>
