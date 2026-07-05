@@ -254,7 +254,7 @@ async function handleFiles(files) {
     });
     
     if (validFiles.length === 0) {
-        alert('폴더 또는 파일에 처리 가능한 이미지/PDF 파일이 없습니다. (JPG, PNG, PDF 지원)');
+        alert('폴더 또는 파일에 처리 가능한 이미지/PDF/문서 파일이 없습니다. (JPG, PNG, PDF, HWP, XLSX, XLS 지원)');
         return;
     }
 
