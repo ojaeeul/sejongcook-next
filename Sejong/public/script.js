@@ -3061,6 +3061,36 @@ window.open3DSliderForDate = async function(dateStr) {
                 if (displayNotes === '') displayNotes = '-';
             }
             
+            // Auto-calculate displayTuition from course name if missing
+            if (!displayTuition && m.course && window.global_course_fees) {
+                const getFee = (key, defaultVal) => {
+                    let val = window.global_course_fees[key];
+                    if (val === undefined || val === null) return defaultVal;
+                    if (typeof val === 'string') val = parseInt(val.replace(/,/g, ''), 10);
+                    return isNaN(val) ? defaultVal : val;
+                };
+
+                let totalTuition = 0;
+                const cStr = m.course || '';
+                
+                if (cStr.includes('제과') && cStr.includes('제빵')) {
+                    totalTuition = getFee('제과제빵기능사', 350000);
+                } else {
+                    if (cStr.includes('제과')) totalTuition += getFee('제과기능사', 250000);
+                    if (cStr.includes('제빵')) totalTuition += getFee('제빵기능사', 250000);
+                }
+
+                if (cStr.includes('한식')) totalTuition += getFee('한식기능사', 270000);
+                if (cStr.includes('양식')) totalTuition += getFee('양식기능사', 270000);
+                if (cStr.includes('일식')) totalTuition += getFee('일식기능사', 300000);
+                if (cStr.includes('중식')) totalTuition += getFee('중식기능사', 300000);
+                if (cStr.includes('복어')) totalTuition += getFee('복어기능사', 700000);
+
+                if (totalTuition > 0) {
+                    displayTuition = totalTuition.toString();
+                }
+            }
+
             // Auto-calculate displayAmount if it is missing
             if (!displayAmount && (displayTuition || displayToolFee)) {
                 const getCleanNum = (str) => {
