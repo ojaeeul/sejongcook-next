@@ -412,6 +412,9 @@ async function processExcel(file) {
         const reader = new FileReader();
         reader.onload = async (e) => {
             try {
+                if (typeof XLSX === 'undefined') {
+                    throw new Error("XLSX 라이브러리가 로드되지 않았습니다.");
+                }
                 const data = new Uint8Array(e.target.result);
                 const workbook = XLSX.read(data, {type: 'array'});
                 let fullText = "";
@@ -424,6 +427,9 @@ async function processExcel(file) {
                 await analyzeImage(null, file.name, dummyImage, fullText);
             } catch(err) {
                 console.error('Excel parsing error', err);
+                const dummyErrorSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect width="200" height="200" fill="#f1f5f9"/><text x="50%" y="50%" font-family="Arial" font-size="24" fill="#ef4444" dominant-baseline="middle" text-anchor="middle">Excel 오류</text></svg>';
+                const dummyImage = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(dummyErrorSvg)));
+                await analyzeImage(null, file.name, dummyImage, "엑셀 파일 파싱 중 오류가 발생했습니다: " + err.message);
             }
             resolve();
         };
