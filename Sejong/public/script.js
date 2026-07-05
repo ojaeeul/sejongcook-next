@@ -973,6 +973,14 @@ async function handleEditSubmit(e) {
             closeEditModal();
             fetchData().then(() => {
                 renderMembers();
+                if (window.currentSliderDate && document.getElementById('sliderModal') && !document.getElementById('sliderModal').classList.contains('hidden')) {
+                    if (typeof open3DSliderForDate === 'function') {
+                        open3DSliderForDate(window.currentSliderDate);
+                    }
+                }
+                if (window.currentSliderDate && typeof window.updateRegistrationCount === 'function') {
+                    window.updateRegistrationCount(window.currentSliderDate);
+                }
             });
         } else {
             alert("저장 오류");
@@ -2742,6 +2750,7 @@ window.open3DSliderForDate = async function(dateStr) {
     if (!wrapper || !modal) return;
     
     try {
+        window.currentSliderDate = dateStr;
         // Fetch all members to ensure we have fresh data
         const res = await fetch(`/api/sejong/members?t=${Date.now()}`);
         const allMembers = await res.json();
@@ -2787,6 +2796,13 @@ window.open3DSliderForDate = async function(dateStr) {
 
             const slide = document.createElement('div');
             slide.className = 'swiper-slide';
+            slide.style.cursor = 'pointer';
+            slide.title = '더블 클릭하여 수강생 정보를 수정하세요';
+            slide.ondblclick = () => {
+                if (typeof openEditModal === 'function') {
+                    openEditModal(m.id);
+                }
+            };
             slide.innerHTML = `
                 <div style="width: 100%; padding-bottom: 10px; overflow-x: auto;">
                     <div style="font-size: 1.5rem; font-weight: 800; color: #1e3a8a; margin-bottom: 15px; text-align: center;">
