@@ -3193,6 +3193,12 @@ window.open3DSliderForDate = async function(dateStr) {
         modal.classList.remove('hidden');
         modal.style.display = 'flex';
         
+        // Destroy existing Swiper instance to prevent freeze/memory leaks
+        if (window.mySwiperInstance) {
+            window.mySwiperInstance.destroy(true, true);
+            window.mySwiperInstance = null;
+        }
+        
         // Initialize Swiper with 3D Coverflow
         window.mySwiperInstance = new Swiper('.mySwiper', {
             effect: 'cards',
