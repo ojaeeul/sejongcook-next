@@ -2859,3 +2859,16 @@ window.open3DSliderForDate = async function(dateStr) {
         alert("데이터를 불러오는 중 오류가 발생했습니다.");
     }
 };
+window.updateRegistrationCount = async function(dateStr) {
+    const countEl = document.getElementById('selectedDateRegCount');
+    if (!countEl) return;
+    try {
+        const res = await fetch(`/api/sejong/members?t=${Date.now()}`);
+        const allMembers = await res.json();
+        const filtered = allMembers.filter(m => m.registeredDate === dateStr);
+        countEl.textContent = `등록 수강생: ${filtered.length}명`;
+    } catch(e) {
+        console.error("Failed to update registration count", e);
+        countEl.textContent = `등록 수강생: 오류`;
+    }
+};
