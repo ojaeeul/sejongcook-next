@@ -2687,8 +2687,8 @@ if (typeof window.openSettingsModal === 'undefined') {
     if (!editForm) return;
 
     const getNum = (val) => {
-        const cleaned = (val || '').replace(/,/g, '').trim();
-        return cleaned === '' || isNaN(cleaned) ? 0 : parseInt(cleaned, 10);
+        const cleaned = (val || '').toString().replace(/[^0-9]/g, '');
+        return cleaned === '' ? 0 : parseInt(cleaned, 10);
     };
 
     const formatNum = (num) => num.toLocaleString();
@@ -2698,9 +2698,9 @@ if (typeof window.openSettingsModal === 'undefined') {
     const bookVal = getNum(editForm.book_price.value);
 
     // Reformat current values with commas
-    if (editForm.tuition.value && !isNaN(editForm.tuition.value.replace(/,/g, ''))) editForm.tuition.value = formatNum(tuitionVal);
-    if (editForm.tool_fee.value && !isNaN(editForm.tool_fee.value.replace(/,/g, ''))) editForm.tool_fee.value = formatNum(toolVal);
-    if (editForm.book_price.value && !isNaN(editForm.book_price.value.replace(/,/g, ''))) editForm.book_price.value = formatNum(bookVal);
+    if (editForm.tuition.value) editForm.tuition.value = formatNum(tuitionVal);
+    if (editForm.tool_fee.value) editForm.tool_fee.value = formatNum(toolVal);
+    if (editForm.book_price.value) editForm.book_price.value = formatNum(bookVal);
 
     const total = tuitionVal + toolVal + bookVal;
     

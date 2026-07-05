@@ -153,8 +153,8 @@ window.calcPaperTotal = function(id) {
 
     // Helper to extract numeric value
     const getNum = (val) => {
-        const cleaned = (val || '').replace(/,/g, '').trim();
-        return cleaned === '' || isNaN(cleaned) ? 0 : parseInt(cleaned, 10);
+        const cleaned = (val || '').toString().replace(/[^0-9]/g, '');
+        return cleaned === '' ? 0 : parseInt(cleaned, 10);
     };
 
     // Helper to format with commas
@@ -167,9 +167,9 @@ window.calcPaperTotal = function(id) {
     const bookVal = getNum(bookInput.value);
 
     // Format the current inputs if they have a valid number
-    if (tuitionInput.value && !isNaN(tuitionInput.value.replace(/,/g, ''))) tuitionInput.value = formatNum(tuitionVal);
-    if (toolInput.value && !isNaN(toolInput.value.replace(/,/g, ''))) toolInput.value = formatNum(toolVal);
-    if (bookInput.value && !isNaN(bookInput.value.replace(/,/g, ''))) bookInput.value = formatNum(bookVal);
+    if (tuitionInput.value) tuitionInput.value = formatNum(tuitionVal);
+    if (toolInput.value) toolInput.value = formatNum(toolVal);
+    if (bookInput.value) bookInput.value = formatNum(bookVal);
 
     // Calculate total
     const total = tuitionVal + toolVal + bookVal;
