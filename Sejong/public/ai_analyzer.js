@@ -95,11 +95,34 @@ document.addEventListener('DOMContentLoaded', () => {
     const modeBtns = document.querySelectorAll('.mode-btn');
 
     // Mode selection
+    const examCourseSelector = document.getElementById('examCourseSelector');
     modeBtns.forEach(btn => {
+        if(btn.dataset.course) return; // Skip course buttons here
         btn.addEventListener('click', (e) => {
-            modeBtns.forEach(b => b.classList.remove('active'));
+            modeBtns.forEach(b => {
+                if(!b.dataset.course) b.classList.remove('active');
+            });
             e.target.classList.add('active');
             currentMode = e.target.dataset.mode;
+            
+            if (currentMode === 'exam') {
+                if(examCourseSelector) examCourseSelector.style.display = 'block';
+                loadExamQuestions();
+            } else {
+                if(examCourseSelector) examCourseSelector.style.display = 'none';
+            }
+        });
+    });
+
+    // Course selection for Exam Mode
+    window.currentExamCourse = '한식기능사';
+    const courseBtns = document.querySelectorAll('#examCourseButtons .mode-btn');
+    courseBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            courseBtns.forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            window.currentExamCourse = e.target.dataset.course;
+            loadExamQuestions();
         });
     });
 
@@ -710,7 +733,9 @@ function renderExamResult(id, data) {
             <textarea class="result-input" data-id="${id}" data-field="전체내용" style="display:none;">${data['전체내용'] || ''}</textarea>
         </div>
         <div style="display:flex; justify-content:flex-end; margin-top:10px; gap:8px;">
+            <button onclick="saveExamQuestion('${id}')" style="background:#16a34a; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:0.85rem; font-weight:bold;"><i class="fas fa-save"></i> 과정에 추가</button>
             <button onclick="copyExamData('${id}')" style="background:#475569; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:0.85rem;">복사하기</button>
+            <button class="btn-delete" onclick="deleteCard('${id}')" style="padding:6px 12px; font-size:0.85rem;">삭제</button>
         </div>
     `;
     
@@ -1304,4 +1329,261 @@ async function savePhonebook(id, count) {
         btn.innerHTML = '<i class="fas fa-save"></i> 일괄 등록';
         btn.disabled = false;
     }
-}
+window.loadExamQuestions = async function() {
+    try {
+        const res = await fetch('/api/sejong/questions');
+        if (!res.ok) throw new Error('Failed to fetch questions');
+        const allData = await res.json();
+        
+        const course = window.currentExamCourse || '한식기능사';
+        const questions = allData[course] || [];
+        
+        const countSpan = document.getElementById('savedExamCount');
+        if(countSpan) countSpan.textContent = questions.length;
+        
+        const listDiv = document.getElementById('savedExamList');
+        if(listDiv) {
+            if(questions.length === 0) {
+                listDiv.innerHTML = '<div style="color:#94a3b8; font-style:italic; padding: 20px;">이 과정에 저장된 문제가 없습니다.</div>';
+            } else {
+                listDiv.innerHTML = questions.map((q, index) => `
+                    <div style="border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; background: #f8fafc;">
+                        <div style="font-size: 0.8rem; color: #64748b; margin-bottom: 8px; display:flex; justify-content:space-between;">
+                            <span>문제 #${index + 1}</span>
+                            <span>${new Date(q.timestamp).toLocaleString()}</span>
+                        </div>
+                        <div style="max-height: 200px; overflow-y: auto; font-size: 0.9rem; background: #fff; padding: 10px; border: 1px solid #e2e8f0; border-radius: 4px;">
+                            ${q.content}
+                        </div>
+                        <div style="margin-top:10px; text-align:right;">
+                            <button onclick="deleteExamQuestion('${course}', ${index})" style="background:#ef4444; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:0.8rem;">삭제</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+    } catch (e) {
+        console.error("loadExamQuestions error:", e);
+    }
+};
+
+window.saveExamQuestion = async function(id) {
+    const btn = document.querySelector(`#card-${id} button[onclick="saveExamQuestion('${id}')"]`);
+    if(btn) btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 저장 중...';
+    
+    try {
+        const inputs = document.querySelectorAll(`.result-input[data-id="${id}"]`);
+        let dataMap = {};
+        inputs.forEach(inp => {
+            dataMap[inp.dataset.field] = inp.value;
+        });
+        
+        const content = dataMap['전체내용'] || '';
+        if(!content) {
+            alert('저장할 내용이 없습니다.');
+            if(btn) btn.innerHTML = '<i class="fas fa-save"></i> 과정에 추가';
+            return;
+        }
+
+        const course = window.currentExamCourse || '한식기능사';
+        
+        // Fetch existing
+        const res = await fetch('/api/sejong/questions');
+        let allData = {};
+        if (res.ok) {
+            allData = await res.json();
+        }
+        
+        if (!allData[course]) {
+            allData[course] = [];
+        }
+        
+        allData[course].push({
+            id: Date.now().toString(),
+            content: content,
+            timestamp: new Date().toISOString()
+        });
+        
+        // Save back
+        const saveRes = await fetch('/api/sejong/questions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(allData)
+        });
+        
+        if (!saveRes.ok) throw new Error('Failed to save');
+        
+        alert(`[${course}] 과정 시험지에 성공적으로 추가되었습니다!`);
+        if(btn) {
+            btn.innerHTML = '<i class="fas fa-check"></i> 저장 완료';
+            btn.style.background = '#0f172a';
+            btn.disabled = true;
+        }
+        
+        loadExamQuestions(); // Refresh UI
+        
+    } catch (e) {
+        console.error("saveExamQuestion error:", e);
+        alert('저장 중 오류가 발생했습니다.');
+        if(btn) btn.innerHTML = '<i class="fas fa-save"></i> 과정에 추가';
+    }
+};
+
+window.deleteExamQuestion = async function(course, index) {
+    if(!confirm('정말로 이 문제를 삭제하시겠습니까?')) return;
+    
+    try {
+        const res = await fetch('/api/sejong/questions');
+        if (!res.ok) throw new Error('Failed to fetch questions');
+        let allData = await res.json();
+        
+        if(allData[course]) {
+            allData[course].splice(index, 1);
+            
+            const saveRes = await fetch('/api/sejong/questions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(allData)
+            });
+            
+            if (saveRes.ok) {
+                loadExamQuestions();
+            }
+        }
+    } catch (e) {
+        console.error("deleteExamQuestion error:", e);
+        alert('삭제 중 오류가 발생했습니다.');
+    }
+};
+
+window.downloadExamWord = async function() {
+    try {
+        const res = await fetch('/api/sejong/questions');
+        if (!res.ok) throw new Error('Failed to fetch questions');
+        const allData = await res.json();
+        
+        const course = window.currentExamCourse || '한식기능사';
+        const questions = allData[course] || [];
+        
+        if (questions.length === 0) {
+            alert('다운로드할 문제가 없습니다.');
+            return;
+        }
+        
+        let htmlContent = `
+            <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+            <head>
+                <meta charset="utf-8">
+                <title>${course} 시험지</title>
+                <style>
+                    body { font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; }
+                    .question-block { margin-bottom: 40px; page-break-inside: avoid; }
+                    table { border-collapse: collapse; width: 100%; }
+                    th, td { border: 1px solid black; padding: 5px; }
+                </style>
+            </head>
+            <body>
+                <h1 style="text-align:center;">${course} 시험지</h1>
+                <hr>
+        `;
+        
+        questions.forEach((q, index) => {
+            htmlContent += `
+                <div class="question-block">
+                    <h3>문제 ${index + 1}</h3>
+                    <div>${q.content}</div>
+                </div>
+            `;
+        });
+        
+        htmlContent += `</body></html>`;
+        
+        const blob = new Blob(['\ufeff' + htmlContent], { type: 'application/msword' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${course}_시험지.doc`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+    } catch (e) {
+        console.error("Word Download Error:", e);
+        alert('다운로드 중 오류가 발생했습니다.');
+    }
+};
+
+window.downloadExamExcel = async function() {
+    try {
+        const res = await fetch('/api/sejong/questions');
+        if (!res.ok) throw new Error('Failed to fetch questions');
+        const allData = await res.json();
+        
+        const course = window.currentExamCourse || '한식기능사';
+        const questions = allData[course] || [];
+        
+        if (questions.length === 0) {
+            alert('다운로드할 문제가 없습니다.');
+            return;
+        }
+        
+        let htmlContent = `
+            <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+            <head>
+                <meta charset="utf-8">
+                <!--[if gte mso 9]>
+                <xml>
+                    <x:ExcelWorkbook>
+                        <x:ExcelWorksheets>
+                            <x:ExcelWorksheet>
+                                <x:Name>${course}</x:Name>
+                                <x:WorksheetOptions>
+                                    <x:DisplayGridlines/>
+                                </x:WorksheetOptions>
+                            </x:ExcelWorksheet>
+                        </x:ExcelWorksheets>
+                    </x:ExcelWorkbook>
+                </xml>
+                <![endif]-->
+                <style>
+                    table { border-collapse: collapse; }
+                    td { border: 1px solid #000; padding: 5px; vertical-align: top; }
+                </style>
+            </head>
+            <body>
+                <table>
+                    <tr>
+                        <th style="background:#f1f5f9; width:100px;">번호</th>
+                        <th style="background:#f1f5f9; width:800px;">문제 내용 (HTML)</th>
+                        <th style="background:#f1f5f9; width:200px;">저장 일시</th>
+                    </tr>
+        `;
+        
+        questions.forEach((q, index) => {
+            htmlContent += `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td>${q.content}</td>
+                    <td>${new Date(q.timestamp).toLocaleString()}</td>
+                </tr>
+            `;
+        });
+        
+        htmlContent += `</table></body></html>`;
+        
+        const blob = new Blob(['\ufeff' + htmlContent], { type: 'application/vnd.ms-excel' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${course}_시험지.xls`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+    } catch (e) {
+        console.error("Excel Download Error:", e);
+        alert('다운로드 중 오류가 발생했습니다.');
+    }
+};
