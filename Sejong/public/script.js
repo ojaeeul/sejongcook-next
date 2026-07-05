@@ -221,11 +221,11 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('DOMContentLoaded: memberListEl found?', !!memberListEl);
 
     // Attach event listeners for course checkboxes to trigger auto fill in edit modal
-    const editForm = document.getElementById('editForm');
-    if (editForm) {
+    const localEditForm = document.getElementById('editStudentForm');
+    if (localEditForm) {
         ['course_bake', 'course_bread', 'course_korean', 'course_western', 'course_japanese', 'course_chinese', 'course_puffer'].forEach(name => {
-            if (editForm[name]) {
-                editForm[name].addEventListener('change', () => {
+            if (localEditForm[name]) {
+                localEditForm[name].addEventListener('change', () => {
                     if (window.autoFillEditTuition) window.autoFillEditTuition();
                 });
             }
@@ -2730,7 +2730,7 @@ renderMembers = function () {
 // If the user clicks this sidebar menu on any page other than sheet.html, navigate there.
 if (typeof window.openSettingsModal === 'undefined') {
     window.calcEditTotal = function() {
-    const editForm = document.getElementById('editForm');
+    const editForm = document.getElementById('editStudentForm');
     if (!editForm) return;
 
     const getNum = (val) => {
