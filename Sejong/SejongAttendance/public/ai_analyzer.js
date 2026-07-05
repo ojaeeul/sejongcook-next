@@ -513,16 +513,21 @@ async function processHWP(file) {
                         document.body.appendChild(captureDiv);
 
                         new window.HWPModule.Viewer(captureDiv, hwp);
-                        textContent = captureDiv.innerText || captureDiv.textContent || "";
                         
                         await new Promise(r => setTimeout(r, 800)); // wait for hwp to fully render
+
+                        textContent = captureDiv.innerText || captureDiv.textContent || "";
 
                         if (typeof html2canvas !== 'undefined') {
                             const canvas = await html2canvas(captureDiv, { scale: 1.5, useCORS: true, logging: true, backgroundColor: "#ffffff" });
                             base64Image = canvas.toDataURL('image/jpeg', 0.8);
                         }
                     } catch (viewerErr) {
-                        console.warn("HWP Viewer 렌더링 실패, 직접 텍스트 추출 시도...", viewerErr);
+                        console.warn("HWP Viewer 렌더링 실패...", viewerErr);
+                    }
+                    
+                    // Fallback text extraction if Viewer text is empty
+                    if (!textContent || textContent.trim().length === 0) {
                         if (hwp.sections && hwp.sections.length > 0) {
                             for (let section of hwp.sections) {
                                 if (section.content && section.content.length > 0) {
