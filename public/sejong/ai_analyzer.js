@@ -411,6 +411,7 @@ async function processExcel(file) {
     return new Promise((resolve) => {
         const reader = new FileReader();
         reader.onload = async (e) => {
+            let captureDiv = null;
             try {
                 if (typeof XLSX === 'undefined') {
                     throw new Error("XLSX 라이브러리가 로드되지 않았습니다.");
@@ -418,18 +419,52 @@ async function processExcel(file) {
                 const data = new Uint8Array(e.target.result);
                 const workbook = XLSX.read(data, {type: 'array'});
                 let fullText = "";
+                
+                captureDiv = document.createElement('div');
+                captureDiv.style.cssText = "position:absolute; top:-9999px; left:-9999px; background:white; padding:20px; font-family:sans-serif; width:1000px; color:black;";
+                document.body.appendChild(captureDiv);
+
                 for(let sheetName of workbook.SheetNames) {
                     const htmlStr = XLSX.utils.sheet_to_html(workbook.Sheets[sheetName]);
                     fullText += "Sheet: " + sheetName + "\n" + htmlStr + "\n\n";
+                    const sheetDiv = document.createElement('div');
+                    sheetDiv.innerHTML = `<h3>${sheetName}</h3>` + htmlStr;
+                    captureDiv.appendChild(sheetDiv);
                 }
-                const dummyImageSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect width="200" height="200" fill="#f1f5f9"/><text x="50%" y="50%" font-family="Arial" font-size="24" fill="#64748b" dominant-baseline="middle" text-anchor="middle">Excel 문서</text></svg>';
-                const dummyImage = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(dummyImageSvg)));
-                await analyzeImage(null, file.name, dummyImage, fullText);
+                
+                const tables = captureDiv.querySelectorAll('table');
+                tables.forEach(t => {
+                    t.style.borderCollapse = 'collapse';
+                    t.style.width = '100%';
+                    t.style.marginBottom = '20px';
+                    t.querySelectorAll('td, th').forEach(cell => {
+                        cell.style.border = '1px solid #cbd5e1';
+                        cell.style.padding = '8px';
+                    });
+                });
+
+                let base64Image = null;
+                if (typeof html2canvas !== 'undefined') {
+                    const canvas = await html2canvas(captureDiv, { scale: 1.5, useCORS: true, logging: false });
+                    base64Image = canvas.toDataURL('image/jpeg', 0.8);
+                }
+
+                if (!base64Image) {
+                    const dummyImageSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect width="200" height="200" fill="#f1f5f9"/><text x="50%" y="50%" font-family="Arial" font-size="24" fill="#64748b" dominant-baseline="middle" text-anchor="middle">Excel 문서</text></svg>';
+                    base64Image = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(dummyImageSvg)));
+                }
+                
+                const finalBase64 = base64Image.split(',')[1];
+                await analyzeImage(finalBase64, file.name, base64Image, fullText);
             } catch(err) {
                 console.error('Excel parsing error', err);
                 const dummyErrorSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect width="200" height="200" fill="#f1f5f9"/><text x="50%" y="50%" font-family="Arial" font-size="24" fill="#ef4444" dominant-baseline="middle" text-anchor="middle">Excel 오류</text></svg>';
                 const dummyImage = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(dummyErrorSvg)));
                 await analyzeImage(null, file.name, dummyImage, "엑셀 파일 파싱 중 오류가 발생했습니다: " + err.message);
+            } finally {
+                if (captureDiv && captureDiv.parentNode) {
+                    captureDiv.parentNode.removeChild(captureDiv);
+                }
             }
             resolve();
         };
@@ -442,9 +477,11 @@ async function processHWP(file) {
     return new Promise((resolve) => {
         const reader = new FileReader();
         reader.onload = async (e) => {
+            let captureDiv = null;
             try {
                 const data = new Uint8Array(e.target.result);
                 let textContent = "";
+                let base64Image = null;
 
                 // Check if it's a ZIP file (HWPX)
                 if (data.length > 2 && data[0] === 0x50 && data[1] === 0x4B) { // 'PK' magic bytes
@@ -471,9 +508,19 @@ async function processHWP(file) {
                     // Standard HWP (OLE)
                     const hwp = window.HWPModule.parse(data);
                     try {
-                        const container = document.createElement('div');
-                        new window.HWPModule.Viewer(container, hwp);
-                        textContent = container.innerText || container.textContent || "";
+                        captureDiv = document.createElement('div');
+                        captureDiv.style.cssText = "position:absolute; top:-9999px; left:-9999px; background:white; padding:20px; width:800px; color:black;";
+                        document.body.appendChild(captureDiv);
+
+                        new window.HWPModule.Viewer(captureDiv, hwp);
+                        textContent = captureDiv.innerText || captureDiv.textContent || "";
+                        
+                        await new Promise(r => setTimeout(r, 100)); // wait for render
+
+                        if (typeof html2canvas !== 'undefined') {
+                            const canvas = await html2canvas(captureDiv, { scale: 1.5, useCORS: true, logging: false });
+                            base64Image = canvas.toDataURL('image/jpeg', 0.8);
+                        }
                     } catch (viewerErr) {
                         console.warn("HWP Viewer 렌더링 실패, 직접 텍스트 추출 시도...", viewerErr);
                         if (hwp.sections && hwp.sections.length > 0) {
@@ -499,14 +546,22 @@ async function processHWP(file) {
                     throw new Error("문서에서 텍스트를 추출할 수 없습니다. (빈 문서이거나 호환되지 않는 버전입니다)");
                 }
 
-                const dummyImageSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect width="200" height="200" fill="#f1f5f9"/><text x="50%" y="50%" font-family="Arial" font-size="24" fill="#64748b" dominant-baseline="middle" text-anchor="middle">HWP 문서</text></svg>';
-                const dummyImage = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(dummyImageSvg)));
-                await analyzeImage(null, file.name, dummyImage, textContent);
+                if (!base64Image) {
+                    const dummyImageSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect width="200" height="200" fill="#f1f5f9"/><text x="50%" y="50%" font-family="Arial" font-size="24" fill="#64748b" dominant-baseline="middle" text-anchor="middle">HWP 문서</text></svg>';
+                    base64Image = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(dummyImageSvg)));
+                }
+
+                const finalBase64 = base64Image.startsWith('data:image/') ? base64Image.split(',')[1] : null;
+                await analyzeImage(finalBase64, file.name, base64Image, textContent);
             } catch(err) {
                 console.error('HWP parsing error', err);
                 const dummyErrorSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect width="200" height="200" fill="#f1f5f9"/><text x="50%" y="50%" font-family="Arial" font-size="24" fill="#ef4444" dominant-baseline="middle" text-anchor="middle">HWP 오류</text></svg>';
                 const dummyImage = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(dummyErrorSvg)));
                 await analyzeImage(null, file.name, dummyImage, "HWP 파일 파싱 중 오류가 발생했습니다: " + err.message);
+            } finally {
+                if (captureDiv && captureDiv.parentNode) {
+                    captureDiv.parentNode.removeChild(captureDiv);
+                }
             }
             resolve();
         };
