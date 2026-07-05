@@ -3030,8 +3030,32 @@ window.open3DSliderForDate = async function(dateStr) {
             return;
         }
         
+        // Destroy existing Swiper instance first
+        if (window.mySwiperInstance) {
+            try {
+                window.mySwiperInstance.destroy(true, true);
+            } catch(e) { console.error("Swiper destroy error:", e); }
+            window.mySwiperInstance = null;
+        }
+
+        // Hard-reset the Swiper container DOM to pristine state
+        const swiperContainer = document.querySelector('.mySwiper');
+        if (swiperContainer) {
+            swiperContainer.className = 'swiper mySwiper';
+            swiperContainer.setAttribute('style', 'width: 100%; max-width: 400px; padding-top: 50px; padding-bottom: 50px;');
+        }
+        if (wrapper) {
+            wrapper.className = 'swiper-wrapper';
+            wrapper.removeAttribute('style');
+            wrapper.innerHTML = ''; // Clear slides
+        }
+        const pagination = document.querySelector('.swiper-pagination');
+        if (pagination) {
+            pagination.className = 'swiper-pagination';
+            pagination.innerHTML = '';
+        }
+
         // Populate slides
-        wrapper.innerHTML = '';
         filtered.forEach(m => {
             let displayTuition = m.tuition;
             let displayToolFee = m.tool_fee;
@@ -3192,12 +3216,6 @@ window.open3DSliderForDate = async function(dateStr) {
         // Show modal
         modal.classList.remove('hidden');
         modal.style.display = 'flex';
-        
-        // Destroy existing Swiper instance to prevent freeze/memory leaks
-        if (window.mySwiperInstance) {
-            window.mySwiperInstance.destroy(true, true);
-            window.mySwiperInstance = null;
-        }
         
         // Initialize Swiper with 3D Coverflow
         window.mySwiperInstance = new Swiper('.mySwiper', {
