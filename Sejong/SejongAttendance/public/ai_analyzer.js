@@ -1074,6 +1074,11 @@ function renderStudentResult(id, data) {
             <button class="btn-delete" onclick="removeCard('${id}')" style="background: #3f3f46; color: #f87171; flex: 0 0 50px; padding: 12px; border-radius: 8px; border: none; cursor: pointer;"><i class="fas fa-trash"></i></button>
         </div>
     `;
+    
+    // Automatically calculate total if missing or possible
+    setTimeout(() => {
+        if (window.calcPaperTotal) window.calcPaperTotal(id);
+    }, 100);
 }
 
 function renderPhonebookResult(id, dataList) {

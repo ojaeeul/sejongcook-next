@@ -928,6 +928,9 @@ function openEditModal(memberId) {
         if (editForm.time_12) editForm.time_12.checked = cStr.includes('12:00');
         if (editForm.time_17) editForm.time_17.checked = cStr.includes('17:00') || cStr.includes('5시');
         if (editForm.time_19) editForm.time_19.checked = cStr.includes('19:00') || cStr.includes('7시');
+        
+        // Auto calculate total in case it wasn't specified in notes
+        if (window.calcEditTotal) window.calcEditTotal();
     }
 
     if (editModal) {
