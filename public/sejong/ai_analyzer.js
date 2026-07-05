@@ -506,13 +506,13 @@ async function processHWP(file) {
                     }
                 } else {
                     // Standard HWP (OLE)
-                    const hwp = window.HWPModule.parse(data);
+                    const hwp = window.HWP.parse(data);
                     try {
                         captureDiv = document.createElement('div');
                         captureDiv.style.cssText = "position:absolute; top:0; left:0; z-index:-9999; background:white; padding:40px; width:1000px; color:black; min-height:800px;";
                         document.body.appendChild(captureDiv);
 
-                        new window.HWPModule.Viewer(captureDiv, hwp);
+                        new window.HWP.Viewer(captureDiv, hwp);
                         
                         await new Promise(r => setTimeout(r, 800)); // wait for hwp to fully render
 
