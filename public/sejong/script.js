@@ -942,6 +942,8 @@ function openEditModal(memberId) {
         if (swm && !swm.classList.contains('hidden') && swm.style.display !== 'none') {
             editModal.style.setProperty('z-index', '99999', 'important');
             editModal.style.background = 'transparent';
+            editModal.style.backdropFilter = 'none';
+            editModal.style.webkitBackdropFilter = 'none';
             editModal.style.justifyContent = 'flex-start';
             editModal.style.paddingLeft = '0';
             editModal.style.pointerEvents = 'none'; // Allow clicking through overlay
@@ -3256,7 +3258,7 @@ window.open3DSliderForDate = async function(dateStr, targetMemberId = null) {
             effect: 'cards',
             grabCursor: true,
             cardsEffect: {
-                slideShadows: true,
+                slideShadows: false,
                 perSlideOffset: 8,
                 perSlideRotate: 2,
             },
