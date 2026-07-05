@@ -90,6 +90,7 @@ async function loadGlobalCourseTimeSettings() {
             if (settings.attendanceCutoffs) global_attendance_cutoffs = settings.attendanceCutoffs;
             if (settings.makeupCutoffs_student) global_makeup_cutoffs_student = settings.makeupCutoffs_student;
             if (settings.attendanceCutoffs_student) global_attendance_cutoffs_student = settings.attendanceCutoffs_student;
+            if (settings.courseFees) window.global_course_fees = settings.courseFees;
         }
     } catch(e) {
         console.error("Failed to load global settings", e);
@@ -219,6 +220,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     console.log('DOMContentLoaded: memberListEl found?', !!memberListEl);
 
+    // Attach event listeners for course checkboxes to trigger auto fill in edit modal
+    const editForm = document.getElementById('editForm');
+    if (editForm) {
+        ['course_bake', 'course_bread', 'course_korean', 'course_western', 'course_japanese', 'course_chinese', 'course_puffer'].forEach(name => {
+            if (editForm[name]) {
+                editForm[name].addEventListener('change', () => {
+                    if (window.autoFillEditTuition) window.autoFillEditTuition();
+                });
+            }
+        });
+    }
 
     if (memberListEl) {
         if (currentFilter === 'archive') {
@@ -928,6 +940,8 @@ function openEditModal(memberId) {
         if (editForm.time_12) editForm.time_12.checked = cStr.includes('12:00');
         if (editForm.time_17) editForm.time_17.checked = cStr.includes('17:00') || cStr.includes('5시');
         if (editForm.time_19) editForm.time_19.checked = cStr.includes('19:00') || cStr.includes('7시');
+        // Auto fill tuition if empty based on selected courses
+        if (window.autoFillEditTuition) window.autoFillEditTuition();
         
         // Auto calculate total in case it wasn't specified in notes
         if (window.calcEditTotal) window.calcEditTotal();
@@ -2708,6 +2722,42 @@ if (typeof window.openSettingsModal === 'undefined') {
         editForm.total_fee.value = formatNum(total);
     } else {
         editForm.total_fee.value = '';
+    }
+};
+
+window.autoFillEditTuition = function() {
+    const editForm = document.getElementById('editForm');
+    if (!editForm) return;
+
+    if (editForm.tuition.value.trim() !== '') return; // Already has a value
+    if (!window.global_course_fees) return; // Settings not loaded
+
+    const getFee = (key, defaultVal) => {
+        let val = window.global_course_fees[key];
+        if (val === undefined || val === null) return defaultVal;
+        if (typeof val === 'string') val = parseInt(val.replace(/,/g, ''), 10);
+        return isNaN(val) ? defaultVal : val;
+    };
+
+    let total = 0;
+    const isChecked = (name) => editForm[name] && editForm[name].checked;
+
+    if (isChecked('course_bake') && isChecked('course_bread')) {
+        total = getFee('제과제빵기능사', 350000);
+    } else {
+        if (isChecked('course_bake')) total += getFee('제과기능사', 250000);
+        if (isChecked('course_bread')) total += getFee('제빵기능사', 250000);
+    }
+
+    if (isChecked('course_korean')) total += getFee('한식기능사', 270000);
+    if (isChecked('course_western')) total += getFee('양식기능사', 270000);
+    if (isChecked('course_japanese')) total += getFee('일식기능사', 300000);
+    if (isChecked('course_chinese')) total += getFee('중식기능사', 300000);
+    if (isChecked('course_puffer')) total += getFee('복어기능사', 700000);
+
+    if (total > 0) {
+        editForm.tuition.value = total.toLocaleString();
+        if (window.calcEditTotal) window.calcEditTotal();
     }
 };
 
