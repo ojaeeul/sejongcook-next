@@ -943,24 +943,33 @@ function openEditModal(memberId) {
             editModal.style.setProperty('z-index', '99999', 'important');
             editModal.style.background = 'transparent';
             editModal.style.justifyContent = 'flex-start';
-            editModal.style.paddingLeft = '50px';
+            editModal.style.paddingLeft = '0';
             editModal.style.pointerEvents = 'none'; // Allow clicking through overlay
             
             const modalContent = editModal.querySelector('.modal-content');
             if (modalContent) {
                 modalContent.style.pointerEvents = 'auto'; // Keep form clickable
-                modalContent.style.width = '45vw';
-                modalContent.style.maxWidth = '45vw';
+                modalContent.style.width = '50vw';
+                modalContent.style.maxWidth = '50vw';
                 modalContent.style.margin = '0';
+                modalContent.style.height = '100vh';
+                modalContent.style.maxHeight = '100vh';
+                modalContent.style.borderRadius = '0';
+                modalContent.style.overflowY = 'auto';
             }
             
             if (swm.children[1]) {
-                swm.children[1].style.justifyContent = 'flex-end';
-                swm.children[1].style.paddingRight = '5vw';
+                swm.children[1].style.position = 'absolute';
+                swm.children[1].style.right = '0';
+                swm.children[1].style.width = '50vw';
+                swm.children[1].style.height = 'calc(100vh - 70px)'; // Account for header
+                swm.children[1].style.top = '70px';
+                swm.children[1].style.justifyContent = 'center';
+                swm.children[1].style.paddingRight = '0';
                 swm.children[1].style.transition = 'all 0.3s ease';
                 const swiperContainer = swm.querySelector('.swiper');
                 if (swiperContainer) {
-                    swiperContainer.style.maxWidth = '40vw';
+                    swiperContainer.style.maxWidth = '400px';
                 }
             }
         } else {
@@ -975,6 +984,9 @@ function openEditModal(memberId) {
                 modalContent.style.width = '90%';
                 modalContent.style.maxWidth = '800px';
                 modalContent.style.margin = '';
+                modalContent.style.height = '';
+                modalContent.style.maxHeight = '90vh';
+                modalContent.style.borderRadius = '12px';
             }
         }
     }
@@ -987,6 +999,11 @@ function closeEditModal() {
         
         const swm = document.getElementById('swiperModal');
         if (swm && swm.children[1]) {
+            swm.children[1].style.position = '';
+            swm.children[1].style.right = '';
+            swm.children[1].style.width = '';
+            swm.children[1].style.height = '';
+            swm.children[1].style.top = '';
             swm.children[1].style.justifyContent = 'center';
             swm.children[1].style.paddingRight = '20px';
             const swiperContainer = swm.querySelector('.swiper');
