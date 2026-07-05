@@ -47,19 +47,19 @@ window.renderCourseSettingsList = function() {
             catObj.courses.forEach((course, courseIndex) => {
                 html += `
                     <div style="display:flex; justify-content:space-between; align-items:center; padding: 6px 0; border-bottom: 1px dashed #e2e8f0;">
-                        <span style="color:#334155; margin-left: 10px;">📄 ${course}</span>
+                        <span style="color:#334155; margin-left: 10px;">📂 ${course} (소분류 폴더)</span>
                         <button onclick="deleteExamCourseFromCategory(${catIndex}, ${courseIndex})" style="background:#f87171; color:white; border:none; padding:2px 6px; border-radius:4px; cursor:pointer; font-size:0.75rem;"><i class="fas fa-times"></i> 삭제</button>
                     </div>
                 `;
             });
         } else {
-            html += `<div style="color:#94a3b8; font-size: 0.85rem; margin-left: 10px; margin-bottom: 10px;">하위 폴더(과정)가 없습니다.</div>`;
+            html += `<div style="color:#94a3b8; font-size: 0.85rem; margin-left: 10px; margin-bottom: 10px;">소분류 폴더가 없습니다.</div>`;
         }
 
         html += `
                     <div style="display:flex; gap:8px; margin-top: 10px; margin-left: 10px;">
-                        <input type="text" id="newSubCourseInput_${catIndex}" placeholder="하위 폴더(과정명) 추가" style="flex:1; padding:6px; border:1px solid #cbd5e1; border-radius:4px; font-size: 0.85rem;">
-                        <button onclick="addExamCourseToCategory(${catIndex})" style="background:#10b981; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:0.85rem;"><i class="fas fa-plus"></i> 과정 추가</button>
+                        <input type="text" id="newSubCourseInput_${catIndex}" placeholder="새 소분류 폴더 이름 추가" style="flex:1; padding:6px; border:1px solid #cbd5e1; border-radius:4px; font-size: 0.85rem;">
+                        <button onclick="addExamCourseToCategory(${catIndex})" style="background:#10b981; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:0.85rem;"><i class="fas fa-folder-plus"></i> 소분류 폴더 추가</button>
                     </div>
                 </div>
             </div>
