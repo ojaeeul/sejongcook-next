@@ -30,7 +30,7 @@ var HWPModule = (() => {
   ));
 
   // public/hwp/build/esm.js
-  var import_fs = __toESM(__require("fs"));
+  var import_fs = { default: null }; // __toESM(__require("fs"));
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
