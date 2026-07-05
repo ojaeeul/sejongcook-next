@@ -69,11 +69,16 @@ function populateFilters() {
     const yf = document.getElementById('yearFilter');
 
     if (cf) {
+        const existingValues = new Set();
+        Array.from(cf.options).forEach(opt => existingValues.add(opt.value));
+        
         uniqueCourses.forEach(c => {
-            const opt = document.createElement('option');
-            opt.value = c;
-            opt.textContent = c;
-            cf.appendChild(opt);
+            if (!existingValues.has(c) && c !== '') {
+                const opt = document.createElement('option');
+                opt.value = c;
+                opt.textContent = c;
+                cf.appendChild(opt);
+            }
         });
     }
 

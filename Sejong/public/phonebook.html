@@ -7,11 +7,11 @@
     <meta http-equiv="Expires" content="0">    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>전화번호부 - 세종요리</title>
-    <link rel="stylesheet" href="style.css?v=20260706-13">
+    <link rel="stylesheet" href="style.css?v=20260706-14">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="phonebook.js?v=20260706-13" defer></script>
+    <script src="phonebook.js?v=20260706-14" defer></script>
     <style>
                 .notebook-wrapper {
             display: block;
@@ -614,6 +614,24 @@
                             <select id="courseFilter"
                                 style="width: 100%; padding: 8px 10px 8px 34px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.85rem; outline: none; appearance: none; background: #fff;">
                                 <option value="">전체 과정</option>
+                                <optgroup label="조리과정">
+                                    <option value="한식기능사">한식기능사</option>
+                                    <option value="양식기능사">양식기능사</option>
+                                    <option value="가정요리">가정요리</option>
+                                    <option value="브런치">브런치</option>
+                                    <option value="일식기능사">일식기능사</option>
+                                    <option value="복어기능사">복어기능사</option>
+                                    <option value="취미요리">취미요리</option>
+                                    <option value="쿠킹클래스">쿠킹클래스</option>
+                                    <option value="산업기사">산업기사</option>
+                                </optgroup>
+                                <optgroup label="제과제빵">
+                                    <option value="제과제빵기능사">제과제빵기능사</option>
+                                    <option value="제빵기능사">제빵기능사</option>
+                                    <option value="제과기능사">제과기능사</option>
+                                    <option value="케익디자이너">케익디자이너</option>
+                                    <option value="베이킹 원데이">베이킹 원데이</option>
+                                </optgroup>
                             </select>
                         </div>
 
@@ -833,7 +851,7 @@
             el.nextElementSibling.classList.toggle('show');
         }
     </script>
-    <script src="sidebar_sync.js?v=20260706-13"></script>
+    <script src="sidebar_sync.js?v=20260706-14"></script>
 </body>
 
 </html>
