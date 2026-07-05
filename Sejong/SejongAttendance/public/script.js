@@ -947,12 +947,21 @@ function openEditModal(memberId) {
             editModal.style.pointerEvents = 'none'; // Allow clicking through overlay
             
             const modalContent = editModal.querySelector('.modal-content');
-            if (modalContent) modalContent.style.pointerEvents = 'auto'; // Keep form clickable
+            if (modalContent) {
+                modalContent.style.pointerEvents = 'auto'; // Keep form clickable
+                modalContent.style.width = '45vw';
+                modalContent.style.maxWidth = '45vw';
+                modalContent.style.margin = '0';
+            }
             
             if (swm.children[1]) {
                 swm.children[1].style.justifyContent = 'flex-end';
-                swm.children[1].style.paddingRight = '100px';
+                swm.children[1].style.paddingRight = '5vw';
                 swm.children[1].style.transition = 'all 0.3s ease';
+                const swiperContainer = swm.querySelector('.swiper');
+                if (swiperContainer) {
+                    swiperContainer.style.maxWidth = '40vw';
+                }
             }
         } else {
             editModal.style.zIndex = '1000';
@@ -960,6 +969,13 @@ function openEditModal(memberId) {
             editModal.style.justifyContent = 'center';
             editModal.style.paddingLeft = '0';
             editModal.style.pointerEvents = 'auto';
+            
+            const modalContent = editModal.querySelector('.modal-content');
+            if (modalContent) {
+                modalContent.style.width = '90%';
+                modalContent.style.maxWidth = '800px';
+                modalContent.style.margin = '';
+            }
         }
     }
 }
@@ -973,6 +989,10 @@ function closeEditModal() {
         if (swm && swm.children[1]) {
             swm.children[1].style.justifyContent = 'center';
             swm.children[1].style.paddingRight = '20px';
+            const swiperContainer = swm.querySelector('.swiper');
+            if (swiperContainer) {
+                swiperContainer.style.maxWidth = '400px';
+            }
         }
     }
 }
