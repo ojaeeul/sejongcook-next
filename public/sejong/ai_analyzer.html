@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>AI 스마트 원서 분석 - 세종요리제과학원</title>
-    <link rel="stylesheet" href="style.css?v=20260706-30">
+    <link rel="stylesheet" href="style.css?v=20260706-31">
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -472,7 +472,7 @@
                 </div>
                 
                 <div class="upload-zone" id="uploadZone">
-                    <input type="file" id="fileInput" multiple accept="image/*,application/pdf" style="display: none;" onclick="event.stopPropagation();">
+                    <input type="file" id="fileInput" multiple accept="image/*,application/pdf,.hwp,.xls,.xlsx" style="display: none;" onclick="event.stopPropagation();">
                     <input type="file" id="folderInput" webkitdirectory directory multiple style="display: none;" onclick="event.stopPropagation();">
                     <i class="fas fa-cloud-upload-alt upload-icon"></i>
                     <div class="upload-text">수강생 원서나 사진을 드래그 앤 드롭 하세요</div>
@@ -501,9 +501,12 @@
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
     <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';</script>
-    <script src="sidebar_sync.js?v=20260706-30"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/cfb@1.2.2/dist/cfb.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
+    <script src="sidebar_sync.js?v=20260706-31"></script>
 
-    <script src="ai_analyzer.js?v=20260706-30"></script>
+    <script src="ai_analyzer.js?v=20260706-31"></script>
     <script>
         function toggleSidebar() {
             document.querySelector('.sidebar').classList.toggle('active');
