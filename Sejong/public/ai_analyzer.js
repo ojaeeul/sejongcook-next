@@ -249,7 +249,7 @@ window.selectFolderNative = function() {
 async function handleFiles(files) {
     const validFiles = Array.from(files).filter(f => {
         const typeValid = f.type.startsWith('image/') || f.type === 'application/pdf';
-        const extValid = f.name.toLowerCase().match(/\.(jpg|jpeg|png|pdf|heic)$/);
+        const extValid = f.name.toLowerCase().match(/\.(jpg|jpeg|png|pdf|heic|hwp|xlsx|xls)$/);
         return typeValid || extValid;
     });
     
@@ -266,8 +266,13 @@ async function handleFiles(files) {
     for (let i = 0; i < validFiles.length; i += CONCURRENCY_LIMIT) {
         const chunk = validFiles.slice(i, i + CONCURRENCY_LIMIT);
         const promises = chunk.map(file => {
-            if (file.type === 'application/pdf') {
+            const ext = file.name.toLowerCase();
+            if (file.type === 'application/pdf' || ext.endsWith('.pdf')) {
                 return processPDF(file);
+            } else if (ext.match(/\.(xlsx|xls)$/)) {
+                return processExcel(file);
+            } else if (ext.endsWith('.hwp')) {
+                return processHWP(file);
             } else {
                 return processImage(file);
             }
@@ -402,6 +407,55 @@ async function processImage(file) {
     });
 }
 
+async function processExcel(file) {
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, {type: 'array'});
+                let fullText = "";
+                for(let sheetName of workbook.SheetNames) {
+                    const htmlStr = XLSX.utils.sheet_to_html(workbook.Sheets[sheetName]);
+                    fullText += "Sheet: " + sheetName + "\n" + htmlStr + "\n\n";
+                }
+                const dummyImage = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect width="200" height="200" fill="%23f1f5f9"/><text x="50%" y="50%" font-family="Arial" font-size="24" fill="%2364748b" dominant-baseline="middle" text-anchor="middle">Excel 문서</text></svg>';
+                await analyzeImage(null, file.name, dummyImage, fullText);
+            } catch(err) {
+                console.error('Excel parsing error', err);
+            }
+            resolve();
+        };
+        reader.onerror = () => resolve();
+        reader.readAsArrayBuffer(file);
+    });
+}
+
+async function processHWP(file) {
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                const data = new Uint8Array(e.target.result);
+                const hwp = window.HWPModule.parse(data);
+                const container = document.createElement('div');
+                new window.HWPModule.Viewer(container, hwp);
+                const textContent = container.innerText || container.textContent || "내용을 추출할 수 없습니다.";
+                
+                const dummyImage = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect width="200" height="200" fill="%23f1f5f9"/><text x="50%" y="50%" font-family="Arial" font-size="24" fill="%2364748b" dominant-baseline="middle" text-anchor="middle">HWP 문서</text></svg>';
+                await analyzeImage(null, file.name, dummyImage, textContent);
+            } catch(err) {
+                console.error('HWP parsing error', err);
+                const dummyImage = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect width="200" height="200" fill="%23f1f5f9"/><text x="50%" y="50%" font-family="Arial" font-size="24" fill="%23ef4444" dominant-baseline="middle" text-anchor="middle">HWP 오류</text></svg>';
+                await analyzeImage(null, file.name, dummyImage, "HWP 파일 파싱 중 오류가 발생했습니다. (이 형식의 HWP는 브라우저 파싱이 지원되지 않을 수 있습니다)");
+            }
+            resolve();
+        };
+        reader.onerror = () => resolve();
+        reader.readAsArrayBuffer(file);
+    });
+}
+
 function createCardUI(title, imgUrl, id) {
     const grid = document.getElementById('resultsGrid');
     const card = document.createElement('div');
@@ -491,12 +545,12 @@ const CONCURRENCY_LIMIT = 5;
 let activeRequests = 0;
 const requestQueue = [];
 
-async function analyzeImage(base64Data, fileName, imgUrl) {
+async function analyzeImage(base64Data, fileName, imgUrl, textContent = null) {
     return new Promise((resolve) => {
         requestQueue.push(async () => {
             activeRequests++;
             try {
-                await executeAnalysis(base64Data, fileName, imgUrl);
+                await executeAnalysis(base64Data, fileName, imgUrl, textContent);
             } catch(e) {
                 console.error(e);
             } finally {
@@ -516,7 +570,7 @@ function processQueue() {
     }
 }
 
-async function executeAnalysis(base64Data, fileName, imgUrl) {
+async function executeAnalysis(base64Data, fileName, imgUrl, textContent = null) {
     const id = Date.now() + Math.floor(Math.random() * 1000);
     const card = createCardUI(fileName, imgUrl, id);
     
@@ -604,6 +658,12 @@ async function executeAnalysis(base64Data, fileName, imgUrl) {
     let retryCount = 0;
     const maxRetries = 40; // 무료 한도(429) 회피를 위해 최대 40번까지 재시도 (약 3분 이상 대기 가능)
 
+    let finalPrompt = textContent ? (prompt + "\n\n[문서 내용]\n" + textContent) : prompt;
+    let parts = [{ text: finalPrompt }];
+    if (base64Data) {
+        parts.push({ inlineData: { mimeType: 'image/jpeg', data: base64Data } });
+    }
+
     while (retryCount <= maxRetries && !result) {
         try {
             const response = await fetch('/api/sejong/ai_analyze', {
@@ -613,10 +673,7 @@ async function executeAnalysis(base64Data, fileName, imgUrl) {
                 },
                 body: JSON.stringify({
                     contents: [{
-                        parts: [
-                            { text: prompt },
-                            { inlineData: { mimeType: 'image/jpeg', data: base64Data } }
-                        ]
+                        parts: parts
                     }],
                     generationConfig: {
                         temperature: 0.0,
