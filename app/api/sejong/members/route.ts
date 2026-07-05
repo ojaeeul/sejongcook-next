@@ -23,8 +23,10 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+    let payload: any = null;
     try {
         const data = await req.json();
+        payload = data;
 
         // 1. Assign ID if missing
         if (!data.id) {
@@ -46,7 +48,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ success: true, data });
     } catch (e: any) {
         console.error("POST Members Error:", e);
-        try { fs.writeFileSync('/tmp/sejong_error.log', JSON.stringify({ error: e.message, data: typeof data !== 'undefined' ? data : null }, null, 2)); } catch(err){}
+        try { fs.writeFileSync('/tmp/sejong_error.log', JSON.stringify({ error: e.message, data: payload }, null, 2)); } catch(err){}
         return NextResponse.json({ error: e.message }, { status: 500 });
     }
 }

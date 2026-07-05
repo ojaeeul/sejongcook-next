@@ -1154,6 +1154,19 @@ async function handleEditSubmit(e) {
         // Merge: form data takes precedence
         finalData = { ...existingMember, ...data };
     }
+    
+    // STRIP ANY EXTRA FIELDS INJECTED BY FRONTEND (e.g. amount, isPaid, rowStatus)
+    const allowedKeys = [
+        'id', 'registeredDate', 'name', 'resident_num', 'address', 'address_detail', 'phone', 
+        'phone_guardian', 'phone_home', 'school', 'school_level', 'grade', 'job', 'notes', 
+        'course', 'course_select', 'start_date', 'time_select', 'timeSlot', 'type', 'status', 
+        'photo', 'faceDescriptor'
+    ];
+    Object.keys(finalData).forEach(key => {
+        if (!allowedKeys.includes(key)) {
+            delete finalData[key];
+        }
+    });
     // ------------------------------------------
 
     try {
@@ -1272,7 +1285,23 @@ async function handleRegister(e) {
 
     if (data.paper_tuition) data.tuition = data.paper_tuition;
     if (data.paper_tool_fee) data.tool_fee = data.paper_tool_fee;
-    if (data.paper_total) data.amount = data.paper_total;
+    if (data.paper_total) {
+        let paperAppended = `결제: ${data.paper_total.replace(/,/g, '')}`;
+        if (data.notes) data.notes += '\n' + paperAppended;
+        else data.notes = paperAppended;
+    }
+    
+    const allowedKeys = [
+        'id', 'registeredDate', 'name', 'resident_num', 'address', 'address_detail', 'phone', 
+        'phone_guardian', 'phone_home', 'school', 'school_level', 'grade', 'job', 'notes', 
+        'course', 'course_select', 'start_date', 'time_select', 'timeSlot', 'type', 'status', 
+        'photo', 'faceDescriptor'
+    ];
+    Object.keys(data).forEach(key => {
+        if (!allowedKeys.includes(key)) {
+            delete data[key];
+        }
+    });
 
     // Remove any premium paper UI fields from data payload because DB members table doesn't have them
     const uiFieldsToRemove = [
