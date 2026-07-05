@@ -2757,6 +2757,34 @@ window.open3DSliderForDate = async function(dateStr) {
         // Populate slides
         wrapper.innerHTML = '';
         filtered.forEach(m => {
+            let displayTuition = m.tuition;
+            let displayToolFee = m.tool_fee;
+            let displayAmount = m.amount;
+            let displayNotes = m.notes || '-';
+            
+            if (displayNotes !== '-') {
+                const tuitionMatch = displayNotes.match(/수강료\s*[:\-]?\s*([\d,]+)(원)?/);
+                if (tuitionMatch && !displayTuition) {
+                    displayTuition = tuitionMatch[1].replace(/,/g, '');
+                    displayNotes = displayNotes.replace(/수강료\s*[:\-]?\s*([\d,]+)(원)?\n?/g, '');
+                }
+                
+                const toolMatch = displayNotes.match(/도구비\s*[:\-]?\s*([\d,]+)(원)?/);
+                if (toolMatch && !displayToolFee) {
+                    displayToolFee = toolMatch[1].replace(/,/g, '');
+                    displayNotes = displayNotes.replace(/도구비\s*[:\-]?\s*([\d,]+)(원)?\n?/g, '');
+                }
+                
+                const amountMatch = displayNotes.match(/(총)?결제금액\s*[:\-]?\s*([\d,]+)(원)?/);
+                if (amountMatch && !displayAmount) {
+                    displayAmount = amountMatch[2].replace(/,/g, '');
+                    displayNotes = displayNotes.replace(/(총)?결제금액\s*[:\-]?\s*([\d,]+)(원)?\n?/g, '');
+                }
+                
+                displayNotes = displayNotes.trim();
+                if (displayNotes === '') displayNotes = '-';
+            }
+
             const slide = document.createElement('div');
             slide.className = 'swiper-slide';
             slide.innerHTML = `
@@ -2813,20 +2841,20 @@ window.open3DSliderForDate = async function(dateStr) {
                         </tr>
                         <tr>
                             <td class="th-dark">비고</td>
-                            <td colspan="5" style="text-align: left; padding: 8px;">${m.notes ? m.notes.replace(/\n/g, '<br>') : '-'}</td>
+                            <td colspan="5" style="text-align: left; padding: 8px;">${displayNotes !== '-' ? displayNotes.replace(/\n/g, '<br>') : '-'}</td>
                         </tr>
                     </table>
                     
                     <table class="dark-table" style="background: white; width: auto; min-width: unset; margin: 0 auto; border-collapse: collapse; font-size: 13px; border-top: none;">
                         <tr>
                             <td class="th-dark" style="padding: 4px; white-space: nowrap;">수강료</td>
-                            <td colspan="2" style="text-align: left; padding: 8px;">${m.tuition ? Number(m.tuition).toLocaleString() + '원' : '-'}</td>
+                            <td colspan="2" style="text-align: left; padding: 8px;">${displayTuition ? Number(displayTuition).toLocaleString() + '원' : '-'}</td>
                             <td class="th-dark" style="padding: 4px; white-space: nowrap;">도구비</td>
-                            <td colspan="2" style="text-align: left; padding: 8px;">${m.tool_fee ? Number(m.tool_fee).toLocaleString() + '원' : '-'}</td>
+                            <td colspan="2" style="text-align: left; padding: 8px;">${displayToolFee ? Number(displayToolFee).toLocaleString() + '원' : '-'}</td>
                         </tr>
                         <tr>
                             <td class="th-dark" style="white-space: nowrap;">결제금액</td>
-                            <td colspan="5" style="text-align: left; padding: 8px; font-weight: bold; color: #ef4444;">${m.amount ? Number(m.amount).toLocaleString() + '원' : '-'}</td>
+                            <td colspan="5" style="text-align: left; padding: 8px; font-weight: bold; color: #ef4444;">${displayAmount ? Number(displayAmount).toLocaleString() + '원' : '-'}</td>
                         </tr>
                     </table>
                 </div>
