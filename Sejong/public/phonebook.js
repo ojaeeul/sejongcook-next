@@ -282,7 +282,7 @@ function renderPage() {
                     </div>
 
                     <!-- Right Column: Courses -->
-                    <div class="course-badge-list hide-scrollbar" style="flex: 1; min-width: 110px; max-width: 150px; display: flex; flex-direction: row; flex-wrap: wrap; align-items: flex-start; align-content: flex-start; justify-content: flex-start; padding: 2px 5px; gap: 2px; overflow-y: auto; overflow-x: hidden; margin-left: auto; cursor: pointer; height: 100%; border-right: 1px solid #e2e8f0;" onclick="showCourseOverlay(this, '${m.name}', '${coursesStr}')" title="크게 보기">
+                    <div class="course-badge-list hide-scrollbar" style="flex: 1; min-width: 110px; max-width: 150px; display: flex; flex-direction: row; flex-wrap: nowrap; align-items: center; justify-content: flex-start; padding: 2px 5px; gap: 4px; overflow-x: auto; overflow-y: hidden; margin-left: auto; cursor: pointer; height: 100%; border-right: 1px solid #e2e8f0;" onclick="showCourseOverlay(this, '${m.name}', '${coursesStr}')" title="크게 보기">
                         ${courseBadges}
                     </div>
 
