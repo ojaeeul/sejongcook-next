@@ -3068,19 +3068,19 @@ window.open3DSliderForDate = async function(dateStr, initialIndex = 0) {
             
             if (displayNotes !== '-') {
                 const tuitionMatch = displayNotes.match(/수강료\s*[:\-]?\s*([\d,]+)(원)?/);
-                if (tuitionMatch && !displayTuition) {
+                if (tuitionMatch) {
                     displayTuition = tuitionMatch[1].replace(/,/g, '');
                     displayNotes = displayNotes.replace(/수강료\s*[:\-]?\s*([\d,]+)(원)?\n?/g, '');
                 }
                 
                 const toolMatch = displayNotes.match(/도구비\s*[:\-]?\s*([\d,]+)(원)?/);
-                if (toolMatch && !displayToolFee) {
+                if (toolMatch) {
                     displayToolFee = toolMatch[1].replace(/,/g, '');
                     displayNotes = displayNotes.replace(/도구비\s*[:\-]?\s*([\d,]+)(원)?\n?/g, '');
                 }
                 
                 const amountMatch = displayNotes.match(/(총)?결제금액\s*[:\-]?\s*([\d,]+)(원)?/);
-                if (amountMatch && !displayAmount) {
+                if (amountMatch) {
                     displayAmount = amountMatch[2].replace(/,/g, '');
                     displayNotes = displayNotes.replace(/(총)?결제금액\s*[:\-]?\s*([\d,]+)(원)?\n?/g, '');
                 }
@@ -3090,7 +3090,7 @@ window.open3DSliderForDate = async function(dateStr, initialIndex = 0) {
             }
             
             // Auto-calculate displayTuition from course name if missing
-            if (!displayTuition && m.course && window.global_course_fees) {
+            if ((!displayTuition || displayTuition === '-' || displayTuition === '0') && m.course && window.global_course_fees) {
                 const getFee = (key, defaultVal) => {
                     let val = window.global_course_fees[key];
                     if (val === undefined || val === null) return defaultVal;
@@ -3120,7 +3120,7 @@ window.open3DSliderForDate = async function(dateStr, initialIndex = 0) {
             }
 
             // Auto-calculate displayAmount if it is missing
-            if (!displayAmount && (displayTuition || displayToolFee)) {
+            if ((!displayAmount || displayAmount === '-' || displayAmount === '0') && displayTuition) {
                 const getCleanNum = (str) => {
                     const cleaned = (str || '').toString().replace(/[^0-9]/g, '');
                     return cleaned === '' ? 0 : parseInt(cleaned, 10);
