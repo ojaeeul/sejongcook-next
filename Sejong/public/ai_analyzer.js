@@ -917,12 +917,11 @@ function renderExamResult(id, data) {
             </div>
             <textarea class="result-input" data-id="${id}" data-field="전체내용" style="display:none;">${data['전체내용'] || ''}</textarea>
         </div>
-        <div style="margin-top:15px;">
-            <div style="margin-bottom: 5px; font-weight: bold; color: #334155; font-size: 0.9rem;">답안지 추출 결과</div>
-            <div style="width:100%; min-height:60px; padding:15px; border:1px solid #cbd5e1; border-radius:6px; background:#f8fafc; overflow:auto; color:#0f172a; white-space: pre-wrap; font-size: 0.95rem;">${data['답안지'] || '분석된 답안지가 없습니다. (문서에 답안지가 없거나 인식하지 못함)'}</div>
-            <textarea class="result-input" data-id="${id}" data-field="답안지" style="display:none;">${data['답안지'] || ''}</textarea>
+        <div style="margin-top:15px; display:none;">
+            <textarea class="result-input" data-id="${id}" data-field="답안지">${data['답안지'] || ''}</textarea>
         </div>
         <div style="display:flex; justify-content:flex-end; margin-top:10px; gap:8px;">
+            <button onclick="openAnswerSheetWindow('${id}')" style="background:#0ea5e9; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:0.85rem; font-weight:bold;"><i class="fas fa-external-link-alt"></i> 별도 창으로 보기 (답안지)</button>
             <button onclick="saveExamQuestion('${id}')" style="background:#16a34a; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:0.85rem; font-weight:bold;"><i class="fas fa-save"></i> 과정에 추가</button>
             <button onclick="copyExamData('${id}')" style="background:#475569; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:0.85rem;">복사하기</button>
             <button class="btn-delete" onclick="deleteCard('${id}')" style="padding:6px 12px; font-size:0.85rem;">삭제</button>
@@ -947,6 +946,51 @@ window.copyExamData = function(id) {
         console.error('Copy failed', err);
         alert('복사 실패');
     });
+};
+
+window.openAnswerSheetWindow = function(id) {
+    const textarea = document.querySelector(`.result-input[data-id="${id}"][data-field="답안지"]`);
+    if (!textarea || !textarea.value.trim()) {
+        alert("문서에서 추출된 답안지가 없습니다.");
+        return;
+    }
+    const answerData = textarea.value;
+    const newWin = window.open('', '_blank', 'width=600,height=800');
+    if (!newWin) {
+        alert("팝업 차단을 해제해주세요.");
+        return;
+    }
+    
+    newWin.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>답안지</title>
+            <meta charset="utf-8">
+            <style>
+                body { font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif; padding: 30px; line-height: 1.8; background: #f8fafc; color: #0f172a; }
+                h2 { color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 15px; margin-bottom: 25px; font-size: 1.5rem; text-align: center; }
+                .content { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); white-space: pre-wrap; font-size: 1.15rem; }
+                .btn-container { text-align: center; margin-top: 30px; }
+                .btn { display: inline-block; padding: 12px 24px; background: #2563eb; color: white; border: none; border-radius: 8px; cursor: pointer; text-decoration: none; font-size: 1.1rem; font-weight: bold; box-shadow: 0 2px 4px rgba(37,99,235,0.3); transition: all 0.2s; }
+                .btn:hover { background: #1d4ed8; transform: translateY(-1px); }
+                @media print {
+                    body { background: white; padding: 0; }
+                    .content { box-shadow: none; padding: 0; border: none; }
+                    .btn-container { display: none; }
+                }
+            </style>
+        </head>
+        <body>
+            <h2>📝 답안지 추출 결과</h2>
+            <div class="content">${answerData}</div>
+            <div class="btn-container">
+                <button class="btn" onclick="window.print()">🖨️ 인쇄하기</button>
+            </div>
+        </body>
+        </html>
+    `);
+    newWin.document.close();
 };
 
 function updateCardStatus(id, status, message) {
