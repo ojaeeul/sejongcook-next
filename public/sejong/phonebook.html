@@ -7,11 +7,11 @@
     <meta http-equiv="Expires" content="0">    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>전화번호부 - 세종요리</title>
-    <link rel="stylesheet" href="style.css?v=20260706-14">
+    <link rel="stylesheet" href="style.css?v=20260706-15">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="phonebook.js?v=20260706-14" defer></script>
+    <script src="phonebook.js?v=20260706-15" defer></script>
     <style>
                 .notebook-wrapper {
             display: block;
@@ -607,13 +607,13 @@
             <div class="content-scroll">
                 <div class="search-bar-container">
                     <div class="search-filters-wrapper">
-                        <!-- Course Filter -->
+                        <!-- Category Filter (New) -->
                         <div class="filter-item" style="flex: 1.5; position: relative;">
                             <span class="material-icons"
-                                style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 1.1rem;">menu_book</span>
-                            <select id="courseFilter"
+                                style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 1.1rem;">category</span>
+                            <select id="categoryFilter"
                                 style="width: 100%; padding: 8px 10px 8px 34px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.85rem; outline: none; appearance: none; background: #fff;">
-                                <option value="">전체 과정</option>
+                                <option value="">대분류 전체</option>
                                 <optgroup label="조리과정">
                                     <option value="한식기능사">한식기능사</option>
                                     <option value="양식기능사">양식기능사</option>
@@ -632,6 +632,16 @@
                                     <option value="케익디자이너">케익디자이너</option>
                                     <option value="베이킹 원데이">베이킹 원데이</option>
                                 </optgroup>
+                            </select>
+                        </div>
+
+                        <!-- Course Filter -->
+                        <div class="filter-item" style="flex: 1.5; position: relative;">
+                            <span class="material-icons"
+                                style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 1.1rem;">menu_book</span>
+                            <select id="courseFilter"
+                                style="width: 100%; padding: 8px 10px 8px 34px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.85rem; outline: none; appearance: none; background: #fff;">
+                                <option value="">전체 과정</option>
                             </select>
                         </div>
 
@@ -851,7 +861,7 @@
             el.nextElementSibling.classList.toggle('show');
         }
     </script>
-    <script src="sidebar_sync.js?v=20260706-14"></script>
+    <script src="sidebar_sync.js?v=20260706-15"></script>
 </body>
 
 </html>

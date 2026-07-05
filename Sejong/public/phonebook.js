@@ -17,12 +17,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Event listeners for filters
     const nameInput = document.getElementById('phoneSearchInput');
+    const categoryFilter = document.getElementById('categoryFilter');
     const courseFilter = document.getElementById('courseFilter');
     const yearFilter = document.getElementById('yearFilter');
     const monthFilter = document.getElementById('monthFilter');
     const dayFilter = document.getElementById('dayFilter');
 
-    [nameInput, courseFilter, yearFilter, monthFilter, dayFilter].forEach(el => {
+    [nameInput, categoryFilter, courseFilter, yearFilter, monthFilter, dayFilter].forEach(el => {
         if (el) el.addEventListener('input', () => renderPhonebook());
     });
 });
@@ -108,6 +109,7 @@ let currentGrouped = {};
 
 function renderPhonebook() {
     const nameTerm = document.getElementById('phoneSearchInput')?.value.toLowerCase() || '';
+    const categoryTerm = document.getElementById('categoryFilter')?.value || '';
     const courseTerm = document.getElementById('courseFilter')?.value || '';
     const yearTerm = document.getElementById('yearFilter')?.value || '';
     const monthTerm = document.getElementById('monthFilter')?.value || '';
@@ -115,7 +117,9 @@ function renderPhonebook() {
 
     const filtered = members.filter(m => {
         const nameMatch = m.name.toLowerCase().includes(nameTerm) || (m.phone && m.phone.replace(/-/g, '').includes(nameTerm));
-        const courseMatch = !courseTerm || (m.course && m.course.includes(courseTerm));
+        let courseMatch = true;
+        if (categoryTerm && (!m.course || !m.course.includes(categoryTerm))) courseMatch = false;
+        if (courseTerm && (!m.course || !m.course.includes(courseTerm))) courseMatch = false;
         
         const yearMatch = !yearTerm || (m.registeredDate && m.registeredDate.startsWith(yearTerm));
         
