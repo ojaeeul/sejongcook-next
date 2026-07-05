@@ -242,6 +242,10 @@ window.handleAnalyzedRegistration = async function(id) {
     }
 };
 
+window.selectFolderNative = function() {
+    document.getElementById('folderInput').click();
+};
+
 async function handleFiles(files) {
     const validFiles = Array.from(files).filter(f => {
         const typeValid = f.type.startsWith('image/') || f.type === 'application/pdf';
@@ -1331,6 +1335,8 @@ async function savePhonebook(id, count) {
         btn.innerHTML = '<i class="fas fa-save"></i> 일괄 등록';
         btn.disabled = false;
     }
+}
+
 window.loadExamQuestions = async function() {
     try {
         const res = await fetch('/api/sejong/questions');
@@ -1627,22 +1633,40 @@ window.renderExamCourseButtons = function() {
     const container = document.getElementById('examCourseButtons');
     if(!container) return;
 
-    let html = '<div style="margin-bottom: 15px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">';
+    let html = '<div style="margin-bottom: 15px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">';
     
+    // Search Box
+    html += `<div style="display:flex; align-items:center; background:#fff; border:1px solid #cbd5e1; border-radius:8px; padding:2px 8px;">
+                <i class="fas fa-search" style="color:#94a3b8; margin-right:5px;"></i>
+                <input type="text" id="courseSearchBox" placeholder="과정 검색..." style="border:none; outline:none; font-size:0.95rem; padding:6px; width:150px;">
+             </div>`;
+
     // 1. Render Category Tabs (대분류)
+    const isAllActive = window.currentExamCategory === '전체과정' || !window.currentExamCategory;
+    html += `<button class="mode-btn ${isAllActive ? 'active' : ''}" data-category="전체과정" style="padding: 6px 12px; font-size: 0.95rem; border-radius: 8px 8px 0 0; border-bottom: ${isAllActive ? '2px solid #2563eb' : 'none'}; background: ${isAllActive ? '#f1f5f9' : 'transparent'}; box-shadow: none;">📁 전체과정</button>`;
+
     window.allExamCourses.forEach(catObj => {
         const isActive = catObj.category === window.currentExamCategory;
-        html += `<button class="mode-btn ${isActive ? 'active' : ''}" data-category="${catObj.category}" style="margin-right: 5px; padding: 6px 12px; font-size: 0.95rem; border-radius: 8px 8px 0 0; border-bottom: ${isActive ? '2px solid #2563eb' : 'none'}; background: ${isActive ? '#f1f5f9' : 'transparent'}; box-shadow: none;">📁 ${catObj.category}</button>`;
+        html += `<button class="mode-btn ${isActive ? 'active' : ''}" data-category="${catObj.category}" style="padding: 6px 12px; font-size: 0.95rem; border-radius: 8px 8px 0 0; border-bottom: ${isActive ? '2px solid #2563eb' : 'none'}; background: ${isActive ? '#f1f5f9' : 'transparent'}; box-shadow: none;">📁 ${catObj.category}</button>`;
     });
     html += '</div>';
 
-    // 2. Render Courses (소분류) for selected category
-    const currentCatObj = window.allExamCourses.find(c => c.category === window.currentExamCategory);
-    if (currentCatObj && currentCatObj.courses.length > 0) {
-        html += '<div style="display:flex; flex-wrap:wrap; gap:8px;">';
-        currentCatObj.courses.forEach(course => {
+    // 2. Render Courses (소분류) for selected category (or All)
+    let coursesToShow = [];
+    if (isAllActive) {
+        window.allExamCourses.forEach(catObj => {
+            coursesToShow = coursesToShow.concat(catObj.courses);
+        });
+    } else {
+        const currentCatObj = window.allExamCourses.find(c => c.category === window.currentExamCategory);
+        if (currentCatObj) coursesToShow = currentCatObj.courses;
+    }
+
+    if (coursesToShow.length > 0) {
+        html += '<div style="display:flex; flex-wrap:wrap; gap:8px;" id="courseButtonsContainer">';
+        coursesToShow.forEach(course => {
             const isActive = course === window.currentExamCourse;
-            html += `<button class="mode-btn ${isActive ? 'active' : ''}" data-course="${course}" style="padding: 8px 16px; font-size: 0.9rem;">${course}</button>`;
+            html += `<button class="mode-btn course-item-btn ${isActive ? 'active' : ''}" data-course="${course}" style="padding: 8px 16px; font-size: 0.9rem;">${course}</button>`;
         });
         html += '</div>';
     } else {
@@ -1683,5 +1707,22 @@ window.renderExamCourseButtons = function() {
             loadExamQuestions();
         });
     });
-};
+
+    // Attach event for Course Search Box
+    const searchBox = document.getElementById('courseSearchBox');
+    if (searchBox) {
+        searchBox.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            const allCourseBtns = container.querySelectorAll('.course-item-btn');
+            allCourseBtns.forEach(btn => {
+                const courseName = btn.getAttribute('data-course').toLowerCase();
+                if (courseName.includes(query)) {
+                    btn.style.display = 'inline-block';
+                } else {
+                    btn.style.display = 'none';
+                }
+            });
+        });
+        // Restore focus if it was focused before (optional, since typing doesn't re-render right now)
+    }
 };
