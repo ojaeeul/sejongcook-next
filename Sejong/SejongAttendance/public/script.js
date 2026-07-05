@@ -2679,6 +2679,35 @@ renderMembers = function () {
 // Global Fallback for openSettingsModal (수업 요일 설정)
 // If the user clicks this sidebar menu on any page other than sheet.html, navigate there.
 if (typeof window.openSettingsModal === 'undefined') {
+    window.calcEditTotal = function() {
+    const editForm = document.getElementById('editForm');
+    if (!editForm) return;
+
+    const getNum = (val) => {
+        const cleaned = (val || '').replace(/,/g, '').trim();
+        return cleaned === '' || isNaN(cleaned) ? 0 : parseInt(cleaned, 10);
+    };
+
+    const formatNum = (num) => num.toLocaleString();
+
+    const tuitionVal = getNum(editForm.tuition.value);
+    const toolVal = getNum(editForm.tool_fee.value);
+    const bookVal = getNum(editForm.book_price.value);
+
+    // Reformat current values with commas
+    if (editForm.tuition.value && !isNaN(editForm.tuition.value.replace(/,/g, ''))) editForm.tuition.value = formatNum(tuitionVal);
+    if (editForm.tool_fee.value && !isNaN(editForm.tool_fee.value.replace(/,/g, ''))) editForm.tool_fee.value = formatNum(toolVal);
+    if (editForm.book_price.value && !isNaN(editForm.book_price.value.replace(/,/g, ''))) editForm.book_price.value = formatNum(bookVal);
+
+    const total = tuitionVal + toolVal + bookVal;
+    
+    if (total > 0) {
+        editForm.total_fee.value = formatNum(total);
+    } else {
+        editForm.total_fee.value = '';
+    }
+};
+
     window.openSettingsModal = function () {
         if (!window.location.pathname.includes('sheet.html')) {
             window.location.href = 'sheet.html?openSettings=true';

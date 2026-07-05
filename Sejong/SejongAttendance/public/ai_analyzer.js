@@ -143,7 +143,46 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-window.selectFolderNative = async function() {
+window.calcPaperTotal = function(id) {
+    const tuitionInput = document.getElementById(`paper_tuition-${id}`);
+    const toolInput = document.getElementById(`paper_tool_fee-${id}`);
+    const bookInput = document.getElementById(`paper_book_price-${id}`);
+    const totalInput = document.getElementById(`paper_total-${id}`);
+
+    if (!tuitionInput || !toolInput || !bookInput || !totalInput) return;
+
+    // Helper to extract numeric value
+    const getNum = (val) => {
+        const cleaned = (val || '').replace(/,/g, '').trim();
+        return cleaned === '' || isNaN(cleaned) ? 0 : parseInt(cleaned, 10);
+    };
+
+    // Helper to format with commas
+    const formatNum = (num) => {
+        return num.toLocaleString();
+    };
+
+    const tuitionVal = getNum(tuitionInput.value);
+    const toolVal = getNum(toolInput.value);
+    const bookVal = getNum(bookInput.value);
+
+    // Format the current inputs if they have a valid number
+    if (tuitionInput.value && !isNaN(tuitionInput.value.replace(/,/g, ''))) tuitionInput.value = formatNum(tuitionVal);
+    if (toolInput.value && !isNaN(toolInput.value.replace(/,/g, ''))) toolInput.value = formatNum(toolVal);
+    if (bookInput.value && !isNaN(bookInput.value.replace(/,/g, ''))) bookInput.value = formatNum(bookVal);
+
+    // Calculate total
+    const total = tuitionVal + toolVal + bookVal;
+    
+    // Only update total if it's > 0 (or if they cleared everything, it becomes empty)
+    if (total > 0) {
+        totalInput.value = formatNum(total);
+    } else {
+        totalInput.value = '';
+    }
+};
+
+window.handleAnalyzedRegistration = async function(id) {
     if (window.showDirectoryPicker) {
         try {
             const dirHandle = await window.showDirectoryPicker();
@@ -964,7 +1003,7 @@ function renderStudentResult(id, data) {
                     <tr>
                         <td class="th-dark" style="padding: 4px;">수강료</td>
                         <td colspan="2" style="text-align: left; padding: 4px;">
-                            <div style="display: flex; align-items: center; height: 22px;">₩ <input type="text" id="paper_tuition-${id}" value="${data.수강료 || ''}" style="flex: 1; margin-left: 5px; background: transparent; border: none; outline: none; font-family: inherit;"></div>
+                            <div style="display: flex; align-items: center; height: 22px;">₩ <input type="text" id="paper_tuition-${id}" value="${data.수강료 || ''}" oninput="calcPaperTotal('${id}')" style="flex: 1; margin-left: 5px; background: transparent; border: none; outline: none; font-family: inherit;"></div>
                         </td>
                         <td class="th-dark" style="padding: 4px;">락카</td>
                         <td colspan="2" style="padding: 4px;"><input type="text" id="paper_locker-${id}" style="text-align: center; height: 100%; width: 100%; background: transparent; border: none; outline: none; font-family: inherit;"></td>
@@ -972,7 +1011,7 @@ function renderStudentResult(id, data) {
                     <tr>
                         <td class="th-dark" style="padding: 4px;">도구비</td>
                         <td colspan="2" style="text-align: left; padding: 4px;">
-                            <div style="display: flex; align-items: center; height: 22px;">₩ <input type="text" id="paper_tool_fee-${id}" value="${data.도구비 || ''}" style="flex: 1; margin-left: 5px; background: transparent; border: none; outline: none; font-family: inherit;"></div>
+                            <div style="display: flex; align-items: center; height: 22px;">₩ <input type="text" id="paper_tool_fee-${id}" value="${data.도구비 || ''}" oninput="calcPaperTotal('${id}')" style="flex: 1; margin-left: 5px; background: transparent; border: none; outline: none; font-family: inherit;"></div>
                         </td>
                         <td class="th-dark" style="font-size: 11px; line-height: 1.1; padding: 2px;">
                             <div style="display: flex; flex-direction: column; align-items: flex-start; justify-content: center; height: 100%; gap: 1px;">
@@ -981,7 +1020,7 @@ function renderStudentResult(id, data) {
                             </div>
                         </td>
                         <td colspan="2" style="text-align: left; padding: 4px;">
-                            <div style="display: flex; align-items: center; height: 22px;">₩ <input type="text" id="paper_book_price-${id}" style="flex: 1; margin-left: 5px; background: transparent; border: none; outline: none; font-family: inherit;"></div>
+                            <div style="display: flex; align-items: center; height: 22px;">₩ <input type="text" id="paper_book_price-${id}" oninput="calcPaperTotal('${id}')" style="flex: 1; margin-left: 5px; background: transparent; border: none; outline: none; font-family: inherit;"></div>
                         </td>
                     </tr>
                     <tr>
