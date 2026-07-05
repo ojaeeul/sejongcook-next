@@ -863,6 +863,10 @@ function openEditModal(memberId) {
             editModal.style.background = 'transparent';
             editModal.style.justifyContent = 'flex-start';
             editModal.style.paddingLeft = '50px';
+            editModal.style.pointerEvents = 'none'; // Allow clicking through overlay
+            
+            const modalContent = editModal.querySelector('.modal-content');
+            if (modalContent) modalContent.style.pointerEvents = 'auto'; // Keep form clickable
             
             if (swm.children[1]) {
                 swm.children[1].style.justifyContent = 'flex-end';
@@ -874,6 +878,7 @@ function openEditModal(memberId) {
             editModal.style.background = 'rgba(0, 0, 0, 0.5)';
             editModal.style.justifyContent = 'center';
             editModal.style.paddingLeft = '0';
+            editModal.style.pointerEvents = 'auto';
         }
     }
 }
