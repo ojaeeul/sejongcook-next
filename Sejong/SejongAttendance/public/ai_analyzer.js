@@ -12,8 +12,48 @@ function getNextKey() {
     keyIdx = (keyIdx + 1) % API_KEYS.length;
     return key;
 }
+let global_course_options = [];
+let global_time_options = [];
+
+async function loadGlobalCourseTimeSettings() {
+    try {
+        const res = await fetch(`/api/sejong/settings?t=${Date.now()}`);
+        const data = await res.json();
+        let settings = Array.isArray(data) && data.length > 0 ? data[0] : (data.key === "settings" ? data.value : data);
+        if (settings) {
+            if (settings.courses && settings.courses.length > 0) global_course_options = settings.courses;
+            if (settings.times && settings.times.length > 0) global_time_options = settings.times;
+        }
+    } catch(e) {
+        console.error("Failed to load global settings", e);
+    }
+
+    // 재생성 로직
+    let courseDl = document.getElementById('course_datalist_options');
+    if (courseDl) courseDl.remove();
+    courseDl = document.createElement('datalist');
+    courseDl.id = 'course_datalist_options';
+    global_course_options.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c;
+        courseDl.appendChild(opt);
+    });
+    document.body.appendChild(courseDl);
+
+    let timeDl = document.getElementById('time_datalist_options');
+    if (timeDl) timeDl.remove();
+    timeDl = document.createElement('datalist');
+    timeDl.id = 'time_datalist_options';
+    global_time_options.forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t;
+        timeDl.appendChild(opt);
+    });
+    document.body.appendChild(timeDl);
+}
 
 document.addEventListener('DOMContentLoaded', () => {
+    loadGlobalCourseTimeSettings();
     const uploadZone = document.getElementById('uploadZone');
     const fileInput = document.getElementById('fileInput');
     const modeBtns = document.querySelectorAll('.mode-btn');
