@@ -9,7 +9,7 @@
     <title>수강생 등록 - 세종요리제과학원 (김포/세종 요리 전문)</title>
     <meta name="description" content="세종요리제과학원 신규 수강생 등록 페이지입니다. 김포 및 세종 지역에서 요리사의 꿈을 시작하세요.">
     <meta name="keywords" content="세종요리, 김포요리, 세종요리학원, 김포요리학원, 요리학원 등록, 수강생 모집">
-    <link rel="stylesheet" href="style.css?v=20260705-13">
+    <link rel="stylesheet" href="style.css?v=20260705-14">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -21,8 +21,8 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://npmcdn.com/flatpickr/dist/l10n/ko.js"></script>
 
-    <script src="script.js?v=20260705-13" defer></script>
-    <script src="questions_data.js?v=20260705-13" defer></script>
+    <script src="script.js?v=20260705-14" defer></script>
+    <script src="questions_data.js?v=20260705-14" defer></script>
     <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 </head>
 
@@ -854,6 +854,25 @@
                     </tr>
                 </table>
 
+                <table class="dark-table" style="margin-top: -16px; border-top: none;">
+                    <tr>
+                        <td class="th-dark" style="width: 15%; padding: 4px; white-space: nowrap;">수강료</td>
+                        <td colspan="2" style="text-align: left; padding: 4px;">
+                            <div style="display: flex; align-items: center; height: 22px;">₩ <input type="text" id="edit_tuition" name="tuition" style="flex: 1; margin-left: 5px; border: none; background: transparent; outline: none; font-family: inherit;"></div>
+                        </td>
+                        <td class="th-dark" style="width: 15%; padding: 4px; white-space: nowrap;">도구비</td>
+                        <td colspan="2" style="text-align: left; padding: 4px;">
+                            <div style="display: flex; align-items: center; height: 22px;">₩ <input type="text" id="edit_tool_fee" name="tool_fee" style="flex: 1; margin-left: 5px; border: none; background: transparent; outline: none; font-family: inherit;"></div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="th-dark" style="white-space: nowrap;">결제금액</td>
+                        <td colspan="5" style="text-align: left; padding: 4px;">
+                            <div style="display: flex; align-items: center; height: 22px;">₩ <input type="text" id="edit_total_fee" name="total_fee" style="flex: 1; margin-left: 5px; border: none; background: transparent; outline: none; font-family: inherit; color: #ef4444; font-weight: bold;"></div>
+                        </td>
+                    </tr>
+                </table>
+
                 <div class="mt-20 flex-group gap-10 flex-end">
                     <button type="button" onclick="closeEditModal()" class="btn-secondary">취소</button>
                     <button type="submit" class="btn-primary">수정 저장</button>
@@ -908,7 +927,7 @@
 
     <!-- Swiper JS -->
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-    <script src="sidebar_sync.js?v=20260705-13"></script>
+    <script src="sidebar_sync.js?v=20260705-14"></script>
 </body>
 
 </html>
