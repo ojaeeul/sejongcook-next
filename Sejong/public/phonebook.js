@@ -118,7 +118,24 @@ function renderPhonebook() {
     const filtered = members.filter(m => {
         const nameMatch = m.name.toLowerCase().includes(nameTerm) || (m.phone && m.phone.replace(/-/g, '').includes(nameTerm));
         let courseMatch = true;
-        if (categoryTerm && (!m.course || !m.course.includes(categoryTerm))) courseMatch = false;
+        
+        if (categoryTerm) {
+            const cookingCourses = ['한식기능사', '양식기능사', '가정요리', '브런치', '일식기능사', '복어기능사', '취미요리', '쿠킹클래스', '산업기사'];
+            const bakingCourses = ['제과제빵기능사', '제빵기능사', '제과기능사', '케익디자이너', '베이킹 원데이', '제과제빵'];
+            
+            let categoryMatched = false;
+            if (m.course) {
+                if (categoryTerm === '조리과정') {
+                    categoryMatched = cookingCourses.some(c => m.course.includes(c));
+                } else if (categoryTerm === '제과제빵') {
+                    categoryMatched = bakingCourses.some(c => m.course.includes(c));
+                } else {
+                    categoryMatched = m.course.includes(categoryTerm);
+                }
+            }
+            if (!categoryMatched) courseMatch = false;
+        }
+
         if (courseTerm && (!m.course || !m.course.includes(courseTerm))) courseMatch = false;
         
         const yearMatch = !yearTerm || (m.registeredDate && m.registeredDate.startsWith(yearTerm));
