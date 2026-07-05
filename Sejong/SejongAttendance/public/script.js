@@ -3010,6 +3010,18 @@ window.open3DSliderForDate = async function(dateStr) {
                 displayNotes = displayNotes.trim();
                 if (displayNotes === '') displayNotes = '-';
             }
+            
+            // Auto-calculate displayAmount if it is missing
+            if (!displayAmount && (displayTuition || displayToolFee)) {
+                const getCleanNum = (str) => {
+                    const cleaned = (str || '').toString().replace(/[^0-9]/g, '');
+                    return cleaned === '' ? 0 : parseInt(cleaned, 10);
+                };
+                const sum = getCleanNum(displayTuition) + getCleanNum(displayToolFee);
+                if (sum > 0) {
+                    displayAmount = sum.toString();
+                }
+            }
 
             const slide = document.createElement('div');
             slide.className = 'swiper-slide';
