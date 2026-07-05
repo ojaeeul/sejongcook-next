@@ -438,11 +438,61 @@ async function processHWP(file) {
         reader.onload = async (e) => {
             try {
                 const data = new Uint8Array(e.target.result);
-                const hwp = window.HWPModule.parse(data);
-                const container = document.createElement('div');
-                new window.HWPModule.Viewer(container, hwp);
-                const textContent = container.innerText || container.textContent || "내용을 추출할 수 없습니다.";
-                
+                let textContent = "";
+
+                // Check if it's a ZIP file (HWPX)
+                if (data.length > 2 && data[0] === 0x50 && data[1] === 0x4B) { // 'PK' magic bytes
+                    if (typeof JSZip !== 'undefined') {
+                        const zip = await JSZip.loadAsync(data);
+                        const sectionFiles = Object.keys(zip.files).filter(name => name.includes('Contents/section') && name.endsWith('.xml'));
+                        if (sectionFiles.length > 0) {
+                            for (let sf of sectionFiles) {
+                                const xmlData = await zip.file(sf).async("string");
+                                const parser = new DOMParser();
+                                const xmlDoc = parser.parseFromString(xmlData, "text/xml");
+                                const tTags = xmlDoc.getElementsByTagName("hp:t");
+                                for (let i = 0; i < tTags.length; i++) {
+                                    textContent += tTags[i].textContent + "\n";
+                                }
+                            }
+                        } else {
+                            throw new Error("HWPX 형식이지만 본문 텍스트(section.xml)를 찾을 수 없습니다.");
+                        }
+                    } else {
+                        throw new Error("JSZip 라이브러리가 로드되지 않아 HWPX를 파싱할 수 없습니다.");
+                    }
+                } else {
+                    // Standard HWP (OLE)
+                    const hwp = window.HWPModule.parse(data);
+                    try {
+                        const container = document.createElement('div');
+                        new window.HWPModule.Viewer(container, hwp);
+                        textContent = container.innerText || container.textContent || "";
+                    } catch (viewerErr) {
+                        console.warn("HWP Viewer 렌더링 실패, 직접 텍스트 추출 시도...", viewerErr);
+                        if (hwp.sections && hwp.sections.length > 0) {
+                            for (let section of hwp.sections) {
+                                if (section.content && section.content.length > 0) {
+                                    for (let paragraph of section.content) {
+                                        if (paragraph.content && paragraph.content.length > 0) {
+                                            for (let char of paragraph.content) {
+                                                if (char.type === 0 && char.value) {
+                                                    textContent += char.value;
+                                                }
+                                            }
+                                            textContent += "\n";
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (!textContent || textContent.trim().length === 0) {
+                    throw new Error("문서에서 텍스트를 추출할 수 없습니다. (빈 문서이거나 호환되지 않는 버전입니다)");
+                }
+
                 const dummyImageSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect width="200" height="200" fill="#f1f5f9"/><text x="50%" y="50%" font-family="Arial" font-size="24" fill="#64748b" dominant-baseline="middle" text-anchor="middle">HWP 문서</text></svg>';
                 const dummyImage = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(dummyImageSvg)));
                 await analyzeImage(null, file.name, dummyImage, textContent);
@@ -450,7 +500,7 @@ async function processHWP(file) {
                 console.error('HWP parsing error', err);
                 const dummyErrorSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect width="200" height="200" fill="#f1f5f9"/><text x="50%" y="50%" font-family="Arial" font-size="24" fill="#ef4444" dominant-baseline="middle" text-anchor="middle">HWP 오류</text></svg>';
                 const dummyImage = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(dummyErrorSvg)));
-                await analyzeImage(null, file.name, dummyImage, "HWP 파일 파싱 중 오류가 발생했습니다. (이 형식의 HWP는 브라우저 파싱이 지원되지 않을 수 있습니다)");
+                await analyzeImage(null, file.name, dummyImage, "HWP 파일 파싱 중 오류가 발생했습니다: " + err.message);
             }
             resolve();
         };
