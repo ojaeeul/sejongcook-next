@@ -249,12 +249,12 @@ window.selectFolderNative = function() {
 async function handleFiles(files) {
     const validFiles = Array.from(files).filter(f => {
         const typeValid = f.type.startsWith('image/') || f.type === 'application/pdf';
-        const extValid = f.name.toLowerCase().match(/\.(jpg|jpeg|png|pdf|heic|hwp|xls|xlsx)$/);
+        const extValid = f.name.toLowerCase().match(/\.(jpg|jpeg|png|pdf|heic)$/);
         return typeValid || extValid;
     });
     
     if (validFiles.length === 0) {
-        alert('처리 가능한 파일이 없습니다. (JPG, PNG, PDF, HWP, 엑셀 지원)');
+        alert('폴더 또는 파일에 처리 가능한 이미지/PDF 파일이 없습니다. (JPG, PNG, PDF 지원)');
         return;
     }
 
@@ -266,13 +266,8 @@ async function handleFiles(files) {
     for (let i = 0; i < validFiles.length; i += CONCURRENCY_LIMIT) {
         const chunk = validFiles.slice(i, i + CONCURRENCY_LIMIT);
         const promises = chunk.map(file => {
-            const ext = file.name.toLowerCase().split('.').pop();
             if (file.type === 'application/pdf') {
                 return processPDF(file);
-            } else if (ext === 'hwp') {
-                return processHWP(file);
-            } else if (ext === 'xls' || ext === 'xlsx') {
-                return processExcel(file);
             } else {
                 return processImage(file);
             }
@@ -407,86 +402,6 @@ async function processImage(file) {
     });
 }
 
-async function processExcel(file) {
-    return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            try {
-                const data = new Uint8Array(e.target.result);
-                const workbook = XLSX.read(data, {type: 'array'});
-                let htmlStr = '';
-                workbook.SheetNames.forEach(sheet => {
-                    htmlStr += XLSX.utils.sheet_to_html(workbook.Sheets[sheet]);
-                });
-                
-                const dummyImgUrl = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="%23107c41"/><text x="50" y="50" fill="white" font-size="20" font-family="Arial" text-anchor="middle" dominant-baseline="middle">Excel</text></svg>';
-                
-                try {
-                    await analyzeImage(null, file.name, dummyImgUrl, htmlStr);
-                } catch(err) {
-                    console.error(err);
-                }
-                resolve();
-            } catch (err) {
-                console.error('Excel parse error', err);
-                resolve();
-            }
-        };
-        reader.onerror = () => resolve();
-        reader.readAsArrayBuffer(file);
-    });
-}
-
-async function processHWP(file) {
-    return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            try {
-                const data = new Uint8Array(e.target.result);
-                const cfb = CFB.read(data, {type: 'array'});
-                let extractedText = '';
-                
-                if (cfb.FullPaths) {
-                    cfb.FullPaths.forEach(path => {
-                        if (path.includes("BodyText/Section")) {
-                            const entry = CFB.find(cfb, path);
-                            if (entry && entry.content) {
-                                try {
-                                    const decompressed = pako.inflate(entry.content);
-                                    const decoder = new TextDecoder('utf-16le');
-                                    let text = decoder.decode(decompressed);
-                                    text = text.replace(/[^\uAC00-\uD7A3\u3130-\u318F\u1100-\u11FFa-zA-Z0-9\s.,?!%()\[\]{}:;'"\n]/g, '');
-                                    extractedText += text + "\n";
-                                } catch(err) {
-                                    console.log("HWP section extract err", err);
-                                }
-                            }
-                        }
-                    });
-                }
-                
-                if (!extractedText.trim()) {
-                    extractedText = "HWP 파일 내용 추출에 실패했거나 내용이 비어있습니다.";
-                }
-
-                const dummyImgUrl = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="%230f52ba"/><text x="50" y="50" fill="white" font-size="20" font-family="Arial" text-anchor="middle" dominant-baseline="middle">HWP</text></svg>';
-                
-                try {
-                    await analyzeImage(null, file.name, dummyImgUrl, extractedText);
-                } catch(err) {
-                    console.error(err);
-                }
-                resolve();
-            } catch (err) {
-                console.error('HWP parse error', err);
-                resolve();
-            }
-        };
-        reader.onerror = () => resolve();
-        reader.readAsArrayBuffer(file);
-    });
-}
-
 function createCardUI(title, imgUrl, id) {
     const grid = document.getElementById('resultsGrid');
     const card = document.createElement('div');
@@ -576,12 +491,12 @@ const CONCURRENCY_LIMIT = 5;
 let activeRequests = 0;
 const requestQueue = [];
 
-async function analyzeImage(base64Data, fileName, imgUrl, textContent = null) {
+async function analyzeImage(base64Data, fileName, imgUrl) {
     return new Promise((resolve) => {
         requestQueue.push(async () => {
             activeRequests++;
             try {
-                await executeAnalysis(base64Data, fileName, imgUrl, textContent);
+                await executeAnalysis(base64Data, fileName, imgUrl);
             } catch(e) {
                 console.error(e);
             } finally {
@@ -601,7 +516,7 @@ function processQueue() {
     }
 }
 
-async function executeAnalysis(base64Data, fileName, imgUrl, textContent = null) {
+async function executeAnalysis(base64Data, fileName, imgUrl) {
     const id = Date.now() + Math.floor(Math.random() * 1000);
     const card = createCardUI(fileName, imgUrl, id);
     
@@ -698,9 +613,7 @@ async function executeAnalysis(base64Data, fileName, imgUrl, textContent = null)
                 },
                 body: JSON.stringify({
                     contents: [{
-                        parts: textContent ? [
-                            { text: prompt + '\n\n[파일 내용]\n' + textContent }
-                        ] : [
+                        parts: [
                             { text: prompt },
                             { inlineData: { mimeType: 'image/jpeg', data: base64Data } }
                         ]
