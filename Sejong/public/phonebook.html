@@ -7,11 +7,11 @@
     <meta http-equiv="Expires" content="0">    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>전화번호부 - 세종요리</title>
-    <link rel="stylesheet" href="style.css?v=20260706-7">
+    <link rel="stylesheet" href="style.css?v=20260706-8">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="phonebook.js?v=20260706-7" defer></script>
+    <script src="phonebook.js?v=20260706-8" defer></script>
     <style>
                 .notebook-wrapper {
             display: block;
@@ -60,7 +60,7 @@
         }
 
         .binding {
-            width: 40px;
+            width: 26px;
             background: linear-gradient(to right, #e2e8f0 0%, #fcf9f2 20%, #e2e8f0 50%, #fcf9f2 80%, #e2e8f0 100%);
             position: relative;
             z-index: 10;
@@ -72,9 +72,8 @@
             position: absolute;
             top: 40px;
             bottom: 40px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 30px;
+            left: 0;
+            width: 100%;
             background-image: repeating-linear-gradient(
                 transparent, 
                 transparent 16px, 
@@ -261,6 +260,14 @@
             flex-wrap: wrap;
             gap: 4px;
             margin-left: 10px;
+        }
+
+        .hide-scrollbar {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
         }
 
         .course-badge {
@@ -822,7 +829,7 @@
             el.nextElementSibling.classList.toggle('show');
         }
     </script>
-    <script src="sidebar_sync.js?v=20260706-7"></script>
+    <script src="sidebar_sync.js?v=20260706-8"></script>
 </body>
 
 </html>
