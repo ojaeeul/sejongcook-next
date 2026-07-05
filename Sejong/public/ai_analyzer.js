@@ -419,7 +419,8 @@ async function processExcel(file) {
                     const htmlStr = XLSX.utils.sheet_to_html(workbook.Sheets[sheetName]);
                     fullText += "Sheet: " + sheetName + "\n" + htmlStr + "\n\n";
                 }
-                const dummyImage = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect width="200" height="200" fill="%23f1f5f9"/><text x="50%" y="50%" font-family="Arial" font-size="24" fill="%2364748b" dominant-baseline="middle" text-anchor="middle">Excel 문서</text></svg>';
+                const dummyImageSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect width="200" height="200" fill="#f1f5f9"/><text x="50%" y="50%" font-family="Arial" font-size="24" fill="#64748b" dominant-baseline="middle" text-anchor="middle">Excel 문서</text></svg>';
+                const dummyImage = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(dummyImageSvg)));
                 await analyzeImage(null, file.name, dummyImage, fullText);
             } catch(err) {
                 console.error('Excel parsing error', err);
@@ -442,11 +443,13 @@ async function processHWP(file) {
                 new window.HWPModule.Viewer(container, hwp);
                 const textContent = container.innerText || container.textContent || "내용을 추출할 수 없습니다.";
                 
-                const dummyImage = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect width="200" height="200" fill="%23f1f5f9"/><text x="50%" y="50%" font-family="Arial" font-size="24" fill="%2364748b" dominant-baseline="middle" text-anchor="middle">HWP 문서</text></svg>';
+                const dummyImageSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect width="200" height="200" fill="#f1f5f9"/><text x="50%" y="50%" font-family="Arial" font-size="24" fill="#64748b" dominant-baseline="middle" text-anchor="middle">HWP 문서</text></svg>';
+                const dummyImage = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(dummyImageSvg)));
                 await analyzeImage(null, file.name, dummyImage, textContent);
             } catch(err) {
                 console.error('HWP parsing error', err);
-                const dummyImage = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect width="200" height="200" fill="%23f1f5f9"/><text x="50%" y="50%" font-family="Arial" font-size="24" fill="%23ef4444" dominant-baseline="middle" text-anchor="middle">HWP 오류</text></svg>';
+                const dummyErrorSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect width="200" height="200" fill="#f1f5f9"/><text x="50%" y="50%" font-family="Arial" font-size="24" fill="#ef4444" dominant-baseline="middle" text-anchor="middle">HWP 오류</text></svg>';
+                const dummyImage = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(dummyErrorSvg)));
                 await analyzeImage(null, file.name, dummyImage, "HWP 파일 파싱 중 오류가 발생했습니다. (이 형식의 HWP는 브라우저 파싱이 지원되지 않을 수 있습니다)");
             }
             resolve();
