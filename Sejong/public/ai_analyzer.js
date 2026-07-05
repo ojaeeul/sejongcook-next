@@ -515,27 +515,18 @@ async function executeAnalysis(base64Data, fileName, imgUrl) {
 ]
 이름이나 글씨를 절대 유추해서 획일화하지 말고, 적혀있는 그대로(예: 민지영, 민수정, 민원기, 민종훈, 문다빈, 문승희 등) 정확하게 판독하세요. 찾을 수 없으면 빈 배열 []을 반환하세요. JSON 코드 블록 없이 순수 JSON 텍스트만 출력하세요.`;
     } else if (currentMode === 'exam') {
-        prompt = `이 이미지는 요리학원 수강생의 시험지(또는 평가지)입니다.
+        prompt = `이 이미지는 요리학원 수강생의 시험지(또는 평가지)이거나 일반 문서입니다.
 사진이 거꾸로(180도) 찍혀 있거나 옆으로 돌아가 있을 수 있으니, 글자 방향을 스스로 판단하여 이미지를 회전시킨 상태로 읽어주세요.
-사용자가 직접 펜으로 적은 글씨와 평가 내용, 점수 등을 완벽하게 인식해주세요.
 
-[중요 지시사항: 2~3번 교차 검증]
-이미지를 단번에 판단하지 말고, 2~3번에 걸쳐서 꼼꼼히 다시 읽고 확인하며 분석하세요.
-특히 시험 점수나 합격/불합격 여부를 절대 헷갈리지 않게 정확히 추출하세요.
-
-[데이터 추출 규칙 및 절대 주의사항]
-1. 글씨를 알아볼 수 없거나 비어있는 칸은 무조건 빈칸("")으로 처리하세요. 사진에 없는 내용을 지어내지 마세요. (No Hallucination)
-2. 이름에 숫자나 특수문자가 들어가는 등 판독이 도저히 불가능한 경우는 지어내지 말고 무조건 빈칸("")으로 두세요.
+[중요 지시사항]
+1. 이미지를 단번에 판단하지 말고, 꼼꼼히 읽고 확인하며 분석하세요.
+2. 특정 표나 항목 단위로 나누지 말고, 이미지에 적혀 있는 모든 글자, 문항, 답변, 평가, 낙서 등을 페이지의 흐름(위에서 아래, 좌에서 우)에 따라 원본 그대로 모두 타이핑하세요.
+3. 원본의 줄바꿈과 띄어쓰기를 최대한 유지하세요.
+4. 사진에 없는 내용을 지어내지 마세요. (No Hallucination)
 
 다음 정보를 추출하여 정확히 아래 형식의 JSON 객체로 반환하세요. JSON 코드 블록 없이 순수 JSON 텍스트만 출력하세요.
 {
-    "성명": "응시자 이름",
-    "시험명": "시험 과목 또는 종류 (없으면 빈칸)",
-    "시험일자": "시험을 본 날짜 (YYYY-MM-DD 형식, 없으면 빈칸)",
-    "점수": "시험 점수 (숫자만, 없으면 빈칸)",
-    "결과": "합격 또는 불합격 (없으면 빈칸)",
-    "피드백": "강사 코멘트나 메모, 감점 사유 등 (없으면 빈칸)",
-    "전체내용": "페이지에 적힌 모든 글자와 내용 (문항, 답변, 평가 등)을 있는 그대로 전부 적어주세요. 줄바꿈을 포함하여 원본 그대로 유지하세요."
+    "전체내용": "여기에 이미지의 모든 텍스트를 줄바꿈을 포함하여 원본 그대로 입력"
 }`;
     } else {
         prompt = `이 이미지는 요리학원의 수강생 등록 원서입니다. 
@@ -710,36 +701,10 @@ function renderExamResult(id, data) {
     const content = document.getElementById(`content-${id}`);
     
     const html = `
-        <table class="dark-table" style="margin-top:10px;">
-            <tr>
-                <td class="th-dark" style="width:30%;">성명</td>
-                <td><input type="text" class="result-input" data-id="${id}" data-field="성명" value="${data['성명'] || ''}"></td>
-            </tr>
-            <tr>
-                <td class="th-dark">시험명</td>
-                <td><input type="text" class="result-input" data-id="${id}" data-field="시험명" value="${data['시험명'] || ''}"></td>
-            </tr>
-            <tr>
-                <td class="th-dark">시험일자</td>
-                <td><input type="text" class="result-input" data-id="${id}" data-field="시험일자" value="${data['시험일자'] || ''}"></td>
-            </tr>
-            <tr>
-                <td class="th-dark">점수</td>
-                <td><input type="text" class="result-input" data-id="${id}" data-field="점수" value="${data['점수'] || ''}"></td>
-            </tr>
-            <tr>
-                <td class="th-dark">결과</td>
-                <td><input type="text" class="result-input" data-id="${id}" data-field="결과" value="${data['결과'] || ''}"></td>
-            </tr>
-            <tr>
-                <td class="th-dark">피드백</td>
-                <td><input type="text" class="result-input" data-id="${id}" data-field="피드백" value="${data['피드백'] || ''}"></td>
-            </tr>
-            <tr>
-                <td class="th-dark">전체내용</td>
-                <td><textarea class="result-input" data-id="${id}" data-field="전체내용" style="width:100%; min-height:100px; resize:vertical; padding:4px; font-size:14px;">${data['전체내용'] || ''}</textarea></td>
-            </tr>
-        </table>
+        <div style="margin-top:10px;">
+            <div style="margin-bottom: 5px; font-weight: bold; color: #334155; font-size: 0.9rem;">전체내용</div>
+            <textarea class="result-input" data-id="${id}" data-field="전체내용" style="width:100%; min-height:300px; resize:vertical; padding:10px; font-size:14px; border:1px solid #cbd5e1; border-radius:6px; background:#f8fafc; font-family:inherit; line-height:1.5;">${data['전체내용'] || ''}</textarea>
+        </div>
         <div style="display:flex; justify-content:flex-end; margin-top:10px; gap:8px;">
             <button onclick="copyExamData('${id}')" style="background:#475569; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:0.85rem;">복사하기</button>
         </div>
@@ -755,7 +720,7 @@ window.copyExamData = function(id) {
         dataMap[inp.dataset.field] = inp.value;
     });
     
-    const copyText = `성명: ${dataMap['성명']}\\n시험명: ${dataMap['시험명']}\\n시험일자: ${dataMap['시험일자']}\\n점수: ${dataMap['점수']}\\n결과: ${dataMap['결과']}\\n피드백: ${dataMap['피드백']}\\n\\n[전체내용]\\n${dataMap['전체내용']}`;
+    const copyText = dataMap['전체내용'] || '';
     
     navigator.clipboard.writeText(copyText).then(() => {
         alert('시험지 결과가 복사되었습니다!');
