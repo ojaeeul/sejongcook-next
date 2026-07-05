@@ -4,15 +4,18 @@
 
 window.syncSidebar = async function (forceData = null) {
     try {
-        let courses = [];
-        if (forceData && forceData.courses) {
-            courses = forceData.courses;
+        let allExamCourses = [];
+        if (forceData) {
+            allExamCourses = forceData;
         } else {
-            const res = await fetch(`/api/sejong/settings?t=${Date.now()}`);
+            const res = await fetch(`/api/sejong/exam-courses?t=${Date.now()}`);
             if (res.ok) {
                 const data = await res.json();
-                let settings = Array.isArray(data) && data.length > 0 ? data[0] : (data.key === "settings" ? data.value : data);
-                courses = settings.courses || ["한식기능사", "양식기능사", "일식기능사", "중식기능사", "제과기능사", "제빵기능사", "제과제빵기능사", "복어기능사", "산업기사", "가정요리", "브런치"];
+                if(Array.isArray(data) && data.length > 0 && typeof data[0] === 'string') {
+                    allExamCourses = [{category: '기본과정', courses: data}];
+                } else if(Array.isArray(data)) {
+                    allExamCourses = data;
+                }
             } else {
                 return;
             }
@@ -44,21 +47,34 @@ window.syncSidebar = async function (forceData = null) {
 
         if (examMenu && examMenu.classList.contains('nav-sub-menu')) {
             let html = '';
-            courses.forEach(course => {
-                let prefix = course.replace("기능사", "");
-                if (course === "제과제빵기능사") prefix = "제과제빵";
-                
-                html += `<div class="nav-category toggle-category" onclick="if(typeof toggleNavSub === 'function') toggleNavSub(this)">${course}</div>\n`;
+            allExamCourses.forEach(catObj => {
+                // Category Level
+                html += `<div class="nav-category toggle-category" onclick="if(typeof toggleNavSub === 'function') toggleNavSub(this)">📁 ${catObj.category}</div>\n`;
                 html += `<div class="nav-sub-menu">\n`;
                 
-                // 기본 과목 중 시험이 없는 항목은 준비중 표시 유지
-                if (["산업기사", "가정요리", "브런치"].includes(course)) {
-                    html += `    <a href="javascript:void(0)" class="nav-item">준비중입니다</a>\n`;
+                if (catObj.courses && catObj.courses.length > 0) {
+                    catObj.courses.forEach(course => {
+                        let prefix = course.replace("기능사", "");
+                        if (course === "제과제빵기능사") prefix = "제과제빵";
+                        
+                        // Sub-course Level
+                        html += `    <div class="nav-category toggle-category" onclick="if(typeof toggleNavSub === 'function') toggleNavSub(this)" style="padding-left: 20px; font-size: 0.9rem;">${course}</div>\n`;
+                        html += `    <div class="nav-sub-menu">\n`;
+                        
+                        // 기본 과목 중 시험이 없는 항목은 준비중 표시 유지
+                        if (["산업기사", "가정요리", "브런치", "쿠킹클래스", "베이킹 원데이", "취미요리"].includes(course)) {
+                            html += `        <a href="javascript:void(0)" class="nav-item" style="padding-left: 30px;">준비중입니다</a>\n`;
+                        } else {
+                            for (let year = 2021; year <= 2026; year++) {
+                                html += `        <a href="javascript:void(0)" onclick="if(typeof loadExamView === 'function') loadExamView('${prefix}_${year}')" class="nav-item" style="padding-left: 30px;">${year}년 ${prefix}</a>\n`;
+                            }
+                        }
+                        html += `    </div>\n`;
+                    });
                 } else {
-                    for (let year = 2021; year <= 2026; year++) {
-                        html += `    <a href="javascript:void(0)" onclick="if(typeof loadExamView === 'function') loadExamView('${prefix}_${year}')" class="nav-item">${year}년 ${prefix}</a>\n`;
-                    }
+                    html += `    <a href="javascript:void(0)" class="nav-item" style="padding-left: 20px; color:#94a3b8;">과정 없음</a>\n`;
                 }
+                
                 html += `</div>\n`;
             });
             examMenu.innerHTML = html;

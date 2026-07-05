@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>AI 스마트 원서 분석 - 세종요리제과학원</title>
-    <link rel="stylesheet" href="style.css?v=20260706-23">
+    <link rel="stylesheet" href="style.css?v=20260706-24">
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -422,7 +422,7 @@
                 </div>
                 <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">기타</div>
                 <div class="nav-sub-menu show">
-                    <a href="ai_analyzer.html?openSettings=true" id="navExamSettings" class="nav-item">
+                    <a href="exam_settings.html" id="navExamSettings" class="nav-item">
                         <span class="material-icons" style="font-size: 1.2rem; margin-right: 8px;">fact_check</span>
                         시험지 설정
                     </a>
@@ -501,27 +501,9 @@
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
     <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';</script>
-    <script src="sidebar_sync.js?v=20260706-23"></script>
-    <!-- Course Settings Modal -->
-    <div id="courseSettingsModal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center;">
-        <div style="background:white; padding:30px; border-radius:12px; width:500px; max-width:95%; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <h2 style="margin:0; font-size:1.2rem; color:#1e293b;"><i class="fas fa-folder-tree"></i> 과정 폴더 설정</h2>
-                <button onclick="closeCourseSettingsModal()" style="background:none; border:none; font-size:1.2rem; cursor:pointer; color:#64748b;">&times;</button>
-            </div>
-            
-            <div id="courseListContainer" style="max-height:400px; overflow-y:auto; margin-bottom:20px; border:1px solid #e2e8f0; border-radius:8px; padding:10px; background:#f8fafc;">
-                <!-- 과정 폴더 목록 리스트 -->
-            </div>
-            
-            <div style="display:flex; gap:10px;">
-                <input type="text" id="newCategoryInput" placeholder="새 상위 폴더(대분류) 이름" style="flex:1; padding:8px; border:1px solid #cbd5e1; border-radius:6px;">
-                <button onclick="addExamCategory()" style="background:#2563eb; color:white; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:bold;"><i class="fas fa-folder-plus"></i> 폴더 추가</button>
-            </div>
-        </div>
-    </div>
+    <script src="sidebar_sync.js?v=20260706-24"></script>
 
-    <script src="ai_analyzer.js?v=20260706-23"></script>
+    <script src="ai_analyzer.js?v=20260706-24"></script>
     <script>
         function toggleSidebar() {
             document.querySelector('.sidebar').classList.toggle('active');

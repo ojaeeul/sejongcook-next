@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI 스마트 원서 분석 - 세종요리제과학원</title>
+    <link rel="stylesheet" href="style.css?v=20260706-24">
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .analyzer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .upload-zone {
+            border: 2px dashed #4ade80;
+            border-radius: 16px;
+            padding: 60px 20px;
+            text-align: center;
+            background: #ffffff;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin-bottom: 30px;
+        }
+        
+        .upload-zone:hover, .upload-zone.dragover {
+            background: rgba(74, 222, 128, 0.15);
+            border-color: #22c55e;
+            transform: translateY(-2px);
+        }
+        
+        .upload-icon {
+            font-size: 48px;
+            color: #4ade80;
+            margin-bottom: 15px;
+        }
+        
+        .upload-text {
+            font-size: 1.2rem;
+            color: #1e293b;
+            margin-bottom: 10px;
+        }
+        
+        .upload-subtext {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+        
+        .mode-selector {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            justify-content: center;
+        }
+        
+        .mode-btn {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            color: #64748b;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .mode-btn.active {
+            background: #4ade80;
+            color: #ffffff;
+            border-color: #4ade80;
+            box-shadow: 0 0 15px rgba(74, 222, 128, 0.3);
+        }
+        
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(min(100%, 450px), 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .result-card {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .result-card.success::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: #4ade80;
+        }
+        
+        .result-card.processing::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: #fbbf24;
+            animation: pulse 1.5s infinite;
+        }
+        
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #cbd5e1;
+            padding-bottom: 10px;
+        }
+        
+        .result-title {
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 1.1rem;
+        }
+        
+        .result-status {
+            font-size: 0.85rem;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        
+        .status-processing { background: rgba(251, 191, 36, 0.2); color: #d97706; }
+        .status-success { background: rgba(74, 222, 128, 0.2); color: #15803d; }
+        .status-error { background: rgba(239,68,68,0.2); color: #b91c1c; }
+
+        /* Scanner Animation */
+        .image-container {
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+            border-radius: 4px;
+        }
+        .scanner-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: #10b981;
+            box-shadow: 0 0 15px 2px #10b981;
+            animation: scan-horizontal 2s ease-in-out infinite;
+            z-index: 10;
+        }
+        @keyframes scan-horizontal {
+            0% { left: 0%; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { left: calc(100% - 4px); opacity: 0; }
+        }
+        
+        .form-group {
+            margin-bottom: 12px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-bottom: 4px;
+        }
+        
+        .form-group input {
+            width: 100%;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            color: #1e293b;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-family: inherit;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #4ade80;
+            box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.2);
+        }
+        
+        .image-preview {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #cbd5e1;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .image-preview:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+        
+        .editable-input {
+            width: 100%;
+            background: #ffffff !important;
+            border: 1px solid #cbd5e1 !important;
+            color: #000000 !important;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 6px;
+            border-radius: 4px;
+            transition: all 0.2s;
+            box-sizing: border-box;
+        }
+        .editable-input:hover {
+            border: 1px solid #94a3b8 !important;
+            background: #f8fafc !important;
+        }
+        .editable-input:focus {
+            outline: none;
+            border: 1px solid #4ade80 !important;
+            background: #ffffff !important;
+            box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.2);
+        }
+        
+        /* Image Modal */
+        .image-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 9999;
+        }
+        .modal-scroll-area {
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            text-align: center;
+            cursor: zoom-out;
+            padding-bottom: 100px;
+        }
+        .modal-scroll-area::before {
+            content: '';
+            display: inline-block;
+            height: 100%;
+            vertical-align: middle;
+        }
+        .image-modal img {
+            display: inline-block;
+            vertical-align: middle;
+            max-width: 90vw;
+            max-height: 90vh;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            transition: width 0.2s ease, transform 0.2s ease;
+            cursor: text; /* 텍스트 선택용 커서 */
+        }
+        .image-modal-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: #fff;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 10000;
+        }
+        .modal-controls {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 10000;
+        }
+        .btn-modal {
+            background: rgba(15, 23, 42, 0.9);
+            color: #fff;
+            border: 1px solid #475569;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        .btn-modal:hover {
+            background: #1e293b;
+            border-color: #4ade80;
+            color: #4ade80;
+        }
+        .image-modal-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: #fff;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .card-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #cbd5e1;
+        }
+        
+        .btn-save {
+            flex: 1;
+            background: #4ade80;
+            color: #ffffff;
+            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-save:hover {
+            background: #22c55e;
+        }
+        
+        .btn-delete {
+            background: rgba(248, 113, 113, 0.1);
+            color: #f87171;
+            border: 1px solid rgba(248, 113, 113, 0.3);
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-delete:hover {
+            background: rgba(248, 113, 113, 0.2);
+        }
+        
+        .progress-container {
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .progress-bar-bg {
+            background: #e2e8f0;
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .progress-bar-fill {
+            background: #4ade80;
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .progress-text {
+            text-align: right;
+            font-size: 0.9rem;
+            color: #94a3b8;
+            margin-top: 5px;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        .dark-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid #cbd5e1;
+            margin-bottom: 15px;
+            font-size: 13px;
+        }
+        .dark-table td {
+            border: 1px solid #cbd5e1;
+            padding: 8px 5px;
+            color: #1e293b;
+        }
+        .dark-table .th-dark {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #334155;
+            text-align: center;
+        }
+        .dark-table input::placeholder {
+            color: #9ca3af;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation (To be injected via sidebar_sync.js) -->
+        <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+        <aside class="sidebar">
+            <div class="brand-logo">
+                <span class="logo-text">세종요리</span>
+            </div>
+            <nav class="sidebar-nav" id="sidebarNav">
+                <!-- Injected via sidebar_sync.js -->
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="header">
+                <div class="header-left">
+                    <button class="menu-toggle" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div class="header-title">시험지 과정 폴더 설정</div>
+                </div>
+            </header>
+
+            <div class="analyzer-container" style="max-width: 800px; margin-top: 30px;">
+                <div style="background:white; padding:30px; border-radius:12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                        <h2 style="margin:0; font-size:1.4rem; color:#1e293b;"><i class="fas fa-folder-tree"></i> 과정 폴더(대분류/소분류) 관리</h2>
+                    </div>
+                    
+                    <div id="courseListContainer" style="min-height:300px; max-height:600px; overflow-y:auto; margin-bottom:20px; border:1px solid #e2e8f0; border-radius:8px; padding:15px; background:#f8fafc;">
+                        <!-- 과정 폴더 목록 리스트 -->
+                    </div>
+                    
+                    <div style="display:flex; gap:10px; margin-top:20px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+                        <input type="text" id="newCategoryInput" placeholder="새 상위 폴더(대분류) 이름 입력" style="flex:1; padding:12px; border:1px solid #cbd5e1; border-radius:6px; font-size: 1rem;">
+                        <button onclick="addExamCategory()" style="background:#2563eb; color:white; border:none; padding:12px 24px; border-radius:6px; cursor:pointer; font-weight:bold; font-size: 1rem;"><i class="fas fa-folder-plus"></i> 새 폴더 추가</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="sidebar_sync.js?v=20260706-24"></script>
+    <script src="exam_settings.js?v=20260706-24"></script>
+    <script>
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('active');
+            document.querySelector('.sidebar-overlay').classList.toggle('active');
+        }
+        function toggleNavSub(element) {
+            const subMenu = element.nextElementSibling;
+            if(subMenu && subMenu.classList.contains('nav-sub-menu')) {
+                subMenu.classList.toggle('show');
+                element.classList.toggle('active');
+            }
+        }
+    </script>
+</body>
+</html>
