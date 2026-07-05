@@ -925,21 +925,7 @@ function openEditModal(memberId) {
             editForm.paper_date.value = member.registeredDate || '';
         }
 
-        // Parse Courses for checkboxes
-        const cStr = member.course || '';
-        if (editForm.course_bake) editForm.course_bake.checked = cStr.includes('제과');
-        if (editForm.course_bread) editForm.course_bread.checked = cStr.includes('제빵');
-        if (editForm.course_korean) editForm.course_korean.checked = cStr.includes('한식');
-        if (editForm.course_western) editForm.course_western.checked = cStr.includes('양식');
-        if (editForm.course_japanese) editForm.course_japanese.checked = cStr.includes('일식');
-        if (editForm.course_chinese) editForm.course_chinese.checked = cStr.includes('중식');
-        if (editForm.course_puffer) editForm.course_puffer.checked = cStr.includes('복어');
 
-        if (editForm.time_10_00) editForm.time_10_00.checked = cStr.includes('10:00') || cStr.includes('10시');
-        if (editForm.time_10) editForm.time_10.checked = false; // Using 10:00 as primary
-        if (editForm.time_12) editForm.time_12.checked = cStr.includes('12:00');
-        if (editForm.time_17) editForm.time_17.checked = cStr.includes('17:00') || cStr.includes('5시');
-        if (editForm.time_19) editForm.time_19.checked = cStr.includes('19:00') || cStr.includes('7시');
         // Auto fill tuition if empty based on selected courses
         if (window.autoFillEditTuition) window.autoFillEditTuition();
         
@@ -1008,32 +994,7 @@ async function handleEditSubmit(e) {
         })
         .filter(v => v !== '');
 
-    // Read course checkboxes added from AI analyzer layout
-    const courses = [];
-    if (data.course_bake === 'on') courses.push("제과");
-    if (data.course_bread === 'on') courses.push("제빵");
-    if (data.course_korean === 'on') courses.push("한식");
-    if (data.course_western === 'on') courses.push("양식");
-    if (data.course_japanese === 'on') courses.push("일식");
-    if (data.course_chinese === 'on') courses.push("중식");
-    if (data.course_puffer === 'on') courses.push("복어");
 
-    const times = [];
-    if (data.time_10_00 === 'on') times.push("10:00");
-    if (data.time_10 === 'on') times.push("10:00"); // 10시는 10:00으로 통일
-    if (data.time_12 === 'on') times.push("12:00");
-    if (data.time_17 === 'on') times.push("17:00");
-    if (data.time_19 === 'on') times.push("19:00");
-    const timeStr = times.length > 0 ? `(${times.join(',')})` : '';
-
-    if (courses.length > 0) {
-        courseValues.push(courses.map(c => c + timeStr).join(', '));
-    }
-
-    // Cleanup checkbox data so it doesn't get sent to server as raw fields
-    delete data.course_bake; delete data.course_bread; delete data.course_korean;
-    delete data.course_western; delete data.course_japanese; delete data.course_chinese; delete data.course_puffer;
-    delete data.time_10_00; delete data.time_10; delete data.time_12; delete data.time_17; delete data.time_19;
 
     // --- Automatic Merging Exception Logic ---
     const jevaIdx = courseValues.findIndex(v => v.startsWith('제과기능사('));
