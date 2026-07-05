@@ -702,8 +702,14 @@ function addRegisterCourseInput(initialName = '', initialTime = '') {
 }
 
 function openEditModal(memberId) {
-    const member = members.find(m => m.id === memberId);
-    if (!member) return;
+    let member = members.find(m => m.id === memberId);
+    if (!member && window.sliderMembers) {
+        member = window.sliderMembers.find(m => m.id === memberId);
+    }
+    if (!member) {
+        alert("선택한 수강생 정보를 찾을 수 없습니다.");
+        return;
+    }
 
     if (editForm) {
         editForm.elements['id'].value = member.id;
@@ -2754,6 +2760,7 @@ window.open3DSliderForDate = async function(dateStr) {
         // Fetch all members to ensure we have fresh data
         const res = await fetch(`/api/sejong/members?t=${Date.now()}`);
         const allMembers = await res.json();
+        window.sliderMembers = allMembers;
         
         // Filter by registeredDate or start_date matching dateStr
         const filtered = allMembers.filter(m => (m.registeredDate === dateStr) || (m.start_date === dateStr));
