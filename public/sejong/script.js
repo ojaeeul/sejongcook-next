@@ -1147,7 +1147,7 @@ async function handleEditSubmit(e) {
     delete data.tuition; delete data.tool_fee; delete data.total_fee;
     delete data.locker; delete data.book_prac; delete data.book_theory; delete data.book_price; delete data.paper_date;
 
-    const existingMember = members.find(m => m.id === data.id);
+    const existingMember = members.find(m => String(m.id) === String(data.id));
     let finalData = data;
 
     if (existingMember) {
@@ -1216,7 +1216,7 @@ function openEditConfirmModal(memberId) {
     targetMemberIdForEdit = memberId;
     if (modal) {
         // Find member to show name
-        const member = members.find(m => m.id === memberId);
+        const member = members.find(m => String(m.id) === String(memberId));
         const titleEl = document.getElementById('editConfirmTitle');
         if (titleEl && member) {
             titleEl.textContent = `${member.name} 학생의 정보를 수정하시겠습니까?`;
@@ -2201,7 +2201,7 @@ window.handleStatusChange = async function (e, memberId) {
     const selectEl = e.target;
     const newStatus = selectEl.value;
     const prevStatus = selectEl.dataset.prev;
-    const member = members.find(m => m.id === memberId);
+    const member = members.find(m => String(m.id) === String(memberId));
 
     if (!member) {
         alert("수강생 정보를 찾을 수 없습니다.");
