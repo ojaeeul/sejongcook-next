@@ -519,14 +519,15 @@ async function executeAnalysis(base64Data, fileName, imgUrl) {
 사진이 거꾸로(180도) 찍혀 있거나 옆으로 돌아가 있을 수 있으니, 글자 방향을 스스로 판단하여 이미지를 회전시킨 상태로 읽어주세요.
 
 [중요 지시사항]
-1. 이미지를 단번에 판단하지 말고, 꼼꼼히 읽고 확인하며 분석하세요.
-2. 특정 표나 항목 단위로 나누지 말고, 이미지에 적혀 있는 모든 글자, 문항, 답변, 평가, 낙서 등을 페이지의 흐름(위에서 아래, 좌에서 우)에 따라 원본 그대로 모두 타이핑하세요.
-3. 원본의 줄바꿈과 띄어쓰기를 최대한 유지하세요.
-4. 사진에 없는 내용을 지어내지 마세요. (No Hallucination)
+1. 사용자는 이 이미지에 있는 텍스트뿐만 아니라 그림, 도형, 그래프, 3D 이미지, 표, 수식, 배치 등 모든 시각적 요소가 완벽하게 동일하게 보이는 '웹 페이지(HTML/CSS)'를 원합니다.
+2. 이미지의 전체적인 레이아웃, 색상, 여백, 선, 폰트 스타일, 크기를 CSS를 사용하여 원본과 똑같이 구현하세요.
+3. 표, 그래프, 도형, 3D 요소, 그림 등은 반드시 HTML 요소나 SVG, CSS 스타일을 이용하여 시각적으로 최대한 원본과 똑같이 묘사하고 그려내세요. 절대 텍스트로만 대충 넘기지 마세요.
+4. 모든 코드는 하나의 <div> 컨테이너 안에 들어가야 하며, 인라인 CSS 또는 <style> 태그를 사용하여 독립적으로 렌더링되게 하세요. JavaScript는 제외하세요.
+5. 사진에 없는 내용을 지어내지 마세요. (No Hallucination)
 
 다음 정보를 추출하여 정확히 아래 형식의 JSON 객체로 반환하세요. JSON 코드 블록 없이 순수 JSON 텍스트만 출력하세요.
 {
-    "전체내용": "여기에 이미지의 모든 텍스트를 줄바꿈을 포함하여 원본 그대로 입력"
+    "전체내용": "여기에 작성된 완벽한 HTML/CSS/SVG 코드를 줄바꿈 포함하여 입력하세요."
 }`;
     } else {
         prompt = `이 이미지는 요리학원의 수강생 등록 원서입니다. 
@@ -702,8 +703,11 @@ function renderExamResult(id, data) {
     
     const html = `
         <div style="margin-top:10px;">
-            <div style="margin-bottom: 5px; font-weight: bold; color: #334155; font-size: 0.9rem;">전체내용</div>
-            <textarea class="result-input" data-id="${id}" data-field="전체내용" style="width:100%; min-height:300px; resize:vertical; padding:10px; font-size:14px; border:1px solid #cbd5e1; border-radius:6px; background:#f8fafc; font-family:inherit; line-height:1.5;">${data['전체내용'] || ''}</textarea>
+            <div style="margin-bottom: 5px; font-weight: bold; color: #334155; font-size: 0.9rem;">분석 결과 (원본 페이지 재현)</div>
+            <div style="width:100%; min-height:300px; padding:20px; border:1px solid #cbd5e1; border-radius:6px; background:#fff; overflow:auto; color:#000;">
+                ${data['전체내용'] || ''}
+            </div>
+            <textarea class="result-input" data-id="${id}" data-field="전체내용" style="display:none;">${data['전체내용'] || ''}</textarea>
         </div>
         <div style="display:flex; justify-content:flex-end; margin-top:10px; gap:8px;">
             <button onclick="copyExamData('${id}')" style="background:#475569; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:0.85rem;">복사하기</button>
