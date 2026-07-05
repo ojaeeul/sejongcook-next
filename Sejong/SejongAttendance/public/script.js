@@ -3163,8 +3163,8 @@ window.open3DSliderForDate = async function(dateStr, targetMemberId = null) {
             const slide = document.createElement('div');
             slide.className = 'swiper-slide';
             slide.style.cursor = 'pointer';
-            slide.title = '더블 클릭하여 수강생 정보를 수정하세요';
-            slide.ondblclick = () => {
+            slide.title = '클릭하여 수강생 정보를 수정하세요';
+            slide.onclick = () => {
                 if (typeof openEditModal === 'function') {
                     openEditModal(m.id);
                 }
