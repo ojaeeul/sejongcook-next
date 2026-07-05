@@ -864,52 +864,47 @@ function openEditModal(memberId) {
         editForm.job.value = member.job || '';
         
         let displayNotes = member.notes || '';
-        let displayTuition = member.tuition || '';
-        let displayToolFee = member.tool_fee || '';
-        let displayAmount = member.amount || member.total_fee || '';
-        let displayLocker = member.locker || '';
-        let displayBookPrice = member.book_price || '';
-        let pracChecked = member.book_prac === 'Y' || false;
-        let theoryChecked = member.book_theory === 'Y' || false;
+        let displayTuition = '', displayToolFee = '', displayAmount = '', displayLocker = '', displayBookPrice = '';
+        let pracChecked = false, theoryChecked = false;
         
         const tuitionMatch = displayNotes.match(/수강료\s*[:\-]?\s*([\d,]+)(원)?/);
         if (tuitionMatch) {
-            if (!displayTuition) displayTuition = tuitionMatch[1].replace(/,/g, '');
+            displayTuition = tuitionMatch[1].replace(/,/g, '');
             displayNotes = displayNotes.replace(/수강료\s*[:\-]?\s*([\d,]+)(원)?\n?/g, '').trim();
         }
         
         // Parse Books
         const bookPracMatch = displayNotes.match(/실기책/);
         if (bookPracMatch) {
-            if (!pracChecked) pracChecked = true;
+            pracChecked = true;
             displayNotes = displayNotes.replace(/실기책,?\s*/g, '').trim();
         }
         const bookTheoryMatch = displayNotes.match(/필기책/);
         if (bookTheoryMatch) {
-            if (!theoryChecked) theoryChecked = true;
+            theoryChecked = true;
             displayNotes = displayNotes.replace(/필기책,?\s*/g, '').trim();
         }
         const bookPriceMatch = displayNotes.match(/\(?책값\s*[:\-]?\s*([\d,]+)(원)?\)?/);
         if (bookPriceMatch) {
-            if (!displayBookPrice) displayBookPrice = bookPriceMatch[1].replace(/,/g, '');
+            displayBookPrice = bookPriceMatch[1].replace(/,/g, '');
             displayNotes = displayNotes.replace(/\(?책값\s*[:\-]?\s*([\d,]+)(원)?\)?\n?/g, '').trim();
         }
 
         const toolMatch = displayNotes.match(/도구비\s*[:\-]?\s*([\d,]+)(원)?/);
         if (toolMatch) {
-            if (!displayToolFee) displayToolFee = toolMatch[1].replace(/,/g, '');
+            displayToolFee = toolMatch[1].replace(/,/g, '');
             displayNotes = displayNotes.replace(/도구비\s*[:\-]?\s*([\d,]+)(원)?\n?/g, '').trim();
         }
 
         const lockerMatch = displayNotes.match(/락카\s*[:\-]?\s*([^\n,]+)/);
         if (lockerMatch) {
-            if (!displayLocker) displayLocker = lockerMatch[1].trim();
+            displayLocker = lockerMatch[1].trim();
             displayNotes = displayNotes.replace(/락카\s*[:\-]?\s*([^\n,]+)\n?/g, '').trim();
         }
 
         const amountMatch = displayNotes.match(/(?:총)?결제금액\s*[:\-]?\s*([\d,]+)(원)?/);
         if (amountMatch) {
-            if (!displayAmount) displayAmount = amountMatch[1].replace(/,/g, '');
+            displayAmount = amountMatch[1].replace(/,/g, '');
             displayNotes = displayNotes.replace(/(?:총)?결제금액\s*[:\-]?\s*([\d,]+)(원)?\n?/g, '').trim();
         }
         
@@ -1112,22 +1107,45 @@ async function handleEditSubmit(e) {
     if (data.job_other !== undefined) delete data.job_other;
 
     // ------------------------------------------
-    // Save fees properly as top-level properties
-    data.tuition = data.tuition ? data.tuition.replace(/,/g, '') : '';
-    data.tool_fee = data.tool_fee ? data.tool_fee.replace(/,/g, '') : '';
-    data.amount = data.total_fee ? data.total_fee.replace(/,/g, '') : '';
-    data.locker = data.locker ? data.locker.trim() : '';
-    data.book_price = data.book_price ? data.book_price.replace(/,/g, '') : '';
-    data.book_prac = data.book_prac === 'on' ? 'Y' : 'N';
-    data.book_theory = data.book_theory === 'on' ? 'Y' : 'N';
+    // Data Preservation Logic: Merge new data into existing member object 
+    // to ensure no fields (like memo, status, etc.) are lost.
+    
+    // Combine fees and other extras back into notes
+    let updatedNotes = data.notes || '';
+    let appendedFees = [];
+    if (data.tuition && data.tuition.trim() !== '') appendedFees.push(`수강료: ${data.tuition.replace(/,/g, '')}`);
+    if (data.tool_fee && data.tool_fee.trim() !== '') appendedFees.push(`도구비: ${data.tool_fee.replace(/,/g, '')}`);
+    
+    // Books
+    let books = [];
+    if (data.book_prac === 'on') books.push('실기책');
+    if (data.book_theory === 'on') books.push('필기책');
+    if (books.length > 0) {
+        let bookStr = books.join(',');
+        if (data.book_price && data.book_price.trim() !== '') {
+            bookStr += `(책값: ${data.book_price.replace(/,/g, '')})`;
+        }
+        appendedFees.push(bookStr);
+    } else if (data.book_price && data.book_price.trim() !== '') {
+        appendedFees.push(`책값: ${data.book_price.replace(/,/g, '')}`);
+    }
+
+    if (data.locker && data.locker.trim() !== '') appendedFees.push(`락카: ${data.locker}`);
+    if (data.total_fee && data.total_fee.trim() !== '') appendedFees.push(`총결제금액: ${data.total_fee.replace(/,/g, '')}`);
+    
+    if (appendedFees.length > 0) {
+        if (updatedNotes) updatedNotes += '\n';
+        updatedNotes += appendedFees.join(', ');
+    }
+    data.notes = updatedNotes;
     
     // Process registered date
     if (data.paper_date) {
         data.registeredDate = data.paper_date;
     }
 
-    delete data.total_fee; // DB uses amount
-    delete data.paper_date;
+    delete data.tuition; delete data.tool_fee; delete data.total_fee;
+    delete data.locker; delete data.book_prac; delete data.book_theory; delete data.book_price; delete data.paper_date;
 
     const existingMember = members.find(m => m.id === data.id);
     let finalData = data;
