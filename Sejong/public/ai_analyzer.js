@@ -534,7 +534,8 @@ async function executeAnalysis(base64Data, fileName, imgUrl) {
     "시험일자": "시험을 본 날짜 (YYYY-MM-DD 형식, 없으면 빈칸)",
     "점수": "시험 점수 (숫자만, 없으면 빈칸)",
     "결과": "합격 또는 불합격 (없으면 빈칸)",
-    "피드백": "강사 코멘트나 메모, 감점 사유 등 (없으면 빈칸)"
+    "피드백": "강사 코멘트나 메모, 감점 사유 등 (없으면 빈칸)",
+    "전체내용": "페이지에 적힌 모든 글자와 내용 (문항, 답변, 평가 등)을 있는 그대로 전부 적어주세요. 줄바꿈을 포함하여 원본 그대로 유지하세요."
 }`;
     } else {
         prompt = `이 이미지는 요리학원의 수강생 등록 원서입니다. 
@@ -734,6 +735,10 @@ function renderExamResult(id, data) {
                 <td class="th-dark">피드백</td>
                 <td><input type="text" class="result-input" data-id="${id}" data-field="피드백" value="${data['피드백'] || ''}"></td>
             </tr>
+            <tr>
+                <td class="th-dark">전체내용</td>
+                <td><textarea class="result-input" data-id="${id}" data-field="전체내용" style="width:100%; min-height:100px; resize:vertical; padding:4px; font-size:14px;">${data['전체내용'] || ''}</textarea></td>
+            </tr>
         </table>
         <div style="display:flex; justify-content:flex-end; margin-top:10px; gap:8px;">
             <button onclick="copyExamData('${id}')" style="background:#475569; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:0.85rem;">복사하기</button>
@@ -750,7 +755,7 @@ window.copyExamData = function(id) {
         dataMap[inp.dataset.field] = inp.value;
     });
     
-    const copyText = `성명: ${dataMap['성명']}\\n시험명: ${dataMap['시험명']}\\n시험일자: ${dataMap['시험일자']}\\n점수: ${dataMap['점수']}\\n결과: ${dataMap['결과']}\\n피드백: ${dataMap['피드백']}`;
+    const copyText = `성명: ${dataMap['성명']}\\n시험명: ${dataMap['시험명']}\\n시험일자: ${dataMap['시험일자']}\\n점수: ${dataMap['점수']}\\n결과: ${dataMap['결과']}\\n피드백: ${dataMap['피드백']}\\n\\n[전체내용]\\n${dataMap['전체내용']}`;
     
     navigator.clipboard.writeText(copyText).then(() => {
         alert('시험지 결과가 복사되었습니다!');
