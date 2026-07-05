@@ -702,9 +702,9 @@ function addRegisterCourseInput(initialName = '', initialTime = '') {
 }
 
 function openEditModal(memberId) {
-    let member = members.find(m => m.id === memberId);
+    let member = members.find(m => String(m.id) === String(memberId));
     if (!member && window.sliderMembers) {
-        member = window.sliderMembers.find(m => m.id === memberId);
+        member = window.sliderMembers.find(m => String(m.id) === String(memberId));
     }
     if (!member) {
         alert("선택한 수강생 정보를 찾을 수 없습니다.");
@@ -979,7 +979,12 @@ async function handleEditSubmit(e) {
             closeEditModal();
             fetchData().then(() => {
                 renderMembers();
-                if (window.currentSliderDate && document.getElementById('sliderModal') && !document.getElementById('sliderModal').classList.contains('hidden')) {
+                const sm = document.getElementById('sliderModal');
+                const swm = document.getElementById('swiperModal');
+                const isSmOpen = sm && !sm.classList.contains('hidden') && sm.style.display !== 'none';
+                const isSwmOpen = swm && !swm.classList.contains('hidden') && swm.style.display !== 'none';
+                
+                if (window.currentSliderDate && (isSmOpen || isSwmOpen)) {
                     if (typeof open3DSliderForDate === 'function') {
                         open3DSliderForDate(window.currentSliderDate);
                     }

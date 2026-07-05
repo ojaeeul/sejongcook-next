@@ -9,7 +9,7 @@
     <title>수강생 등록 - 세종요리제과학원 (김포/세종 요리 전문)</title>
     <meta name="description" content="세종요리제과학원 신규 수강생 등록 페이지입니다. 김포 및 세종 지역에서 요리사의 꿈을 시작하세요.">
     <meta name="keywords" content="세종요리, 김포요리, 세종요리학원, 김포요리학원, 요리학원 등록, 수강생 모집">
-    <link rel="stylesheet" href="style.css?v=20260705-9">
+    <link rel="stylesheet" href="style.css?v=20260705-10">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -21,8 +21,8 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://npmcdn.com/flatpickr/dist/l10n/ko.js"></script>
 
-    <script src="script.js?v=20260705-9" defer></script>
-    <script src="questions_data.js?v=20260705-9" defer></script>
+    <script src="script.js?v=20260705-10" defer></script>
+    <script src="questions_data.js?v=20260705-10" defer></script>
     <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 </head>
 
@@ -661,6 +661,208 @@
         </div>
     </div>
 
+    <!-- Edit Student Modal -->
+    <div id="editStudentModal" class="modal-overlay hidden">
+        <div class="modal-content max-w-800 w-90">
+            <h3 class="mt-0">수강생 정보 수정</h3>
+            <form id="editStudentForm">
+                <input type="hidden" name="id">
+                <input type="hidden" name="registeredDate">
+
+                <style>
+                    /* Ensure table UI fits within modal */
+                    #editStudentForm .dark-table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        font-size: 13px;
+                        color: #1f2937;
+                        text-align: center;
+                        border: 2px solid #475569;
+                        margin-bottom: 15px;
+                    }
+                    #editStudentForm .dark-table td {
+                        border: 1px solid #e5e7eb;
+                        padding: 8px 5px;
+                    }
+                    #editStudentForm .dark-table .th-dark {
+                        background-color: #f3f4f6;
+                        color: #475569;
+                        font-weight: bold;
+                    }
+                    #editStudentForm input[type="text"], 
+                    #editStudentForm input[type="tel"], 
+                    #editStudentForm select, 
+                    #editStudentForm input[type="date"] {
+                        width: 100%;
+                        box-sizing: border-box;
+                        border: 1px solid #475569;
+                        border-radius: 4px;
+                        padding: 4px;
+                    }
+                    #editStudentForm input[readonly] {
+                        background-color: #f3f4f6;
+                    }
+                </style>
+
+                <table class="dark-table">
+                    <tr>
+                        <td class="th-dark" style="width: 15%;">성명 <span class="required" style="color:#ef4444">*</span></td>
+                        <td><input type="text" id="edit_name" name="name" required placeholder="이름 입력" style="text-align: center;"></td>
+                        <td class="th-dark" style="width: 10%;">성별</td>
+                        <td style="width: 15%;">
+                            <select id="edit_gender" name="gender" style="text-align: center; text-align-last: center;">
+                                <option value="">선택</option>
+                                <option value="여">여</option>
+                                <option value="남">남</option>
+                            </select>
+                        </td>
+                        <td class="th-dark" style="width: 15%; cursor: pointer;" onclick="toggleEditRrnBirth()" id="edit_rrn_birth_label" title="클릭하여 생년월일/주민번호 전환">주민등록번호</td>
+                        <td>
+                            <div id="edit_rrn_container" style="display: flex; width: 100%;">
+                                <input type="text" id="resident_num_display" placeholder="000000-0000000" style="text-align: center; width: 100%;" 
+                                    oninput="handleRrnInput(this)" 
+                                    onclick="toggleRrnDisplayMode(this)"
+                                    onfocus="this.dataset.focused = 'true'; renderRrnDisplay(this);" 
+                                    onblur="this.dataset.focused = 'false'; renderRrnDisplay(this);">
+                                <input type="hidden" id="resident_num" name="resident_num">
+                            </div>
+                            <div id="edit_birth_container" style="display: none; width: 100%; gap: 5px; justify-content: center; align-items: center;">
+                                <select id="birth_yy" style="text-align: center; flex: 1; padding: 5px; box-sizing: border-box; font-family: inherit; font-size: 14px;" onchange="updateEditBirthDate()">
+                                    <option value="">년도</option>
+                                </select>
+                                <select id="birth_mm" style="text-align: center; flex: 1; padding: 5px; box-sizing: border-box; font-family: inherit; font-size: 14px;" onchange="updateEditBirthDate()">
+                                    <option value="">월</option>
+                                </select>
+                                <select id="birth_dd" style="text-align: center; flex: 1; padding: 5px; box-sizing: border-box; font-family: inherit; font-size: 14px;" onchange="updateEditBirthDate()">
+                                    <option value="">일</option>
+                                </select>
+                                <input type="hidden" id="birth_date" name="birth_date">
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="th-dark">주소</td>
+                        <td colspan="5" style="text-align: left; display: flex; align-items: center; border-bottom: none;">
+                            <input type="text" id="edit_address" name="address" readonly placeholder="주소 검색 버튼을 눌러주세요" style="flex: 1;">
+                            <button type="button" class="btn-secondary" style="padding: 4px 8px; margin-left: 5px;" onclick="execDaumPostcode('edit_address', 'edit_address_detail')">검색</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="th-dark" style="border-top: none;"></td>
+                        <td colspan="5" style="border-top: 1px dashed #475569;"><input type="text" id="edit_address_detail" name="address_detail" placeholder="상세 주소 입력" style="text-align: left;"></td>
+                    </tr>
+                    <tr>
+                        <td rowspan="2" class="th-dark">연락처</td>
+                        <td class="th-dark">본인</td>
+                        <td colspan="4" style="text-align: center; padding: 0;">
+                            <div style="display: flex; align-items: center; justify-content: center; gap: 5px; height: 100%; min-height: 35px;">
+                                <span style="color: #94a3b8; font-weight: 500;">010 - </span>
+                                <input type="tel" id="edit_phone_body" maxlength="9" placeholder="0000-0000" style="width: 120px; text-align: center;" 
+                                    oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/^(\d{4})(\d{1,4})$/, '$1-$2'); document.getElementById('edit_phone').value = this.value ? '010-' + this.value : '';">
+                                <input type="hidden" id="edit_phone" name="phone">
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="th-dark">보호자 / 자택</td>
+                        <td colspan="2" style="text-align: center; padding: 0;">
+                            <div style="display: flex; align-items: center; justify-content: center; gap: 5px; height: 100%; min-height: 35px;">
+                                <span style="color: #94a3b8; font-weight: 500; font-size: 12px; margin-right: 5px; white-space: nowrap;">보호자</span>
+                                <span style="color: #94a3b8; font-weight: 500; white-space: nowrap;">010 - </span>
+                                <input type="tel" id="edit_phone_guardian_body" maxlength="9" placeholder="0000-0000" style="width: 100px; text-align: center;" 
+                                    oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/^(\d{4})(\d{1,4})$/, '$1-$2'); document.getElementById('edit_phone_guardian').value = this.value ? '010-' + this.value : '';">
+                                <input type="hidden" id="edit_phone_guardian" name="phone_guardian">
+                            </div>
+                        </td>
+                        <td colspan="2" style="text-align: center; padding: 0;">
+                            <div style="display: flex; align-items: center; justify-content: center; gap: 5px; height: 100%; min-height: 35px;">
+                                <span style="color: #94a3b8; font-weight: 500; font-size: 12px; margin-right: 5px; white-space: nowrap;">자택</span>
+                                <span style="color: #94a3b8; font-weight: 500; white-space: nowrap;">02 - </span>
+                                <input type="tel" id="edit_phone_home_body" maxlength="9" placeholder="0000-0000" style="width: 100px; text-align: center;" 
+                                    oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/^(\d{4})(\d{1,4})$/, '$1-$2'); document.getElementById('edit_phone_home').value = this.value ? '02-' + this.value : '';">
+                                <input type="hidden" id="edit_phone_home" name="phone_home">
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="th-dark">회원구분</td>
+                        <td colspan="5">
+                            <select id="edit_remark_type" name="type" onchange="toggleEditMemberType()" style="text-align: center; text-align-last: center;">
+                                <option value="student">학생</option>
+                                <option value="general">일반인</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr id="edit_student-fields-row">
+                        <td class="th-dark">학교</td>
+                        <td colspan="2"><input type="text" id="edit_school" name="school" placeholder="학교명" style="text-align: center;"></td>
+                        <td colspan="3" style="border: none; padding: 5px;">
+                            <div style="display: flex; gap: 5px; width: 100%;">
+                                <select id="edit_school_level" name="school_level" style="flex: 1; border: 1px solid #475569; border-radius: 4px; padding: 5px; box-sizing: border-box;">
+                                    <option value="">구분</option>
+                                    <option value="고등학교">고등학교</option>
+                                    <option value="중학교">중학교</option>
+                                    <option value="초등학교">초등학교</option>
+                                    <option value="대학교">대학교</option>
+                                </select>
+                                <select id="edit_grade" name="grade" style="flex: 1; border: 1px solid #475569; border-radius: 4px; padding: 5px; box-sizing: border-box;">
+                                    <option value="">학년</option>
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4</option>
+                                    <option value="5">5</option>
+                                    <option value="6">6</option>
+                                </select>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr id="edit_general-fields-row" class="hidden">
+                        <td class="th-dark">직업</td>
+                        <td colspan="5" style="display: flex; border-bottom: none; gap: 5px;">
+                            <select id="edit_job" name="job" onchange="toggleEditJobOther()" style="flex: 1; text-align: center; text-align-last: center; border: 1px solid #475569; border-radius: 4px; padding: 2px;">
+                                <option value="">선택하세요</option>
+                                <option value="회사원">회사원</option>
+                                <option value="주부">주부</option>
+                                <option value="사업가">사업가</option>
+                                <option value="공무원">공무원</option>
+                                <option value="무직">무직</option>
+                                <option value="기타">기타</option>
+                            </select>
+                            <input type="text" id="edit_job_other" name="job_other" class="hidden" placeholder="직접 입력" style="flex: 1; border: 1px solid #475569; border-radius: 4px; padding: 2px; text-align: left; padding-left: 10px;">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="th-dark">수강과목</td>
+                        <td colspan="5" style="text-align: left;">
+                            <div id="edit_course_container"></div>
+                            <button type="button" onclick="addCourseInput()" style="margin-top: 5px; padding: 6px; border-radius: 4px; background: #3b82f6; color: white; border: none; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px; justify-content: center; width: 100%;">
+                                <span class="material-icons" style="font-size: 14px;">add</span> 과정 추가
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="th-dark">시작일</td>
+                        <td colspan="5">
+                            <input type="date" name="start_date" style="width: 100%; text-align: center; padding: 5px; box-sizing: border-box;">
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td class="th-dark">비고</td>
+                        <td colspan="5"><input type="text" id="edit_notes" name="notes" placeholder="특이사항 입력" style="text-align: left; padding-left: 10px;"></td>
+                    </tr>
+                </table>
+
+                <div class="mt-20 flex-group gap-10 flex-end">
+                    <button type="button" onclick="closeEditModal()" class="btn-secondary">취소</button>
+                    <button type="submit" class="btn-primary">수정 저장</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+
     <!-- 3D Swiper Modal -->
     <div id="swiperModal" class="hidden" style="display: none; position: fixed; inset: 0; z-index: 10000; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); flex-direction: column;">
         <div style="padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1);">
@@ -706,7 +908,7 @@
 
     <!-- Swiper JS -->
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-    <script src="sidebar_sync.js?v=20260705-9"></script>
+    <script src="sidebar_sync.js?v=20260705-10"></script>
 </body>
 
 </html>
