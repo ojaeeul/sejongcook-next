@@ -560,7 +560,8 @@ async function processHWP(file) {
                 await analyzeImage(finalBase64, file.name, base64Image, textContent);
             } catch(err) {
                 console.error('HWP parsing error', err);
-                const dummyErrorSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect width="200" height="200" fill="#f1f5f9"/><text x="50%" y="50%" font-family="Arial" font-size="24" fill="#ef4444" dominant-baseline="middle" text-anchor="middle">HWP 오류</text></svg>';
+                const safeErrMsg = (err.message || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                const dummyErrorSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200"><rect width="400" height="200" fill="#f1f5f9"/><text x="50%" y="40%" font-family="Arial" font-size="24" fill="#ef4444" dominant-baseline="middle" text-anchor="middle">HWP 오류</text><text x="50%" y="60%" font-family="Arial" font-size="14" fill="#ef4444" dominant-baseline="middle" text-anchor="middle">${safeErrMsg}</text></svg>`;
                 const dummyImage = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(dummyErrorSvg)));
                 await analyzeImage(null, file.name, dummyImage, "HWP 파일 파싱 중 오류가 발생했습니다: " + err.message);
             } finally {
