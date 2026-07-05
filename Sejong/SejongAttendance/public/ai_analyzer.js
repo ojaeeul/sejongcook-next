@@ -727,12 +727,11 @@ async function executeAnalysis(base64Data, fileName, imgUrl, textContent = null)
 3. 표, 그래프, 도형, 3D 요소, 그림 등은 반드시 HTML 요소나 SVG, CSS 스타일을 이용하여 시각적으로 최대한 원본과 똑같이 묘사하고 그려내세요. 절대 텍스트로만 대충 넘기지 마세요.
 4. 모든 코드는 하나의 <div> 컨테이너 안에 들어가야 하며, 인라인 CSS 또는 <style> 태그를 사용하여 독립적으로 렌더링되게 하세요. JavaScript는 제외하세요.
 5. 사진에 없는 내용을 지어내지 마세요. (No Hallucination)
-6. 이 문서가 1번부터 60번까지 정답이 적혀있는 '정답표'인 경우, 정답(가,나,다,라 또는 1,2,3,4)을 하나도 빠짐없이 완벽하게 읽어서 "답안지" 필드에 텍스트 형식으로 정리해주세요.
+6. 문서에 정답표나 테이블이 있다면 절대로 생략하거나 요약하지 말고, 전체 페이지 내용을 원본 그대로 완벽한 HTML 표(Table)로 구현해서 보여주세요.
 
 다음 정보를 추출하여 정확히 아래 형식의 JSON 객체로 반환하세요. JSON 코드 블록 없이 순수 JSON 텍스트만 출력하세요.
 {
-    "전체내용": "여기에 작성된 완벽한 HTML/CSS/SVG 코드를 줄바꿈 포함하여 입력하세요.",
-    "답안지": "문서 내에 정답표가 있다면, 전체 문제 번호와 정답을 텍스트로 추출하세요. 없으면 빈 칸으로 두세요. (예: 1번: 가, 2번: 다, 3번: 라, 4번: 다...)"
+    "전체내용": "여기에 작성된 완벽한 HTML/CSS/SVG 코드를 줄바꿈 포함하여 입력하세요."
 }`;
     } else {
         prompt = `이 이미지는 요리학원의 수강생 등록 원서입니다. 
@@ -915,13 +914,7 @@ function renderExamResult(id, data) {
             <div style="width:100%; min-height:300px; padding:20px; border:1px solid #cbd5e1; border-radius:6px; background:#fff; overflow:auto; color:#000;">
                 ${data['전체내용'] || ''}
             </div>
-            <textarea class="result-input" data-id="${id}" data-field="전체내용" style="display:none;">${data['전체내용'] || ''}</textarea>
-        </div>
-        <div style="margin-top:15px; display:none;">
-            <textarea class="result-input" data-id="${id}" data-field="답안지">${data['답안지'] || ''}</textarea>
-        </div>
         <div style="display:flex; justify-content:flex-end; margin-top:10px; gap:8px;">
-            <button onclick="openAnswerSheetWindow('${id}')" style="background:#0ea5e9; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:0.85rem; font-weight:bold;"><i class="fas fa-external-link-alt"></i> 별도 창으로 보기 (답안지)</button>
             <button onclick="saveExamQuestion('${id}')" style="background:#16a34a; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:0.85rem; font-weight:bold;"><i class="fas fa-save"></i> 과정에 추가</button>
             <button onclick="copyExamData('${id}')" style="background:#475569; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:0.85rem;">복사하기</button>
             <button class="btn-delete" onclick="deleteCard('${id}')" style="padding:6px 12px; font-size:0.85rem;">삭제</button>
