@@ -1149,12 +1149,8 @@ async function handleEditSubmit(e) {
                 const isSwmOpen = swm && !swm.classList.contains('hidden') && swm.style.display !== 'none';
                 
                 if (window.currentSliderDate && (isSmOpen || isSwmOpen)) {
-                    let slideIndex = 0;
-                    if (window.mySwiperInstance) {
-                        slideIndex = window.mySwiperInstance.activeIndex;
-                    }
                     if (typeof open3DSliderForDate === 'function') {
-                        open3DSliderForDate(window.currentSliderDate, slideIndex);
+                        open3DSliderForDate(window.currentSliderDate, finalData.id);
                     }
                 }
                 if (window.currentSliderDate && typeof window.updateRegistrationCount === 'function') {
@@ -2997,7 +2993,7 @@ window.closeSwiperModal = function() {
     }
 };
 
-window.open3DSliderForDate = async function(dateStr, initialIndex = 0) {
+window.open3DSliderForDate = async function(dateStr, targetMemberId = null) {
     if (!dateStr) {
         alert("날짜를 먼저 선택해 주세요.");
         return;
@@ -3022,6 +3018,12 @@ window.open3DSliderForDate = async function(dateStr, initialIndex = 0) {
         if (filtered.length === 0) {
             alert(`${dateStr} 에 등록된 수강생이 없습니다.`);
             return;
+        }
+        
+        let initialIndex = 0;
+        if (targetMemberId) {
+            const foundIndex = filtered.findIndex(m => String(m.id) === String(targetMemberId));
+            if (foundIndex !== -1) initialIndex = foundIndex;
         }
         
         // Destroy existing Swiper instance first
