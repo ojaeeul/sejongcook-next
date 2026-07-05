@@ -730,7 +730,8 @@ async function executeAnalysis(base64Data, fileName, imgUrl, textContent = null)
 
 다음 정보를 추출하여 정확히 아래 형식의 JSON 객체로 반환하세요. JSON 코드 블록 없이 순수 JSON 텍스트만 출력하세요.
 {
-    "전체내용": "여기에 작성된 완벽한 HTML/CSS/SVG 코드를 줄바꿈 포함하여 입력하세요."
+    "전체내용": "여기에 작성된 완벽한 HTML/CSS/SVG 코드를 줄바꿈 포함하여 입력하세요.",
+    "답안지": "여기에 시험지에 포함된 정답이나 답안을 텍스트로 깔끔하게 정리해서 입력하세요. (예: 1번: 3, 2번: 1...)"
 }`;
     } else {
         prompt = `이 이미지는 요리학원의 수강생 등록 원서입니다. 
@@ -914,6 +915,11 @@ function renderExamResult(id, data) {
                 ${data['전체내용'] || ''}
             </div>
             <textarea class="result-input" data-id="${id}" data-field="전체내용" style="display:none;">${data['전체내용'] || ''}</textarea>
+        </div>
+        <div style="margin-top:15px;">
+            <div style="margin-bottom: 5px; font-weight: bold; color: #334155; font-size: 0.9rem;">답안지 추출 결과</div>
+            <div style="width:100%; min-height:60px; padding:15px; border:1px solid #cbd5e1; border-radius:6px; background:#f8fafc; overflow:auto; color:#0f172a; white-space: pre-wrap; font-size: 0.95rem;">${data['답안지'] || '분석된 답안지가 없습니다. (문서에 답안지가 없거나 인식하지 못함)'}</div>
+            <textarea class="result-input" data-id="${id}" data-field="답안지" style="display:none;">${data['답안지'] || ''}</textarea>
         </div>
         <div style="display:flex; justify-content:flex-end; margin-top:10px; gap:8px;">
             <button onclick="saveExamQuestion('${id}')" style="background:#16a34a; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:0.85rem; font-weight:bold;"><i class="fas fa-save"></i> 과정에 추가</button>
