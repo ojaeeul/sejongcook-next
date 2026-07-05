@@ -421,7 +421,7 @@ async function processExcel(file) {
                 let fullText = "";
                 
                 captureDiv = document.createElement('div');
-                captureDiv.style.cssText = "position:absolute; top:-9999px; left:-9999px; background:white; padding:20px; font-family:sans-serif; width:1000px; color:black;";
+                captureDiv.style.cssText = "position:absolute; top:0; left:0; z-index:-9999; background:white; padding:40px; font-family:sans-serif; width:1000px; color:black; min-height:800px;";
                 document.body.appendChild(captureDiv);
 
                 for(let sheetName of workbook.SheetNames) {
@@ -445,7 +445,7 @@ async function processExcel(file) {
 
                 let base64Image = null;
                 if (typeof html2canvas !== 'undefined') {
-                    const canvas = await html2canvas(captureDiv, { scale: 1.5, useCORS: true, logging: false });
+                    const canvas = await html2canvas(captureDiv, { scale: 1.5, useCORS: true, logging: true, backgroundColor: "#ffffff" });
                     base64Image = canvas.toDataURL('image/jpeg', 0.8);
                 }
 
@@ -509,16 +509,16 @@ async function processHWP(file) {
                     const hwp = window.HWPModule.parse(data);
                     try {
                         captureDiv = document.createElement('div');
-                        captureDiv.style.cssText = "position:absolute; top:-9999px; left:-9999px; background:white; padding:20px; width:800px; color:black;";
+                        captureDiv.style.cssText = "position:absolute; top:0; left:0; z-index:-9999; background:white; padding:40px; width:1000px; color:black; min-height:800px;";
                         document.body.appendChild(captureDiv);
 
                         new window.HWPModule.Viewer(captureDiv, hwp);
                         textContent = captureDiv.innerText || captureDiv.textContent || "";
                         
-                        await new Promise(r => setTimeout(r, 100)); // wait for render
+                        await new Promise(r => setTimeout(r, 800)); // wait for hwp to fully render
 
                         if (typeof html2canvas !== 'undefined') {
-                            const canvas = await html2canvas(captureDiv, { scale: 1.5, useCORS: true, logging: false });
+                            const canvas = await html2canvas(captureDiv, { scale: 1.5, useCORS: true, logging: true, backgroundColor: "#ffffff" });
                             base64Image = canvas.toDataURL('image/jpeg', 0.8);
                         }
                     } catch (viewerErr) {
