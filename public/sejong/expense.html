@@ -7,7 +7,7 @@
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>지출내역 및 날짜별 매출</title>
-    <link rel="stylesheet" href="style.css?v=20260706-21">
+    <link rel="stylesheet" href="style.css?v=20260706-22">
     <!-- Material Icons for sidebar -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <!-- 손글씨 느낌을 위한 폰트 -->
@@ -531,6 +531,10 @@
                 </div>
                 <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">기타</div>
                 <div class="nav-sub-menu show">
+                    <a href="ai_analyzer.html?openSettings=true" id="navExamSettings" class="nav-item">
+                        <span class="material-icons" style="font-size: 1.2rem; margin-right: 8px;">fact_check</span>
+                        시험지 설정
+                    </a>
                     <a href="class_days_admin.html" id="navClassDaysAdmin" class="nav-item">
                         <span class="material-icons" style="font-size: 1.2rem; margin-right: 8px;">settings</span>
                         수업 요일 설정
@@ -668,7 +672,7 @@
 
     </div>
 
-    <script src="expense_logic.js?v=20260706-21"></script>
+    <script src="expense_logic.js?v=20260706-22"></script>
     <script>
         // 기존 하드코딩된 contenteditable 부분은 expense_logic.js로 통합됨
     </script>
@@ -767,7 +771,7 @@
         }
 
     </style>
-    <script src="expense_settings.js?v=20260706-21"></script>
-    <script src="sidebar_sync.js?v=20260706-21"></script>
+    <script src="expense_settings.js?v=20260706-22"></script>
+    <script src="sidebar_sync.js?v=20260706-22"></script>
 </body>
 </html>

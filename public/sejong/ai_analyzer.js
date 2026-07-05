@@ -90,6 +90,9 @@ async function loadGlobalCourseTimeSettings() {
 
 document.addEventListener('DOMContentLoaded', () => {
     loadGlobalCourseTimeSettings();
+    const urlParams = new URLSearchParams(window.location.search);
+    const shouldOpenSettings = urlParams.get('openSettings') === 'true';
+
     const uploadZone = document.getElementById('uploadZone');
     const fileInput = document.getElementById('fileInput');
     const modeBtns = document.querySelectorAll('.mode-btn');
@@ -115,7 +118,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Load Exam Courses dynamically
-    loadExamCourses();
+    loadExamCourses().then(() => {
+        if(shouldOpenSettings) {
+            const examBtn = Array.from(modeBtns).find(b => b.dataset.mode === 'exam');
+            if(examBtn) examBtn.click();
+            setTimeout(() => {
+                if(typeof openCourseSettingsModal === 'function') openCourseSettingsModal();
+            }, 300);
+        }
+    });
 
     // Drag & Drop Handlers
     uploadZone.addEventListener('dragover', (e) => {
