@@ -852,29 +852,82 @@ function openEditModal(memberId) {
         editForm.job.value = member.job || '';
         
         let displayNotes = member.notes || '';
-        let displayTuition = '', displayToolFee = '', displayAmount = '';
+        let displayTuition = '', displayToolFee = '', displayAmount = '', displayLocker = '', displayBookPrice = '';
+        let pracChecked = false, theoryChecked = false;
         
         const tuitionMatch = displayNotes.match(/수강료\s*[:\-]?\s*([\d,]+)(원)?/);
         if (tuitionMatch) {
             displayTuition = tuitionMatch[1].replace(/,/g, '');
             displayNotes = displayNotes.replace(/수강료\s*[:\-]?\s*([\d,]+)(원)?\n?/g, '').trim();
         }
+        
+        // Parse Books
+        const bookPracMatch = displayNotes.match(/실기책/);
+        if (bookPracMatch) {
+            pracChecked = true;
+            displayNotes = displayNotes.replace(/실기책,?\s*/g, '').trim();
+        }
+        const bookTheoryMatch = displayNotes.match(/필기책/);
+        if (bookTheoryMatch) {
+            theoryChecked = true;
+            displayNotes = displayNotes.replace(/필기책,?\s*/g, '').trim();
+        }
+        const bookPriceMatch = displayNotes.match(/\(?책값\s*[:\-]?\s*([\d,]+)(원)?\)?/);
+        if (bookPriceMatch) {
+            displayBookPrice = bookPriceMatch[1].replace(/,/g, '');
+            displayNotes = displayNotes.replace(/\(?책값\s*[:\-]?\s*([\d,]+)(원)?\)?\n?/g, '').trim();
+        }
+
         const toolMatch = displayNotes.match(/도구비\s*[:\-]?\s*([\d,]+)(원)?/);
         if (toolMatch) {
             displayToolFee = toolMatch[1].replace(/,/g, '');
             displayNotes = displayNotes.replace(/도구비\s*[:\-]?\s*([\d,]+)(원)?\n?/g, '').trim();
         }
+
+        const lockerMatch = displayNotes.match(/락카\s*[:\-]?\s*([^\n,]+)/);
+        if (lockerMatch) {
+            displayLocker = lockerMatch[1].trim();
+            displayNotes = displayNotes.replace(/락카\s*[:\-]?\s*([^\n,]+)\n?/g, '').trim();
+        }
+
         const amountMatch = displayNotes.match(/(?:총)?결제금액\s*[:\-]?\s*([\d,]+)(원)?/);
         if (amountMatch) {
             displayAmount = amountMatch[1].replace(/,/g, '');
             displayNotes = displayNotes.replace(/(?:총)?결제금액\s*[:\-]?\s*([\d,]+)(원)?\n?/g, '').trim();
         }
         
+        // Clean up any trailing commas from note parsing
+        displayNotes = displayNotes.replace(/,\s*$/g, '').trim();
         editForm.notes.value = displayNotes;
         
         if (editForm.tuition) editForm.tuition.value = displayTuition ? Number(displayTuition).toLocaleString() : '';
         if (editForm.tool_fee) editForm.tool_fee.value = displayToolFee ? Number(displayToolFee).toLocaleString() : '';
         if (editForm.total_fee) editForm.total_fee.value = displayAmount ? Number(displayAmount).toLocaleString() : '';
+        if (editForm.locker) editForm.locker.value = displayLocker;
+        if (editForm.book_prac) editForm.book_prac.checked = pracChecked;
+        if (editForm.book_theory) editForm.book_theory.checked = theoryChecked;
+        if (editForm.book_price) editForm.book_price.value = displayBookPrice ? Number(displayBookPrice).toLocaleString() : '';
+        
+        // Set registered Date
+        if (editForm.paper_date) {
+            editForm.paper_date.value = member.registeredDate || '';
+        }
+
+        // Parse Courses for checkboxes
+        const cStr = member.course || '';
+        if (editForm.course_bake) editForm.course_bake.checked = cStr.includes('제과');
+        if (editForm.course_bread) editForm.course_bread.checked = cStr.includes('제빵');
+        if (editForm.course_korean) editForm.course_korean.checked = cStr.includes('한식');
+        if (editForm.course_western) editForm.course_western.checked = cStr.includes('양식');
+        if (editForm.course_japanese) editForm.course_japanese.checked = cStr.includes('일식');
+        if (editForm.course_chinese) editForm.course_chinese.checked = cStr.includes('중식');
+        if (editForm.course_puffer) editForm.course_puffer.checked = cStr.includes('복어');
+
+        if (editForm.time_10_00) editForm.time_10_00.checked = cStr.includes('10:00') || cStr.includes('10시');
+        if (editForm.time_10) editForm.time_10.checked = false; // Using 10:00 as primary
+        if (editForm.time_12) editForm.time_12.checked = cStr.includes('12:00');
+        if (editForm.time_17) editForm.time_17.checked = cStr.includes('17:00') || cStr.includes('5시');
+        if (editForm.time_19) editForm.time_19.checked = cStr.includes('19:00') || cStr.includes('7시');
     }
 
     if (editModal) {
@@ -937,6 +990,33 @@ async function handleEditSubmit(e) {
             return '';
         })
         .filter(v => v !== '');
+
+    // Read course checkboxes added from AI analyzer layout
+    const courses = [];
+    if (data.course_bake === 'on') courses.push("제과");
+    if (data.course_bread === 'on') courses.push("제빵");
+    if (data.course_korean === 'on') courses.push("한식");
+    if (data.course_western === 'on') courses.push("양식");
+    if (data.course_japanese === 'on') courses.push("일식");
+    if (data.course_chinese === 'on') courses.push("중식");
+    if (data.course_puffer === 'on') courses.push("복어");
+
+    const times = [];
+    if (data.time_10_00 === 'on') times.push("10:00");
+    if (data.time_10 === 'on') times.push("10:00"); // 10시는 10:00으로 통일
+    if (data.time_12 === 'on') times.push("12:00");
+    if (data.time_17 === 'on') times.push("17:00");
+    if (data.time_19 === 'on') times.push("19:00");
+    const timeStr = times.length > 0 ? `(${times.join(',')})` : '';
+
+    if (courses.length > 0) {
+        courseValues.push(courses.map(c => c + timeStr).join(', '));
+    }
+
+    // Cleanup checkbox data so it doesn't get sent to server as raw fields
+    delete data.course_bake; delete data.course_bread; delete data.course_korean;
+    delete data.course_western; delete data.course_japanese; delete data.course_chinese; delete data.course_puffer;
+    delete data.time_10_00; delete data.time_10; delete data.time_12; delete data.time_17; delete data.time_19;
 
     // --- Automatic Merging Exception Logic ---
     const jevaIdx = courseValues.findIndex(v => v.startsWith('제과기능사('));
@@ -1013,11 +1093,27 @@ async function handleEditSubmit(e) {
     // Data Preservation Logic: Merge new data into existing member object 
     // to ensure no fields (like memo, status, etc.) are lost.
     
-    // Combine fees back into notes
+    // Combine fees and other extras back into notes
     let updatedNotes = data.notes || '';
     let appendedFees = [];
     if (data.tuition && data.tuition.trim() !== '') appendedFees.push(`수강료: ${data.tuition.replace(/,/g, '')}`);
     if (data.tool_fee && data.tool_fee.trim() !== '') appendedFees.push(`도구비: ${data.tool_fee.replace(/,/g, '')}`);
+    
+    // Books
+    let books = [];
+    if (data.book_prac === 'on') books.push('실기책');
+    if (data.book_theory === 'on') books.push('필기책');
+    if (books.length > 0) {
+        let bookStr = books.join(',');
+        if (data.book_price && data.book_price.trim() !== '') {
+            bookStr += `(책값: ${data.book_price.replace(/,/g, '')})`;
+        }
+        appendedFees.push(bookStr);
+    } else if (data.book_price && data.book_price.trim() !== '') {
+        appendedFees.push(`책값: ${data.book_price.replace(/,/g, '')}`);
+    }
+
+    if (data.locker && data.locker.trim() !== '') appendedFees.push(`락카: ${data.locker}`);
     if (data.total_fee && data.total_fee.trim() !== '') appendedFees.push(`총결제금액: ${data.total_fee.replace(/,/g, '')}`);
     
     if (appendedFees.length > 0) {
@@ -1026,9 +1122,13 @@ async function handleEditSubmit(e) {
     }
     data.notes = updatedNotes;
     
-    delete data.tuition;
-    delete data.tool_fee;
-    delete data.total_fee;
+    // Process registered date
+    if (data.paper_date) {
+        data.registeredDate = data.paper_date;
+    }
+
+    delete data.tuition; delete data.tool_fee; delete data.total_fee;
+    delete data.locker; delete data.book_prac; delete data.book_theory; delete data.book_price; delete data.paper_date;
 
     const existingMember = members.find(m => m.id === data.id);
     let finalData = data;

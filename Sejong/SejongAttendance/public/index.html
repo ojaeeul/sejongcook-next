@@ -7,16 +7,16 @@
     <meta http-equiv="Expires" content="0">    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>세종요리 출결관리</title>
-    <link rel="stylesheet" href="style.css?v=20260705-14">
-    <link rel="stylesheet" href="exam_view.css?v=20260705-14">
+    <link rel="stylesheet" href="style.css?v=20260705-15">
+    <link rel="stylesheet" href="exam_view.css?v=20260705-15">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
         rel="stylesheet">
     <!-- Google Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <!-- Swiper CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-    <script src="script.js?v=20260705-14" defer></script>
-    <script src="questions_data.js?v=20260705-14" defer></script>
+    <script src="script.js?v=20260705-15" defer></script>
+    <script src="questions_data.js?v=20260705-15" defer></script>
     <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#ffffff">
@@ -487,16 +487,55 @@
                         <td colspan="2" style="text-align: left; padding: 4px;">
                             <div style="display: flex; align-items: center; height: 22px;">₩ <input type="text" id="edit_tuition" name="tuition" style="flex: 1; margin-left: 5px; border: none; background: transparent; outline: none; font-family: inherit;"></div>
                         </td>
-                        <td class="th-dark" style="width: 15%; padding: 4px; white-space: nowrap;">도구비</td>
+                        <td class="th-dark" style="width: 15%; padding: 4px; white-space: nowrap;">락카</td>
                         <td colspan="2" style="text-align: left; padding: 4px;">
-                            <div style="display: flex; align-items: center; height: 22px;">₩ <input type="text" id="edit_tool_fee" name="tool_fee" style="flex: 1; margin-left: 5px; border: none; background: transparent; outline: none; font-family: inherit;"></div>
+                            <input type="text" id="edit_locker" name="locker" style="flex: 1; border: none; background: transparent; outline: none; font-family: inherit; text-align: center; width: 100%;">
                         </td>
                     </tr>
                     <tr>
-                        <td class="th-dark" style="white-space: nowrap;">결제금액</td>
-                        <td colspan="5" style="text-align: left; padding: 4px;">
+                        <td class="th-dark" style="white-space: nowrap; padding: 4px;">도구비</td>
+                        <td colspan="2" style="text-align: left; padding: 4px;">
+                            <div style="display: flex; align-items: center; height: 22px;">₩ <input type="text" id="edit_tool_fee" name="tool_fee" style="flex: 1; margin-left: 5px; border: none; background: transparent; outline: none; font-family: inherit;"></div>
+                        </td>
+                        <td class="th-dark" style="font-size: 11px; line-height: 1.1; padding: 2px;">
+                            <div style="display: flex; flex-direction: column; align-items: flex-start; justify-content: center; height: 100%; gap: 1px;">
+                                <label style="cursor: pointer; display: flex; align-items: center; gap: 2px;"><input type="checkbox" id="edit_book_prac" name="book_prac" style="margin:0;"> 실기책</label>
+                                <label style="cursor: pointer; display: flex; align-items: center; gap: 2px;"><input type="checkbox" id="edit_book_theory" name="book_theory" style="margin:0;"> 필기책</label>
+                            </div>
+                        </td>
+                        <td colspan="2" style="text-align: left; padding: 4px;">
+                            <div style="display: flex; align-items: center; height: 22px;">₩ <input type="text" id="edit_book_price" name="book_price" style="flex: 1; margin-left: 5px; border: none; background: transparent; outline: none; font-family: inherit;"></div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="th-dark" style="white-space: nowrap; padding: 4px;">결제금액</td>
+                        <td colspan="2" style="text-align: left; padding: 4px;">
                             <div style="display: flex; align-items: center; height: 22px;">₩ <input type="text" id="edit_total_fee" name="total_fee" style="flex: 1; margin-left: 5px; border: none; background: transparent; outline: none; font-family: inherit; color: #ef4444; font-weight: bold;"></div>
                         </td>
+                        <td colspan="3" style="text-align: left; padding: 4px; white-space: nowrap;">
+                            <div style="display: flex; align-items: center; justify-content: flex-start; gap: 4px;">
+                                <span style="color: #64748b; font-size: 11px; white-space: nowrap;">등록일</span>
+                                <input type="date" id="edit_paper_date" name="paper_date" style="flex: 1; text-align: center; border: 1px solid #cbd5e1; border-radius: 4px; padding: 1px 4px; background: transparent; color: #1e293b; font-family: inherit; font-size: 11px;">
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+                <table class="dark-table" style="border-top: none; margin-top: -16px;">
+                    <tr class="th-dark">
+                        <td style="width: 14.2%; padding: 4px;"><label style="cursor: pointer;"><input type="checkbox" name="course_bake" id="edit_course_bake" style="margin:0;"> 제과</label></td>
+                        <td style="width: 14.2%; padding: 4px;"><label style="cursor: pointer;"><input type="checkbox" name="course_bread" id="edit_course_bread" style="margin:0;"> 제빵</label></td>
+                        <td style="width: 14.2%; padding: 4px;"><label style="cursor: pointer;"><input type="checkbox" name="course_korean" id="edit_course_korean" style="margin:0;"> 한식</label></td>
+                        <td style="width: 14.2%; padding: 4px;"><label style="cursor: pointer;"><input type="checkbox" name="course_western" id="edit_course_western" style="margin:0;"> 양식</label></td>
+                        <td style="width: 14.2%; padding: 4px;"><label style="cursor: pointer;"><input type="checkbox" name="course_japanese" id="edit_course_japanese" style="margin:0;"> 일식</label></td>
+                        <td style="width: 14.2%; padding: 4px;"><label style="cursor: pointer;"><input type="checkbox" name="course_chinese" id="edit_course_chinese" style="margin:0;"> 중식</label></td>
+                        <td style="width: 14.8%; padding: 4px;"><label style="cursor: pointer;"><input type="checkbox" name="course_puffer" id="edit_course_puffer" style="margin:0;"> 복어</label></td>
+                    </tr>
+                    <tr class="th-dark">
+                        <td colspan="2" style="padding: 4px;"><label style="cursor: pointer;"><input type="checkbox" name="time_10_00" id="edit_time_10_00" style="margin:0;"> 10:00</label></td>
+                        <td colspan="1" style="padding: 4px;"><label style="cursor: pointer;"><input type="checkbox" name="time_10" id="edit_time_10" style="margin:0;"> 10시</label></td>
+                        <td colspan="2" style="padding: 4px;"><label style="cursor: pointer;"><input type="checkbox" name="time_12" id="edit_time_12" style="margin:0;"> 12:00</label></td>
+                        <td colspan="1" style="padding: 4px;"><label style="cursor: pointer;"><input type="checkbox" name="time_17" id="edit_time_17" style="margin:0;"> 17:00</label></td>
+                        <td colspan="1" style="padding: 4px;"><label style="cursor: pointer;"><input type="checkbox" name="time_19" id="edit_time_19" style="margin:0;"> 19:00</label></td>
                     </tr>
                 </table>
 
@@ -705,6 +744,6 @@
 
     <!-- Swiper JS -->
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-    <script src="sidebar_sync.js?v=20260705-14"></script>
+    <script src="sidebar_sync.js?v=20260705-15"></script>
 </body>
 </html>
