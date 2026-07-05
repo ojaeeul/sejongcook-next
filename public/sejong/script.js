@@ -854,12 +854,13 @@ function openEditModal(memberId) {
     }
 
     if (editModal) {
+        document.body.appendChild(editModal); // Guarantee it is physically at the end of the DOM
         editModal.style.display = 'flex';
         editModal.classList.remove('hidden');
         
         const swm = document.getElementById('swiperModal');
         if (swm && !swm.classList.contains('hidden') && swm.style.display !== 'none') {
-            editModal.style.zIndex = '10002';
+            editModal.style.setProperty('z-index', '99999', 'important');
             editModal.style.background = 'transparent';
             editModal.style.justifyContent = 'flex-start';
             editModal.style.paddingLeft = '50px';

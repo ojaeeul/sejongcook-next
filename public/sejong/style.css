@@ -3541,3 +3541,4 @@ label {
     background-color: white;
     transition: .4s;
 }
+.dark-table input[type="text"], .dark-table input[type="tel"], .dark-table input[type="date"], .dark-table select { padding: 2px 4px !important; margin: 0 !important; min-height: unset !important; }
