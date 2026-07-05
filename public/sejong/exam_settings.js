@@ -45,10 +45,27 @@ window.renderCourseSettingsList = function() {
 
         if (catObj.courses.length > 0) {
             catObj.courses.forEach((course, courseIndex) => {
+                let prefix = course.replace("기능사", "");
+                if (course === "제과제빵기능사") prefix = "제과제빵";
+
+                let yearsHtml = '';
+                if (["산업기사", "가정요리", "브런치", "쿠킹클래스", "베이킹 원데이", "취미요리"].includes(course)) {
+                    yearsHtml = `<div style="padding: 4px 10px; color:#94a3b8; font-size: 0.85rem;">준비중입니다</div>`;
+                } else {
+                    for (let year = 2021; year <= 2026; year++) {
+                        yearsHtml += `<div style="padding: 4px 10px; color:#64748b; font-size: 0.85rem;">📄 ${year}년 ${prefix}</div>`;
+                    }
+                }
+
                 html += `
-                    <div style="display:flex; justify-content:space-between; align-items:center; padding: 6px 0; border-bottom: 1px dashed #e2e8f0;">
-                        <span style="color:#334155; margin-left: 10px;">📂 ${course} (소분류 폴더)</span>
-                        <button onclick="deleteExamCourseFromCategory(${catIndex}, ${courseIndex})" style="background:#f87171; color:white; border:none; padding:2px 6px; border-radius:4px; cursor:pointer; font-size:0.75rem;"><i class="fas fa-times"></i> 삭제</button>
+                    <div style="border-bottom: 1px dashed #e2e8f0; padding-bottom: 8px; margin-bottom: 8px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; padding: 6px 0;">
+                            <span style="color:#334155; margin-left: 10px; cursor:pointer; font-weight: 500;" onclick="const el = this.parentElement.nextElementSibling; el.style.display = el.style.display === 'none' ? 'block' : 'none';">📂 ${course} (소분류 폴더) ▼</span>
+                            <button onclick="deleteExamCourseFromCategory(${catIndex}, ${courseIndex})" style="background:#f87171; color:white; border:none; padding:2px 6px; border-radius:4px; cursor:pointer; font-size:0.75rem;"><i class="fas fa-times"></i> 삭제</button>
+                        </div>
+                        <div style="display:none; margin-left: 28px; background: #f1f5f9; padding: 8px; border-radius: 4px; border-left: 2px solid #cbd5e1; margin-top: 4px;">
+                            ${yearsHtml}
+                        </div>
                     </div>
                 `;
             });
