@@ -5,9 +5,18 @@ import path from 'path';
 export const dynamic = 'force-dynamic';
 
 const defaultCourses = [
-    "한식기능사", "양식기능사", "가정요리", "브런치", "일식기능사", 
-    "복어기능사", "취미요리", "쿠킹클래스", "산업기사", "제과제빵기능사", 
-    "제빵기능사", "제과기능사", "케익디자이너", "베이킹 원데이"
+    {
+        category: "전체과정",
+        courses: []
+    },
+    {
+        category: "조리과정",
+        courses: ["한식기능사", "양식기능사", "가정요리", "브런치", "일식기능사", "복어기능사", "취미요리", "쿠킹클래스", "산업기사"]
+    },
+    {
+        category: "제과제빵",
+        courses: ["제과제빵기능사", "제빵기능사", "제과기능사", "케익디자이너", "베이킹 원데이"]
+    }
 ];
 
 function getFilePath(baseDir: string) {
@@ -20,7 +29,18 @@ export async function GET() {
         if (!fs.existsSync(filePath)) {
             return NextResponse.json(defaultCourses);
         }
-        const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+        let data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+        
+        // Migrate old flat array format to new nested format on the fly
+        if (Array.isArray(data) && data.length > 0 && typeof data[0] === 'string') {
+            data = [
+                {
+                    category: "조리과정",
+                    courses: data
+                }
+            ];
+        }
+        
         return NextResponse.json(data);
     } catch (e: any) {
         console.error("GET Exam Courses Error:", e);
