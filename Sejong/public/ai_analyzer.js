@@ -114,17 +114,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Course selection for Exam Mode
-    window.currentExamCourse = '한식기능사';
-    const courseBtns = document.querySelectorAll('#examCourseButtons .mode-btn');
-    courseBtns.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            courseBtns.forEach(b => b.classList.remove('active'));
-            e.target.classList.add('active');
-            window.currentExamCourse = e.target.dataset.course;
-            loadExamQuestions();
-        });
-    });
+    // Load Exam Courses dynamically
+    loadExamCourses();
 
     // Drag & Drop Handlers
     uploadZone.addEventListener('dragover', (e) => {
@@ -1585,5 +1576,138 @@ window.downloadExamExcel = async function() {
     } catch (e) {
         console.error("Excel Download Error:", e);
         alert('다운로드 중 오류가 발생했습니다.');
+    }
+};
+
+window.allExamCourses = [];
+
+window.loadExamCourses = async function() {
+    try {
+        const res = await fetch('/api/sejong/exam-courses');
+        if (!res.ok) throw new Error('Failed to fetch exam courses');
+        const courses = await res.json();
+        window.allExamCourses = courses;
+
+        if(!window.currentExamCourse && courses.length > 0) {
+            window.currentExamCourse = courses[0];
+        }
+
+        renderExamCourseButtons();
+        if(document.getElementById('courseSettingsModal').style.display === 'flex') {
+            renderCourseSettingsList();
+        }
+    } catch (e) {
+        console.error("loadExamCourses Error:", e);
+    }
+};
+
+window.renderExamCourseButtons = function() {
+    const container = document.getElementById('examCourseButtons');
+    if(!container) return;
+
+    container.innerHTML = window.allExamCourses.map(course => 
+        `<button class="mode-btn ${course === window.currentExamCourse ? 'active' : ''}" data-course="${course}" style="padding: 8px 16px; font-size: 0.9rem;">${course}</button>`
+    ).join('');
+
+    // Attach events
+    const courseBtns = container.querySelectorAll('.mode-btn');
+    courseBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            courseBtns.forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            window.currentExamCourse = e.target.dataset.course;
+            loadExamQuestions();
+        });
+    });
+};
+
+window.openCourseSettingsModal = function() {
+    const modal = document.getElementById('courseSettingsModal');
+    if(modal) {
+        modal.style.display = 'flex';
+        renderCourseSettingsList();
+    }
+};
+
+window.closeCourseSettingsModal = function() {
+    const modal = document.getElementById('courseSettingsModal');
+    if(modal) modal.style.display = 'none';
+};
+
+window.renderCourseSettingsList = function() {
+    const container = document.getElementById('courseListContainer');
+    if(!container) return;
+
+    if(window.allExamCourses.length === 0) {
+        container.innerHTML = '<div style="color:#94a3b8; text-align:center; padding: 20px;">등록된 과정이 없습니다.</div>';
+        return;
+    }
+
+    container.innerHTML = window.allExamCourses.map((course, index) => `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding: 8px; border-bottom: 1px solid #f1f5f9;">
+            <span style="font-weight:bold; color:#334155;">${course}</span>
+            <button onclick="deleteExamCourseSetting(${index})" style="background:#ef4444; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:0.8rem;"><i class="fas fa-minus"></i> 삭제</button>
+        </div>
+    `).join('');
+};
+
+window.addExamCourse = async function() {
+    const input = document.getElementById('newCourseInput');
+    const newCourse = input.value.trim();
+    if(!newCourse) {
+        alert("과정 이름을 입력하세요.");
+        return;
+    }
+
+    if(window.allExamCourses.includes(newCourse)) {
+        alert("이미 존재하는 과정입니다.");
+        return;
+    }
+
+    const updatedCourses = [...window.allExamCourses, newCourse];
+    
+    try {
+        const res = await fetch('/api/sejong/exam-courses', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updatedCourses)
+        });
+        if(!res.ok) throw new Error('Failed to save course');
+
+        input.value = '';
+        window.currentExamCourse = newCourse;
+        await loadExamCourses();
+        loadExamQuestions();
+
+    } catch (e) {
+        console.error("addExamCourse error:", e);
+        alert("저장에 실패했습니다.");
+    }
+};
+
+window.deleteExamCourseSetting = async function(index) {
+    if(!confirm("이 과정을 삭제하시겠습니까? (이 과정에 저장된 문제는 삭제되지 않지만 목록에서 보이지 않게 됩니다)")) return;
+
+    const updatedCourses = [...window.allExamCourses];
+    const deletedCourse = updatedCourses.splice(index, 1)[0];
+
+    try {
+        const res = await fetch('/api/sejong/exam-courses', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updatedCourses)
+        });
+        if(!res.ok) throw new Error('Failed to save course');
+
+        if(window.currentExamCourse === deletedCourse) {
+            window.currentExamCourse = updatedCourses.length > 0 ? updatedCourses[0] : null;
+        }
+
+        await loadExamCourses();
+        loadExamQuestions();
+
+    } catch (e) {
+        console.error("deleteExamCourseSetting error:", e);
+        alert("삭제에 실패했습니다.");
     }
 };
