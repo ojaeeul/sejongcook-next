@@ -268,7 +268,7 @@ function renderPage() {
                     </div>
                     
                     <!-- Middle Column: Contact Info (Column layout for tight fitting) -->
-                    <div style="flex: 1; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 1px; border-right: 1px solid #e2e8f0; min-width: 200px; padding: 0 10px; height: 100%;">
+                    <div style="flex: 1; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 1px; border-right: 1px solid #e2e8f0; min-width: 120px; padding: 0 10px; height: 100%;">
                         <div class="contact-box" style="display: flex; align-items: center; height: auto; width: 100%;">
                             <span style="font-size: 0.7rem; font-weight: 700; color: #1e40af; width: 22px; flex-shrink: 0; line-height: 1;">(본)</span>
                             <span class="phone-number" style="margin-left: 2px; flex-shrink: 0; width: 95px; font-size: 0.75rem; line-height: 1; cursor: pointer; text-decoration: underline; text-decoration-color: #cbd5e1; text-underline-offset: 2px;" onclick="editPhonebookNumber('${m.id}', 'phone')" title="전화번호 수정">${m.phone || '-'}</span>
@@ -282,7 +282,7 @@ function renderPage() {
                     </div>
 
                     <!-- Right Column: Courses -->
-                    <div class="course-badge-list hide-scrollbar" style="flex: 1; min-width: 140px; max-width: 220px; display: flex; flex-direction: row; flex-wrap: wrap; align-items: flex-start; align-content: flex-start; justify-content: flex-start; padding: 2px 5px; gap: 2px; overflow-y: auto; overflow-x: hidden; margin-left: auto; cursor: pointer; height: 100%; border-right: 1px solid #e2e8f0;" onclick="showCourseOverlay(this, '${m.name}', '${coursesStr}')" title="크게 보기">
+                    <div class="course-badge-list hide-scrollbar" style="flex: 1; min-width: 90px; max-width: 220px; display: flex; flex-direction: row; flex-wrap: wrap; align-items: flex-start; align-content: flex-start; justify-content: flex-start; padding: 2px 5px; gap: 2px; overflow-y: auto; overflow-x: hidden; margin-left: auto; cursor: pointer; height: 100%; border-right: 1px solid #e2e8f0;" onclick="showCourseOverlay(this, '${m.name}', '${coursesStr}')" title="크게 보기">
                         ${courseBadges}
                     </div>
 
