@@ -42,12 +42,50 @@ window.global_attendance_cutoffs_student = {};
 // 백엔드에서 설정값을 불러와 전역 옵션을 갱신하고 데이타리스트 재생성
 async function loadGlobalCourseTimeSettings() {
     try {
-        const res = await fetch(`/api/sejong/settings?t=${Date.now()}`);
-        const data = await res.json();
+        const [settingsRes, membersRes] = await Promise.all([
+            fetch(`/api/sejong/settings?t=${Date.now()}`),
+            fetch(`/api/sejong/members?t=${Date.now()}`)
+        ]);
+        const data = await settingsRes.json();
+        const members = await membersRes.json();
+        
         let settings = Array.isArray(data) && data.length > 0 ? data[0] : (data.key === "settings" ? data.value : data);
+        
+        const courseSet = new Set();
+        const timeSet = new Set(['10:00', '17:00', '19:00']);
+
+        if (Array.isArray(members)) {
+            members.forEach(m => {
+                if (m.course) {
+                    const parts = m.course.split(',').map(s => s.trim());
+                    parts.forEach(p => {
+                        const match = p.match(/(.*?)\((.*?)\)/);
+                        if (match) {
+                            courseSet.add(match[1].trim());
+                            timeSet.add(match[2].trim());
+                        } else {
+                            courseSet.add(p.trim());
+                        }
+                    });
+                }
+                if (m.timeSlot) {
+                    m.timeSlot.split(',').forEach(t => timeSet.add(t.trim()));
+                }
+            });
+        }
+        
+        courseSet.delete('');
+        timeSet.delete('');
+        
+        if (courseSet.size > 0) {
+            global_course_options = Array.from(courseSet);
+        } else if (settings && settings.courses) {
+            global_course_options = settings.courses;
+        }
+        
+        global_time_options = Array.from(timeSet).sort();
+
         if (settings) {
-            if (settings.courses && settings.courses.length > 0) global_course_options = settings.courses;
-            if (settings.times && settings.times.length > 0) global_time_options = settings.times;
             if (settings.makeupCutoffs) global_makeup_cutoffs = settings.makeupCutoffs;
             if (settings.attendanceCutoffs) global_attendance_cutoffs = settings.attendanceCutoffs;
             if (settings.makeupCutoffs_student) global_makeup_cutoffs_student = settings.makeupCutoffs_student;
@@ -1014,6 +1052,14 @@ async function handleRegister(e) {
     if (data.birth_date && !data.resident_num) data.resident_num = data.birth_date;
     if (data.gender !== undefined) delete data.gender;
     if (data.birth_date !== undefined) delete data.birth_date;
+
+    if (data.paper_date) {
+        data.registeredDate = data.paper_date;
+    }
+
+    if (data.paper_tuition) data.tuition = data.paper_tuition;
+    if (data.paper_tool_fee) data.tool_fee = data.paper_tool_fee;
+    if (data.paper_total) data.amount = data.paper_total;
 
     // Remove any premium paper UI fields from data payload because DB members table doesn't have them
     const uiFieldsToRemove = [
