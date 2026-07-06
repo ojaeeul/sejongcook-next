@@ -8,7 +8,7 @@ from pathlib import Path
 
 ENV_PATH = "/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejk 4/sejongcook-next/.env.local"
 QUESTIONS_FILE = "/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejk 4/sejongcook-next/Sejong/SejongAttendance/public/questions_data.json"
-TARGET_DIR = "/Users/ojaeeul/Downloads/시험"
+TARGET_DIR = "/Users/ojaeeul/Downloads/시험/기출문제"
 HWP5TXT_PATH = "/Library/Frameworks/Python.framework/Versions/3.13/bin/hwp5txt"
 
 def load_api_keys():
