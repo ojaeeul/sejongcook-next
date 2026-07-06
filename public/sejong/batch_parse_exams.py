@@ -173,12 +173,7 @@ def main():
                         existing_questions.add(norm)
                         new_count += 1
                     else:
-                        # Replace duplicate with placeholder to maintain question count
-                        final_questions.append({
-                            "q": "[중복 문항으로 삭제되었습니다]",
-                            "o": ["-", "-", "-", "-"],
-                            "a": ""
-                        })
+                        pass # Skip duplicates entirely without adding a placeholder
                 
                 print(f"  -> Extracted {len(questions)} questions, {new_count} are new!")
                 questions_db[new_key] = final_questions
@@ -193,7 +188,13 @@ def main():
             time.sleep(1) # Slight delay
             
     print(f"Job complete! Processed {processed} files, added {added} questions total.")
+    
+    # Run the clean and HTML generation script
+    print("Running HTML generation and cleanup...")
+    subprocess.run(["python3", "/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejk 4/sejongcook-next/merge_and_clean.py"])
+    
     # Run the deployment command
+    print("Deploying changes...")
     subprocess.run(["/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejk 4/sejongcook-next/시스템_시작.command"])
 
 if __name__ == "__main__":
