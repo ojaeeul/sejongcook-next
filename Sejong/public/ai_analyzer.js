@@ -926,6 +926,32 @@ async function executeAnalysis(base64Data, fileName, imgUrl, textContent = null)
     }
 }
 
+function formatAnswerSheetToTable(text) {
+    if (!text || text.trim() === '') return '문서에서 별도로 인식된 답안지가 없습니다. 본문 HTML을 확인해주세요.';
+    const regex = /(\d+)(?:번)?\s*[:.\-]?\s*([1-5①②③④⑤])/g;
+    const matches = [...text.matchAll(regex)];
+    if (matches.length < 5) return text;
+    
+    const cols = 10;
+    let tableHtml = '<table style="width:100%; border-collapse:collapse; text-align:center; font-size:1rem; border: 1px solid #94a3b8; background: #fff; margin-top: 5px;"><tbody>';
+    for (let i = 0; i < Math.ceil(matches.length / cols); i++) {
+        let rowHtml = '<tr>';
+        for (let j = 0; j < cols; j++) {
+            const index = i * cols + j;
+            if (index < matches.length) {
+                const qNum = matches[index][1];
+                const ans = matches[index][2];
+                rowHtml += `<td style="border: 1px solid #cbd5e1; padding: 6px 2px; background:#f8fafc; font-weight:bold; color:#64748b; width:5%; font-size:0.9rem;">${qNum}</td>`;
+                rowHtml += `<td style="border: 1px solid #cbd5e1; padding: 6px 2px; color:#1d4ed8; width:5%; font-weight:900; font-size:1.05rem;">${ans}</td>`;
+            } else {
+                rowHtml += '<td style="border: 1px solid #cbd5e1;"></td><td style="border: 1px solid #cbd5e1;"></td>';
+            }
+        }
+        rowHtml += '</tr>';
+    }
+    tableHtml += '</tbody></table>';
+    return tableHtml;
+}
 function renderExamResult(id, data) {
     updateCardStatus(id, 'success', '분석 완료');
     const content = document.getElementById(`content-${id}`);
@@ -933,7 +959,7 @@ function renderExamResult(id, data) {
     const html = `
         <div style="margin-top:10px; border-top: 2px dashed #94a3b8; padding-top: 15px;">
             <div style="margin-bottom: 8px; font-weight: bold; color: #1e293b; font-size: 1.1rem;">📝 별도 추출된 답안지 (정답표)</div>
-            <div style="width:100%; min-height:80px; padding:15px; border:2px solid #3b82f6; border-radius:8px; background:#eff6ff; overflow:auto; color:#1e3a8a; white-space: pre-wrap; font-size: 1.05rem; font-weight: 500; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);">${data['답안지'] || '문서에서 별도로 인식된 답안지가 없습니다. 본문 HTML을 확인해주세요.'}</div>
+            <div style="width:100%; min-height:80px; padding:15px; border:2px solid #3b82f6; border-radius:8px; background:#eff6ff; overflow:auto; color:#1e3a8a; white-space: pre-wrap; font-size: 1.05rem; font-weight: 500; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);">${formatAnswerSheetToTable(data['답안지'])}</div>
             <textarea class="result-input" data-id="${id}" data-field="답안지" style="display:none;">${data['답안지'] || ''}</textarea>
         </div>
         <div style="margin-top:15px;">
@@ -978,7 +1004,9 @@ window.openAnswerSheetWindow = function(id) {
         return;
     }
     const answerData = textarea.value;
-    const newWin = window.open('', '_blank', 'width=600,height=800');
+    const displayHtml = typeof formatAnswerSheetToTable === 'function' ? formatAnswerSheetToTable(answerData) : answerData;
+
+    const newWin = window.open('', '_blank', 'width=800,height=600');
     if (!newWin) {
         alert("팝업 차단을 해제해주세요.");
         return;
@@ -993,7 +1021,7 @@ window.openAnswerSheetWindow = function(id) {
             <style>
                 body { font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif; padding: 30px; line-height: 1.8; background: #f8fafc; color: #0f172a; }
                 h2 { color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 15px; margin-bottom: 25px; font-size: 1.5rem; text-align: center; }
-                .content { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); white-space: pre-wrap; font-size: 1.15rem; }
+                .content { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); white-space: pre-wrap; font-size: 1.15rem; overflow-x: auto; }
                 .btn-container { text-align: center; margin-top: 30px; }
                 .btn { display: inline-block; padding: 12px 24px; background: #2563eb; color: white; border: none; border-radius: 8px; cursor: pointer; text-decoration: none; font-size: 1.1rem; font-weight: bold; box-shadow: 0 2px 4px rgba(37,99,235,0.3); transition: all 0.2s; }
                 .btn:hover { background: #1d4ed8; transform: translateY(-1px); }
@@ -1006,7 +1034,7 @@ window.openAnswerSheetWindow = function(id) {
         </head>
         <body>
             <h2>📝 답안지 추출 결과</h2>
-            <div class="content">${answerData}</div>
+            <div class="content">${displayHtml}</div>
             <div class="btn-container">
                 <button class="btn" onclick="window.print()">🖨️ 인쇄하기</button>
             </div>
