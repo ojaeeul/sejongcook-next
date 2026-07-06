@@ -985,7 +985,7 @@ function renderExamResult(id, data) {
     
     let finalContent = data['전체내용'] || '';
     if (finalContent) {
-        finalContent = `<h1 style="text-align:center; color:#1e293b; font-size:1.5rem; font-weight:bold; margin-bottom:20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">${title}</h1>\n` + finalContent;
+        finalContent = `<h1 contenteditable="true" onblur="const ta = document.querySelector('.result-input[data-id=\\'${id}\\'][data-field=\\'전체내용\\']'); if(ta) ta.value = document.getElementById('html-container-${id}').innerHTML;" style="text-align:center; color:#1e293b; font-size:1.3rem; font-weight:bold; margin-top:0; margin-bottom:10px; border-bottom: 2px solid #e2e8f0; padding-bottom: 5px; outline:none; cursor:text;" title="클릭하여 제목 수정 가능">${title}</h1>\n` + finalContent;
     }
     
     const html = `
@@ -996,7 +996,7 @@ function renderExamResult(id, data) {
         </div>
         <div style="margin-top:15px;">
             <div style="margin-bottom: 5px; font-weight: bold; color: #334155; font-size: 0.9rem;">분석 결과 (원본 페이지 재현)</div>
-            <div style="width:100%; min-height:300px; padding:20px; border:1px solid #cbd5e1; border-radius:6px; background:#fff; overflow:auto; color:#000;">
+            <div id="html-container-${id}" style="width:100%; min-height:300px; padding:10px 15px; border:1px solid #cbd5e1; border-radius:6px; background:#fff; overflow:auto; color:#000;">
                 ${finalContent}
             </div>
             <textarea class="result-input" data-id="${id}" data-field="전체내용" style="display:none;">${finalContent}</textarea>
