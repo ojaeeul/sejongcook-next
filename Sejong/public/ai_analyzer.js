@@ -581,6 +581,7 @@ function createCardUI(title, imgUrl, id) {
     const card = document.createElement('div');
     card.className = 'result-card processing';
     card.id = `card-${id}`;
+    card.dataset.mode = window.currentMode || currentMode;
     
     card.innerHTML = `
         <div class="result-header">
@@ -904,6 +905,14 @@ async function executeAnalysis(base64Data, fileName, imgUrl, textContent = null)
     updateProgress();
 
     if (result) {
+        window.rawParsedResults = window.rawParsedResults || {};
+        window.rawParsedResults[id] = {
+            mode: currentMode,
+            data: result,
+            imageUrl: imgUrl,
+            fileName: fileName
+        };
+        
         if (currentMode === 'phonebook' && Array.isArray(result)) {
             renderPhonebookResult(id, result);
         } else if (currentMode === 'exam') {
@@ -1503,9 +1512,94 @@ function renderPhonebookResult(id, dataList) {
     content.innerHTML = html;
 }
 
-function removeCard(id) {
-    document.getElementById(`card-${id}`).remove();
-}
+window.removeCard = window.deleteCard = function(id) {
+    const card = document.getElementById(`card-${id}`);
+    if (card) card.remove();
+    if (window.rawParsedResults && window.rawParsedResults[id]) {
+        delete window.rawParsedResults[id];
+    }
+};
+
+window.exportAnalysis = function() {
+    const cards = document.querySelectorAll('.result-card');
+    if (cards.length === 0) {
+        alert('저장할 분석 결과가 없습니다.');
+        return;
+    }
+
+    const exportData = [];
+
+    cards.forEach(card => {
+        const id = card.id.replace('card-', '');
+        if (window.rawParsedResults && window.rawParsedResults[id]) {
+            exportData.push(window.rawParsedResults[id]);
+        }
+    });
+
+    if (exportData.length === 0) {
+        alert('백업할 데이터가 없습니다 (분석이 진행중이거나 원본 데이터가 손상됨).');
+        return;
+    }
+
+    const dataStr = JSON.stringify(exportData, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    a.href = url;
+    const dateStr = new Date().toISOString().split('T')[0];
+    a.download = `세종요리_분석백업_${dateStr}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+};
+
+window.importAnalysis = function(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const exportData = JSON.parse(e.target.result);
+            if (!Array.isArray(exportData)) throw new Error('올바른 배열 형식이 아닙니다.');
+
+            // Clear current grid
+            document.getElementById('resultsGrid').innerHTML = '';
+            window.rawParsedResults = window.rawParsedResults || {};
+            
+            // Recreate cards
+            exportData.forEach(item => {
+                const id = Date.now() + Math.floor(Math.random() * 100000); // Generate new ID
+                const mode = item.mode;
+                
+                const prevMode = window.currentMode;
+                window.currentMode = mode;
+                
+                createCardUI(item.fileName || '백업에서 복원됨', item.imageUrl || '', id);
+                
+                window.rawParsedResults[id] = item;
+                
+                if (mode === 'student') {
+                    renderStudentResult(id, item.data);
+                } else if (mode === 'phonebook') {
+                    renderPhonebookResult(id, item.data);
+                } else if (mode === 'exam') {
+                    renderExamResult(id, item.data);
+                }
+                
+                window.currentMode = prevMode;
+            });
+            
+            alert(`성공적으로 ${exportData.length}개의 결과를 복원했습니다.`);
+        } catch(err) {
+            alert('파일을 읽는 중 오류가 발생했습니다. 올바른 백업 파일인지 확인해주세요.\\n' + err.message);
+        }
+    };
+    reader.readAsText(file);
+    event.target.value = ''; // Reset input
+};
 
 function addAICourseRow(id) {
     const container = document.getElementById(`course-container-${id}`);
