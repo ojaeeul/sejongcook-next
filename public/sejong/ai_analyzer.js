@@ -926,7 +926,7 @@ async function executeAnalysis(base64Data, fileName, imgUrl, textContent = null)
     }
 }
 
-function formatAnswerSheetToTable(text) {
+function formatAnswerSheetToTable(text, deletedAnswers = []) {
     const maxQuestions = 60;
     const answers = new Array(maxQuestions).fill('');
     
@@ -937,7 +937,11 @@ function formatAnswerSheetToTable(text) {
             const qNum = parseInt(match[1], 10);
             const ans = match[2];
             if (qNum >= 1 && qNum <= maxQuestions) {
-                answers[qNum - 1] = ans;
+                if (!deletedAnswers.includes(qNum)) {
+                    answers[qNum - 1] = ans;
+                } else {
+                    answers[qNum - 1] = ''; // Clear answer for duplicates
+                }
             }
         }
     }
@@ -954,23 +958,27 @@ function formatAnswerSheetToTable(text) {
             const ans = answers[index];
             
             rowHtml += `<td style="border: 1px solid #cbd5e1; padding: 6px 2px; background:#f8fafc; font-weight:bold; color:#64748b; width:5%; font-size:0.9rem;">${qNum}</td>`;
-            rowHtml += `<td style="border: 1px solid #cbd5e1; padding: 6px 2px; color:#1d4ed8; width:5%; font-weight:900; font-size:1.05rem;">${ans}</td>`;
+            if (deletedAnswers.includes(qNum)) {
+                rowHtml += `<td style="border: 1px solid #cbd5e1; padding: 6px 2px; color:#ef4444; width:5%; font-weight:900; font-size:1.05rem;">-</td>`;
+            } else {
+                rowHtml += `<td style="border: 1px solid #cbd5e1; padding: 6px 2px; color:#1d4ed8; width:5%; font-weight:900; font-size:1.05rem;">${ans}</td>`;
+            }
         }
         rowHtml += '</tr>';
-        tableHtml += rowHtml; // Fix: append the row to the table!
+        tableHtml += rowHtml; 
     }
     tableHtml += '</tbody></table>';
     
-    // If AI failed to extract anything and outputted something else, show the raw text as fallback.
     const hasAnyAnswer = answers.some(a => a !== '');
-    if (!hasAnyAnswer && text && text.trim() !== '') {
+    if (!hasAnyAnswer && text && text.trim() !== '' && deletedAnswers.length === 0) {
         tableHtml += `<div style="margin-top: 10px; color: #ef4444; font-size: 0.9rem; font-weight: bold;">⚠️ AI가 정답을 자동 추출하지 못했습니다. 원본 텍스트:</div>`;
         tableHtml += `<div style="margin-top: 5px; font-size: 0.95rem; color: #475569; border: 1px solid #e2e8f0; padding: 10px; border-radius: 6px; background: #f8fafc; white-space: pre-wrap;">${text}</div>`;
     }
     
     return tableHtml;
 }
-function renderExamResult(id, data) {
+
+async function renderExamResult(id, data) {
     updateCardStatus(id, 'success', '분석 완료');
     const content = document.getElementById(`content-${id}`);
     
@@ -984,6 +992,71 @@ function renderExamResult(id, data) {
     }
     
     let finalContent = data['전체내용'] || '';
+    let deletedAnswers = [];
+    
+    // Client-side deduplication against questions_data.json
+    try {
+        const res = await fetch('/api/sejong/questions');
+        if (res.ok) {
+            const dbData = await res.json();
+            const existingSet = new Set();
+            
+            // Build normalized set
+            for (const cat in dbData) {
+                if (Array.isArray(dbData[cat])) {
+                    for (const q of dbData[cat]) {
+                        if (q.q && !q.q.includes("중복")) {
+                            let norm = q.q.replace(/^[\d①-⑳가-하a-zA-Z]+[\.\)]?\s*/, '').replace(/[\s\W_]+/g, '');
+                            if (norm) existingSet.add(norm);
+                        }
+                    }
+                }
+            }
+            
+            // Parse HTML and check duplicates
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = finalContent;
+            
+            // Find elements that look like a question (e.g., "1. 식품위생법...")
+            const walker = document.createTreeWalker(tempDiv, NodeFilter.SHOW_TEXT, null, false);
+            let node;
+            while (node = walker.nextNode()) {
+                const text = node.nodeValue.trim();
+                const match = text.match(/^(\d+)\.\s*(.*)/);
+                if (match) {
+                    const qNum = parseInt(match[1], 10);
+                    const qText = match[2];
+                    const normText = qText.replace(/[\s\W_]+/g, '');
+                    
+                    if (normText && existingSet.has(normText)) {
+                        // It's a duplicate!
+                        deletedAnswers.push(qNum);
+                        
+                        // Replace the entire parent element's content
+                        const parent = node.parentElement;
+                        if (parent) {
+                            parent.innerHTML = `<span style="color:#ef4444; font-weight:bold;">${qNum}. [중복 문항으로 삭제되었습니다]</span>`;
+                            // Try to remove following siblings if they are choices (1., 2., 3., 4.)
+                            let next = parent.nextElementSibling;
+                            for (let i=0; i<4; i++) {
+                                if (next && (next.innerText.match(/^[①-④1-4]/) || next.innerText.match(/^[가-라]/))) {
+                                    const toRemove = next;
+                                    next = next.nextElementSibling;
+                                    toRemove.remove();
+                                } else {
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            finalContent = tempDiv.innerHTML;
+        }
+    } catch (e) {
+        console.error("Deduplication error:", e);
+    }
+    
     if (finalContent) {
         finalContent = `<h1 contenteditable="true" onblur="const ta = document.querySelector('.result-input[data-id=\\'${id}\\'][data-field=\\'전체내용\\']'); if(ta) ta.value = document.getElementById('html-container-${id}').innerHTML;" style="text-align:center; color:#1e293b; font-size:1.3rem; font-weight:bold; margin-top:0; margin-bottom:10px; border-bottom: 2px solid #e2e8f0; padding-bottom: 5px; outline:none; cursor:text;" title="클릭하여 제목 수정 가능">${title}</h1>\n` + finalContent;
     }
@@ -991,7 +1064,7 @@ function renderExamResult(id, data) {
     const html = `
         <div style="margin-top:10px; border-top: 2px dashed #94a3b8; padding-top: 15px;">
             <div style="margin-bottom: 8px; font-weight: bold; color: #1e293b; font-size: 1.1rem;">📝 별도 추출된 답안지 (정답표)</div>
-            <div style="width:100%; min-height:80px; padding:15px; border:2px solid #3b82f6; border-radius:8px; background:#eff6ff; overflow:auto; color:#1e3a8a; white-space: pre-wrap; font-size: 1.05rem; font-weight: 500; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);">${formatAnswerSheetToTable(data['답안지'])}</div>
+            <div style="width:100%; min-height:80px; padding:15px; border:2px solid #3b82f6; border-radius:8px; background:#eff6ff; overflow:auto; color:#1e3a8a; white-space: pre-wrap; font-size: 1.05rem; font-weight: 500; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);">${formatAnswerSheetToTable(data['답안지'], deletedAnswers)}</div>
             <textarea class="result-input" data-id="${id}" data-field="답안지" style="display:none;">${data['답안지'] || ''}</textarea>
         </div>
         <div style="margin-top:15px;">
