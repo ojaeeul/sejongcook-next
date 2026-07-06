@@ -53,7 +53,7 @@ window.syncSidebar = async function (forceData = null) {
             try {
                 let db = window.EXAM_DATA_DB;
                 if (!db) {
-                    const qRes = await fetch(`/api/sejong/questions?t=${Date.now()}`);
+                    const qRes = await fetch(`questions_data.json?t=${Date.now()}`);
                     if (qRes.ok) db = await qRes.json();
                 }
                 if (db) {
