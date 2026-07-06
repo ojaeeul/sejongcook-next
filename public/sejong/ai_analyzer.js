@@ -722,16 +722,15 @@ async function executeAnalysis(base64Data, fileName, imgUrl, textContent = null)
 사진이 거꾸로(180도) 찍혀 있거나 옆으로 돌아가 있을 수 있으니, 글자 방향을 스스로 판단하여 이미지를 회전시킨 상태로 읽어주세요.
 
 [중요 지시사항]
-1. 사용자는 이 이미지에 있는 텍스트뿐만 아니라 그림, 도형, 그래프, 3D 이미지, 표, 수식, 배치 등 모든 시각적 요소가 완벽하게 동일하게 보이는 '웹 페이지(HTML/CSS)'를 원합니다.
-2. 이미지의 전체적인 레이아웃, 색상, 여백, 선, 폰트 스타일, 크기를 CSS를 사용하여 원본과 똑같이 구현하세요.
-3. 표, 그래프, 도형, 3D 요소, 그림 등은 반드시 HTML 요소나 SVG, CSS 스타일을 이용하여 시각적으로 최대한 원본과 똑같이 묘사하고 그려내세요. 절대 텍스트로만 대충 넘기지 마세요.
-4. 모든 코드는 하나의 <div> 컨테이너 안에 들어가야 하며, 인라인 CSS 또는 <style> 태그를 사용하여 독립적으로 렌더링되게 하세요. JavaScript는 제외하세요.
-5. 사진에 없는 내용을 지어내지 마세요. (No Hallucination)
-6. 문서에 정답표나 테이블이 있다면 절대로 생략하거나 요약하지 말고, 전체 페이지 내용을 원본 그대로 완벽한 HTML 표(Table)로 구현해서 보여주세요.
+1. 사용자는 이 이미지/문서에 있는 내용을 완벽한 '웹 페이지(HTML/CSS)'로 보길 원합니다.
+2. 하지만 이 문서는 60문제의 기출문제 등 내용이 매우 길기 때문에, AI의 출력 한계로 인해 뒷부분이 잘릴 수 있습니다.
+3. 따라서 **가장 중요한 "정답표(답안지)"**를 무조건 제일 먼저 찾아내어, JSON의 `"답안지"` 필드에 텍스트 형식으로 추출해야 합니다. 정답표는 보통 문서 맨 끝부분에 있습니다.
+4. "답안지" 추출이 끝난 후, "전체내용" 필드에 전체 페이지 내용을 HTML/CSS로 그려내세요. 분량이 너무 길어 본문 HTML 생성이 중간에 끊기더라도 "답안지"는 확보되었으므로 괜찮습니다.
 
 다음 정보를 추출하여 정확히 아래 형식의 JSON 객체로 반환하세요. JSON 코드 블록 없이 순수 JSON 텍스트만 출력하세요.
 {
-    "전체내용": "여기에 작성된 완벽한 HTML/CSS/SVG 코드를 줄바꿈 포함하여 입력하세요."
+    "답안지": "문서 맨 마지막 등에 있는 정답표(1번부터 60번까지의 정답)를 찾아내어 텍스트로 추출하세요. (예: 1번: 2, 2번: 1, 3번: 4...)",
+    "전체내용": "여기에 작성된 완벽한 HTML/CSS 코드를 줄바꿈 포함하여 입력하세요."
 }`;
     } else {
         prompt = `이 이미지는 요리학원의 수강생 등록 원서입니다. 
@@ -846,8 +845,29 @@ async function executeAnalysis(base64Data, fileName, imgUrl, textContent = null)
                                     throw new Error("No JSON structure found");
                                 }
                             } catch (fallbackErr) {
-                                console.error('JSON Parse Error:', fallbackErr, 'Text:', text);
-                                lastError = '결과 데이터 파싱 실패: ' + fallbackErr.message;
+                                // Token limit truncation fallback
+                                if (currentMode === 'exam') {
+                                    let answerMatch = text.match(/"답안지"\s*:\s*"([^"]*)"/);
+                                    let htmlMatch = text.match(/"전체내용"\s*:\s*"([\s\S]*)/);
+                                    
+                                    if (answerMatch || htmlMatch) {
+                                        result = {};
+                                        if (answerMatch) result['답안지'] = answerMatch[1].replace(/\\n/g, '\n').replace(/\\"/g, '"');
+                                        if (htmlMatch) {
+                                            let htmlStr = htmlMatch[1];
+                                            htmlStr = htmlStr.replace(/"\s*}$/, '');
+                                            htmlStr = htmlStr.replace(/\\n/g, '\n').replace(/\\"/g, '"');
+                                            result['전체내용'] = htmlStr;
+                                        }
+                                        console.log("Truncated JSON successfully rescued via Regex.");
+                                    } else {
+                                        console.error('JSON Parse Error:', fallbackErr, 'Text:', text);
+                                        lastError = '결과 데이터 파싱 실패: ' + fallbackErr.message;
+                                    }
+                                } else {
+                                    console.error('JSON Parse Error:', fallbackErr, 'Text:', text);
+                                    lastError = '결과 데이터 파싱 실패: ' + fallbackErr.message;
+                                }
                                 retryCount++;
                                 continue;
                             }
@@ -909,12 +929,20 @@ function renderExamResult(id, data) {
     const content = document.getElementById(`content-${id}`);
     
     const html = `
-        <div style="margin-top:10px;">
+        <div style="margin-top:10px; border-top: 2px dashed #94a3b8; padding-top: 15px;">
+            <div style="margin-bottom: 8px; font-weight: bold; color: #1e293b; font-size: 1.1rem;">📝 별도 추출된 답안지 (정답표)</div>
+            <div style="width:100%; min-height:80px; padding:15px; border:2px solid #3b82f6; border-radius:8px; background:#eff6ff; overflow:auto; color:#1e3a8a; white-space: pre-wrap; font-size: 1.05rem; font-weight: 500; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);">${data['답안지'] || '문서에서 별도로 인식된 답안지가 없습니다. 본문 HTML을 확인해주세요.'}</div>
+            <textarea class="result-input" data-id="${id}" data-field="답안지" style="display:none;">${data['답안지'] || ''}</textarea>
+        </div>
+        <div style="margin-top:15px;">
             <div style="margin-bottom: 5px; font-weight: bold; color: #334155; font-size: 0.9rem;">분석 결과 (원본 페이지 재현)</div>
             <div style="width:100%; min-height:300px; padding:20px; border:1px solid #cbd5e1; border-radius:6px; background:#fff; overflow:auto; color:#000;">
                 ${data['전체내용'] || ''}
             </div>
+            <textarea class="result-input" data-id="${id}" data-field="전체내용" style="display:none;">${data['전체내용'] || ''}</textarea>
+        </div>
         <div style="display:flex; justify-content:flex-end; margin-top:10px; gap:8px;">
+            <button onclick="openAnswerSheetWindow('${id}')" style="background:#0ea5e9; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:0.85rem; font-weight:bold;"><i class="fas fa-external-link-alt"></i> 별도 창으로 보기 (답안지)</button>
             <button onclick="saveExamQuestion('${id}')" style="background:#16a34a; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:0.85rem; font-weight:bold;"><i class="fas fa-save"></i> 과정에 추가</button>
             <button onclick="copyExamData('${id}')" style="background:#475569; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:0.85rem;">복사하기</button>
             <button class="btn-delete" onclick="deleteCard('${id}')" style="padding:6px 12px; font-size:0.85rem;">삭제</button>
