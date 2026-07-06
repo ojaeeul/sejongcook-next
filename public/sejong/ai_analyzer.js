@@ -927,29 +927,47 @@ async function executeAnalysis(base64Data, fileName, imgUrl, textContent = null)
 }
 
 function formatAnswerSheetToTable(text) {
-    if (!text || text.trim() === '') return '문서에서 별도로 인식된 답안지가 없습니다. 본문 HTML을 확인해주세요.';
-    const regex = /(\d+)(?:번)?\s*[:.\-]?\s*([1-5①②③④⑤])/g;
-    const matches = [...text.matchAll(regex)];
-    if (matches.length < 5) return text;
+    const maxQuestions = 60;
+    const answers = new Array(maxQuestions).fill('');
+    
+    if (text && text.trim() !== '') {
+        const regex = /([1-6]?\d)(?:번|문항)?\D{1,10}?([1-5①②③④⑤])/g;
+        const matches = [...text.matchAll(regex)];
+        for (const match of matches) {
+            const qNum = parseInt(match[1], 10);
+            const ans = match[2];
+            if (qNum >= 1 && qNum <= maxQuestions) {
+                answers[qNum - 1] = ans;
+            }
+        }
+    }
     
     const cols = 10;
+    const rows = Math.ceil(maxQuestions / cols);
     let tableHtml = '<table style="width:100%; border-collapse:collapse; text-align:center; font-size:1rem; border: 1px solid #94a3b8; background: #fff; margin-top: 5px;"><tbody>';
-    for (let i = 0; i < Math.ceil(matches.length / cols); i++) {
+    
+    for (let i = 0; i < rows; i++) {
         let rowHtml = '<tr>';
         for (let j = 0; j < cols; j++) {
             const index = i * cols + j;
-            if (index < matches.length) {
-                const qNum = matches[index][1];
-                const ans = matches[index][2];
-                rowHtml += `<td style="border: 1px solid #cbd5e1; padding: 6px 2px; background:#f8fafc; font-weight:bold; color:#64748b; width:5%; font-size:0.9rem;">${qNum}</td>`;
-                rowHtml += `<td style="border: 1px solid #cbd5e1; padding: 6px 2px; color:#1d4ed8; width:5%; font-weight:900; font-size:1.05rem;">${ans}</td>`;
-            } else {
-                rowHtml += '<td style="border: 1px solid #cbd5e1;"></td><td style="border: 1px solid #cbd5e1;"></td>';
-            }
+            const qNum = index + 1;
+            const ans = answers[index];
+            
+            rowHtml += `<td style="border: 1px solid #cbd5e1; padding: 6px 2px; background:#f8fafc; font-weight:bold; color:#64748b; width:5%; font-size:0.9rem;">${qNum}</td>`;
+            rowHtml += `<td style="border: 1px solid #cbd5e1; padding: 6px 2px; color:#1d4ed8; width:5%; font-weight:900; font-size:1.05rem;">${ans}</td>`;
         }
         rowHtml += '</tr>';
+        tableHtml += rowHtml; // Fix: append the row to the table!
     }
     tableHtml += '</tbody></table>';
+    
+    // If AI failed to extract anything and outputted something else, show the raw text as fallback.
+    const hasAnyAnswer = answers.some(a => a !== '');
+    if (!hasAnyAnswer && text && text.trim() !== '') {
+        tableHtml += `<div style="margin-top: 10px; color: #ef4444; font-size: 0.9rem; font-weight: bold;">⚠️ AI가 정답을 자동 추출하지 못했습니다. 원본 텍스트:</div>`;
+        tableHtml += `<div style="margin-top: 5px; font-size: 0.95rem; color: #475569; border: 1px solid #e2e8f0; padding: 10px; border-radius: 6px; background: #f8fafc; white-space: pre-wrap;">${text}</div>`;
+    }
+    
     return tableHtml;
 }
 function renderExamResult(id, data) {
