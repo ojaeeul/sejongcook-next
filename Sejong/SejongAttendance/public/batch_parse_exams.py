@@ -8,7 +8,7 @@ from pathlib import Path
 
 ENV_PATH = "/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejk 4/sejongcook-next/.env.local"
 QUESTIONS_FILE = "/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejk 4/sejongcook-next/Sejong/SejongAttendance/public/questions_data.json"
-TARGET_DIR = "/Users/ojaeeul/Downloads/시험/기출문제"
+TARGET_DIR = "/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejk 4/sejongcook-next/기출문제"
 HWP5TXT_PATH = "/Library/Frameworks/Python.framework/Versions/3.13/bin/hwp5txt"
 
 def load_api_keys():
@@ -77,7 +77,7 @@ def parse_with_ai(text):
     key = get_next_key()
     if not key: return []
         
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={key}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={key}"
     headers = {'Content-Type': 'application/json'}
     data = {
         "contents": [{"parts": [{"text": prompt + "\n\n[TEXT_START]\n" + safe_text}]}],
@@ -101,7 +101,7 @@ def parse_with_ai(text):
             except Exception as e:
                 print("Failed to parse JSON from AI response:", e)
         elif resp.status_code in [429, 503]:
-            print(f"Rate limit or overloaded ({resp.status_code}). Waiting 10s...")
+            print(f"Rate limit or overloaded ({resp.status_code}): {resp.text}. Waiting 10s...")
             time.sleep(10)
             return parse_with_ai(text)
         else:
