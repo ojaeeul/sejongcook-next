@@ -49,7 +49,7 @@ def determine_category(filename):
     if "제빵" in filename: return "제빵"
     return "미분류"
 
-def parse_with_ai(text):
+def parse_with_ai(text, retries=5):
     prompt = """
 다음은 객관식 시험지(문항, 보기, 정답) 텍스트입니다.
 문서 전체를 읽고, 모든 객관식 문제를 누락 없이 배열로 추출하세요.
@@ -74,40 +74,50 @@ def parse_with_ai(text):
         }
     }
 
-    key = get_next_key()
-    if not key: return []
-        
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={key}"
-    headers = {'Content-Type': 'application/json'}
-    data = {
-        "contents": [{"parts": [{"text": prompt + "\n\n[TEXT_START]\n" + safe_text}]}],
-        "generationConfig": {
-            "response_mime_type": "application/json",
-            "response_schema": schema
+    for attempt in range(retries):
+        key = get_next_key()
+        if not key: return []
+            
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key={key}"
+        headers = {'Content-Type': 'application/json'}
+        data = {
+            "contents": [{"parts": [{"text": prompt + "\n\n[TEXT_START]\n" + safe_text}]}],
+            "generationConfig": {
+                "response_mime_type": "application/json",
+                "response_schema": schema
+            }
         }
-    }
 
-    try:
-        resp = requests.post(url, headers=headers, json=data)
-        if resp.status_code == 200:
-            result = resp.json()
-            try:
-                res_text = result['candidates'][0]['content']['parts'][0]['text']
-                parsed = json.loads(res_text)
-                if isinstance(parsed, list):
-                    # Filter out any badly formatted ones
-                    valid = [p for p in parsed if len(p.get("o", [])) >= 2 and str(p.get("a", "")).strip() != ""]
-                    return valid
-            except Exception as e:
-                print("Failed to parse JSON from AI response:", e)
-        elif resp.status_code in [429, 503]:
-            print(f"Rate limit or overloaded ({resp.status_code}): {resp.text}. Waiting 10s...")
+        try:
+            resp = requests.post(url, headers=headers, json=data, timeout=60)
+            if resp.status_code == 200:
+                result = resp.json()
+                try:
+                    res_text = result['candidates'][0]['content']['parts'][0]['text']
+                    parsed = json.loads(res_text)
+                    if isinstance(parsed, list):
+                        # Filter out any badly formatted ones
+                        valid = [p for p in parsed if len(p.get("o", [])) >= 2 and str(p.get("a", "")).strip() != ""]
+                        return valid
+                except Exception as e:
+                    print("Failed to parse JSON from AI response:", e)
+                    return []
+            elif resp.status_code in [429, 503]:
+                print(f"Rate limit or overloaded ({resp.status_code}): {resp.text}. Waiting 10s... (Attempt {attempt+1}/{retries})")
+                time.sleep(10)
+                continue
+            else:
+                print(f"API Error {resp.status_code}: {resp.text}")
+                return []
+        except requests.exceptions.Timeout:
+            print(f"Timeout on AI request. Waiting 10s... (Attempt {attempt+1}/{retries})")
             time.sleep(10)
-            return parse_with_ai(text)
-        else:
-            print(f"API Error {resp.status_code}: {resp.text}")
-    except Exception as e:
-        print("Exception calling AI:", e)
+            continue
+        except Exception as e:
+            print("Exception calling AI:", e)
+            return []
+            
+    print("Failed after all retries.")
     return []
 
 def normalize_text(text):
