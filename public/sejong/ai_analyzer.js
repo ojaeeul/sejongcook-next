@@ -1699,7 +1699,6 @@ async function saveStudent(id) {
         phone_guardian: document.getElementById(`parentPhone-${id}`)?.value || '',
         address: document.getElementById(`address-${id}`)?.value || '',
         school: document.getElementById(`school-${id}`)?.value || '',
-        course_select: '', // Usually unused if course is populated
         start_date: document.getElementById(`startDate-${id}`)?.value || '',
         course: finalCourse,
         notes: combinedNotes,
@@ -1708,7 +1707,6 @@ async function saveStudent(id) {
         school_level: document.getElementById(`schoolLevel-${id}`)?.value || '',
         grade: document.getElementById(`grade-${id}`)?.value || '',
         resident_num: birthValue,
-        gender: gender,
         tuition: fee,
         tool_fee: toolFee
     };
