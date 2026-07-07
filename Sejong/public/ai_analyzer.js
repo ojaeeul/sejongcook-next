@@ -1710,8 +1710,7 @@ async function saveStudent(id) {
         resident_num: birthValue,
         gender: gender,
         tuition: fee,
-        tool_fee: toolFee,
-        amount: totalFee
+        tool_fee: toolFee
     };
 
     try {
