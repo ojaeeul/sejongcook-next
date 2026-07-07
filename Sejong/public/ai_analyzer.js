@@ -1706,9 +1706,7 @@ async function saveStudent(id) {
         type: document.getElementById(`type-${id}`)?.value || 'student',
         school_level: document.getElementById(`schoolLevel-${id}`)?.value || '',
         grade: document.getElementById(`grade-${id}`)?.value || '',
-        resident_num: birthValue,
-        tuition: fee,
-        tool_fee: toolFee
+        resident_num: birthValue
     };
 
     try {
