@@ -518,7 +518,10 @@ async function processHWP(file) {
                         // Increase timeout from 800ms to 3000ms to allow large exams with complex tables to fully render
                         await new Promise(r => setTimeout(r, 3000)); 
 
-                        textContent = captureDiv.innerText || captureDiv.textContent || "";
+                        // Extract text only if the backend extraction failed
+                        if (!textContent) {
+                            textContent = captureDiv.innerText || captureDiv.textContent || "";
+                        }
 
                         if (typeof html2canvas !== 'undefined') {
                             // Ensure all images are loaded before capturing
@@ -529,7 +532,7 @@ async function processHWP(file) {
                         console.warn("HWP Viewer 렌더링 실패...", viewerErr);
                     }
                     
-                    // Fallback text extraction if Viewer text is empty
+                    // Fallback text extraction if Viewer text is empty and backend failed
                     if (!textContent || textContent.trim().length === 0) {
                         if (hwp.sections && hwp.sections.length > 0) {
                             for (let section of hwp.sections) {
