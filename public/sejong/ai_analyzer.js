@@ -474,7 +474,36 @@ async function processExcel(file) {
 }
 
 async function processHWP(file) {
-    return new Promise((resolve) => {
+    return new Promise(async (resolve) => {
+        let preExtractedHtml = null;
+        let backendTextContent = "";
+        
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            const extractRes = await fetch('/api/sejong/hwp-extract', { method: 'POST', body: formData });
+            if (extractRes.ok) {
+                const extractData = await extractRes.json();
+                if (extractData.html) {
+                    preExtractedHtml = extractData.html;
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = preExtractedHtml;
+                    backendTextContent = tempDiv.innerText || tempDiv.textContent || "";
+                }
+            }
+        } catch (err) {
+            console.warn("Backend HWP extraction failed", err);
+        }
+
+        if (preExtractedHtml && backendTextContent) {
+            const dummyImageSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect width="200" height="200" fill="#f1f5f9"/><text x="50%" y="50%" font-family="Arial" font-size="24" fill="#64748b" dominant-baseline="middle" text-anchor="middle">HWP 문서</text></svg>';
+            const base64Image = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(dummyImageSvg)));
+            const finalBase64 = base64Image.split(',')[1];
+            await analyzeImage(finalBase64, file.name, base64Image, backendTextContent, preExtractedHtml);
+            resolve();
+            return;
+        }
+
         const reader = new FileReader();
         reader.onload = async (e) => {
             let captureDiv = null;
@@ -672,12 +701,12 @@ const CONCURRENCY_LIMIT = 5;
 let activeRequests = 0;
 const requestQueue = [];
 
-async function analyzeImage(base64Data, fileName, imgUrl, textContent = null) {
+async function analyzeImage(base64Data, fileName, imgUrl, textContent = null, preExtractedHtml = null) {
     return new Promise((resolve) => {
         requestQueue.push(async () => {
             activeRequests++;
             try {
-                await executeAnalysis(base64Data, fileName, imgUrl, textContent);
+                await executeAnalysis(base64Data, fileName, imgUrl, textContent, preExtractedHtml);
             } catch(e) {
                 console.error(e);
             } finally {
@@ -697,7 +726,7 @@ function processQueue() {
     }
 }
 
-async function executeAnalysis(base64Data, fileName, imgUrl, textContent = null) {
+async function executeAnalysis(base64Data, fileName, imgUrl, textContent = null, preExtractedHtml = null) {
     const id = Date.now() + Math.floor(Math.random() * 1000);
     const card = createCardUI(fileName, imgUrl, id);
     
@@ -714,7 +743,18 @@ async function executeAnalysis(base64Data, fileName, imgUrl, textContent = null)
     ]
     이름이나 글씨를 절대 유추해서 획일화하지 말고, 적혀있는 그대로(예: 민지영, 민수정, 민원기, 민종훈, 문다빈, 문승희 등) 정확하게 판독하세요. 찾을 수 없으면 빈 배열 []을 반환하세요. JSON 코드 블록 없이 순수 JSON 텍스트만 출력하세요.`;
         } else if (currentMode === 'exam') {
-            prompt = `이 이미지는 요리학원 수강생의 시험지(또는 평가지)이거나 일반 문서입니다.
+            if (preExtractedHtml) {
+                prompt = `이 문서는 요리학원 수강생의 시험지(또는 평가지)입니다.
+    
+    [중요 지시사항]
+    가장 중요한 "정답(답안지)"를 무조건 찾아내어, JSON의 "답안지" 필드에 텍스트 형식으로 추출해야 합니다.
+    
+    다음 정보를 추출하여 정확히 아래 형식의 JSON 객체로 반환하세요. JSON 코드 블록 없이 순수 JSON 텍스트만 출력하세요.
+    {
+        "답안지": "문서 내에 있는 모든 정답(1번부터 끝번까지)을 빠짐없이 찾아내어 텍스트로 추출하세요. (표가 깨져서 섞여있더라도 논리적으로 유추하여 '1번: 2, 2번: 1...' 형식으로 추출할 것. 단, 절대 지어내지는 말 것)"
+    }`;
+            } else {
+                prompt = `이 이미지는 요리학원 수강생의 시험지(또는 평가지)이거나 일반 문서입니다.
     사진이 거꾸로(180도) 찍혀 있거나 옆으로 돌아가 있을 수 있으니, 글자 방향을 스스로 판단하여 이미지를 회전시킨 상태로 읽어주세요.
 
     [중요 지시사항]
@@ -907,6 +947,15 @@ async function executeAnalysis(base64Data, fileName, imgUrl, textContent = null)
 
     if (result) {
         window.rawParsedResults = window.rawParsedResults || {};
+        
+        if (preExtractedHtml && currentMode === 'exam') {
+            if (Array.isArray(result) && result.length > 0) {
+                result[0]['전체내용'] = preExtractedHtml;
+            } else {
+                result['전체내용'] = preExtractedHtml;
+            }
+        }
+        
         window.rawParsedResults[id] = {
             mode: currentMode,
             data: result,
