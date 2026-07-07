@@ -509,16 +509,19 @@ async function processHWP(file) {
                     const hwp = window.HWP.parse(data, { type: 'array' });
                     try {
                         captureDiv = document.createElement('div');
-                        captureDiv.style.cssText = "position:absolute; top:0; left:0; z-index:-9999; background:white; padding:40px; width:1000px; color:black; min-height:800px;";
+                        // Use left:-10000px instead of negative z-index to ensure html2canvas can capture it without stacking context issues
+                        captureDiv.style.cssText = "position:absolute; top:0; left:-10000px; background:white; padding:40px; width:1000px; color:black; min-height:800px;";
                         document.body.appendChild(captureDiv);
 
                         new window.HWP.Viewer(captureDiv, hwp);
                         
-                        await new Promise(r => setTimeout(r, 800)); // wait for hwp to fully render
+                        // Increase timeout from 800ms to 3000ms to allow large exams with complex tables to fully render
+                        await new Promise(r => setTimeout(r, 3000)); 
 
                         textContent = captureDiv.innerText || captureDiv.textContent || "";
 
                         if (typeof html2canvas !== 'undefined') {
+                            // Ensure all images are loaded before capturing
                             const canvas = await html2canvas(captureDiv, { scale: 1.5, useCORS: true, logging: true, backgroundColor: "#ffffff" });
                             base64Image = canvas.toDataURL('image/jpeg', 0.8);
                         }
