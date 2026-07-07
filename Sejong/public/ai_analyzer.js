@@ -1122,17 +1122,17 @@ async function renderExamResult(id, data) {
     }
     
     const html = `
-        <div style="margin-top:10px; border-top: 2px dashed #94a3b8; padding-top: 15px;">
-            <div style="margin-bottom: 8px; font-weight: bold; color: #1e293b; font-size: 1.1rem;">📝 별도 추출된 답안지 (정답표)</div>
-            <div style="width:100%; min-height:80px; padding:15px; border:2px solid #3b82f6; border-radius:8px; background:#eff6ff; overflow:auto; color:#1e3a8a; white-space: pre-wrap; font-size: 1.05rem; font-weight: 500; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);">${formatAnswerSheetToTable(data['답안지'], deletedAnswers)}</div>
-            <textarea class="result-input" data-id="${id}" data-field="답안지" style="display:none;">${data['답안지'] || ''}</textarea>
-        </div>
         <div style="margin-top:15px;">
             <div style="margin-bottom: 5px; font-weight: bold; color: #334155; font-size: 0.9rem;">분석 결과 (원본 페이지 재현)</div>
             <div id="html-container-${id}" style="width:100%; min-height:300px; padding:10px 15px; border:1px solid #cbd5e1; border-radius:6px; background:#fff; overflow:auto; color:#000;">
                 ${finalContent}
             </div>
             <textarea class="result-input" data-id="${id}" data-field="전체내용" style="display:none;">${finalContent}</textarea>
+        </div>
+        <div style="margin-top:10px; border-top: 2px dashed #94a3b8; padding-top: 15px;">
+            <div style="margin-bottom: 8px; font-weight: bold; color: #1e293b; font-size: 1.1rem;">📝 별도 추출된 답안지 (정답표)</div>
+            <div style="width:100%; min-height:80px; padding:15px; border:2px solid #3b82f6; border-radius:8px; background:#eff6ff; overflow:auto; color:#1e3a8a; white-space: pre-wrap; font-size: 1.05rem; font-weight: 500; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);">${formatAnswerSheetToTable(data['답안지'], deletedAnswers)}</div>
+            <textarea class="result-input" data-id="${id}" data-field="답안지" style="display:none;">${data['답안지'] || ''}</textarea>
         </div>
         <div style="display:flex; justify-content:flex-end; margin-top:10px; gap:8px;">
             <button onclick="openAnswerSheetWindow('${id}')" style="background:#0ea5e9; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:0.85rem; font-weight:bold;"><i class="fas fa-external-link-alt"></i> 별도 창으로 보기 (답안지)</button>
