@@ -78,7 +78,7 @@ def parse_with_ai(text, retries=5):
         key = get_next_key()
         if not key: return []
             
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key={key}"
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key={key}"
         headers = {'Content-Type': 'application/json'}
         data = {
             "contents": [{"parts": [{"text": prompt + "\n\n[TEXT_START]\n" + safe_text}]}],
