@@ -1220,10 +1220,19 @@ async function renderExamResult(id, data) {
             #html-container-${id} * { 
                 position: static !important; 
                 height: auto !important; 
+                max-height: none !important;
                 transform: none !important; 
+                float: none !important;
+                left: auto !important;
+                right: auto !important;
+                top: auto !important;
+                bottom: auto !important;
+                text-indent: 0 !important;
                 margin-top: 0 !important; 
                 line-height: 1.6 !important; 
             }
+            #html-container-${id} p, #html-container-${id} div { margin-bottom: 0.5em !important; }
+            #html-container-${id} td, #html-container-${id} th { padding: 5px !important; }
         </style>
         <div style="margin-top:15px;">
             <div style="margin-bottom: 5px; font-weight: bold; color: #334155; font-size: 0.9rem;">분석 결과 (원본 페이지 재현)</div>
