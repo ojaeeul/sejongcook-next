@@ -1120,6 +1120,26 @@ async function renderExamResult(id, data) {
                 let hasAnswerTable = false;
 
                 while (node && node !== examStartNode) {
+                    const txt = node.textContent.trim();
+                    // 첫 번째 나오는 대제목(건시스템, 기출문제 등)은 상단에 남겨두고 양쪽 단을 차지하게 합니다.
+                    if (nodesToMove.length === 0 && (txt.includes('건시스템') || txt.includes('기출문제') || txt.includes('모의고사') || txt.length < 40) && !txt.includes('답안') && node.tagName !== 'TABLE' && node.tagName !== 'HR') {
+                        if (node.style) {
+                            node.style.columnSpan = 'all';
+                            node.style.WebkitColumnSpan = 'all';
+                        }
+                        node = node.nextElementSibling;
+                        continue;
+                    }
+                    // 대제목 직후에 나오는 가로줄(hr)이나 빈 줄도 상단에 남겨둡니다.
+                    if (nodesToMove.length === 0 && (node.tagName === 'HR' || txt === '')) {
+                        if (node.style) {
+                            node.style.columnSpan = 'all';
+                            node.style.WebkitColumnSpan = 'all';
+                        }
+                        node = node.nextElementSibling;
+                        continue;
+                    }
+                    
                     nodesToMove.push(node);
                     if (node.tagName === 'TABLE' || node.querySelector('table')) {
                         hasAnswerTable = true; // 표가 있으면 정답표일 확률이 높음
@@ -1200,7 +1220,7 @@ async function renderExamResult(id, data) {
         </style>
         <div style="margin-top:15px;">
             <div style="margin-bottom: 5px; font-weight: bold; color: #334155; font-size: 0.9rem;">분석 결과 (원본 페이지 재현)</div>
-            <div id="html-container-${id}" style="column-count: 2; column-gap: 30px; column-rule: 1px dashed #cbd5e1; width:100%; min-height:300px; padding:20px 25px; border:1px solid #cbd5e1; border-radius:6px; background:#fff; overflow:auto; color:#000; font-size: 0.95rem; line-height: 1.6;">
+            <div id="html-container-${id}" style="column-count: 2; column-gap: 40px; column-rule: 1px solid #94a3b8; width:100%; min-height:300px; padding:20px 25px; border:1px solid #cbd5e1; border-radius:6px; background:#fff; overflow:auto; color:#000; font-size: 0.95rem; line-height: 1.6;">
                 ${finalContent}
             </div>
             <textarea class="result-input" data-id="${id}" data-field="전체내용" style="display:none;">${finalContent}</textarea>
