@@ -1082,30 +1082,83 @@ async function renderExamResult(id, data) {
             tempDiv.innerHTML = finalContent;
             
             // 정답표(답안) 맨 밑으로 이동 로직
-            const firstTable = tempDiv.querySelector('table');
-            if (firstTable) {
-                const tableText = firstTable.innerText || '';
-                // 답안표인지 대략적으로 유추 (숫자가 많음)
-                if (tableText.includes('1') && tableText.includes('5') && tableText.includes('10')) {
-                    const answerSection = document.createElement('div');
-                    answerSection.style.marginTop = '40px';
-                    answerSection.style.paddingTop = '20px';
-                    answerSection.style.borderTop = '2px dashed #cbd5e1';
-                    answerSection.innerHTML = '<h3 style="color:#1e40af; margin-bottom:15px; text-align:center;">📝 정답표</h3>';
-                    
-                    let prev = firstTable.previousElementSibling;
-                    const nodesToMove = [firstTable];
-                    
-                    // 위로 올라가면서 과목 정보나 답안 제목 등을 같이 수집
+            let startNode = null;
+            // 1. "답안"이라는 텍스트가 포함된 제목 요소를 찾습니다.
+            const textNodes = Array.from(tempDiv.querySelectorAll('*'));
+            for (const el of textNodes) {
+                if (el.children.length === 0 && el.textContent && el.textContent.includes('모의고사 답안')) {
+                    // 최상위 노드(tempDiv의 직계 자식) 찾기
+                    let top = el;
+                    while (top.parentElement && top.parentElement !== tempDiv) {
+                        top = top.parentElement;
+                    }
+                    startNode = top;
+                    break;
+                }
+            }
+
+            // 2. 만약 "모의고사 답안" 텍스트를 못 찾았다면 첫 번째 표를 시작점으로 합니다.
+            if (!startNode) {
+                const firstTable = tempDiv.querySelector('table');
+                if (firstTable) {
+                    let top = firstTable;
+                    while (top.parentElement && top.parentElement !== tempDiv) {
+                        top = top.parentElement;
+                    }
+                    startNode = top;
+                    // 앞쪽에 제목이 있는지 조금 더 찾습니다.
+                    let prev = startNode.previousElementSibling;
                     while (prev) {
-                        const txt = prev.innerText || '';
+                        const txt = prev.innerText || prev.textContent || '';
                         if (txt.includes('답안') || txt.includes('과목') || txt.includes('문제') || txt.includes('시행')) {
-                            nodesToMove.unshift(prev);
+                            startNode = prev;
                             prev = prev.previousElementSibling;
                         } else {
                             break;
                         }
                     }
+                }
+            }
+
+            if (startNode) {
+                let currentNode = startNode;
+                const nodesToMove = [];
+                let foundTable = false;
+                
+                // startNode부터 시작해서 표(Table)가 포함된 부분까지 전부 수집합니다.
+                while (currentNode) {
+                    nodesToMove.push(currentNode);
+                    if (currentNode.tagName === 'TABLE' || currentNode.querySelector('table')) {
+                        foundTable = true;
+                        // 표가 여러 개 연속으로 있을 수 있으므로 연속된 표까지 모두 수집
+                        let next = currentNode.nextElementSibling;
+                        while (next && (next.tagName === 'TABLE' || next.querySelector('table') || (next.textContent && next.textContent.trim() === ''))) {
+                            nodesToMove.push(next);
+                            currentNode = next;
+                            next = next.nextElementSibling;
+                        }
+                        break; // 정답표 영역 수집 완료
+                    }
+                    currentNode = currentNode.nextElementSibling;
+                    
+                    // 무한 방지: 수집 중 '과목' 본문 문제 시작 패턴이 나오면 중단
+                    if (currentNode && currentNode.textContent) {
+                        const txt = currentNode.textContent.trim();
+                        if (txt.match(/^1\./) || txt.match(/^【1과목】/)) {
+                            break;
+                        }
+                    }
+                }
+
+                if (foundTable && nodesToMove.length > 0) {
+                    const answerSection = document.createElement('div');
+                    answerSection.style.marginTop = '40px';
+                    answerSection.style.paddingTop = '20px';
+                    answerSection.style.borderTop = '2px dashed #cbd5e1';
+                    answerSection.style.backgroundColor = '#f8fafc';
+                    answerSection.style.padding = '20px';
+                    answerSection.style.borderRadius = '8px';
+                    answerSection.innerHTML = '<h3 style="color:#1e40af; margin-bottom:15px; text-align:center; font-size:1.2rem; font-weight:bold;">📝 정답표</h3>';
                     
                     nodesToMove.forEach(node => answerSection.appendChild(node));
                     tempDiv.appendChild(answerSection);
