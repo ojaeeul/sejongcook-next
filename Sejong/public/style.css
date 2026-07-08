@@ -1914,6 +1914,12 @@ input:checked+.slider:before {
     color: #334155;
     line-height: 1.2;
     margin-bottom: 1px;
+    display: flex;
+}
+
+.pdf-opt-content {
+    flex: 1;
+    word-break: break-word;
 }
 
 .pdf-opt-num {
@@ -3245,16 +3251,12 @@ label {
     }
 
     .pdf-q-item {
-        display: inline-block;
-        width: 48%;
+        display: block;
+        width: 100%;
         margin-bottom: 15px;
-        vertical-align: top;
-        /* margin-right: 2%; */
+        break-inside: avoid;
+        page-break-inside: avoid;
     }
-
-    /* Simulate columns using CSS columns? Or just float? 
-       Using inline-block is safer than multi-column for breaking
-    */
 
     .pdf-page-break {
         display: block;

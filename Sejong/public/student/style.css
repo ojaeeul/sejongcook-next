@@ -1605,6 +1605,12 @@ input:checked+.slider:before {
     color: #334155;
     line-height: 1.2;
     margin-bottom: 1px;
+    display: flex;
+}
+
+.pdf-opt-content {
+    flex: 1;
+    word-break: break-word;
 }
 
 .pdf-opt-num {

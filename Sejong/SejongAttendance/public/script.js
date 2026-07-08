@@ -1976,13 +1976,15 @@ window.loadExamView = async function (key) {
 
             const optionsHtml = item.o.map((opt, i) => `
                 <div class="pdf-opt">
-                    <span class="pdf-opt-num">${['①', '②', '③', '④'][i]}</span> ${opt}
+                    <span class="pdf-opt-num">${['①', '②', '③', '④'][i]}</span> 
+                    <span class="pdf-opt-content">${opt}</span>
                 </div>
             `).join('');
 
             qBox.innerHTML = `
                 <div class="pdf-q-text">
-                    <span class="pdf-q-num">${index + 1}.</span> ${item.q}
+                    <span class="pdf-q-num">${index + 1}.</span> 
+                    <span class="pdf-q-content" style="flex: 1; word-break: break-word;">${item.q}</span>
                 </div>
                 <div class="pdf-options">${optionsHtml}</div>
             `;
