@@ -38,7 +38,32 @@ export async function POST(req: Request) {
         
         // Read index.xhtml
         const htmlPath = path.join(htmlOutDir, 'index.xhtml');
-        const htmlContent = await fs.readFile(htmlPath, 'utf-8');
+        let htmlContent = await fs.readFile(htmlPath, 'utf-8');
+        
+        // Inline images as Base64 to fix broken example boxes/images
+        const bindataDir = path.join(htmlOutDir, 'bindata');
+        try {
+            const files = await fs.readdir(bindataDir);
+            for (const file of files) {
+                const filePath = path.join(bindataDir, file);
+                const ext = path.extname(file).toLowerCase();
+                let mimeType = 'image/png';
+                if (ext === '.jpg' || ext === '.jpeg') mimeType = 'image/jpeg';
+                else if (ext === '.gif') mimeType = 'image/gif';
+                else if (ext === '.svg') mimeType = 'image/svg+xml';
+                
+                const fileData = await fs.readFile(filePath);
+                const base64Data = fileData.toString('base64');
+                const dataUri = `data:${mimeType};base64,${base64Data}`;
+                
+                // Replace both variants: "bindata/file" and "./bindata/file"
+                const regex1 = new RegExp(`bindata/${file}`, 'g');
+                const regex2 = new RegExp(`\\./bindata/${file}`, 'g');
+                htmlContent = htmlContent.replace(regex2, dataUri).replace(regex1, dataUri);
+            }
+        } catch (e) {
+            // Ignored if bindata does not exist
+        }
         
         // Clean up immediately
         await fs.rm(tempDir, { recursive: true, force: true }).catch(() => {});
