@@ -1214,7 +1214,7 @@ async function renderExamResult(id, data) {
     
     const html = `
         <style>
-            #html-container-${id} * { max-width: 100% !important; box-sizing: border-box; }
+            #html-container-${id} img, #html-container-${id} table, #html-container-${id} div, #html-container-${id} p { max-width: 100% !important; box-sizing: border-box; }
             #html-container-${id} img { height: auto !important; }
             #html-container-${id} table { border-collapse: collapse; }
         </style>
