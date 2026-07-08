@@ -1119,9 +1119,18 @@ async function renderExamResult(id, data) {
                 let node = tempDiv.firstElementChild;
                 let hasAnswerTable = false;
 
-                // 1. 문서 안의 페이지 머리말/꼬리말(쪽 번호, 과목명 워터마크 등) 제거하여 중간에 글자 겹치는 현상 원천 차단
-                const hwpHeaders = tempDiv.querySelectorAll('.hwp-header, .hwp-footer, .header, .footer, [style*="z-index:-1"], [style*="z-index: -1"]');
+                // 1. 문서 안의 페이지 머리말/꼬리말(쪽 번호, 과목명 워터마크 등) 제거하여 중간에 글자 겹치거나 끼어드는 현상 원천 차단
+                const hwpHeaders = tempDiv.querySelectorAll('.hwp-header, .hwp-footer, .header, .footer, [style*="z-index:-1"], [style*="z-index: -1"], [style*="position: absolute"], [style*="position:absolute"]');
                 hwpHeaders.forEach(el => el.remove());
+                
+                // 추가로, 텍스트 중간에 뜬금없이 들어간 과목명 찌꺼기(SPAN 태그) 제거
+                const spans = tempDiv.querySelectorAll('span');
+                spans.forEach(span => {
+                    const txt = span.textContent.trim();
+                    if (/^[1-9]과목\s*[:：]\s*.+$/.test(txt) && txt.length < 30) {
+                        span.remove();
+                    }
+                });
 
                 // 2. hwp-page 래퍼가 2단 레이아웃을 망치지 않도록 해제 (unwrap)
                 const pageWrappers = tempDiv.querySelectorAll('.hwp-page, .page');
