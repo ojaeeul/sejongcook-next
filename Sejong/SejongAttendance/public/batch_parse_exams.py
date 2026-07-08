@@ -216,15 +216,10 @@ def main():
                     print(f"    [WARN] Unresolvable answer '{q_obj.get('a')}' for question: {q_obj.get('q')[:20]}")
                     continue
                 q_obj["a"] = ans_idx
-                
-                q_text = q_obj.get("q", "")
-                norm = normalize_text(q_text)
-                if norm and norm not in existing_questions:
-                    final_questions.append(q_obj)
-                    existing_questions.add(norm)
-                    new_count += 1
+                final_questions.append(q_obj)
+                new_count += 1
             
-            print(f"  -> Extracted {len(questions)} questions, {new_count} are new!")
+            print(f"  -> Extracted {len(questions)} questions!")
             if new_count > 0:
                 questions_db[new_key] = final_questions
                 added += new_count
