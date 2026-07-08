@@ -1898,6 +1898,15 @@ input:checked+.slider:before {
     color: #1e293b;
     display: flex;
     line-height: 1.2;
+    width: 100%;
+}
+
+.pdf-q-content {
+    flex: 1;
+    min-width: 0;
+    word-wrap: break-word;
+    word-break: break-all;
+    white-space: normal;
 }
 
 .pdf-q-num {
@@ -1915,11 +1924,15 @@ input:checked+.slider:before {
     line-height: 1.2;
     margin-bottom: 1px;
     display: flex;
+    width: 100%;
 }
 
 .pdf-opt-content {
     flex: 1;
-    word-break: break-word;
+    min-width: 0;
+    word-wrap: break-word;
+    word-break: break-all;
+    white-space: normal;
 }
 
 .pdf-opt-num {
