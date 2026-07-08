@@ -1953,31 +1953,21 @@ input:checked+.slider:before {
     color: #ef4444;
 }
 
-/* New Web Exam Page Layout (Page > Col > Question) */
+/* New Web Exam Page Layout (Page > Question) */
 .web-exam-page {
-    display: flex;
-    flex-wrap: wrap;
     width: 100%;
     margin-bottom: 40px;
     padding-bottom: 40px;
-    border-bottom: 4px double #ccc;
-    /* Visual separator */
     background: white;
+    column-count: 2;
+    column-gap: 30px;
+    column-rule: 1px dashed #ccc;
 }
 
-.exam-col-left,
-.exam-col-right {
-    width: 50%;
-    padding: 0 10px;
-    /* Reduced padding to let text fill the width */
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-}
-
-.exam-col-left {
-    border-right: 1px dashed #eee;
-    /* Light separator */
+.pdf-q-item {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    margin-bottom: 20px;
 }
 
 @media print {
@@ -1987,23 +1977,11 @@ input:checked+.slider:before {
         margin-bottom: 0;
         padding-bottom: 0;
         border-bottom: none;
-        height: 100%;
-        /* Fill page */
-        page-break-after: always;
-        break-after: page;
-        display: flex !important;
-        /* Ensure flex */
-    }
-
-    .exam-col-left,
-    .exam-col-right {
-        width: 50% !important;
-        padding: 0 10px !important;
-        /* Minimal padding for max text width */
-        border: none !important;
-        /* remove dashed line on print if preferred, or keep */
+        height: auto;
         display: block !important;
-        /* Or flex column */
+        column-count: 2 !important;
+        column-gap: 30px !important;
+        column-rule: 1px dashed #ccc !important;
     }
 }
 

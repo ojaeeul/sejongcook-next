@@ -1959,40 +1959,16 @@ window.loadExamView = async function (key) {
         listBody.innerHTML = '';
         listBody.className = ''; // Reset class, we manage layout internally
 
-        // Chunk questions into pages of 16
-        for (let i = 0; i < questions.length; i += 16) {
-            const pageChunk = questions.slice(i, i + 16);
-
-            // Create Page Container
-            const pageDiv = document.createElement('div');
-            pageDiv.className = 'web-exam-page';
-
-            // Left Column (First 8)
-            const leftCol = document.createElement('div');
-            leftCol.className = 'exam-col-left';
-            const leftQuestions = pageChunk.slice(0, 8);
-
-            leftQuestions.forEach((item, idx) => {
-                const globalIndex = i + idx;
-                const qBox = createQuestionElement(item, globalIndex);
-                leftCol.appendChild(qBox);
-            });
-
-            // Right Column (Next 8)
-            const rightCol = document.createElement('div');
-            rightCol.className = 'exam-col-right';
-            const rightQuestions = pageChunk.slice(8, 16);
-
-            rightQuestions.forEach((item, idx) => {
-                const globalIndex = i + 8 + idx;
-                const qBox = createQuestionElement(item, globalIndex);
-                rightCol.appendChild(qBox);
-            });
-
-            pageDiv.appendChild(leftCol);
-            pageDiv.appendChild(rightCol);
-            listBody.appendChild(pageDiv);
-        }
+        // Use CSS columns for automatic flowing instead of hardcoded 16 chunks
+        const pageDiv = document.createElement('div');
+        pageDiv.className = 'web-exam-page';
+        
+        questions.forEach((item, idx) => {
+            const qBox = createQuestionElement(item, idx);
+            pageDiv.appendChild(qBox);
+        });
+        
+        listBody.appendChild(pageDiv);
 
         function createQuestionElement(item, index) {
             const qBox = document.createElement('div');
