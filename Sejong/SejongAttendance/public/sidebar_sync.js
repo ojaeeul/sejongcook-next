@@ -53,20 +53,7 @@ window.syncSidebar = async function (forceData = null) {
 
         if (examMenu && examMenu.classList.contains('nav-sub-menu')) {
             let html = '';
-            
-            // Try to get available auto-collected exams
-            let autoExams = [];
-            try {
-                let db = window.EXAM_DATA_DB;
-                if (!db) {
-                    const qRes = await fetch(`questions_data.json?t=${Date.now()}`);
-                    if (qRes.ok) db = await qRes.json();
-                }
-                if (db) {
-                    autoExams = Object.keys(db).filter(k => k.includes('자동수집'));
-                }
-            } catch (e) { console.error("Failed to load auto exams for sidebar", e); }
-
+            // Removed auto-collected exams fetching logic
             allExamCourses.forEach(catObj => {
                 // Category Level
                 html += `<div class="nav-category toggle-category" onclick="if(typeof toggleNavSub === 'function') toggleNavSub(this)">📁 ${catObj.category}</div>\n`;
@@ -93,19 +80,9 @@ window.syncSidebar = async function (forceData = null) {
                         });
                     }
 
-                    // 2. 기출 자동수집 폴더 렌더링
-                    if (autoExams.length > 0) {
-                        html += `    <div class="nav-category toggle-category" onclick="if(typeof toggleNavSub === 'function') toggleNavSub(this)" style="padding-left: 20px; font-size: 0.9rem;">기출 자동수집</div>\n`;
-                        html += `    <div class="nav-sub-menu">\n`;
-                        autoExams.forEach(key => {
-                            let displayName = key.split('자동수집_').pop().replace('.hwp', '').replace('.pdf', '');
-                            if (displayName.length > 18) displayName = displayName.substring(0, 18) + '...';
-                            html += `        <a href="javascript:void(0)" onclick="if(typeof loadExamView === 'function') loadExamView('${key}')" class="nav-item" style="padding-left: 30px;" title="${key}">${displayName}</a>\n`;
-                        });
-                        html += `    </div>\n`;
-                    }
+                    // Removed auto collection rendering
                     
-                    if ((!catObj.courses || catObj.courses.length === 0) && autoExams.length === 0) {
+                    if ((!catObj.courses || catObj.courses.length === 0)) {
                         html += `    <a href="javascript:void(0)" class="nav-item" style="padding-left: 20px; color:#94a3b8;">과정 없음</a>\n`;
                     }
                 } else if (catObj.courses && catObj.courses.length > 0) {

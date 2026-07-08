@@ -8,6 +8,7 @@ from pathlib import Path
 
 ENV_PATH = "/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejk 4/sejongcook-next/.env.local"
 QUESTIONS_FILE = "/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejk 4/sejongcook-next/Sejong/SejongAttendance/public/questions_data.json"
+EXAM_COURSES_FILE = "/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejk 4/sejongcook-next/Sejong/SejongAttendance/public/exam_courses.json"
 TARGET_DIR = "/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejk 4/sejongcook-next/기출문제"
 HWP5TXT_PATH = "/Library/Frameworks/Python.framework/Versions/3.13/bin/hwp5txt"
 
@@ -125,6 +126,21 @@ def normalize_text(text):
     t = re.sub(r'[\s\W_]+', '', t)
     return t
 
+def resolve_answer(q_obj):
+    ans = str(q_obj.get("a", "")).strip()
+    opts = q_obj.get("o", [])
+    if not ans or len(opts) < 2: return None
+    if ans in ["1", "2", "3", "4"]: return int(ans)
+    mapping = {"가":1, "나":2, "다":3, "라":4, "①":1, "②":2, "③":3, "④":4}
+    for k, v in mapping.items():
+        if k in ans: return v
+    for i, opt in enumerate(opts):
+        if normalize_text(ans) == normalize_text(opt): return i + 1
+        if len(ans) > 2 and normalize_text(ans) in normalize_text(opt): return i + 1
+    match = re.search(r'([1-4])', ans)
+    if match: return int(match.group(1))
+    return None
+
 def main():
     if not os.path.exists(QUESTIONS_FILE): questions_db = {}
     else:
@@ -181,8 +197,7 @@ def main():
             ans_text = extract_text_hwp(ans_filepath)
             text += "\n\n[별도 파일 정답지 내용]\n" + ans_text
             
-        category = determine_category(filename)
-        new_key = f"{category}_자동수집_{filename}"
+        new_key = f"오재을_{filename}"
         
         if new_key in questions_db:
             print(f"  -> Already processed this file ({new_key}). Skipping.")
@@ -196,6 +211,12 @@ def main():
             final_questions = []
             new_count = 0
             for q_obj in questions:
+                ans_idx = resolve_answer(q_obj)
+                if not ans_idx:
+                    print(f"    [WARN] Unresolvable answer '{q_obj.get('a')}' for question: {q_obj.get('q')[:20]}")
+                    continue
+                q_obj["a"] = ans_idx
+                
                 q_text = q_obj.get("q", "")
                 norm = normalize_text(q_text)
                 if norm and norm not in existing_questions:
@@ -217,9 +238,27 @@ def main():
         
     print(f"Job complete! Processed {processed} files, added {added} questions total.")
     
-    print("Running HTML generation and cleanup...")
-    subprocess.run(["python3", "/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejk 4/sejongcook-next/merge_and_clean.py"])
-    
+    if added > 0 and os.path.exists(EXAM_COURSES_FILE):
+        with open(EXAM_COURSES_FILE, 'r', encoding='utf-8') as f:
+            ec = json.load(f)
+        for cat in ec:
+            if cat.get('category') == '전체과정':
+                ojae_course = next((c for c in cat.get('courses', []) if isinstance(c, dict) and c.get('name') == '오재을'), None)
+                if not ojae_course:
+                    ojae_course = {"name": "오재을", "exams": []}
+                    cat['courses'].insert(0, ojae_course)
+                
+                existing_keys = [ex['key'] for ex in ojae_course.get('exams', [])]
+                for filepath in all_files:
+                    fname = os.path.basename(filepath)
+                    if "답지" in fname or "정답" in fname: continue
+                    nkey = f"오재을_{fname}"
+                    if nkey in questions_db and nkey not in existing_keys:
+                        ojae_course['exams'].append({"name": fname.replace('.hwp', ''), "key": nkey})
+                        
+        with open(EXAM_COURSES_FILE, 'w', encoding='utf-8') as f:
+            json.dump(ec, f, ensure_ascii=False, indent=2)
+            
     print("Deploying changes...")
     subprocess.run(["/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejk 4/sejongcook-next/시스템_시작.command"])
 
