@@ -71,8 +71,16 @@ window.renderCourseSettingsList = function() {
                 html += `
                     <div style="border-bottom: 1px dashed #e2e8f0; padding-bottom: 8px; margin-bottom: 8px;">
                         <div style="display:flex; justify-content:space-between; align-items:center; padding: 6px 0;">
-                            <span style="color:#334155; margin-left: 10px; cursor:pointer; font-weight: 500;" onclick="const el = this.parentElement.nextElementSibling; el.style.display = el.style.display === 'none' ? 'block' : 'none';">📂 ${courseName} (소분류 폴더) ▼</span>
-                            <button onclick="deleteExamCourseFromCategory(${catIndex}, ${courseIndex})" style="background:#f87171; color:white; border:none; padding:2px 6px; border-radius:4px; cursor:pointer; font-size:0.75rem;"><i class="fas fa-times"></i> 폴더 삭제</button>
+                            <div style="display:flex; align-items:center; gap: 8px; flex: 1;">
+                                <span style="cursor:pointer;" onclick="const el = this.parentElement.parentElement.nextElementSibling; el.style.display = el.style.display === 'none' ? 'block' : 'none';">📂</span>
+                                <input type="text" id="courseName_${catIndex}_${courseIndex}" value="${courseName}" style="flex: 1; padding:4px; border:1px solid transparent; background:transparent; font-size: 0.95rem; font-weight: 500; color:#334155;" onblur="renameExamCourse(${catIndex}, ${courseIndex}, this.value)">
+                            </div>
+                            <div style="margin-left: 10px; display: flex; gap: 4px;">
+                                <button onclick="moveCourseUp(${catIndex}, ${courseIndex})" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; padding:2px 6px; border-radius:4px; cursor:pointer; font-size:0.75rem;" title="위로 이동" ${courseIndex === 0 ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}><i class="fas fa-arrow-up"></i></button>
+                                <button onclick="moveCourseDown(${catIndex}, ${courseIndex})" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; padding:2px 6px; border-radius:4px; cursor:pointer; font-size:0.75rem;" title="아래로 이동" ${courseIndex === catObj.courses.length - 1 ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}><i class="fas fa-arrow-down"></i></button>
+                                <button onclick="document.getElementById('courseName_${catIndex}_${courseIndex}').focus()" style="background:#e0f2fe; color:#0284c7; border:none; padding:2px 6px; border-radius:4px; cursor:pointer; font-size:0.75rem;" title="이름 변경"><i class="fas fa-edit"></i> 수정</button>
+                                <button onclick="deleteExamCourseFromCategory(${catIndex}, ${courseIndex})" style="background:#f87171; color:white; border:none; padding:2px 6px; border-radius:4px; cursor:pointer; font-size:0.75rem;"><i class="fas fa-times"></i> 삭제</button>
+                            </div>
                         </div>
                         <div style="display:none; margin-left: 28px; background: #f1f5f9; padding: 8px; border-radius: 4px; border-left: 2px solid #cbd5e1; margin-top: 4px;">
                             ${examsHtml}
@@ -230,5 +238,41 @@ window.addExamToCourse = function(catIndex, courseIndex) {
     const newKey = `${courseObj.name}_${Date.now()}`;
     courseObj.exams.push({ name: newExamName, key: newKey });
     
+    saveExamCoursesToAPI();
+};
+
+window.renameExamCourse = function(catIndex, courseIndex, newName) {
+    newName = newName.trim();
+    if(!newName) return;
+    
+    const cat = window.allExamCourses[catIndex];
+    const courseObj = cat.courses[courseIndex];
+    let oldName = typeof courseObj === 'string' ? courseObj : courseObj.name;
+    
+    if(oldName !== newName) {
+        if(typeof courseObj === 'string') {
+            cat.courses[courseIndex] = { name: newName, exams: [] };
+        } else {
+            courseObj.name = newName;
+        }
+        saveExamCoursesToAPI();
+    }
+};
+
+window.moveCourseUp = function(catIndex, courseIndex) {
+    if(courseIndex <= 0) return;
+    const cat = window.allExamCourses[catIndex];
+    const temp = cat.courses[courseIndex];
+    cat.courses[courseIndex] = cat.courses[courseIndex - 1];
+    cat.courses[courseIndex - 1] = temp;
+    saveExamCoursesToAPI();
+};
+
+window.moveCourseDown = function(catIndex, courseIndex) {
+    const cat = window.allExamCourses[catIndex];
+    if(courseIndex >= cat.courses.length - 1) return;
+    const temp = cat.courses[courseIndex];
+    cat.courses[courseIndex] = cat.courses[courseIndex + 1];
+    cat.courses[courseIndex + 1] = temp;
     saveExamCoursesToAPI();
 };
