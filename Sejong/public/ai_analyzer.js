@@ -1081,6 +1081,37 @@ async function renderExamResult(id, data) {
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = finalContent;
             
+            // 정답표(답안) 맨 밑으로 이동 로직
+            const firstTable = tempDiv.querySelector('table');
+            if (firstTable) {
+                const tableText = firstTable.innerText || '';
+                // 답안표인지 대략적으로 유추 (숫자가 많음)
+                if (tableText.includes('1') && tableText.includes('5') && tableText.includes('10')) {
+                    const answerSection = document.createElement('div');
+                    answerSection.style.marginTop = '40px';
+                    answerSection.style.paddingTop = '20px';
+                    answerSection.style.borderTop = '2px dashed #cbd5e1';
+                    answerSection.innerHTML = '<h3 style="color:#1e40af; margin-bottom:15px; text-align:center;">📝 정답표</h3>';
+                    
+                    let prev = firstTable.previousElementSibling;
+                    const nodesToMove = [firstTable];
+                    
+                    // 위로 올라가면서 과목 정보나 답안 제목 등을 같이 수집
+                    while (prev) {
+                        const txt = prev.innerText || '';
+                        if (txt.includes('답안') || txt.includes('과목') || txt.includes('문제') || txt.includes('시행')) {
+                            nodesToMove.unshift(prev);
+                            prev = prev.previousElementSibling;
+                        } else {
+                            break;
+                        }
+                    }
+                    
+                    nodesToMove.forEach(node => answerSection.appendChild(node));
+                    tempDiv.appendChild(answerSection);
+                }
+            }
+
             // Find elements that look like a question (e.g., "1. 식품위생법...")
             const walker = document.createTreeWalker(tempDiv, NodeFilter.SHOW_TEXT, null, false);
             let node;
@@ -1133,13 +1164,8 @@ async function renderExamResult(id, data) {
             </div>
             <textarea class="result-input" data-id="${id}" data-field="전체내용" style="display:none;">${finalContent}</textarea>
         </div>
-        <div style="margin-top:10px; border-top: 2px dashed #94a3b8; padding-top: 15px;">
-            <div style="margin-bottom: 8px; font-weight: bold; color: #1e293b; font-size: 1.1rem;">📝 별도 추출된 답안지 (정답표)</div>
-            <div style="width:100%; min-height:80px; padding:15px; border:2px solid #3b82f6; border-radius:8px; background:#eff6ff; overflow:auto; color:#1e3a8a; white-space: pre-wrap; font-size: 1.05rem; font-weight: 500; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);">${formatAnswerSheetToTable(data['답안지'], deletedAnswers)}</div>
-            <textarea class="result-input" data-id="${id}" data-field="답안지" style="display:none;">${data['답안지'] || ''}</textarea>
-        </div>
+        <textarea class="result-input" data-id="${id}" data-field="답안지" style="display:none;">${data['답안지'] || ''}</textarea>
         <div style="display:flex; justify-content:flex-end; margin-top:10px; gap:8px;">
-            <button onclick="openAnswerSheetWindow('${id}')" style="background:#0ea5e9; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:0.85rem; font-weight:bold;"><i class="fas fa-external-link-alt"></i> 별도 창으로 보기 (답안지)</button>
             <button onclick="saveExamQuestion('${id}')" style="background:#16a34a; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:0.85rem; font-weight:bold;"><i class="fas fa-save"></i> 과정에 추가</button>
             <button onclick="copyExamData('${id}')" style="background:#475569; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:0.85rem;">복사하기</button>
             <button class="btn-delete" onclick="deleteCard('${id}')" style="padding:6px 12px; font-size:0.85rem;">삭제</button>
