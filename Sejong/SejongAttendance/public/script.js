@@ -1974,12 +1974,15 @@ window.loadExamView = async function (key) {
             const qBox = document.createElement('div');
             qBox.className = 'pdf-q-item';
 
-            const optionsHtml = item.o.map((opt, i) => `
+            const optionsHtml = item.o.map((opt, i) => {
+                const cleanOpt = String(opt).replace(/^[①②③④⑤]\s*/, '').trim();
+                return `
                 <div class="pdf-opt">
                     <span class="pdf-opt-num">${['①', '②', '③', '④'][i]}</span> 
-                    <span class="pdf-opt-content">${opt}</span>
+                    <span class="pdf-opt-content">${cleanOpt}</span>
                 </div>
-            `).join('');
+                `;
+            }).join('');
 
             qBox.innerHTML = `
                 <div class="pdf-q-text">
