@@ -1119,16 +1119,45 @@ async function renderExamResult(id, data) {
                 let node = tempDiv.firstElementChild;
                 let hasAnswerTable = false;
 
-                // 1. 문서 안의 페이지 머리말/꼬리말(쪽 번호, 과목명 워터마크 등) 제거하여 중간에 글자 겹치거나 끼어드는 현상 원천 차단
-                const hwpHeaders = tempDiv.querySelectorAll('.hwp-header, .hwp-footer, .header, .footer, [style*="z-index:-1"], [style*="z-index: -1"], [style*="position: absolute"], [style*="position:absolute"]');
-                hwpHeaders.forEach(el => el.remove());
-                
-                // 추가로, 텍스트 중간에 뜬금없이 들어간 과목명 찌꺼기(SPAN 태그) 제거
-                const spans = tempDiv.querySelectorAll('span');
-                spans.forEach(span => {
-                    const txt = span.textContent.trim();
+                // 1. 머리말/워터마크 등 절대 좌표(position:absolute) 요소 처리
+                // - 단순 텍스트(머리말, 쪽번호)면 원천 제거하여 글자 겹침 방지
+                // - 표나 배경색이 있는 유효한 박스(예: 과목명 회색 박스)면 살리되, 겹치지 않게 일반 블록(static)으로 전환
+                const absoluteElements = tempDiv.querySelectorAll('[style*="position: absolute"], [style*="position:absolute"], .hwp-header, .hwp-footer, .header, .footer, [style*="z-index:-1"], [style*="z-index: -1"]');
+                absoluteElements.forEach(el => {
+                    const hasTableOrImg = el.tagName === 'TABLE' || el.querySelector('table') || el.tagName === 'IMG' || el.querySelector('img');
+                    const hasBackground = (el.getAttribute('style') || '').includes('background') || (el.getAttribute('style') || '').includes('border');
+                    const childWithBackground = Array.from(el.querySelectorAll('*')).some(child => {
+                        const s = child.getAttribute('style') || '';
+                        return s.includes('background') || s.includes('border');
+                    });
+                    
+                    if (hasTableOrImg || hasBackground || childWithBackground) {
+                        // 유효한 글상자(과목명 박스 등) -> 살리고 정상적인 레이아웃으로 변경
+                        el.style.position = 'static';
+                        el.style.display = 'block';
+                        el.style.width = '100%';
+                        el.style.height = 'auto';
+                        el.style.marginTop = '20px';
+                        el.style.marginBottom = '20px';
+                        if (el.parentElement && el.parentElement.tagName === 'DIV' && (el.parentElement.getAttribute('style') || '').replace(/\s/g, '').includes('height:0')) {
+                            el.parentElement.style.height = 'auto';
+                            el.parentElement.style.position = 'static';
+                        }
+                    } else {
+                        // 쓸모없는 머리말, 꼬리말, 찌꺼기 텍스트 -> 완벽히 제거
+                        el.remove();
+                    }
+                });
+
+                // 추가 찌꺼기 텍스트(과목명만 둥둥 떠다니는 경우) 2차 제거
+                const phantomCandidates = tempDiv.querySelectorAll('span, p, div');
+                phantomCandidates.forEach(el => {
+                    if (el.tagName === 'TABLE' || el.querySelector('table') || el.tagName === 'IMG' || el.querySelector('img')) return;
+                    const txt = el.textContent.trim();
                     if (/^[1-9]과목\s*[:：]\s*.+$/.test(txt) && txt.length < 30) {
-                        span.remove();
+                        const style = el.getAttribute('style') || '';
+                        if (style.includes('background') || style.includes('border')) return;
+                        el.remove();
                     }
                 });
 

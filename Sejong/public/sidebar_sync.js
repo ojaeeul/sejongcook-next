@@ -2,6 +2,12 @@
 // 이 스크립트는 모든 HTML 페이지에 삽입되어,
 // 왼쪽 사이드바의 "시험지" 및 연동되는 과목 메뉴를 '/api/sejong/settings'를 기반으로 동적 생성합니다.
 
+// [FIX] 만약 현재 페이지에 loadExamView 함수가 없다면(예: ai_analyzer.html), index.html로 이동하도록 기본 함수 정의
+if (typeof window.loadExamView !== 'function') {
+    window.loadExamView = function(key) {
+        window.location.href = `index.html?viewExam=${key}`;
+    };
+}
 window.syncSidebar = async function (forceData = null) {
     try {
         let allExamCourses = [];
