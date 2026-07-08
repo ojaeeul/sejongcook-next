@@ -1119,32 +1119,38 @@ async function renderExamResult(id, data) {
                 let node = tempDiv.firstElementChild;
                 let hasAnswerTable = false;
 
-                while (node && node !== examStartNode) {
-                    const txt = node.textContent.trim();
-                    // 첫 번째 나오는 대제목(건시스템, 기출문제 등)은 상단에 남겨두고 양쪽 단을 차지하게 합니다.
-                    if (nodesToMove.length === 0 && (txt.includes('건시스템') || txt.includes('기출문제') || txt.includes('모의고사') || txt.length < 40) && !txt.includes('답안') && node.tagName !== 'TABLE' && node.tagName !== 'HR') {
-                        if (node.style) {
-                            node.style.columnSpan = 'all';
-                            node.style.WebkitColumnSpan = 'all';
-                        }
-                        node = node.nextElementSibling;
-                        continue;
+                // 1. 문서 안의 페이지 머리말/꼬리말(쪽 번호, 과목명 워터마크 등) 제거하여 중간에 글자 겹치는 현상 원천 차단
+                const hwpHeaders = tempDiv.querySelectorAll('.hwp-header, .hwp-footer, .header, .footer, [style*="z-index:-1"], [style*="z-index: -1"]');
+                hwpHeaders.forEach(el => el.remove());
+
+                // 2. hwp-page 래퍼가 2단 레이아웃을 망치지 않도록 해제 (unwrap)
+                const pageWrappers = tempDiv.querySelectorAll('.hwp-page, .page');
+                pageWrappers.forEach(page => {
+                    while (page.firstChild) {
+                        page.parentNode.insertBefore(page.firstChild, page);
                     }
-                    // 대제목 직후에 나오는 가로줄(hr)이나 빈 줄도 상단에 남겨둡니다.
-                    if (nodesToMove.length === 0 && (node.tagName === 'HR' || txt === '')) {
+                    page.remove();
+                });
+
+                // node 참조 업데이트 (unwrap 후 첫 번째 요소)
+                node = tempDiv.firstElementChild;
+
+                while (node && node !== examStartNode) {
+                    const txt = node.textContent ? node.textContent.trim() : '';
+                    
+                    // 대제목 부분(examStartNode 이전의 텍스트들)은 모두 양쪽 단을 차지하도록 설정 (표 제외)
+                    if (node.tagName !== 'TABLE' && node.tagName !== 'IMG') {
                         if (node.style) {
                             node.style.columnSpan = 'all';
                             node.style.WebkitColumnSpan = 'all';
                         }
-                        node = node.nextElementSibling;
-                        continue;
                     }
                     
                     nodesToMove.push(node);
-                    if (node.tagName === 'TABLE' || node.querySelector('table')) {
-                        hasAnswerTable = true; // 표가 있으면 정답표일 확률이 높음
+                    if (node.tagName === 'TABLE' || (node.querySelector && node.querySelector('table'))) {
+                        hasAnswerTable = true;
                     }
-                    if (node.textContent && (node.textContent.includes('답안') || node.textContent.includes('모의고사'))) {
+                    if (txt && (txt.includes('답안') || txt.includes('모의고사'))) {
                         hasAnswerTable = true;
                     }
                     node = node.nextElementSibling;
