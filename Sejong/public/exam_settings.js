@@ -72,6 +72,18 @@ window.renderCourseSettingsList = function() {
         } else {
             html += `<div style="color:#94a3b8; font-size: 0.85rem; margin-left: 10px; margin-bottom: 10px;">소분류 폴더가 없습니다.</div>`;
         }
+        
+        // [FIX] 전체과정인 경우 기출 자동수집 폴더(시스템 고정) 표시
+        if (catObj.category === '전체과정') {
+            html += `
+                <div style="border-bottom: 1px dashed #e2e8f0; padding-bottom: 8px; margin-bottom: 8px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding: 8px 0; background: #f0fdf4; border-radius: 4px;">
+                        <span style="color:#166534; margin-left: 10px; font-weight: 500;">🤖 기출 자동수집 (시스템 전용 폴더 - 자동 관리됨)</span>
+                        <span style="color:#94a3b8; font-size:0.75rem; margin-right: 10px;">삭제 불가</span>
+                    </div>
+                </div>
+            `;
+        }
 
         html += `
                     <div style="display:flex; gap:8px; margin-top: 10px; margin-left: 10px;">
