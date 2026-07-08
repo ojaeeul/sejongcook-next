@@ -2829,7 +2829,10 @@ label {
     margin-bottom: 10px;
     line-height: 1.5;
     color: #1a1a1a;
-    display: flex;
+    display: block;
+    width: 100%;
+    padding-left: 1.5rem;
+    text-indent: -1.5rem;
 }
 
 .pdf-q-num {
@@ -2850,8 +2853,10 @@ label {
 .pdf-opt {
     font-size: 0.9rem;
     color: #334155;
-    display: flex;
-    align-items: flex-start;
+    display: block;
+    width: 100%;
+    padding-left: 1.2rem;
+    text-indent: -1.2rem;
     line-height: 1.4;
 }
 
