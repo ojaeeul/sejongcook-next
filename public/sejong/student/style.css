@@ -1587,11 +1587,10 @@ input:checked+.slider:before {
     margin-bottom: 2px;
     font-size: 0.85rem;
     color: #1e293b;
-    display: block;
+    display: flex;
+    align-items: flex-start;
     line-height: 1.2;
     width: 100%;
-    padding-left: 1.2rem;
-    text-indent: -1.2rem;
 }
 
 .pdf-q-num {
@@ -1608,13 +1607,14 @@ input:checked+.slider:before {
     color: #334155;
     line-height: 1.2;
     margin-bottom: 1px;
-    display: block;
+    display: flex;
+    align-items: flex-start;
     width: 100%;
-    padding-left: 1rem;
-    text-indent: -1rem;
 }
 
 .pdf-opt-content {
+    flex: 1;
+    min-width: 0;
     word-wrap: break-word;
     word-break: break-all;
     white-space: normal;
@@ -2829,10 +2829,9 @@ label {
     margin-bottom: 10px;
     line-height: 1.5;
     color: #1a1a1a;
-    display: block;
+    display: flex;
+    align-items: flex-start;
     width: 100%;
-    padding-left: 1.5rem;
-    text-indent: -1.5rem;
 }
 
 .pdf-q-num {
@@ -2853,10 +2852,9 @@ label {
 .pdf-opt {
     font-size: 0.9rem;
     color: #334155;
-    display: block;
+    display: flex;
+    align-items: flex-start;
     width: 100%;
-    padding-left: 1.2rem;
-    text-indent: -1.2rem;
     line-height: 1.4;
 }
 
