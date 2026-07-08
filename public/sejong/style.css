@@ -1896,14 +1896,14 @@ input:checked+.slider:before {
     margin-bottom: 2px;
     font-size: 0.85rem;
     color: #1e293b;
-    display: flex;
+    display: block;
     line-height: 1.2;
     width: 100%;
+    padding-left: 1.2rem;
+    text-indent: -1.2rem;
 }
 
 .pdf-q-content {
-    flex: 1;
-    min-width: 0;
     word-wrap: break-word;
     word-break: break-all;
     white-space: normal;
@@ -1923,13 +1923,13 @@ input:checked+.slider:before {
     color: #334155;
     line-height: 1.2;
     margin-bottom: 1px;
-    display: flex;
+    display: block;
     width: 100%;
+    padding-left: 1rem;
+    text-indent: -1rem;
 }
 
 .pdf-opt-content {
-    flex: 1;
-    min-width: 0;
     word-wrap: break-word;
     word-break: break-all;
     white-space: normal;
