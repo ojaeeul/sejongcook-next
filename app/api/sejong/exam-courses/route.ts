@@ -41,6 +41,28 @@ export async function GET() {
             ];
         }
         
+        // Ensure all courses are objects: { name: string, exams: [{name, key}] }
+        if (Array.isArray(data)) {
+            data.forEach((cat: any) => {
+                if (cat.courses && Array.isArray(cat.courses)) {
+                    cat.courses = cat.courses.map((c: any) => {
+                        if (typeof c === 'string') {
+                            let prefix = c.replace("기능사", "");
+                            if (c === "제과제빵기능사") prefix = "제과제빵";
+                            let exams: any[] = [];
+                            if (!["산업기사", "가정요리", "브런치", "쿠킹클래스", "베이킹 원데이", "취미요리"].includes(c)) {
+                                for (let y = 2021; y <= 2026; y++) {
+                                    exams.push({ name: `${y}년 ${prefix}`, key: `${prefix}_${y}` });
+                                }
+                            }
+                            return { name: c, exams: exams };
+                        }
+                        return c; // Already an object
+                    });
+                }
+            });
+        }
+        
         return NextResponse.json(data);
     } catch (e: any) {
         console.error("GET Exam Courses Error:", e);

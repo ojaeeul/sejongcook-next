@@ -44,27 +44,42 @@ window.renderCourseSettingsList = function() {
         `;
 
         if (catObj.courses.length > 0) {
-            catObj.courses.forEach((course, courseIndex) => {
-                let prefix = course.replace("기능사", "");
-                if (course === "제과제빵기능사") prefix = "제과제빵";
-
-                let yearsHtml = '';
-                if (["산업기사", "가정요리", "브런치", "쿠킹클래스", "베이킹 원데이", "취미요리"].includes(course)) {
-                    yearsHtml = `<div style="padding: 4px 10px; color:#94a3b8; font-size: 0.85rem;">준비중입니다</div>`;
+            catObj.courses.forEach((courseObj, courseIndex) => {
+                let courseName = typeof courseObj === 'string' ? courseObj : courseObj.name;
+                let exams = typeof courseObj === 'string' ? null : courseObj.exams;
+                
+                let examsHtml = '';
+                if (exams && exams.length > 0) {
+                    exams.forEach((exam, examIndex) => {
+                        examsHtml += `
+                            <div style="display:flex; justify-content:space-between; align-items:center; padding: 4px 10px; border-bottom: 1px solid #f1f5f9;">
+                                <div style="display:flex; align-items:center; gap: 8px; flex: 1;">
+                                    <span style="color:#64748b; font-size: 0.85rem;">📄</span>
+                                    <input type="text" id="examName_${catIndex}_${courseIndex}_${examIndex}" value="${exam.name}" style="flex: 1; padding:4px; border:1px solid transparent; background:transparent; font-size: 0.85rem; color:#475569;" onblur="renameExamInCourse(${catIndex}, ${courseIndex}, ${examIndex}, this.value)">
+                                </div>
+                                <div style="margin-left: 10px; display: flex; gap: 4px;">
+                                    <button onclick="document.getElementById('examName_${catIndex}_${courseIndex}_${examIndex}').focus()" style="background:transparent; color:#3b82f6; border:none; padding:4px; cursor:pointer; font-size:0.8rem;" title="이름 변경"><i class="fas fa-edit"></i></button>
+                                    <button onclick="deleteExamFromCourse(${catIndex}, ${courseIndex}, ${examIndex})" style="background:transparent; color:#ef4444; border:none; padding:4px; cursor:pointer; font-size:0.8rem;" title="삭제"><i class="fas fa-trash"></i></button>
+                                </div>
+                            </div>
+                        `;
+                    });
                 } else {
-                    for (let year = 2021; year <= 2026; year++) {
-                        yearsHtml += `<div style="padding: 4px 10px; color:#64748b; font-size: 0.85rem;">📄 ${year}년 ${prefix}</div>`;
-                    }
+                    examsHtml = `<div style="padding: 4px 10px; color:#94a3b8; font-size: 0.85rem;">등록된 시험지가 없습니다.</div>`;
                 }
 
                 html += `
                     <div style="border-bottom: 1px dashed #e2e8f0; padding-bottom: 8px; margin-bottom: 8px;">
                         <div style="display:flex; justify-content:space-between; align-items:center; padding: 6px 0;">
-                            <span style="color:#334155; margin-left: 10px; cursor:pointer; font-weight: 500;" onclick="const el = this.parentElement.nextElementSibling; el.style.display = el.style.display === 'none' ? 'block' : 'none';">📂 ${course} (소분류 폴더) ▼</span>
-                            <button onclick="deleteExamCourseFromCategory(${catIndex}, ${courseIndex})" style="background:#f87171; color:white; border:none; padding:2px 6px; border-radius:4px; cursor:pointer; font-size:0.75rem;"><i class="fas fa-times"></i> 삭제</button>
+                            <span style="color:#334155; margin-left: 10px; cursor:pointer; font-weight: 500;" onclick="const el = this.parentElement.nextElementSibling; el.style.display = el.style.display === 'none' ? 'block' : 'none';">📂 ${courseName} (소분류 폴더) ▼</span>
+                            <button onclick="deleteExamCourseFromCategory(${catIndex}, ${courseIndex})" style="background:#f87171; color:white; border:none; padding:2px 6px; border-radius:4px; cursor:pointer; font-size:0.75rem;"><i class="fas fa-times"></i> 폴더 삭제</button>
                         </div>
                         <div style="display:none; margin-left: 28px; background: #f1f5f9; padding: 8px; border-radius: 4px; border-left: 2px solid #cbd5e1; margin-top: 4px;">
-                            ${yearsHtml}
+                            ${examsHtml}
+                            <div style="display:flex; gap:6px; margin-top: 8px; padding: 0 10px;">
+                                <input type="text" id="newExamInput_${catIndex}_${courseIndex}" placeholder="새 시험지 추가 (예: 모의고사 1회)" style="flex:1; padding:4px 8px; border:1px solid #cbd5e1; border-radius:4px; font-size: 0.8rem;">
+                                <button onclick="addExamToCourse(${catIndex}, ${courseIndex})" style="background:#3b82f6; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:0.8rem;"><i class="fas fa-plus"></i> 추가</button>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -145,7 +160,10 @@ window.addExamCourseToCategory = function(catIndex) {
 
     let exists = false;
     window.allExamCourses.forEach(cat => {
-        if(cat.courses.includes(newCourse)) exists = true;
+        cat.courses.forEach(c => {
+            let cName = typeof c === 'string' ? c : c.name;
+            if(cName === newCourse) exists = true;
+        });
     });
 
     if(exists) {
@@ -153,7 +171,7 @@ window.addExamCourseToCategory = function(catIndex) {
         return;
     }
 
-    window.allExamCourses[catIndex].courses.push(newCourse);
+    window.allExamCourses[catIndex].courses.push({ name: newCourse, exams: [] });
     saveExamCoursesToAPI();
 };
 
@@ -166,9 +184,51 @@ window.deleteExamCategory = function(catIndex) {
 };
 
 window.deleteExamCourseFromCategory = function(catIndex, courseIndex) {
-    const courseName = window.allExamCourses[catIndex].courses[courseIndex];
+    const courseObj = window.allExamCourses[catIndex].courses[courseIndex];
+    const courseName = typeof courseObj === 'string' ? courseObj : courseObj.name;
     if(!confirm(`'${courseName}' 과정을 삭제하시겠습니까?`)) return;
 
     window.allExamCourses[catIndex].courses.splice(courseIndex, 1);
+    saveExamCoursesToAPI();
+};
+
+window.renameExamInCourse = function(catIndex, courseIndex, examIndex, newName) {
+    newName = newName.trim();
+    if(!newName) return;
+    const courseObj = window.allExamCourses[catIndex].courses[courseIndex];
+    if(typeof courseObj === 'string') return;
+    
+    if(courseObj.exams[examIndex].name !== newName) {
+        courseObj.exams[examIndex].name = newName;
+        saveExamCoursesToAPI();
+    }
+};
+
+window.deleteExamFromCourse = function(catIndex, courseIndex, examIndex) {
+    const courseObj = window.allExamCourses[catIndex].courses[courseIndex];
+    if(typeof courseObj === 'string') return;
+    
+    const examName = courseObj.exams[examIndex].name;
+    if(!confirm(`'${examName}' 시험지를 정말 삭제하시겠습니까?`)) return;
+    
+    courseObj.exams.splice(examIndex, 1);
+    saveExamCoursesToAPI();
+};
+
+window.addExamToCourse = function(catIndex, courseIndex) {
+    const input = document.getElementById(`newExamInput_${catIndex}_${courseIndex}`);
+    const newExamName = input.value.trim();
+    if(!newExamName) {
+        alert("새 시험지 이름을 입력하세요.");
+        return;
+    }
+    
+    const courseObj = window.allExamCourses[catIndex].courses[courseIndex];
+    if(typeof courseObj === 'string') return;
+    
+    // Generate a unique key for the new exam
+    const newKey = `${courseObj.name}_${Date.now()}`;
+    courseObj.exams.push({ name: newExamName, key: newKey });
+    
     saveExamCoursesToAPI();
 };

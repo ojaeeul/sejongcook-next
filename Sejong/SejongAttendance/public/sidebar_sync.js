@@ -75,19 +75,19 @@ window.syncSidebar = async function (forceData = null) {
                 if (catObj.category === '전체과정') {
                     // 1. 유저가 추가한 하위 과정(courses) 렌더링
                     if (catObj.courses && catObj.courses.length > 0) {
-                        catObj.courses.forEach(course => {
-                            let prefix = course.replace("기능사", "");
-                            if (course === "제과제빵기능사") prefix = "제과제빵";
+                        catObj.courses.forEach(courseObj => {
+                            let courseName = typeof courseObj === 'string' ? courseObj : courseObj.name;
+                            let exams = typeof courseObj === 'string' ? null : courseObj.exams;
                             
-                            html += `    <div class="nav-category toggle-category" onclick="if(typeof toggleNavSub === 'function') toggleNavSub(this)" style="padding-left: 20px; font-size: 0.9rem;">${course}</div>\n`;
+                            html += `    <div class="nav-category toggle-category" onclick="if(typeof toggleNavSub === 'function') toggleNavSub(this)" style="padding-left: 20px; font-size: 0.9rem;">${courseName}</div>\n`;
                             html += `    <div class="nav-sub-menu">\n`;
                             
-                            if (["산업기사", "가정요리", "브런치", "쿠킹클래스", "베이킹 원데이", "취미요리"].includes(course)) {
-                                html += `        <a href="javascript:void(0)" class="nav-item" style="padding-left: 30px;">준비중입니다</a>\n`;
+                            if (exams && exams.length > 0) {
+                                exams.forEach(exam => {
+                                    html += `        <a href="javascript:void(0)" onclick="if(typeof loadExamView === 'function') loadExamView('${exam.key}')" class="nav-item" style="padding-left: 30px;">${exam.name}</a>\n`;
+                                });
                             } else {
-                                for (let year = 2021; year <= 2026; year++) {
-                                    html += `        <a href="javascript:void(0)" onclick="if(typeof loadExamView === 'function') loadExamView('${prefix}_${year}')" class="nav-item" style="padding-left: 30px;">${year}년 ${prefix}</a>\n`;
-                                }
+                                html += `        <a href="javascript:void(0)" class="nav-item" style="padding-left: 30px;">등록된 시험지 없음</a>\n`;
                             }
                             html += `    </div>\n`;
                         });
@@ -109,21 +109,20 @@ window.syncSidebar = async function (forceData = null) {
                         html += `    <a href="javascript:void(0)" class="nav-item" style="padding-left: 20px; color:#94a3b8;">과정 없음</a>\n`;
                     }
                 } else if (catObj.courses && catObj.courses.length > 0) {
-                    catObj.courses.forEach(course => {
-                        let prefix = course.replace("기능사", "");
-                        if (course === "제과제빵기능사") prefix = "제과제빵";
+                    catObj.courses.forEach(courseObj => {
+                        let courseName = typeof courseObj === 'string' ? courseObj : courseObj.name;
+                        let exams = typeof courseObj === 'string' ? null : courseObj.exams;
                         
                         // Sub-course Level
-                        html += `    <div class="nav-category toggle-category" onclick="if(typeof toggleNavSub === 'function') toggleNavSub(this)" style="padding-left: 20px; font-size: 0.9rem;">${course}</div>\n`;
+                        html += `    <div class="nav-category toggle-category" onclick="if(typeof toggleNavSub === 'function') toggleNavSub(this)" style="padding-left: 20px; font-size: 0.9rem;">${courseName}</div>\n`;
                         html += `    <div class="nav-sub-menu">\n`;
                         
-                        // 기본 과목 중 시험이 없는 항목은 준비중 표시 유지
-                        if (["산업기사", "가정요리", "브런치", "쿠킹클래스", "베이킹 원데이", "취미요리"].includes(course)) {
-                            html += `        <a href="javascript:void(0)" class="nav-item" style="padding-left: 30px;">준비중입니다</a>\n`;
+                        if (exams && exams.length > 0) {
+                            exams.forEach(exam => {
+                                html += `        <a href="javascript:void(0)" onclick="if(typeof loadExamView === 'function') loadExamView('${exam.key}')" class="nav-item" style="padding-left: 30px;">${exam.name}</a>\n`;
+                            });
                         } else {
-                            for (let year = 2021; year <= 2026; year++) {
-                                html += `        <a href="javascript:void(0)" onclick="if(typeof loadExamView === 'function') loadExamView('${prefix}_${year}')" class="nav-item" style="padding-left: 30px;">${year}년 ${prefix}</a>\n`;
-                            }
+                            html += `        <a href="javascript:void(0)" class="nav-item" style="padding-left: 30px;">등록된 시험지 없음</a>\n`;
                         }
                         html += `    </div>\n`;
                     });
