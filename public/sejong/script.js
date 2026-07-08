@@ -1916,9 +1916,15 @@ window.loadExamView = async function (key) {
     container.style.display = 'block';
     container.classList.remove('hidden');
 
+    let titleText = `${year}년 ${subject} 조리/기능사 기출문제`;
+    if (subject === '오재을') {
+        // 확장자가 있다면 제거 (선택적)
+        titleText = year.replace('.hwp', '').replace('.pdf', '');
+    }
+
     title.innerHTML = `
         <div class="print-header-web" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 15px;">
-            <h1 style="font-family: 'Noto Sans KR', sans-serif; font-size: 1.8rem; font-weight: 800; margin: 0;">${year}년 ${subject} 조리/기능사 기출문제</h1>
+            <h1 style="font-family: 'Noto Sans KR', sans-serif; font-size: 1.8rem; font-weight: 800; margin: 0;">${titleText}</h1>
             <div style="display: flex; gap: 10px;">
                 <button onclick="window.print()" class="filter-btn" style="background-color: #00b050; color: white; font-weight: 700;">인쇄하기</button>
                 <button onclick="closeExamView()" class="filter-btn">뒤로가기</button>
