@@ -1139,6 +1139,8 @@ async function renderExamResult(id, data) {
                     answerSection.style.backgroundColor = '#f8fafc';
                     answerSection.style.padding = '20px';
                     answerSection.style.borderRadius = '8px';
+                    answerSection.style.columnSpan = 'all';
+                    answerSection.style.WebkitColumnSpan = 'all';
                     answerSection.innerHTML = '<h3 style="color:#1e40af; margin-bottom:15px; text-align:center; font-size:1.2rem; font-weight:bold;">📝 정답표 및 안내사항</h3>';
                     
                     nodesToMove.forEach(n => answerSection.appendChild(n));
@@ -1187,13 +1189,18 @@ async function renderExamResult(id, data) {
     }
     
     if (finalContent) {
-        finalContent = `<h1 contenteditable="true" onblur="const ta = document.querySelector('.result-input[data-id=\\'${id}\\'][data-field=\\'전체내용\\']'); if(ta) ta.value = document.getElementById('html-container-${id}').innerHTML;" style="text-align:center; color:#1e293b; font-size:1.3rem; font-weight:bold; margin-top:0; margin-bottom:10px; border-bottom: 2px solid #e2e8f0; padding-bottom: 5px; outline:none; cursor:text;" title="클릭하여 제목 수정 가능">${title}</h1>\n` + finalContent;
+        finalContent = `<h1 contenteditable="true" onblur="const ta = document.querySelector('.result-input[data-id=\\'${id}\\'][data-field=\\'전체내용\\']'); if(ta) ta.value = document.getElementById('html-container-${id}').innerHTML;" style="column-span: all; -webkit-column-span: all; text-align:center; color:#1e293b; font-size:1.3rem; font-weight:bold; margin-top:0; margin-bottom:15px; border-bottom: 2px solid #e2e8f0; padding-bottom: 5px; outline:none; cursor:text;" title="클릭하여 제목 수정 가능">${title}</h1>\n` + finalContent;
     }
     
     const html = `
+        <style>
+            #html-container-${id} * { max-width: 100% !important; box-sizing: border-box; }
+            #html-container-${id} img { height: auto !important; }
+            #html-container-${id} table { border-collapse: collapse; }
+        </style>
         <div style="margin-top:15px;">
             <div style="margin-bottom: 5px; font-weight: bold; color: #334155; font-size: 0.9rem;">분석 결과 (원본 페이지 재현)</div>
-            <div id="html-container-${id}" style="width:100%; min-height:300px; padding:10px 15px; border:1px solid #cbd5e1; border-radius:6px; background:#fff; overflow:auto; color:#000;">
+            <div id="html-container-${id}" style="column-count: 2; column-gap: 30px; column-rule: 1px dashed #cbd5e1; width:100%; min-height:300px; padding:20px 25px; border:1px solid #cbd5e1; border-radius:6px; background:#fff; overflow:auto; color:#000; font-size: 0.95rem; line-height: 1.6;">
                 ${finalContent}
             </div>
             <textarea class="result-input" data-id="${id}" data-field="전체내용" style="display:none;">${finalContent}</textarea>
