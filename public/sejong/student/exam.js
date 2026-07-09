@@ -13,6 +13,7 @@ let resultChartInstance = null;
 
 let timeRemaining = 3600;
 let timerInterval = null;
+let examStartTime = null;
 
 // DOM Elements
 const screens = {
@@ -257,6 +258,7 @@ function startExam(examKey) {
     
     // Start Timer
     timeRemaining = 3600; // 60 minutes
+    examStartTime = new Date().toISOString();
     startTimer();
     
     // reset omr
@@ -457,6 +459,56 @@ function calculateResult() {
     const total = currentQuestions.length;
     const score = Math.round((correctCount / total) * 100);
     const passed = score >= 60; // 60점 이상 합격
+
+    // Calculate section rates for analysis
+    // Assume 4 sections: 0~15, 15~30, 30~45, 45~60
+    const SECTIONS = [
+        { start: 0, end: 15 },
+        { start: 15, end: 30 },
+        { start: 30, end: 45 },
+        { start: 45, end: 60 }
+    ];
+    
+    const sectionRates = SECTIONS.map(sec => {
+        let secCorrect = 0;
+        let secTotal = 0;
+        for (let i = sec.start; i < sec.end && i < total; i++) {
+            secTotal++;
+            if (userAnswers[i] === currentQuestions[i].a) {
+                secCorrect++;
+            }
+        }
+        return secTotal > 0 ? Math.round((secCorrect / secTotal) * 100) : 0;
+    });
+
+    // Save exam result to server
+    const submitTime = new Date().toISOString();
+    const resultData = {
+        phone: currentPin || '0000',
+        examKey: currentExamKey,
+        startTime: examStartTime,
+        submitTime: submitTime,
+        score: score,
+        correctCount: correctCount,
+        total: total,
+        timeRemaining: timeRemaining,
+        sectionRates: sectionRates,
+        answers: userAnswers
+    };
+    
+    // Fire and forget POST request (Get existing, append, save)
+    fetch('/api/sejong/exams')
+        .then(res => res.json())
+        .then(existingExams => {
+            const examsArray = Array.isArray(existingExams) ? existingExams : [];
+            examsArray.push(resultData);
+            return fetch('/api/sejong/exams', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(examsArray)
+            });
+        })
+        .catch(e => console.error("Failed to save exam result:", e));
 
     document.getElementById('resultScore').textContent = `${score}점`;
     document.getElementById('correctCount').textContent = correctCount;

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>모의고사 결과 관리</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="exam_admin.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <div class="admin-header">
+        <a href="app.html" class="back-btn"><span class="material-icons">arrow_back</span></a>
+        <h1>모의고사 결과 관리</h1>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <div class="table-wrapper">
+                <table id="examTable">
+                    <thead>
+                        <tr>
+                            <th>학생번호/이름</th>
+                            <th>응시 과목</th>
+                            <th>접수 일시(시작)</th>
+                            <th>소요 시간</th>
+                            <th>점수</th>
+                            <th>합격여부</th>
+                        </tr>
+                    </thead>
+                    <tbody id="examTableBody">
+                        <!-- Data will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analysis Modal -->
+    <div id="analysisModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>모의고사 결과 분석 보고서</h2>
+                <button class="modal-close" onclick="closeModal()"><span class="material-icons">close</span></button>
+            </div>
+            
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">학생번호/이름</span>
+                    <span class="info-value" id="modalStudentName">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">응시 과목</span>
+                    <span class="info-value" id="modalExamName">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">점수 / 문항</span>
+                    <span class="info-value" id="modalScore">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">소요 시간</span>
+                    <span class="info-value" id="modalTime">-</span>
+                </div>
+            </div>
+
+            <div class="analysis-grid">
+                <div class="chart-card">
+                    <h3>영역별 정답률 (막대)</h3>
+                    <div class="chart-container">
+                        <canvas id="barChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <h3>영역별 밸런스 (레이더)</h3>
+                    <div class="chart-container">
+                        <canvas id="radarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 20px; text-align: center;">
+                <button onclick="alert('문자 발송 기능은 준비중입니다.')" style="background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer;">
+                    평가지 출력 및 문자 전송
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="exam_admin.js"></script>
+</body>
+</html>
