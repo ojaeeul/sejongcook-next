@@ -236,8 +236,24 @@
           {
             "name": "hcook_040201",
             "key": "오재을_hcook_040201.hwp"
+          },
+          {
+            "name": "hcook_050130-필기평가",
+            "key": "오재을_hcook_050130-필기평가.hwp"
+          },
+          {
+            "name": "hcook_150404-m",
+            "key": "오재을_hcook_150404-m.hwp"
+          },
+          {
+            "name": "hcook_041010",
+            "key": "오재을_hcook_041010.hwp"
           }
         ]
+      },
+      {
+        "name": "제과제빵",
+        "exams": []
       }
     ]
   },
