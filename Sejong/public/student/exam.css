@@ -31,6 +31,62 @@ body {
     overflow-x: hidden;
 }
 
+/* Login Screen */
+.numpad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-top: 30px;
+    max-width: 300px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.num-btn {
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.num-btn:active {
+    background: var(--primary);
+    transform: scale(0.95);
+}
+
+.num-btn.control {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+.pin-dots {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.pin-dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    transition: all 0.3s;
+}
+
+.pin-dot.filled {
+    background: var(--primary-light);
+    box-shadow: 0 0 10px var(--primary-light);
+}
+
 /* Glassmorphism Container */
 .glass-container {
     background: var(--bg-card);

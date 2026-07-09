@@ -1,5 +1,9 @@
 let questionsData = {};
 let courses = {};
+let members = [];
+let loggedInStudentCourse = null;
+let currentPin = '';
+
 let currentExamKey = null;
 let currentQuestions = [];
 let userAnswers = [];
@@ -9,6 +13,7 @@ let resultChartInstance = null;
 
 // DOM Elements
 const screens = {
+    login: document.getElementById('loginScreen'),
     course: document.getElementById('courseSelection'),
     exam: document.getElementById('examSelection'),
     solving: document.getElementById('solvingScreen'),
@@ -22,6 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function loadData() {
     try {
+        // Fetch Questions Data
         const res = await fetch('../questions_data.json');
         questionsData = await res.json();
         
@@ -34,12 +40,85 @@ async function loadData() {
             courses[courseName].push(key);
         }
 
-        renderCourses();
+        // Fetch Members Data
+        try {
+            const mRes = await fetch('/api/sejong/members?t=' + Date.now());
+            if (mRes.ok) {
+                members = await mRes.json();
+            } else {
+                const mResFallback = await fetch('../test_members.json');
+                members = await mResFallback.json();
+            }
+        } catch(e) {
+            console.error('Failed to load members', e);
+        }
+
+        checkAutoLogin();
     } catch (e) {
         console.error('Failed to load data', e);
         document.getElementById('courseGrid').innerHTML = '<p style="color:red; text-align:center;">데이터를 불러오는 데 실패했습니다.</p>';
+        showScreen('course');
     }
 }
+
+function checkAutoLogin() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const phoneParam = urlParams.get('phone');
+    if (phoneParam && phoneParam.length === 4) {
+        authenticateUser(phoneParam);
+    } else {
+        showScreen('login');
+    }
+}
+
+// --- Login Logic ---
+function inputPin(num) {
+    if (currentPin.length < 4) {
+        currentPin += num;
+        updatePinDisplay();
+        if (currentPin.length === 4) {
+            authenticateUser(currentPin);
+        }
+    }
+}
+
+function backspacePin() {
+    if (currentPin.length > 0) {
+        currentPin = currentPin.slice(0, -1);
+        updatePinDisplay();
+        document.getElementById('loginErrorMsg').textContent = '';
+    }
+}
+
+function clearPin() {
+    currentPin = '';
+    updatePinDisplay();
+    document.getElementById('loginErrorMsg').textContent = '';
+}
+
+function updatePinDisplay() {
+    const dots = document.querySelectorAll('.pin-dot');
+    dots.forEach((dot, index) => {
+        if (index < currentPin.length) {
+            dot.classList.add('filled');
+        } else {
+            dot.classList.remove('filled');
+        }
+    });
+}
+
+function authenticateUser(pin) {
+    const member = members.find(m => m.phone && m.phone.endsWith(pin));
+    if (member) {
+        loggedInStudentCourse = member.course || '';
+        renderCourses();
+        showScreen('course');
+    } else {
+        document.getElementById('loginErrorMsg').textContent = '등록되지 않은 번호입니다.';
+        setTimeout(() => clearPin(), 500);
+    }
+}
+// -------------------
 
 function showScreen(screenName) {
     Object.values(screens).forEach(s => s.classList.remove('active'));
@@ -93,7 +172,15 @@ function renderCourses() {
     const grid = document.getElementById('courseGrid');
     grid.innerHTML = '';
 
+    let visibleCount = 0;
+
     for (const course in courses) {
+        // Filter logic: Only show if loggedInStudentCourse is null (admin view) OR if it includes the course name.
+        if (loggedInStudentCourse && !loggedInStudentCourse.includes(course)) {
+            continue; // Skip courses they are not enrolled in
+        }
+
+        visibleCount++;
         const icon = icons[course] || 'menu_book';
         const count = courses[course].length;
         
@@ -108,6 +195,10 @@ function renderCourses() {
             <p>${count}개의 기출문제</p>
         `;
         grid.appendChild(card);
+    }
+
+    if (visibleCount === 0) {
+        grid.innerHTML = `<p style="color: var(--text-sub); text-align: center; grid-column: span 2; padding: 20px;">수강 중인 필기 과목이 없습니다.</p>`;
     }
 }
 
