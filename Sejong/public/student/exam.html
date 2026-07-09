@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>모의고사 - 세종요리학원</title>
-    <link rel="stylesheet" href="exam.css?v=20260710-6">
+    <link rel="stylesheet" href="exam.css?v=20260710-7">
     <!-- Chart.js for Result Analysis -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Canvas Confetti for Pass Celebration -->
@@ -89,7 +89,10 @@
     <div id="solvingScreen" class="screen" style="padding: 0;">
         <div class="timer-bar">
             <span id="progressText">1 / 60</span>
-            <span id="timerText" style="color: var(--primary-light);">60:00</span>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span id="timerText" style="color: var(--primary-light);">60:00</span>
+                <span class="material-icons" style="font-size: 18px; color: var(--text-sub); cursor: pointer;" onclick="openExtensionModal()">more_vert</span>
+            </div>
         </div>
         
         <div style="padding: 20px; display: flex; flex-direction: column; flex: 1;">
@@ -114,20 +117,44 @@
         </div>
 
         <!-- OMR Grid Modal -->
-        <div class="omr-modal" id="omrModal">
+        <div id="omrModal" class="omr-modal">
             <div class="omr-content">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h3 style="font-weight: 900;">답안 현황</h3>
-                    <button class="header-btn" onclick="toggleOMR()">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3 style="font-weight: 900; font-size: 1.2rem;">답안 현황</h3>
+                    <button onclick="toggleOMR()" style="background: none; border: none; color: var(--text-main); font-size: 24px; cursor: pointer;">
                         <span class="material-icons">close</span>
                     </button>
                 </div>
                 <div class="omr-grid" id="omrGrid">
                     <!-- Populated by JS -->
                 </div>
-                <button class="nav-btn next" style="width: 100%; justify-content: center; padding: 15px; margin-top: 10px;" onclick="submitExam()">
-                    답안지 제출하기
+                <button onclick="submitExam()" style="width: 100%; padding: 15px; margin-top: 15px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 1.1rem; font-weight: 900; cursor: pointer;">
+                    제출하기
                 </button>
+            </div>
+        </div>
+
+        <!-- Teacher Extension Modal -->
+        <div id="extensionModal" class="omr-modal" style="justify-content: center; align-items: center; padding: 20px;">
+            <div class="glass-container" style="background: var(--bg-dark); padding: 20px; border-radius: 20px; width: 100%; max-width: 320px; text-align: center; transform: none;">
+                <h3 style="margin-bottom: 15px; font-weight: 900;">관리자 시간 연장</h3>
+                
+                <div id="extPinSection">
+                    <p style="color: var(--text-sub); font-size: 0.9rem; margin-bottom: 10px;">관리자 비밀번호를 입력하세요.</p>
+                    <input type="password" id="extPinInput" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.05); color: white; font-size: 1.2rem; text-align: center; letter-spacing: 5px; margin-bottom: 15px;">
+                    <button onclick="checkExtPin()" style="width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 10px; font-weight: bold; font-size: 1.1rem; cursor: pointer;">확인</button>
+                </div>
+
+                <div id="extTimeSection" style="display: none;">
+                    <p style="color: var(--text-sub); font-size: 0.9rem; margin-bottom: 15px;">연장할 시간을 선택하세요.</p>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                        <button onclick="extendTime(10)" style="padding: 10px; background: rgba(255,255,255,0.1); color: white; border: 1px solid var(--border-color); border-radius: 8px; font-weight: bold; cursor: pointer;">+10분</button>
+                        <button onclick="extendTime(20)" style="padding: 10px; background: rgba(255,255,255,0.1); color: white; border: 1px solid var(--border-color); border-radius: 8px; font-weight: bold; cursor: pointer;">+20분</button>
+                        <button onclick="extendTime(30)" style="padding: 10px; background: rgba(255,255,255,0.1); color: white; border: 1px solid var(--border-color); border-radius: 8px; font-weight: bold; cursor: pointer;">+30분</button>
+                    </div>
+                </div>
+
+                <button onclick="closeExtensionModal()" style="margin-top: 15px; background: none; border: none; color: var(--text-sub); text-decoration: underline; cursor: pointer;">닫기</button>
             </div>
         </div>
     </div>
@@ -175,6 +202,6 @@
         </div>
     </div>
 
-    <script src="exam.js?v=20260710-6"></script>
+    <script src="exam.js?v=20260710-7"></script>
 </body>
 </html>

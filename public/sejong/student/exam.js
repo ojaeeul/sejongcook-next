@@ -11,6 +11,9 @@ let currentQuestionIndex = 0;
 let isReviewMode = false;
 let resultChartInstance = null;
 
+let timeRemaining = 3600;
+let timerInterval = null;
+
 // DOM Elements
 const screens = {
     login: document.getElementById('loginScreen'),
@@ -149,7 +152,15 @@ function showScreen(screenName) {
 }
 
 function goBack() {
-    // handled in showScreen dynamically
+    if (screens.exam.classList.contains('active')) {
+        showScreen('course');
+    } else if (screens.solving.classList.contains('active')) {
+        if (confirm('문제 풀이를 중단하고 나가시겠습니까?')) {
+            showScreen('exam');
+        }
+    } else if (screens.result.classList.contains('active')) {
+        showScreen('course');
+    }
 }
 
 function goHome() {
@@ -235,6 +246,10 @@ function startExam(examKey) {
     userAnswers = new Array(currentQuestions.length).fill(null);
     currentQuestionIndex = 0;
     isReviewMode = false;
+    
+    // Start Timer
+    timeRemaining = 3600; // 60 minutes
+    startTimer();
     
     // reset omr
     document.getElementById('omrModal').classList.remove('open');
@@ -397,26 +412,29 @@ function renderOMR() {
     }
 }
 
-function submitExam() {
-    const unAnsweredIndices = [];
-    userAnswers.forEach((a, idx) => {
-        if (a === null) unAnsweredIndices.push(idx + 1);
-    });
+function submitExam(isForced = false) {
+    if (!isForced) {
+        const unAnsweredIndices = [];
+        userAnswers.forEach((a, idx) => {
+            if (a === null) unAnsweredIndices.push(idx + 1);
+        });
 
-    if (unAnsweredIndices.length > 0) {
-        let msg = `아직 풀지 않은 문제가 ${unAnsweredIndices.length}개 있습니다.\n`;
-        if (unAnsweredIndices.length > 15) {
-            msg += `(안 푼 번호: ${unAnsweredIndices.slice(0, 15).join(', ')} ...등)\n\n`;
-        } else {
-            msg += `(안 푼 번호: ${unAnsweredIndices.join(', ')})\n\n`;
-        }
-        msg += `그래도 채점하시겠습니까?`;
-        
-        if (!confirm(msg)) {
-            return;
+        if (unAnsweredIndices.length > 0) {
+            let msg = `아직 풀지 않은 문제가 ${unAnsweredIndices.length}개 있습니다.\n`;
+            if (unAnsweredIndices.length > 15) {
+                msg += `(안 푼 번호: ${unAnsweredIndices.slice(0, 15).join(', ')} ...등)\n\n`;
+            } else {
+                msg += `(안 푼 번호: ${unAnsweredIndices.join(', ')})\n\n`;
+            }
+            msg += `그래도 채점하시겠습니까?`;
+            
+            if (!confirm(msg)) {
+                return;
+            }
         }
     }
     
+    stopTimer();
     document.getElementById('omrModal').classList.remove('open');
     calculateResult();
 }
@@ -555,3 +573,79 @@ function fireConfetti() {
         }));
     }, 250);
 }
+
+// --- Timer & Extension Logic ---
+function startTimer() {
+    if (timerInterval) clearInterval(timerInterval);
+    updateTimerUI();
+    timerInterval = setInterval(() => {
+        if (isReviewMode) {
+            clearInterval(timerInterval);
+            return;
+        }
+        
+        timeRemaining--;
+        updateTimerUI();
+        
+        if (timeRemaining <= 0) {
+            clearInterval(timerInterval);
+            alert("시험 시간이 종료되어 자동으로 채점됩니다.");
+            submitExam(true);
+        }
+    }, 1000);
+}
+
+function stopTimer() {
+    if (timerInterval) clearInterval(timerInterval);
+}
+
+function updateTimerUI() {
+    const timerText = document.getElementById('timerText');
+    if (!timerText) return;
+    
+    if (timeRemaining <= 0) {
+        timerText.textContent = "00:00";
+        timerText.style.color = "var(--incorrect)";
+        return;
+    }
+    
+    const minutes = Math.floor(timeRemaining / 60);
+    const seconds = timeRemaining % 60;
+    timerText.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    
+    if (timeRemaining <= 300) { // last 5 minutes
+        timerText.style.color = "var(--incorrect)";
+    } else {
+        timerText.style.color = "var(--primary-light)";
+    }
+}
+
+function openExtensionModal() {
+    if (isReviewMode) return;
+    document.getElementById('extensionModal').classList.add('open');
+    document.getElementById('extPinSection').style.display = 'block';
+    document.getElementById('extTimeSection').style.display = 'none';
+    document.getElementById('extPinInput').value = '';
+}
+
+function closeExtensionModal() {
+    document.getElementById('extensionModal').classList.remove('open');
+}
+
+function checkExtPin() {
+    const pin = document.getElementById('extPinInput').value;
+    if (pin === '7777') {
+        document.getElementById('extPinSection').style.display = 'none';
+        document.getElementById('extTimeSection').style.display = 'block';
+    } else {
+        alert('비밀번호가 틀렸습니다.');
+    }
+}
+
+function extendTime(minutes) {
+    timeRemaining += minutes * 60;
+    updateTimerUI();
+    alert(`시험 시간이 ${minutes}분 연장되었습니다.`);
+    closeExtensionModal();
+}
+// ---------------------------------
