@@ -359,9 +359,21 @@ function renderOMR() {
 }
 
 function submitExam() {
-    const unAnswered = userAnswers.filter(a => a === null).length;
-    if (unAnswered > 0) {
-        if (!confirm(`아직 풀지 않은 문제가 ${unAnswered}개 있습니다.\n그래도 채점하시겠습니까?`)) {
+    const unAnsweredIndices = [];
+    userAnswers.forEach((a, idx) => {
+        if (a === null) unAnsweredIndices.push(idx + 1);
+    });
+
+    if (unAnsweredIndices.length > 0) {
+        let msg = `아직 풀지 않은 문제가 ${unAnsweredIndices.length}개 있습니다.\n`;
+        if (unAnsweredIndices.length > 15) {
+            msg += `(안 푼 번호: ${unAnsweredIndices.slice(0, 15).join(', ')} ...등)\n\n`;
+        } else {
+            msg += `(안 푼 번호: ${unAnsweredIndices.join(', ')})\n\n`;
+        }
+        msg += `그래도 채점하시겠습니까?`;
+        
+        if (!confirm(msg)) {
             return;
         }
     }
