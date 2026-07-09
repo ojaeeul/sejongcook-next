@@ -31,8 +31,22 @@ def get_next_key():
     KEY_INDEX = (KEY_INDEX + 1) % len(API_KEYS)
     return key
 
+import xml.etree.ElementTree as ET
+
 def extract_text_hwp(filepath):
     try:
+        # hwp5proc xml preserves tables, unlike hwp5txt
+        hwp5proc_path = HWP5TXT_PATH.replace('hwp5txt', 'hwp5proc')
+        res = subprocess.run([hwp5proc_path, 'xml', filepath], capture_output=True, text=True)
+        if res.returncode == 0:
+            root = ET.fromstring(res.stdout)
+            texts = []
+            for text_node in root.findall('.//Text'):
+                if text_node.text:
+                    texts.append(text_node.text)
+            return ''.join(texts)
+            
+        # fallback to hwp5txt
         result = subprocess.run([HWP5TXT_PATH, filepath], capture_output=True, text=True, check=True)
         return result.stdout
     except Exception as e:
@@ -54,9 +68,10 @@ def parse_with_ai(text, retries=5):
     prompt = """
 다음은 객관식 시험지(문항, 보기, 정답) 텍스트입니다.
 문서 전체를 읽고, 모든 객관식 문제를 누락 없이 배열로 추출하세요.
-정답이 문서 어디에도 존재하지 않아 문항과 정답을 확실히 연결할 수 없다면 절대 지어내지 말고 빈 배열 []을 반환하세요.
+정답표(테이블)가 문서 맨 끝이나 별도 파일로 제공되었을 수 있습니다. 해당 정답표를 참조하여 각 문항의 정답 번호를 확인하세요.
+만약 정답이 문서 어디에도 존재하지 않아 문항과 정답을 확실히 연결할 수 없다면 절대 지어내지 말고 빈 배열 []을 반환하세요.
 
-반드시 문제(q), 보기 4개 배열(o), 정답(a - 1,2,3,4 등의 숫자 혹은 문자열) 형태로 반환해야 합니다.
+반드시 문제(q), 보기 4개 배열(o), 정답 번호(a - 반드시 1, 2, 3, 4 중 하나인 정수 숫자 타입) 형태로 반환해야 합니다.
 """
     
     # 텍스트가 너무 길면 자르지만, 가능한 10만자까지 보냄 (Flash는 긴 컨텍스트 지원)
@@ -69,7 +84,7 @@ def parse_with_ai(text, retries=5):
             "properties": {
                 "q": {"type": "STRING", "description": "문제 지문 내용"},
                 "o": {"type": "ARRAY", "items": {"type": "STRING"}, "description": "1,2,3,4번 보기 리스트. 정확히 4개여야 함."},
-                "a": {"type": "STRING", "description": "정답 텍스트 또는 정답 번호"}
+                "a": {"type": "INTEGER", "description": "정답 번호 (반드시 1, 2, 3, 4 중 하나의 정수)"}
             },
             "required": ["q", "o", "a"]
         }
@@ -127,17 +142,25 @@ def normalize_text(text):
     return t
 
 def resolve_answer(q_obj):
-    ans = str(q_obj.get("a", "")).strip()
+    ans = q_obj.get("a")
     opts = q_obj.get("o", [])
     if not ans or len(opts) < 2: return None
-    if ans in ["1", "2", "3", "4"]: return int(ans)
+    try:
+        ans_int = int(ans)
+        if ans_int in [1, 2, 3, 4]:
+            return ans_int
+    except (ValueError, TypeError):
+        pass
+    
+    # Fallback to older mapping logic if AI still spits out strings or parsing old files
+    ans_str = str(ans).strip()
     mapping = {"가":1, "나":2, "다":3, "라":4, "①":1, "②":2, "③":3, "④":4}
     for k, v in mapping.items():
-        if k in ans: return v
+        if k in ans_str: return v
     for i, opt in enumerate(opts):
-        if normalize_text(ans) == normalize_text(opt): return i + 1
-        if len(ans) > 2 and normalize_text(ans) in normalize_text(opt): return i + 1
-    match = re.search(r'([1-4])', ans)
+        if normalize_text(ans_str) == normalize_text(opt): return i + 1
+        if len(ans_str) > 2 and normalize_text(ans_str) in normalize_text(opt): return i + 1
+    match = re.search(r'([1-4])', ans_str)
     if match: return int(match.group(1))
     return None
 

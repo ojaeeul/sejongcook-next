@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>세종요리 수강생 전용</title>
-    <link rel="stylesheet" href="style.css?v=20260709-13">
+    <link rel="stylesheet" href="style.css?v=20260710-0">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -320,7 +320,16 @@
                     </div>
                 </div>
 
-                <!-- Mode 3 Removed -->
+                <!-- Mode 3: Exam Portal -->
+                <div onclick="window.location.href='exam.html'" class="mode-card"
+                    style="flex: 1; height: 400px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 35px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.4s;">
+                    <div class="icon-circle"
+                        style="width: 100px; height: 100px; background: #8b5cf6; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 25px; box-shadow: 0 20px 40px rgba(139, 92, 246, 0.3);">
+                        <span class="material-icons" style="color: white; font-size: 50px;">quiz</span>
+                    </div>
+                    <h3 style="color: white; font-size: 2.2rem; font-weight: 900; margin-bottom: 10px;">모의고사</h3>
+                    <p style="color: #94a3b8; font-size: 1.1rem; text-align: center;">스마트폰으로<br>실전 기출문제 풀기</p>
+                </div>
             </div>
 
             <div style="margin-top: 60px; text-align: center;">
@@ -535,7 +544,7 @@
         }
     </style>
 
-    <script src="login.js?v=20260709-13"></script>
+    <script src="login.js?v=20260710-0"></script>
     <script>
         // Real-time Clock Implementation
         function updateKioskTime() {

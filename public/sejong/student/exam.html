@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>모의고사 - 세종요리학원</title>
+    <link rel="stylesheet" href="exam.css?v=20260710-0">
+    <!-- Chart.js for Result Analysis -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Canvas Confetti for Pass Celebration -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+    <canvas id="confetti-canvas"></canvas>
+
+    <!-- Top Navigation Bar -->
+    <div class="app-header">
+        <button class="header-btn" onclick="goBack()" id="backBtn" style="visibility: hidden;">
+            <span class="material-icons">arrow_back</span>
+        </button>
+        <div class="header-title" id="headerTitle">과목 선택</div>
+        <button class="header-btn" onclick="goHome()">
+            <span class="material-icons">close</span>
+        </button>
+    </div>
+
+    <!-- Screen 1: Course Selection -->
+    <div id="courseSelection" class="screen active">
+        <div style="text-align: center; margin-bottom: 20px;">
+            <h2 style="font-size: 1.5rem; font-weight: 900;">실전 모의고사</h2>
+            <p style="color: var(--text-sub); margin-top: 5px;">준비하시는 자격증 과목을 선택해주세요.</p>
+        </div>
+        <div class="course-grid" id="courseGrid">
+            <!-- Populated by JS -->
+        </div>
+    </div>
+
+    <!-- Screen 2: Exam Selection -->
+    <div id="examSelection" class="screen">
+        <div style="text-align: center; margin-bottom: 10px;">
+            <h2 id="selectedCourseName" style="font-size: 1.5rem; font-weight: 900;">한식조리기능사</h2>
+            <p style="color: var(--text-sub); margin-top: 5px;">풀어볼 기출회차를 선택해주세요.</p>
+        </div>
+        <div class="glass-container" style="flex: 1; overflow-y: auto;">
+            <div class="exam-list" id="examList">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Screen 3: Solving Screen -->
+    <div id="solvingScreen" class="screen" style="padding: 0;">
+        <div class="timer-bar">
+            <span id="progressText">1 / 60</span>
+            <span id="timerText" style="color: var(--primary-light);">60:00</span>
+        </div>
+        
+        <div style="padding: 20px; display: flex; flex-direction: column; flex: 1;">
+            <div class="question-container" id="questionContainer">
+                <div class="question-text" id="qText">Q. 문제를 불러오는 중입니다...</div>
+                <div class="options-list" id="optionsList">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </div>
+
+        <div class="bottom-nav">
+            <button class="nav-btn prev" id="prevBtn" onclick="prevQuestion()">
+                <span class="material-icons">chevron_left</span> 이전
+            </button>
+            <button class="omr-btn" onclick="toggleOMR()">
+                <span class="material-icons">grid_view</span>
+            </button>
+            <button class="nav-btn next" id="nextBtn" onclick="nextQuestion()">
+                다음 <span class="material-icons">chevron_right</span>
+            </button>
+        </div>
+
+        <!-- OMR Grid Modal -->
+        <div class="omr-modal" id="omrModal">
+            <div class="omr-content">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="font-weight: 900;">답안 현황</h3>
+                    <button class="header-btn" onclick="toggleOMR()">
+                        <span class="material-icons">close</span>
+                    </button>
+                </div>
+                <div class="omr-grid" id="omrGrid">
+                    <!-- Populated by JS -->
+                </div>
+                <button class="nav-btn next" style="width: 100%; justify-content: center; padding: 15px; margin-top: 10px;" onclick="submitExam()">
+                    답안지 제출하기
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Screen 4: Result Screen -->
+    <div id="resultScreen" class="screen">
+        <div class="glass-container" style="padding: 20px; flex: 1; overflow-y: auto;">
+            <div class="result-header">
+                <div id="resultStatus" class="result-status">채점 중...</div>
+                <div id="resultScore" class="result-score">0</div>
+                <p style="color: var(--text-sub);">총 60문제 중 <span id="correctCount" style="color: var(--text-main); font-weight: bold;">0</span>문제 정답</p>
+            </div>
+
+            <!-- Chart Analysis -->
+            <div class="chart-container">
+                <canvas id="resultChart"></canvas>
+            </div>
+
+            <!-- O/X Analysis Table -->
+            <h3 style="margin-bottom: 15px; font-weight: 900; display: flex; align-items: center; gap: 8px;">
+                <span class="material-icons" style="color: var(--primary-light);">analytics</span>
+                문항별 진단 분석표
+            </h3>
+            <p style="font-size: 0.8rem; color: var(--text-sub); margin-bottom: 10px;">* 붉은색 오답 문항을 터치하면 오답노트를 확인할 수 있습니다.</p>
+            
+            <div class="analysis-table-container">
+                <table class="analysis-table">
+                    <thead>
+                        <tr>
+                            <th width="15%">번호</th>
+                            <th width="25%">내 답안</th>
+                            <th width="25%">정답</th>
+                            <th width="35%">채점 결과</th>
+                        </tr>
+                    </thead>
+                    <tbody id="analysisTableBody">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <button class="nav-btn next" style="width: 100%; justify-content: center; padding: 15px; margin-top: 10px;" onclick="goBackToExamList()">
+                다른 시험지 풀기
+            </button>
+        </div>
+    </div>
+
+    <script src="exam.js?v=20260710-0"></script>
+</body>
+</html>
