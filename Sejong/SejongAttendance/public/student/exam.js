@@ -111,6 +111,14 @@ function updatePinDisplay() {
 }
 
 function authenticateUser(pin) {
+    // 마스터 키 (원장님 테스트용)
+    if (pin === '7777') {
+        loggedInStudentCourse = null; // null이면 모든 과목이 노출됩니다.
+        renderCourses();
+        showScreen('course');
+        return;
+    }
+
     const member = members.find(m => m.phone && m.phone.endsWith(pin));
     if (member) {
         loggedInStudentCourse = member.course || '';
