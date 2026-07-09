@@ -343,18 +343,57 @@ function renderOMR() {
     grid.innerHTML = '';
     
     for (let i = 0; i < currentQuestions.length; i++) {
-        const cell = document.createElement('div');
-        cell.className = 'omr-cell';
-        if (userAnswers[i] !== null) cell.classList.add('answered');
-        if (i === currentQuestionIndex) cell.classList.add('current');
-        
-        cell.textContent = i + 1;
-        cell.onclick = () => {
+        const row = document.createElement('div');
+        row.className = 'omr-row';
+        if (i === currentQuestionIndex) row.classList.add('current');
+
+        const num = document.createElement('div');
+        num.className = 'omr-row-num';
+        num.textContent = `${i + 1}`;
+
+        const bubbles = document.createElement('div');
+        bubbles.className = 'omr-bubbles';
+
+        for (let opt = 1; opt <= 4; opt++) {
+            const bubble = document.createElement('div');
+            bubble.className = 'omr-bubble';
+            bubble.textContent = opt;
+            
+            if (userAnswers[i] === opt) {
+                bubble.classList.add('selected');
+            }
+
+            bubble.onclick = (e) => {
+                e.stopPropagation(); // prevent modal close or row click
+                
+                // Toggle off if same bubble clicked again
+                if (userAnswers[i] === opt) {
+                    userAnswers[i] = null;
+                } else {
+                    userAnswers[i] = opt;
+                }
+                
+                renderOMR();
+                
+                // Also update the main screen if we are currently on this question
+                if (currentQuestionIndex === i) {
+                    renderQuestion();
+                }
+            };
+            bubbles.appendChild(bubble);
+        }
+
+        row.appendChild(num);
+        row.appendChild(bubbles);
+
+        // Click row to jump to question
+        row.onclick = () => {
             currentQuestionIndex = i;
             renderQuestion();
             toggleOMR();
         };
-        grid.appendChild(cell);
+
+        grid.appendChild(row);
     }
 }
 
