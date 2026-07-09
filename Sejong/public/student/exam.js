@@ -74,8 +74,8 @@ function goBack() {
 }
 
 function goHome() {
-    if (confirm('메인 화면으로 돌아가시겠습니까?')) {
-        window.location.href = 'login.html';
+    if (confirm('첫 화면으로 돌아가시겠습니까? 진행 중인 내용이 초기화됩니다.')) {
+        showScreen('course');
     }
 }
 
