@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function loadData() {
     try {
-        const res = await fetch('../sejong/questions_data.json');
+        const res = await fetch('../questions_data.json');
         questionsData = await res.json();
         
         // Process courses
