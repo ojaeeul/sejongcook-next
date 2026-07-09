@@ -406,8 +406,8 @@ body {
 
 .omr-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 8px;
     overflow-y: auto;
     padding-bottom: 20px;
 }
@@ -416,8 +416,8 @@ body {
     display: flex;
     align-items: center;
     background: rgba(255, 255, 255, 0.05);
-    padding: 10px 15px;
-    border-radius: 12px;
+    padding: 6px 10px;
+    border-radius: 8px;
     border: 1px solid var(--border-color);
 }
 
@@ -428,27 +428,28 @@ body {
 
 .omr-row-num {
     font-weight: 900;
-    font-size: 1.1rem;
+    font-size: 1rem;
     color: var(--text-main);
-    width: 45px;
+    width: 35px;
 }
 
 .omr-bubbles {
     display: flex;
-    gap: 15px;
+    gap: 6px;
     flex: 1;
     justify-content: flex-end;
 }
 
 .omr-bubble {
-    width: 35px;
-    height: 35px;
+    width: 26px;
+    height: 26px;
     border-radius: 50%;
-    border: 2px solid var(--text-sub);
+    border: 1.5px solid var(--text-sub);
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: bold;
+    font-size: 0.85rem;
     color: var(--text-sub);
     cursor: pointer;
     transition: all 0.2s;
