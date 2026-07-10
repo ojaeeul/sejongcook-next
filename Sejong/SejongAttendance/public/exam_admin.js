@@ -1,13 +1,14 @@
 let examsData = [];
 let membersData = {};
+let questionsData = {};
 let barChartInstance = null;
 let radarChartInstance = null;
 
 const SECTIONS = [
-    { name: '위생 및 법규', start: 0, end: 15 },
+    { name: '위생 및 관련법규', start: 0, end: 15 },
     { name: '공중보건학', start: 15, end: 30 },
     { name: '식품학', start: 30, end: 45 },
-    { name: '조리이론', start: 45, end: 60 }
+    { name: '조리이론 및 원가', start: 45, end: 60 }
 ];
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -17,13 +18,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function fetchData() {
     try {
-        const [examsRes, membersRes] = await Promise.all([
+        const [examsRes, membersRes, qRes] = await Promise.all([
             fetch('/api/sejong/exams'),
-            fetch('/api/sejong/members')
+            fetch('/api/sejong/members'),
+            fetch('/questions_data.json')
         ]);
         
         examsData = await examsRes.json();
         const memArray = await membersRes.json();
+        questionsData = await qRes.json();
         
         if (!Array.isArray(examsData)) examsData = [];
         
@@ -87,61 +90,102 @@ function renderTable() {
     });
 }
 
+function getSectionName(index) {
+    for (let sec of SECTIONS) {
+        if (index >= sec.start && index < sec.end) return sec.name;
+    }
+    return '기타';
+}
+
 function openAnalysis(index) {
     const exam = examsData[index];
-    const name = membersData[exam.phone] ? `${membersData[exam.phone]}(${exam.phone})` : `알수없음(${exam.phone})`;
+    const name = membersData[exam.phone] ? membersData[exam.phone] : `알수없음`;
+    const examQuestions = questionsData[exam.examKey] || [];
     
-    document.getElementById('modalStudentName').textContent = name;
-    document.getElementById('modalExamName').textContent = exam.examKey;
-    document.getElementById('modalScore').textContent = `${exam.score}점 (${exam.correctCount}/${exam.total}개)`;
-    document.getElementById('modalTime').textContent = formatDuration(exam.startTime, exam.submitTime);
+    // Header Info
+    document.getElementById('reportStudent').textContent = `${name} (${exam.phone})`;
+    document.getElementById('reportExamName').textContent = exam.examKey;
+    document.getElementById('reportDate').textContent = formatDate(exam.startTime);
+    document.getElementById('reportTime').textContent = formatDuration(exam.startTime, exam.submitTime);
+    document.getElementById('reportScore').textContent = `${exam.score}점 (${exam.correctCount}/${exam.total}개)`;
+    
+    // Build Questions Table
+    const tbody1 = document.querySelector('#qTable1 tbody');
+    const tbody2 = document.querySelector('#qTable2 tbody');
+    tbody1.innerHTML = '';
+    tbody2.innerHTML = '';
+    
+    const maxQ = Math.max(exam.total, examQuestions.length);
+    for (let i = 0; i < maxQ; i++) {
+        const tr = document.createElement('tr');
+        
+        const qNum = i + 1;
+        const studentAns = (exam.answers && exam.answers[i]) ? exam.answers[i] : '-';
+        const correctAns = (examQuestions[i] && examQuestions[i].a) ? examQuestions[i].a : '-';
+        const isCorrect = (studentAns === correctAns && studentAns !== '-');
+        const correctMark = isCorrect ? '<span class="q-correct">O</span>' : '<span class="q-wrong">X</span>';
+        const secName = getSectionName(i);
+        
+        tr.innerHTML = `
+            <td>${qNum}</td>
+            <td>${studentAns}</td>
+            <td>${correctAns}</td>
+            <td>${correctMark}</td>
+            <td>${secName}</td>
+        `;
+        
+        if (i < 30) {
+            tbody1.appendChild(tr);
+        } else {
+            tbody2.appendChild(tr);
+        }
+    }
+    
+    drawCharts(exam, examQuestions);
     
     document.getElementById('analysisModal').classList.add('active');
-    
-    drawCharts(exam);
 }
 
 function closeModal() {
     document.getElementById('analysisModal').classList.remove('active');
 }
 
-function drawCharts(exam) {
-    // Calculate section scores
-    const sectionScores = SECTIONS.map(sec => {
+function drawCharts(exam, examQuestions) {
+    // Calculate exact section stats
+    const sectionStats = SECTIONS.map(sec => {
         let correct = 0;
         let count = 0;
         
-        // Answers are just an array of user choices. We assume they match question indices.
-        // But we need to know if they were correct! We only have answers array... 
-        // Wait, the exam object currently saved only has `answers` (user choices) but not the actual correct answers...
-        // If we don't have the correct answers stored in the exam object, we can't recalculate perfectly unless we fetch questionsData.
-        // For the sake of the dashboard UI, let's distribute their total correct count across sections proportionally with some randomness or just use the answers array if we assume we can fetch questions.
-        // Let's just fetch questions.
-        return { name: sec.name, rate: 0 };
+        for (let i = sec.start; i < sec.end; i++) {
+            if (i >= exam.total) break;
+            count++;
+            const studentAns = (exam.answers && exam.answers[i]) ? exam.answers[i] : null;
+            const correctAns = (examQuestions[i] && examQuestions[i].a) ? examQuestions[i].a : null;
+            if (studentAns !== null && studentAns === correctAns) {
+                correct++;
+            }
+        }
+        
+        const rate = count > 0 ? Math.round((correct / count) * 100) : 0;
+        return { name: sec.name, count, correct, rate };
     });
     
-    // We didn't save the questions array in the exam result, only the answers.
-    // Ideally we should save `isCorrect` array. Since we might not have it for past data, 
-    // we will mock the section scores based on their overall score to make the UI work beautifully.
-    // Or we can just calculate it if we have it.
-    
-    let chartData = [];
-    if (exam.sectionRates) {
-        chartData = exam.sectionRates;
-    } else {
-        // Fallback: create realistic looking distribution based on score
-        const baseRate = exam.score;
-        chartData = SECTIONS.map((sec, i) => {
-            // Add some variance (+- 15%)
-            let variance = (Math.random() * 30 - 15);
-            let rate = Math.round(baseRate + variance);
-            if (rate > 100) rate = 100;
-            if (rate < 0) rate = 0;
-            return rate;
-        });
-    }
+    // Render Analysis Table
+    const anaBody = document.querySelector('#analysisTable tbody');
+    anaBody.innerHTML = '';
+    sectionStats.forEach(stat => {
+        anaBody.innerHTML += `
+            <tr>
+                <td><b>${stat.name}</b></td>
+                <td>${stat.count}</td>
+                <td>${stat.correct}</td>
+                <td>${stat.rate}%</td>
+            </tr>
+        `;
+    });
 
-    const labels = SECTIONS.map(s => s.name);
+    const labels = sectionStats.map(s => s.name);
+    const chartData = sectionStats.map(s => s.rate);
     
     const barCtx = document.getElementById('barChart').getContext('2d');
     if (barChartInstance) barChartInstance.destroy();
@@ -150,7 +194,7 @@ function drawCharts(exam) {
         data: {
             labels: labels,
             datasets: [{
-                label: '영역별 정답률 (%)',
+                label: '정답률 (%)',
                 data: chartData,
                 backgroundColor: '#60a5fa',
                 borderRadius: 4

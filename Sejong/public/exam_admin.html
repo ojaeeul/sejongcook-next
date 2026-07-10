@@ -20,7 +20,7 @@
     <div class="container">
         <div class="card">
             <div class="table-wrapper">
-                <table id="examTable">
+                <table class="admin-table" id="examTable">
                     <thead>
                         <tr>
                             <th>학생번호/이름</th>
@@ -39,53 +39,118 @@
         </div>
     </div>
 
-    <!-- Analysis Modal -->
+    <!-- Analysis Modal (A4 Printable Report) -->
     <div id="analysisModal" class="modal-overlay">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>모의고사 결과 분석 보고서</h2>
-                <button class="modal-close" onclick="closeModal()"><span class="material-icons">close</span></button>
-            </div>
+        <div class="modal-actions">
+            <button class="action-btn" onclick="closeModal()"><span class="material-icons">close</span></button>
+            <button class="action-btn primary" onclick="window.print()"><span class="material-icons">print</span></button>
+        </div>
+
+        <div class="report-a4">
             
-            <div class="info-grid">
-                <div class="info-item">
-                    <span class="info-label">학생번호/이름</span>
-                    <span class="info-value" id="modalStudentName">-</span>
+            <div class="report-columns">
+                <!-- Left Column -->
+                <div class="report-left">
+                    <div class="report-header">
+                        <div class="report-title-box">
+                            <h2 id="reportExamName">조리기능사</h2>
+                            <h1>모의고사 결과분석</h1>
+                        </div>
+                        <div class="report-info-box">
+                            <div class="info-row"><span class="info-label">Date :</span> <span class="info-val" id="reportDate">-</span></div>
+                            <div class="info-row"><span class="info-label">Time :</span> <span class="info-val" id="reportTime">-</span></div>
+                            <div class="info-row"><span class="info-label">Name :</span> <span class="info-val" id="reportStudent">-</span></div>
+                            <div class="info-row"><span class="info-label">Score :</span> <span class="info-val" id="reportScore">-</span></div>
+                        </div>
+                    </div>
+
+                    <div class="section-title">&lt; 평가 내용 및 문항 결과 &gt;</div>
+                    
+                    <div class="q-table-wrapper">
+                        <!-- Left half (1~30) -->
+                        <table class="q-table" id="qTable1">
+                            <thead>
+                                <tr>
+                                    <th>문항</th>
+                                    <th>학생답</th>
+                                    <th>정답</th>
+                                    <th>여부</th>
+                                    <th>내용영역</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                        
+                        <!-- Right half (31~60) -->
+                        <table class="q-table" id="qTable2">
+                            <thead>
+                                <tr>
+                                    <th>문항</th>
+                                    <th>학생답</th>
+                                    <th>정답</th>
+                                    <th>여부</th>
+                                    <th>내용영역</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
                 </div>
-                <div class="info-item">
-                    <span class="info-label">응시 과목</span>
-                    <span class="info-value" id="modalExamName">-</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">점수 / 문항</span>
-                    <span class="info-value" id="modalScore">-</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">소요 시간</span>
-                    <span class="info-value" id="modalTime">-</span>
+
+                <!-- Right Column -->
+                <div class="report-right">
+                    
+                    <div class="section-title">&lt; 영역별 정답률 &gt;</div>
+                    <div class="chart-box">
+                        <div class="canvas-wrapper">
+                            <canvas id="barChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="section-title">&lt; 학생 학습 밸런스 &gt;</div>
+                    <div class="chart-box">
+                        <div class="canvas-wrapper large">
+                            <canvas id="radarChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="section-title">&lt; 내용영역별 상세 분석 &gt;</div>
+                    <table class="analysis-table" id="analysisTable">
+                        <thead>
+                            <tr>
+                                <th>영역</th>
+                                <th>문항수</th>
+                                <th>정답수</th>
+                                <th>정답률</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+
                 </div>
             </div>
 
-            <div class="analysis-grid">
-                <div class="chart-card">
-                    <h3>영역별 정답률 (막대)</h3>
-                    <div class="chart-container">
-                        <canvas id="barChart"></canvas>
+            <!-- Footer -->
+            <div class="report-footer">
+                <div>
+                    <div class="academy-name">세종요리제과기술학원</div>
+                    <div class="academy-info">
+                        02-000-0000 / 010-0000-0000<br>
+                        https://sejongcook.co.kr
                     </div>
                 </div>
-                <div class="chart-card">
-                    <h3>영역별 밸런스 (레이더)</h3>
-                    <div class="chart-container">
-                        <canvas id="radarChart"></canvas>
+                <div class="stamp">
+                    <div>
+                        <div class="stamp-title">담당자</div>
+                        <div></div>
+                    </div>
+                    <div>
+                        <div class="stamp-title">원장</div>
+                        <div></div>
                     </div>
                 </div>
             </div>
-            
-            <div style="margin-top: 20px; text-align: center;">
-                <button onclick="alert('문자 발송 기능은 준비중입니다.')" style="background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer;">
-                    평가지 출력 및 문자 전송
-                </button>
-            </div>
+
         </div>
     </div>
 
