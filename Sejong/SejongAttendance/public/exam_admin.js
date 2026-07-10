@@ -4,12 +4,26 @@ let questionsData = {};
 let barChartInstance = null;
 let radarChartInstance = null;
 
-const SECTIONS = [
+const SECTIONS_COOK = [
     { name: '위생 및 관련법규', start: 0, end: 15 },
     { name: '공중보건학', start: 15, end: 30 },
     { name: '식품학', start: 30, end: 45 },
     { name: '조리이론 및 원가', start: 45, end: 60 }
 ];
+
+const SECTIONS_BAKE = [
+    { name: '제조이론(제과/제빵)', start: 0, end: 15 },
+    { name: '재료과학', start: 15, end: 30 },
+    { name: '식품위생학', start: 30, end: 45 },
+    { name: '영양학 및 기타', start: 45, end: 60 }
+];
+
+function getSections(examKey) {
+    if (examKey && (examKey.includes('제과') || examKey.includes('제빵'))) {
+        return SECTIONS_BAKE;
+    }
+    return SECTIONS_COOK;
+}
 
 document.addEventListener('DOMContentLoaded', async () => {
     await fetchData();
@@ -90,8 +104,9 @@ function renderTable() {
     });
 }
 
-function getSectionName(index) {
-    for (let sec of SECTIONS) {
+function getSectionName(index, examKey) {
+    const sections = getSections(examKey);
+    for (let sec of sections) {
         if (index >= sec.start && index < sec.end) return sec.name;
     }
     return '기타';
@@ -124,7 +139,7 @@ function openAnalysis(index) {
         const correctAns = (examQuestions[i] && examQuestions[i].a) ? examQuestions[i].a : '-';
         const isCorrect = (studentAns === correctAns && studentAns !== '-');
         const correctMark = isCorrect ? '<span class="q-correct">O</span>' : '<span class="q-wrong">X</span>';
-        const secName = getSectionName(i);
+        const secName = getSectionName(i, exam.examKey);
         
         tr.innerHTML = `
             <td>${qNum}</td>
@@ -151,8 +166,9 @@ function closeModal() {
 }
 
 function drawCharts(exam, examQuestions) {
+    const sections = getSections(exam.examKey);
     // Calculate exact section stats
-    const sectionStats = SECTIONS.map(sec => {
+    const sectionStats = sections.map(sec => {
         let correct = 0;
         let count = 0;
         
