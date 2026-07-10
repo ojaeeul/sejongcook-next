@@ -4,8 +4,8 @@ import time
 import subprocess
 import requests
 
-QUESTIONS_FILE = "/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejk 4/sejongcook-next/public/sejong/questions_data.json"
-COURSES_FILE = "/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejk 4/sejongcook-next/public/sejong/exam_courses.json"
+QUESTIONS_FILE = "/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejk 4/sejongcook-next/Sejong/SejongAttendance/public/questions_data.json"
+COURSES_FILE = "/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejk 4/sejongcook-next/Sejong/SejongAttendance/public/exam_courses.json"
 TARGET_DIR = "/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejk 4/sejongcook-next/기출문제"
 
 # Import helper functions
@@ -47,7 +47,7 @@ def main():
             continue
             
         new_key = f"오재을_{filename}"
-        if new_key in db and len(db[new_key]) > 0:
+        if new_key in db and len(db.get(new_key, [])) == 60:
             continue
 
         print(f"[{idx+1}/{total_files}] Processing {filename}...")
@@ -77,7 +77,10 @@ def main():
                 ans_idx = resolve_answer(q_obj)
                 if ans_idx:
                     q_obj["a"] = ans_idx
-                    final_questions.append(q_obj)
+                else:
+                    q_obj["a"] = 1
+                    q_obj["q"] = str(q_obj.get("q", "")) + "\n[정답 확인 필요]"
+                final_questions.append(q_obj)
             
             db[new_key] = final_questions
             added += 1
@@ -117,9 +120,7 @@ def main():
             json.dump(ec, f, ensure_ascii=False, indent=2)
 
         print("Deploying changes...")
-        subprocess.run(["git", "add", "."], cwd="/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejk 4/sejongcook-next/public/sejong")
-        subprocess.run(["git", "commit", "-m", "Add missing exams"], cwd="/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejk 4/sejongcook-next/public/sejong")
-        subprocess.run(["npx", "vercel", "--prod", "--yes"], cwd="/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejk 4/sejongcook-next")
+        subprocess.run(["/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejk 4/sejongcook-next/시스템_시작.command"])
 
 if __name__ == "__main__":
     main()
