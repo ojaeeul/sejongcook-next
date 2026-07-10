@@ -1764,8 +1764,14 @@ window.importAnalysis = function(event) {
     const reader = new FileReader();
     reader.onload = function(e) {
         try {
-            const exportData = JSON.parse(e.target.result);
-            if (!Array.isArray(exportData)) throw new Error('올바른 배열 형식이 아닙니다.');
+            let exportData = JSON.parse(e.target.result);
+            if (!Array.isArray(exportData)) {
+                exportData = [{
+                    mode: 'unknown',
+                    fileName: file.name,
+                    data: exportData
+                }];
+            }
 
             // Clear current grid
             document.getElementById('resultsGrid').innerHTML = '';
@@ -1789,6 +1795,8 @@ window.importAnalysis = function(event) {
                     renderPhonebookResult(id, item.data);
                 } else if (mode === 'exam') {
                     renderExamResult(id, item.data);
+                } else {
+                    renderUnknownResult(id, item.data);
                 }
                 
                 window.currentMode = prevMode;
@@ -1796,12 +1804,27 @@ window.importAnalysis = function(event) {
             
             alert(`성공적으로 ${exportData.length}개의 결과를 복원했습니다.`);
         } catch(err) {
-            alert('파일을 읽는 중 오류가 발생했습니다. 올바른 백업 파일인지 확인해주세요.\\n' + err.message);
+            alert('파일을 읽는 중 오류가 발생했습니다. 올바른 백업 파일인지 확인해주세요.\n' + err.message);
         }
     };
     reader.readAsText(file);
     event.target.value = ''; // Reset input
 };
+
+function renderUnknownResult(id, data) {
+    updateCardStatus(id, 'success', '내용 확인');
+    const content = document.getElementById(`content-${id}`);
+    
+    let html = `
+        <div style="background: #fee2e2; color: #991b1b; padding: 15px; border-radius: 8px; margin-bottom: 15px; font-weight: bold; font-size: 14px; line-height: 1.5;">
+            ⚠️ 이 파일은 '수강생 원서'나 '전화번호부' 분석 결과가 아닙니다.<br>
+            선택하신 파일의 내부 데이터는 다음과 같습니다.
+        </div>
+        <div style="background: #1e293b; color: #e2e8f0; padding: 15px; border-radius: 8px; font-family: monospace; font-size: 13px; white-space: pre-wrap; word-break: break-all; max-height: 400px; overflow-y: auto;">${JSON.stringify(data, null, 2)}</div>
+    `;
+    
+    content.innerHTML = html;
+}
 
 function addAICourseRow(id) {
     const container = document.getElementById(`course-container-${id}`);
