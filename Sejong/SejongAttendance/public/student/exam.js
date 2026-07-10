@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
 async function loadData() {
     try {
         // Fetch Questions Data
-        const res = await fetch('../questions_data.json');
+        const res = await fetch(`../questions_data.json?v=${Date.now()}`);
         questionsData = await res.json();
         
         // Process courses
