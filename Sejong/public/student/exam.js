@@ -195,8 +195,8 @@ function renderCourses() {
     let visibleCount = 0;
 
     for (const course in courses) {
-        // Filter logic: Only show if loggedInStudentCourse is null (admin view) OR if it includes the course name.
-        if (loggedInStudentCourse && !loggedInStudentCourse.includes(course)) {
+        // Check if currentStudent's courses array includes this course (allow '과거기출' for everyone)
+        if (course !== "과거기출" && loggedInStudentCourse && !loggedInStudentCourse.includes(course)) {
             continue; // Skip courses they are not enrolled in
         }
 
