@@ -1985,9 +1985,6 @@ window.loadExamView = async function (key) {
                         <span class="pdf-q-num">${index + 1}.</span> 
                         <span class="pdf-q-content" style="flex: 1; word-break: break-word;">${item.q}</span>
                     </div>
-                    <div class="pdf-options" style="margin-top: 10px; color: #ff6b6b; font-weight: bold; white-space: pre-wrap;">
-                        <span style="color: #666; font-weight: normal; margin-right: 5px;">정답:</span>${item.a_text}
-                    </div>
                 `;
             } else {
                 const optionsHtml = item.o.map((opt, i) => {
@@ -2033,9 +2030,14 @@ window.loadExamView = async function (key) {
         const answersHtml = questions.map((item, index) => {
             if (item.is_subjective) {
                 return `
-                    <div class="pdf-answer-item" style="grid-column: span 2; display: flex; text-align: left; padding: 5px;">
-                        <span class="num" style="min-width: 30px;">${index + 1}</span>
-                        <span class="ans" style="font-size: 0.9rem; white-space: pre-wrap; word-break: break-word; color: #ff6b6b;">${item.a_text}</span>
+                    <div class="pdf-answer-item" style="grid-column: span 10; display: flex; flex-direction: column; text-align: left; padding: 10px; margin-bottom: 0px; border-bottom: 1px dashed #ccc; align-items: flex-start;">
+                        <div style="font-weight: bold; margin-bottom: 5px; display: flex;">
+                            <span class="num" style="min-width: 30px; font-size: 0.95rem;">${index + 1}.</span>
+                            <span style="word-break: break-word; font-size: 0.95rem;">${item.q}</span>
+                        </div>
+                        <div style="font-size: 0.95rem; white-space: pre-wrap; word-break: break-word; color: #ff6b6b; padding-left: 30px;">
+                            <span style="color: #666; font-weight: normal; margin-right: 5px;">정답:</span>${item.a_text}
+                        </div>
                     </div>
                 `;
             } else {
