@@ -1887,13 +1887,8 @@ window.loadExamView = async function (key) {
     const container = document.getElementById('examBoardContainer');
     const memberSection = document.getElementById('memberListSection');
     const filterSection = document.querySelector('.filter-section');
-    let displayTitle = '';
-    if (courseName && courseName !== '') {
-        displayTitle = `${courseName} 필기 기출문제 (${fileName})`;
-    } else {
-        displayTitle = `필기 기출문제 (${fileName})`;
-    }
     
+
     const courseTabs = document.querySelectorAll('.course-tabs');
     const title = document.getElementById('examBoardTitle');
     const listBody = document.getElementById('examQuestionList');
