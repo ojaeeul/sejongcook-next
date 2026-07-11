@@ -156,6 +156,81 @@ function getSectionName(index, examKey) {
     return '기타';
 }
 
+function sendToKakao() {
+    if (typeof Kakao !== 'undefined' && !Kakao.isInitialized()) {
+        Kakao.init('cd49bded279e39feb3c56279fd6290af');
+    }
+
+    const reportArea = document.getElementById('reportArea');
+    const originalBorder = reportArea.style.border;
+    const originalShadow = reportArea.style.boxShadow;
+    const originalRadius = reportArea.style.borderRadius;
+    
+    // Temporarily remove border/shadow for clean capture
+    reportArea.style.border = 'none';
+    reportArea.style.boxShadow = 'none';
+    reportArea.style.borderRadius = '0';
+    
+    html2canvas(reportArea, { scale: 2, useCORS: true }).then(canvas => {
+        // Restore styles
+        reportArea.style.border = originalBorder;
+        reportArea.style.boxShadow = originalShadow;
+        reportArea.style.borderRadius = originalRadius;
+        
+        canvas.toBlob(blob => {
+            if (!blob) return;
+            const studentName = document.getElementById('reportStudent').textContent.split(' ')[0] || '학생';
+            const dateStr = document.getElementById('reportDate').textContent.replace(/\//g, '-').replace(/:/g, '');
+            const filename = `모의고사결과_${studentName}_${dateStr}.png`;
+            const file = new File([blob], filename, { type: "image/png" });
+            
+            if (typeof Kakao !== 'undefined') {
+                Kakao.Share.uploadImage({
+                    file: [file]
+                }).then(function(response) {
+                    const imageUrl = response.infos.original.url;
+                    Kakao.Share.sendDefault({
+                        objectType: 'feed',
+                        content: {
+                            title: `${studentName} 학생 모의고사 결과`,
+                            description: '세종요리제과기술학원 모의고사 결과 분석표입니다.',
+                            imageUrl: imageUrl,
+                            link: {
+                                mobileWebUrl: 'https://sejongcook.co.kr',
+                                webUrl: 'https://sejongcook.co.kr'
+                            }
+                        },
+                        buttons: [
+                            {
+                                title: '학원 홈페이지',
+                                link: {
+                                    mobileWebUrl: 'https://sejongcook.co.kr',
+                                    webUrl: 'https://sejongcook.co.kr'
+                                }
+                            }
+                        ]
+                    });
+                }).catch(function(error) {
+                    console.error("Kakao upload failed", error);
+                    fallbackDownload(blob, filename);
+                });
+            } else {
+                fallbackDownload(blob, filename);
+            }
+        }, "image/png");
+    });
+}
+
+function fallbackDownload(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(url);
+    alert("이미지가 다운로드 되었습니다.\n카카오톡 파일 전송으로 첨부해주세요.");
+}
+
 function openAnalysis(index) {
     document.getElementById('dateListArea').style.display = 'none';
     document.getElementById('reportContainer').style.display = 'flex';

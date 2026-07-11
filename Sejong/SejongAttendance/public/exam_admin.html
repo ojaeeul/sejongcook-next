@@ -6,10 +6,11 @@
     <title>모의고사 결과 관리</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="exam_admin.css?v=20260711-30">
-    <!-- Chart.js & html2canvas -->
+    <link rel="stylesheet" href="exam_admin.css?v=20260711-31">
+    <!-- Chart.js, html2canvas & Kakao SDK -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js" integrity="sha384-TiCmbV0X04/KpzfnKMw21V0Owt+xZpT1//j7XNqU6H1XhX867R0DytP5S2D2G//X" crossorigin="anonymous"></script>
 </head>
 <body>
 
@@ -159,12 +160,12 @@
         </div>
         
         <div class="report-bottom-action" style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">
-            <button class="print-send-btn" onclick="saveAsImage()" style="background: #fbbf24; color: #fff; border-color: #f59e0b;"><span class="material-icons" style="vertical-align: middle; margin-right: 5px;">image</span>이미지로 저장 (카톡 전송용)</button>
+            <button class="print-send-btn" onclick="sendToKakao()" style="background: #fee500; color: #3c1e1e; border-color: #fada0a;"><span class="material-icons" style="vertical-align: middle; margin-right: 5px;">chat_bubble</span>카톡으로 보내기</button>
             <button class="print-send-btn" onclick="window.print()"><span class="material-icons" style="vertical-align: middle; margin-right: 5px;">print</span>평가지 출력</button>
         </div>
         </div> <!-- End of reportContainer -->
     </div>
 
-    <script src="exam_admin.js?v=20260711-30"></script>
+    <script src="exam_admin.js?v=20260711-31"></script>
 </body>
 </html>
