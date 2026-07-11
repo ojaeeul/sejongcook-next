@@ -154,92 +154,118 @@ table.admin-table {
     display: flex;
     flex-direction: column;
     position: relative;
+    font-family: "Batang", "Malgun Gothic", serif;
 }
 
 /* Two Columns Layout */
 .report-columns {
     display: flex;
-    gap: 10px;
+    gap: 15px;
     flex: 1;
+    border-left: 2px solid #f97316;
+    border-right: 2px solid #f97316;
+    padding: 0 10px;
+    position: relative;
+}
+
+/* Orange center divider line */
+.report-columns::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 2px;
+    background-color: #f97316;
+    transform: translateX(-50%);
 }
 
 .report-left {
-    flex: 1.1;
+    flex: 1;
     display: flex;
     flex-direction: column;
+    padding-right: 10px;
 }
 
 .report-right {
-    flex: 0.9;
+    flex: 1;
     display: flex;
     flex-direction: column;
+    padding-left: 10px;
 }
 
 /* Left Column: Headers */
 .report-header {
     display: flex;
-    border: 2px solid #94a3b8;
+    border: 3px double #93c5fd;
     margin-bottom: 10px;
-    border-radius: 4px;
+    border-radius: 2px;
 }
 
 .report-title-box {
-    flex: 1;
+    flex: 1.2;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 15px 10px;
-    border-right: 2px solid #94a3b8;
+    padding: 15px 5px;
+    border-right: 1px solid #93c5fd;
 }
 
 .report-title-box h1 {
     margin: 0;
-    color: var(--sejong-orange);
+    color: #b45309;
     font-size: 1.8rem;
     font-weight: 900;
-    letter-spacing: -1px;
+    letter-spacing: 2px;
+    font-family: "Batang", serif;
 }
 
 .report-title-box h2 {
     margin: 0;
-    color: var(--sejong-orange);
-    font-size: 1.2rem;
+    color: #d97706;
+    font-size: 1.1rem;
     font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 5px;
+    font-family: "Batang", serif;
 }
 
 .report-info-box {
-    flex: 1;
+    flex: 0.8;
     padding: 10px;
     display: flex;
     flex-direction: column;
-    justify-content: space-around;
-    font-size: 0.85rem;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-family: sans-serif;
 }
 .info-row {
     display: flex;
-    margin-bottom: 4px;
+    margin-bottom: 3px;
 }
 .info-label {
-    width: 50px;
+    width: 45px;
     font-weight: 700;
     color: #475569;
 }
 .info-val {
     font-weight: 700;
-    color: var(--text-main);
+    color: #1e293b;
 }
 
 /* Left Column: Questions Table */
 .section-title {
     text-align: center;
-    background: #e2e8f0;
-    padding: 6px;
-    font-weight: 700;
-    margin-bottom: 5px;
-    border-radius: 4px;
+    background: #e0e7ff;
+    padding: 4px;
+    font-weight: bold;
+    margin-bottom: 8px;
+    border-radius: 12px;
     font-size: 0.9rem;
-    color: #334155;
+    color: #4f46e5;
+    margin-top: 10px;
+    border: 1px solid #c7d2fe;
 }
 
 .q-table {
@@ -247,64 +273,90 @@ table.admin-table {
     border-collapse: collapse;
     font-size: 0.75rem;
     text-align: center;
+    font-family: sans-serif;
 }
 .q-table th, .q-table td {
-    border: 1px solid #cbd5e1;
-    padding: 4px 2px;
+    border: 1px solid #93c5fd;
+    padding: 3px 2px;
 }
 .q-table th {
-    background: #f1f5f9;
-    font-weight: 600;
+    background: #eff6ff;
+    font-weight: bold;
+    color: #1e40af;
 }
 .q-table .q-correct { color: #2563eb; font-weight: bold; }
 .q-table .q-wrong { color: #ef4444; font-weight: bold; }
 
-/* In order to fit 60 questions, we make a 2-column layout inside the left side using column-count or flex */
+/* 2-column layout inside the left side for 60 questions */
 .q-table-wrapper {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 8px;
+    gap: 10px;
     flex: 1;
 }
 
 /* Left Column: Footer */
 .report-footer {
-    margin-top: 10px;
-    border: 2px solid #cbd5e1;
-    padding: 10px;
+    margin-top: 15px;
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    border-radius: 4px;
+    align-items: flex-end;
+    font-family: sans-serif;
 }
-.report-footer .academy-name {
-    font-size: 1.2rem;
-    font-weight: 900;
-    color: #1e293b;
-    margin-bottom: 4px;
-}
-.report-footer .academy-info {
-    font-size: 0.75rem;
-    color: #64748b;
-}
-.report-footer .stamp {
-    width: 120px;
-    display: flex;
-}
-.stamp div {
-    flex: 1;
-    border: 1px solid #cbd5e1;
-    height: 40px;
-    text-align: center;
+.footer-left-content {
     display: flex;
     flex-direction: column;
 }
+.academy-name {
+    font-size: 1.2rem;
+    font-weight: 900;
+    color: #334155;
+    margin-bottom: 4px;
+}
+.academy-info {
+    font-size: 0.7rem;
+    color: #64748b;
+    margin-bottom: 10px;
+}
+.footer-slogan {
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: #64748b;
+    font-style: italic;
+}
+
+.stamp-box {
+    display: flex;
+    flex-direction: column;
+    width: 140px;
+    border: 1px solid #fbcfe8;
+}
+.stamp-headers {
+    display: flex;
+}
 .stamp-title {
+    flex: 1;
     background: #fdf2f8;
     color: #db2777;
     font-size: 0.7rem;
     padding: 2px;
-    border-bottom: 1px solid #cbd5e1;
+    text-align: center;
+    border-right: 1px solid #fbcfe8;
+    border-bottom: 1px solid #fbcfe8;
+}
+.stamp-title:last-child {
+    border-right: none;
+}
+.stamp-spaces {
+    display: flex;
+    height: 40px;
+}
+.stamp-space {
+    flex: 1;
+    border-right: 1px solid #fbcfe8;
+}
+.stamp-space:last-child {
+    border-right: none;
 }
 
 /* Right Column: Charts and Analysis */
@@ -313,13 +365,7 @@ table.admin-table {
     padding: 10px;
     margin-bottom: 10px;
     border-radius: 4px;
-}
-.chart-header {
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: #475569;
-    margin-bottom: 10px;
-    text-align: center;
+    background: #f8fafc;
 }
 .canvas-wrapper {
     position: relative;
@@ -330,36 +376,49 @@ table.admin-table {
     height: 250px;
 }
 
+.analysis-table-wrapper {
+    flex: 1;
+}
+
 .analysis-table {
     width: 100%;
     border-collapse: collapse;
     font-size: 0.8rem;
     text-align: center;
     margin-bottom: 10px;
+    font-family: sans-serif;
 }
 .analysis-table th, .analysis-table td {
-    border: 1px solid #cbd5e1;
+    border: 1px solid #93c5fd;
     padding: 6px;
 }
 .analysis-table th {
-    background: #f1f5f9;
+    background: #eff6ff;
+    color: #1e40af;
+    font-weight: bold;
 }
 
-/* Print Button in modal */
-.print-btn-wrapper {
+/* Bottom Action Button */
+.report-bottom-action {
     text-align: center;
     margin-top: 20px;
 }
-.print-btn-wrapper button {
-    background: #475569;
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-size: 1.1rem;
+.print-send-btn {
+    background: white;
+    color: #64748b;
+    border: 2px solid #cbd5e1;
+    padding: 15px 40px;
+    border-radius: 30px;
+    font-size: 1.4rem;
     font-weight: 700;
     cursor: pointer;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    transition: all 0.2s;
+}
+.print-send-btn:hover {
+    background: #f1f5f9;
+    color: #334155;
+    border-color: #94a3b8;
 }
 
 /* ------------------------------------- */

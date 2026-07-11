@@ -58,9 +58,8 @@
                         </div>
                         <div class="report-info-box">
                             <div class="info-row"><span class="info-label">Date :</span> <span class="info-val" id="reportDate">-</span></div>
-                            <div class="info-row"><span class="info-label">Time :</span> <span class="info-val" id="reportTime">-</span></div>
+                            <div class="info-row"><span class="info-label">Level :</span> <span class="info-val" id="reportTime">-</span></div>
                             <div class="info-row"><span class="info-label">Name :</span> <span class="info-val" id="reportStudent">-</span></div>
-                            <div class="info-row"><span class="info-label">Score :</span> <span class="info-val" id="reportScore">-</span></div>
                         </div>
                     </div>
 
@@ -72,8 +71,8 @@
                             <thead>
                                 <tr>
                                     <th>문항</th>
-                                    <th>학생답</th>
                                     <th>정답</th>
+                                    <th>학생답</th>
                                     <th>여부</th>
                                     <th>내용영역</th>
                                 </tr>
@@ -86,8 +85,8 @@
                             <thead>
                                 <tr>
                                     <th>문항</th>
-                                    <th>학생답</th>
                                     <th>정답</th>
+                                    <th>학생답</th>
                                     <th>여부</th>
                                     <th>내용영역</th>
                                 </tr>
@@ -95,62 +94,71 @@
                             <tbody></tbody>
                         </table>
                     </div>
+
+                    <!-- Footer placed inside Left Column as in the image -->
+                    <div class="report-footer">
+                        <div class="footer-left-content">
+                            <div class="academy-name">세종요리제과기술학원</div>
+                            <div class="academy-info">
+                                044-862-2303 / 010-3882-6272<br>
+                                www.sejongcook.co.kr
+                            </div>
+                            <div class="footer-slogan">Freedom From The Cooking</div>
+                        </div>
+                        <div class="stamp-box">
+                            <div class="stamp-headers">
+                                <div class="stamp-title">결재</div>
+                                <div class="stamp-title">담당자</div>
+                                <div class="stamp-title">원장</div>
+                            </div>
+                            <div class="stamp-spaces">
+                                <div class="stamp-space"></div>
+                                <div class="stamp-space"></div>
+                                <div class="stamp-space"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Right Column -->
                 <div class="report-right">
                     
-                    <div class="section-title">&lt; 영역별 정답률 &gt;</div>
+                    <div class="section-title">&lt; 영역별 정답률 분석 &gt;</div>
                     <div class="chart-box">
                         <div class="canvas-wrapper">
                             <canvas id="barChart"></canvas>
                         </div>
                     </div>
 
-                    <div class="section-title">&lt; 학생 학습 밸런스 &gt;</div>
+                    <div class="section-title">&lt; 학생 학습 밸런스 분석 &gt;</div>
                     <div class="chart-box">
                         <div class="canvas-wrapper large">
                             <canvas id="radarChart"></canvas>
                         </div>
                     </div>
 
-                    <div class="section-title">&lt; 내용영역별 상세 분석 &gt;</div>
-                    <table class="analysis-table" id="analysisTable">
-                        <thead>
-                            <tr>
-                                <th>영역</th>
-                                <th>문항수</th>
-                                <th>정답수</th>
-                                <th>정답률</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
+                    <div class="section-title">&lt; 내용영역 상세 &gt;</div>
+                    <div class="analysis-table-wrapper">
+                        <table class="analysis-table" id="analysisTable">
+                            <thead>
+                                <tr>
+                                    <th>영역</th>
+                                    <th>문항수</th>
+                                    <th>정답수</th>
+                                    <th>정답률</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
 
                 </div>
             </div>
 
-            <!-- Footer -->
-            <div class="report-footer">
-                <div>
-                    <div class="academy-name">세종요리제과기술학원</div>
-                    <div class="academy-info">
-                        02-000-0000 / 010-0000-0000<br>
-                        https://sejongcook.co.kr
-                    </div>
-                </div>
-                <div class="stamp">
-                    <div>
-                        <div class="stamp-title">담당자</div>
-                        <div></div>
-                    </div>
-                    <div>
-                        <div class="stamp-title">원장</div>
-                        <div></div>
-                    </div>
-                </div>
-            </div>
-
+        </div>
+        
+        <div class="report-bottom-action">
+            <button class="print-send-btn" onclick="window.print()">평가지 출력 및 문자 전송</button>
         </div>
     </div>
 

@@ -121,8 +121,7 @@ function openAnalysis(index) {
     document.getElementById('reportStudent').textContent = `${name} (${exam.phone})`;
     document.getElementById('reportExamName').textContent = exam.examKey;
     document.getElementById('reportDate').textContent = formatDate(exam.startTime);
-    document.getElementById('reportTime').textContent = formatDuration(exam.startTime, exam.submitTime);
-    document.getElementById('reportScore').textContent = `${exam.score}점 (${exam.correctCount}/${exam.total}개)`;
+    document.getElementById('reportTime').textContent = "기본";
     
     // Build Questions Table
     const tbody1 = document.querySelector('#qTable1 tbody');
@@ -143,8 +142,8 @@ function openAnalysis(index) {
         
         tr.innerHTML = `
             <td>${qNum}</td>
-            <td>${studentAns}</td>
             <td>${correctAns}</td>
+            <td>${studentAns}</td>
             <td>${correctMark}</td>
             <td>${secName}</td>
         `;
