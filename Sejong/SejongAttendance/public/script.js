@@ -1974,23 +1974,35 @@ window.loadExamView = async function (key) {
             const qBox = document.createElement('div');
             qBox.className = 'pdf-q-item';
 
-            const optionsHtml = item.o.map((opt, i) => {
-                const cleanOpt = String(opt).replace(/^[①②③④⑤]\s*/, '').trim();
-                return `
-                <div class="pdf-opt">
-                    <span class="pdf-opt-num">${['①', '②', '③', '④'][i]}</span> 
-                    <span class="pdf-opt-content">${cleanOpt}</span>
-                </div>
+            if (item.is_subjective) {
+                qBox.innerHTML = `
+                    <div class="pdf-q-text">
+                        <span class="pdf-q-num">${index + 1}.</span> 
+                        <span class="pdf-q-content" style="flex: 1; word-break: break-word;">${item.q}</span>
+                    </div>
+                    <div class="pdf-options" style="margin-top: 10px; color: #ff6b6b; font-weight: bold; white-space: pre-wrap;">
+                        <span style="color: #666; font-weight: normal; margin-right: 5px;">정답:</span>${item.a_text}
+                    </div>
                 `;
-            }).join('');
+            } else {
+                const optionsHtml = item.o.map((opt, i) => {
+                    const cleanOpt = String(opt).replace(/^[①②③④⑤]\s*/, '').trim();
+                    return `
+                    <div class="pdf-opt">
+                        <span class="pdf-opt-num">${['①', '②', '③', '④'][i]}</span> 
+                        <span class="pdf-opt-content">${cleanOpt}</span>
+                    </div>
+                    `;
+                }).join('');
 
-            qBox.innerHTML = `
-                <div class="pdf-q-text">
-                    <span class="pdf-q-num">${index + 1}.</span> 
-                    <span class="pdf-q-content" style="flex: 1; word-break: break-word;">${item.q}</span>
-                </div>
-                <div class="pdf-options">${optionsHtml}</div>
-            `;
+                qBox.innerHTML = `
+                    <div class="pdf-q-text">
+                        <span class="pdf-q-num">${index + 1}.</span> 
+                        <span class="pdf-q-content" style="flex: 1; word-break: break-word;">${item.q}</span>
+                    </div>
+                    <div class="pdf-options">${optionsHtml}</div>
+                `;
+            }
             return qBox;
         }
 
@@ -2014,13 +2026,22 @@ window.loadExamView = async function (key) {
         answerGrid.className = 'pdf-answer-grid';
 
         const answersHtml = questions.map((item, index) => {
-            const ansChar = ['①', '②', '③', '④'][item.a - 1];
-            return `
-                <div class="pdf-answer-item">
-                    <span class="num">${index + 1}</span>
-                    <span class="ans">${ansChar}</span>
-                </div>
-            `;
+            if (item.is_subjective) {
+                return `
+                    <div class="pdf-answer-item" style="grid-column: span 2; display: flex; text-align: left; padding: 5px;">
+                        <span class="num" style="min-width: 30px;">${index + 1}</span>
+                        <span class="ans" style="font-size: 0.9rem; white-space: pre-wrap; word-break: break-word; color: #ff6b6b;">${item.a_text}</span>
+                    </div>
+                `;
+            } else {
+                const ansChar = ['①', '②', '③', '④'][item.a - 1];
+                return `
+                    <div class="pdf-answer-item">
+                        <span class="num">${index + 1}</span>
+                        <span class="ans">${ansChar}</span>
+                    </div>
+                `;
+            }
         }).join('');
 
         answerGrid.innerHTML = answersHtml;
