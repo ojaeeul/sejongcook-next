@@ -6,7 +6,7 @@
     <title>모의고사 결과 관리</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="exam_admin.css?v=20260711-25">
+    <link rel="stylesheet" href="exam_admin.css?v=20260711-26">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -15,38 +15,18 @@
     <div class="admin-header">
         <a href="app.html" class="back-btn"><span class="material-icons">arrow_back</span></a>
         <h1>모의고사 결과 관리</h1>
+        <select id="studentSelect" onchange="openAnalysis(this.value)" class="student-select">
+            <option value="">학생 응시 기록 불러오는 중...</option>
+        </select>
     </div>
 
-    <div class="container">
-        <div class="card">
-            <div class="table-wrapper">
-                <table class="admin-table" id="examTable">
-                    <thead>
-                        <tr>
-                            <th>학생번호/이름</th>
-                            <th>응시 과목</th>
-                            <th>접수 일시(시작)</th>
-                            <th>소요 시간</th>
-                            <th>점수</th>
-                            <th>합격여부</th>
-                        </tr>
-                    </thead>
-                    <tbody id="examTableBody">
-                        <!-- Data will be populated here -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- Analysis Modal (A4 Printable Report) -->
-    <div id="analysisModal" class="modal-overlay">
-        <div class="modal-actions">
-            <button class="action-btn" onclick="closeModal()"><span class="material-icons">close</span></button>
-            <button class="action-btn primary" onclick="window.print()"><span class="material-icons">print</span></button>
+    <div class="container" style="background: #e2e8f0; min-height: 100vh; padding: 20px; display: flex; justify-content: center;">
+        
+        <div id="noDataMessage" style="text-align: center; padding: 50px; color: #64748b; font-size: 1.2rem;">
+            표시할 학생 데이터가 없습니다.
         </div>
 
-        <div class="report-a4">
+        <div class="report-a4" id="reportArea" style="display: none;">
             
             <div class="report-columns">
                 <!-- Left Column -->
@@ -162,6 +142,6 @@
         </div>
     </div>
 
-    <script src="exam_admin.js?v=20260711-25"></script>
+    <script src="exam_admin.js?v=20260711-26"></script>
 </body>
 </html>

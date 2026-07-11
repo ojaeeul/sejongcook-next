@@ -27,7 +27,7 @@ function getSections(examKey) {
 
 document.addEventListener('DOMContentLoaded', async () => {
     await fetchData();
-    renderTable();
+    renderDropdown();
 });
 
 async function fetchData() {
@@ -75,33 +75,34 @@ function formatDuration(startTime, submitTime) {
     return `${diffMins}분 ${diffSecs}초`;
 }
 
-function renderTable() {
-    const tbody = document.getElementById('examTableBody');
-    tbody.innerHTML = '';
+function renderDropdown() {
+    const select = document.getElementById('studentSelect');
+    select.innerHTML = '';
     
     if (examsData.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#94a3b8; padding: 30px;">응시 기록이 없습니다.</td></tr>`;
+        select.innerHTML = `<option value="">응시 기록이 없습니다.</option>`;
+        document.getElementById('noDataMessage').style.display = 'block';
+        document.getElementById('reportArea').style.display = 'none';
+        document.querySelector('.report-bottom-action').style.display = 'none';
         return;
     }
     
+    document.getElementById('noDataMessage').style.display = 'none';
+    document.getElementById('reportArea').style.display = 'flex';
+    document.querySelector('.report-bottom-action').style.display = 'block';
+
     examsData.forEach((exam, index) => {
-        const name = membersData[exam.phone] ? `${membersData[exam.phone]}(${exam.phone})` : `알수없음(${exam.phone})`;
-        const isPass = exam.score >= 60;
-        const passLabel = isPass ? '<span class="score-badge score-pass">합격</span>' : '<span class="score-badge score-fail">불합격</span>';
-        
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td><b>${name}</b></td>
-            <td>${exam.examKey}</td>
-            <td>${formatDate(exam.startTime)}</td>
-            <td>${formatDuration(exam.startTime, exam.submitTime)}</td>
-            <td><b>${exam.score}점</b> (${exam.correctCount}/${exam.total})</td>
-            <td>${passLabel}</td>
-        `;
-        
-        tr.onclick = () => openAnalysis(index);
-        tbody.appendChild(tr);
+        const name = membersData[exam.phone] ? `${membersData[exam.phone]}` : `알수없음`;
+        const option = document.createElement('option');
+        option.value = index;
+        option.textContent = `${name} - ${exam.examKey} (${formatDate(exam.startTime)}) - ${exam.score}점`;
+        select.appendChild(option);
     });
+
+    // Auto load first
+    if (examsData.length > 0) {
+        openAnalysis(0);
+    }
 }
 
 function getSectionName(index, examKey) {
@@ -156,12 +157,10 @@ function openAnalysis(index) {
     }
     
     drawCharts(exam, examQuestions);
-    
-    document.getElementById('analysisModal').classList.add('active');
 }
 
 function closeModal() {
-    document.getElementById('analysisModal').classList.remove('active');
+    // no-op
 }
 
 function drawCharts(exam, examQuestions) {
