@@ -6,7 +6,7 @@
     <title>모의고사 결과 관리</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="exam_admin.css?v=20260711-26">
+    <link rel="stylesheet" href="exam_admin.css?v=20260711-27">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -15,18 +15,38 @@
     <div class="admin-header">
         <a href="app.html" class="back-btn"><span class="material-icons">arrow_back</span></a>
         <h1>모의고사 결과 관리</h1>
-        <select id="studentSelect" onchange="openAnalysis(this.value)" class="student-select">
-            <option value="">학생 응시 기록 불러오는 중...</option>
-        </select>
+        <input type="date" id="examDateSelect" onchange="filterExamsByDate(this.value)" class="student-select" style="font-family: inherit;">
     </div>
 
-    <div class="container" style="background: #e2e8f0; min-height: 100vh; padding: 20px; display: flex; justify-content: center;">
+    <div class="container" style="background: #e2e8f0; min-height: 100vh; padding: 20px; display: flex; flex-direction: column; align-items: center;">
         
         <div id="noDataMessage" style="text-align: center; padding: 50px; color: #64748b; font-size: 1.2rem;">
-            표시할 학생 데이터가 없습니다.
+            날짜를 선택해 주세요.
         </div>
 
-        <div class="report-a4" id="reportArea" style="display: none;">
+        <!-- 날짜 선택 시 나타나는 목록 영역 -->
+        <div id="dateListArea" style="display: none; width: 100%; max-width: 800px;">
+            <div id="dateListHeader" style="margin-bottom: 15px; font-size: 1.1rem; font-weight: bold; color: #1e293b;">해당 날짜에 응시한 학생 목록</div>
+            <div class="card" style="width: 100%; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); overflow: hidden;">
+                <table class="admin-table" style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr>
+                            <th style="padding: 12px; background: #f8fafc; border-bottom: 2px solid #e2e8f0; text-align: left;">학생명 (과목)</th>
+                            <th style="padding: 12px; background: #f8fafc; border-bottom: 2px solid #e2e8f0; text-align: center;">응시 일시</th>
+                            <th style="padding: 12px; background: #f8fafc; border-bottom: 2px solid #e2e8f0; text-align: center;">점수</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dateListBody">
+                        <!-- Javascript로 채워짐 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="reportContainer" style="display: none; width: 100%; display: flex; flex-direction: column; align-items: center;">
+            <button onclick="backToList()" class="print-send-btn" style="margin-bottom: 20px; background: #64748b; width: auto; padding: 10px 30px;"><span class="material-icons" style="vertical-align: middle; margin-right: 5px;">list</span>명단으로 돌아가기</button>
+            
+            <div class="report-a4" id="reportArea">
             
             <div class="report-columns">
                 <!-- Left Column -->
@@ -140,8 +160,9 @@
         <div class="report-bottom-action">
             <button class="print-send-btn" onclick="window.print()">평가지 출력 및 문자 전송</button>
         </div>
+        </div> <!-- End of reportContainer -->
     </div>
 
-    <script src="exam_admin.js?v=20260711-26"></script>
+    <script src="exam_admin.js?v=20260711-27"></script>
 </body>
 </html>

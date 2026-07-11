@@ -27,7 +27,7 @@ function getSections(examKey) {
 
 document.addEventListener('DOMContentLoaded', async () => {
     await fetchData();
-    renderDropdown();
+    initCalendar();
 });
 
 async function fetchData() {
@@ -75,34 +75,77 @@ function formatDuration(startTime, submitTime) {
     return `${diffMins}분 ${diffSecs}초`;
 }
 
-function renderDropdown() {
-    const select = document.getElementById('studentSelect');
-    select.innerHTML = '';
+function initCalendar() {
+    const dateSelect = document.getElementById('examDateSelect');
+    // Set today as default
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    dateSelect.value = `${yyyy}-${mm}-${dd}`;
     
-    if (examsData.length === 0) {
-        select.innerHTML = `<option value="">응시 기록이 없습니다.</option>`;
+    filterExamsByDate(dateSelect.value);
+}
+
+function filterExamsByDate(dateString) {
+    const tbody = document.getElementById('dateListBody');
+    tbody.innerHTML = '';
+    
+    document.getElementById('reportContainer').style.display = 'none';
+    
+    if (!dateString) {
         document.getElementById('noDataMessage').style.display = 'block';
-        document.getElementById('reportArea').style.display = 'none';
-        document.querySelector('.report-bottom-action').style.display = 'none';
+        document.getElementById('noDataMessage').textContent = '날짜를 선택해 주세요.';
+        document.getElementById('dateListArea').style.display = 'none';
+        return;
+    }
+    
+    // dateString format is "YYYY-MM-DD"
+    const filteredExams = examsData.map((exam, index) => ({ exam, index }))
+        .filter(item => {
+            if (!item.exam.startTime) return false;
+            return item.exam.startTime.startsWith(dateString);
+        });
+        
+    if (filteredExams.length === 0) {
+        document.getElementById('noDataMessage').style.display = 'block';
+        document.getElementById('noDataMessage').textContent = '해당 날짜에 응시한 학생 기록이 없습니다.';
+        document.getElementById('dateListArea').style.display = 'none';
         return;
     }
     
     document.getElementById('noDataMessage').style.display = 'none';
-    document.getElementById('reportArea').style.display = 'flex';
-    document.querySelector('.report-bottom-action').style.display = 'block';
-
-    examsData.forEach((exam, index) => {
+    document.getElementById('dateListArea').style.display = 'block';
+    document.getElementById('dateListHeader').textContent = `총 ${filteredExams.length}명이 응시했습니다.`;
+    
+    filteredExams.forEach(item => {
+        const exam = item.exam;
         const name = membersData[exam.phone] ? `${membersData[exam.phone]}` : `알수없음`;
-        const option = document.createElement('option');
-        option.value = index;
-        option.textContent = `${name} - ${exam.examKey} (${formatDate(exam.startTime)}) - ${exam.score}점`;
-        select.appendChild(option);
+        const timeStr = formatDate(exam.startTime);
+        
+        const tr = document.createElement('tr');
+        tr.style.cursor = 'pointer';
+        tr.style.transition = 'background 0.2s';
+        tr.onmouseover = () => tr.style.background = '#f1f5f9';
+        tr.onmouseout = () => tr.style.background = 'transparent';
+        tr.onclick = () => openAnalysis(item.index);
+        
+        tr.innerHTML = `
+            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: left;"><b>${name}</b> <span style="color:#64748b; font-size:0.9em;">(${exam.examKey})</span></td>
+            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: center; color: #475569;">${timeStr}</td>
+            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: center; font-weight: bold; color: var(--primary);">${exam.score}점</td>
+        `;
+        
+        tbody.appendChild(tr);
     });
+}
 
-    // Auto load first
-    if (examsData.length > 0) {
-        openAnalysis(0);
-    }
+function backToList() {
+    document.getElementById('reportContainer').style.display = 'none';
+    document.getElementById('dateListArea').style.display = 'block';
+    
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function getSectionName(index, examKey) {
@@ -114,6 +157,13 @@ function getSectionName(index, examKey) {
 }
 
 function openAnalysis(index) {
+    document.getElementById('dateListArea').style.display = 'none';
+    document.getElementById('reportContainer').style.display = 'flex';
+    document.getElementById('reportArea').style.display = 'flex';
+    
+    // Scroll to top for the report
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
     const exam = examsData[index];
     const name = membersData[exam.phone] ? membersData[exam.phone] : `알수없음`;
     const examQuestions = questionsData[exam.examKey] || [];
