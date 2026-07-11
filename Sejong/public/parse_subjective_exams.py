@@ -127,7 +127,7 @@ def main():
         questions = extract_subjective(hwp_path)
         
         if len(questions) > 0:
-            key = f"주관식_{filename}"
+            key = f"오재을(주관식)_{filename}"
             qdata[key] = questions
             subj_exams.append({"name": filename.replace(".hwp", ""), "key": key})
             print(f" -> Added {len(questions)} subjective questions.")

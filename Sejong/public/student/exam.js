@@ -211,7 +211,7 @@ function renderCourses() {
             <div class="course-icon" style="background: var(--primary);">
                 <span class="material-icons">${icon}</span>
             </div>
-            <h3>${course}조리기능사</h3>
+            <h3>${course.includes('오재을') ? course : course + '조리기능사'}</h3>
             <p>${count}개의 기출문제</p>
         `;
         grid.appendChild(card);
@@ -223,7 +223,7 @@ function renderCourses() {
 }
 
 function selectCourse(courseName) {
-    document.getElementById('selectedCourseName').textContent = `${courseName}조리기능사`;
+    document.getElementById('selectedCourseName').textContent = courseName.includes('오재을') ? courseName : `${courseName}조리기능사`;
     
     const list = document.getElementById('examList');
     list.innerHTML = '';
