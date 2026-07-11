@@ -184,9 +184,14 @@ function sendToKakao() {
             const filename = `모의고사결과_${studentName}_${dateStr}.png`;
             const file = new File([blob], filename, { type: "image/png" });
             
+            // Create a true FileList for Kakao SDK
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            const fileList = dt.files;
+            
             if (typeof Kakao !== 'undefined') {
                 Kakao.Share.uploadImage({
-                    file: [file]
+                    file: fileList
                 }).then(function(response) {
                     const imageUrl = response.infos.original.url;
                     Kakao.Share.sendDefault({
