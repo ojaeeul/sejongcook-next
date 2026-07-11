@@ -171,7 +171,13 @@ function getSectionName(index, examKey) {
     return '기타';
 }
 
-function sendToKakao() {
+let preloadedKakaoUrl = null;
+let isPreloadingKakao = false;
+
+function preloadKakaoImage(studentName, exam) {
+    preloadedKakaoUrl = null;
+    isPreloadingKakao = true;
+    
     if (typeof Kakao !== 'undefined' && !Kakao.isInitialized()) {
         Kakao.init('cd49bded279e39feb3c56279fd6290af');
     }
@@ -181,25 +187,24 @@ function sendToKakao() {
     const originalShadow = reportArea.style.boxShadow;
     const originalRadius = reportArea.style.borderRadius;
     
-    // Temporarily remove border/shadow for clean capture
     reportArea.style.border = 'none';
     reportArea.style.boxShadow = 'none';
     reportArea.style.borderRadius = '0';
     
     html2canvas(reportArea, { scale: 2, useCORS: true }).then(canvas => {
-        // Restore styles
         reportArea.style.border = originalBorder;
         reportArea.style.boxShadow = originalShadow;
         reportArea.style.borderRadius = originalRadius;
         
         canvas.toBlob(blob => {
-            if (!blob) return;
-            const studentName = document.getElementById('reportStudent').textContent.split(' ')[0] || '학생';
-            const dateStr = document.getElementById('reportDate').textContent.replace(/\//g, '-').replace(/:/g, '');
+            if (!blob) {
+                isPreloadingKakao = false;
+                return;
+            }
+            const dateStr = formatDate(exam.startTime).split(' ')[0].replace(/\//g, '');
             const filename = `모의고사결과_${studentName}_${dateStr}.png`;
             const file = new File([blob], filename, { type: "image/png" });
             
-            // Create a true FileList for Kakao SDK
             const dt = new DataTransfer();
             dt.items.add(file);
             const fileList = dt.files;
@@ -208,37 +213,63 @@ function sendToKakao() {
                 Kakao.Share.uploadImage({
                     file: fileList
                 }).then(function(response) {
-                    const imageUrl = response.infos.original.url;
-                    Kakao.Share.sendDefault({
-                        objectType: 'feed',
-                        content: {
-                            title: `${studentName} 학생 모의고사 결과`,
-                            description: '세종요리제과기술학원 모의고사 결과 분석표입니다.',
-                            imageUrl: imageUrl,
-                            link: {
-                                mobileWebUrl: 'https://sejongcook.co.kr',
-                                webUrl: 'https://sejongcook.co.kr'
-                            }
-                        },
-                        buttons: [
-                            {
-                                title: '학원 홈페이지',
-                                link: {
-                                    mobileWebUrl: 'https://sejongcook.co.kr',
-                                    webUrl: 'https://sejongcook.co.kr'
-                                }
-                            }
-                        ]
-                    });
+                    preloadedKakaoUrl = response.infos.original.url;
+                    isPreloadingKakao = false;
                 }).catch(function(error) {
-                    const errorMsg = error.message || error.msg || error.code || JSON.stringify(error, Object.getOwnPropertyNames(error));
-                    alert("카카오 연결 오류: " + errorMsg + "\n\n1. 주소창이 http://localhost:3000/... 이 맞는지 확인해주세요.\n2. 새로고침을 반드시 해주세요!");
-                    fallbackDownload(blob, filename);
+                    console.error("Kakao preload failed", error);
+                    isPreloadingKakao = false;
                 });
             } else {
-                fallbackDownload(blob, filename);
+                isPreloadingKakao = false;
             }
         }, "image/png");
+    });
+}
+
+function sendToKakao() {
+    if (isPreloadingKakao) {
+        alert("이미지를 생성 중입니다. 잠시 후(1~2초) 다시 눌러주세요!");
+        return;
+    }
+    
+    if (!preloadedKakaoUrl) {
+        // Fallback to manual download if preload failed
+        alert("카카오 연결 오류: 팝업 차단 혹은 네트워크 문제로 자동 첨부가 불가능합니다.\n이미지를 수동으로 저장하여 전송해주세요.");
+        const reportArea = document.getElementById('reportArea');
+        html2canvas(reportArea, { scale: 2, useCORS: true }).then(canvas => {
+            canvas.toBlob(blob => {
+                const studentName = document.getElementById('reportStudent').textContent.split(' ')[0] || '학생';
+                const dateStr = document.getElementById('reportDate').textContent.replace(/\//g, '-').replace(/:/g, '');
+                const filename = `모의고사결과_${studentName}_${dateStr}.png`;
+                fallbackDownload(blob, filename);
+            }, "image/png");
+        });
+        return;
+    }
+    
+    const studentName = document.getElementById('reportStudent').textContent.split(' ')[0] || '학생';
+    
+    // Call Kakao SDK synchronously to avoid Safari popup blocker
+    Kakao.Share.sendDefault({
+        objectType: 'feed',
+        content: {
+            title: `${studentName} 학생 모의고사 결과`,
+            description: '세종요리제과기술학원 모의고사 결과 분석표입니다.',
+            imageUrl: preloadedKakaoUrl,
+            link: {
+                mobileWebUrl: 'https://sejongcook.co.kr',
+                webUrl: 'https://sejongcook.co.kr'
+            }
+        },
+        buttons: [
+            {
+                title: '학원 홈페이지',
+                link: {
+                    mobileWebUrl: 'https://sejongcook.co.kr',
+                    webUrl: 'https://sejongcook.co.kr'
+                }
+            }
+        ]
     });
 }
 
@@ -303,6 +334,12 @@ function openAnalysis(index) {
     }
     
     drawCharts(exam, examQuestions);
+    
+    // Wait 1 second for UI to finish rendering, then preload image
+    setTimeout(() => {
+        const studentName = document.getElementById('reportStudent').textContent.split(' ')[0] || '학생';
+        preloadKakaoImage(studentName, exam);
+    }, 1000);
 }
 
 function closeModal() {
