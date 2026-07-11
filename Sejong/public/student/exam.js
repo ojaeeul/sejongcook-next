@@ -278,46 +278,85 @@ function renderQuestion() {
     const optsEl = document.getElementById('optionsList');
     optsEl.innerHTML = '';
 
-    qInfo.o.forEach((optText, index) => {
-        const optNum = index + 1;
-        const btn = document.createElement('div');
-        btn.className = 'option-btn';
+    if (qInfo.is_subjective) {
+        const ansContainer = document.createElement('div');
+        ansContainer.className = 'subjective-container';
+        ansContainer.style.textAlign = 'center';
+        ansContainer.style.marginTop = '20px';
         
-        if (userAnswers[currentQuestionIndex] === optNum) {
-            btn.classList.add('selected');
-        }
+        const ansBox = document.createElement('div');
+        ansBox.className = 'subjective-answer';
+        ansBox.style.display = userAnswers[currentQuestionIndex] ? 'block' : 'none';
+        ansBox.style.background = 'rgba(255, 255, 255, 0.1)';
+        ansBox.style.padding = '20px';
+        ansBox.style.borderRadius = '10px';
+        ansBox.style.color = '#ff6b6b';
+        ansBox.style.fontSize = '1.1rem';
+        ansBox.style.marginTop = '15px';
+        ansBox.style.whiteSpace = 'pre-wrap';
+        ansBox.textContent = qInfo.a_text;
 
-        // Review Mode Logic
-        if (isReviewMode) {
-            const isCorrectAnswer = (optNum === qInfo.a);
-            const isMyAnswer = (optNum === userAnswers[currentQuestionIndex]);
-            
-            if (isCorrectAnswer) {
-                btn.classList.add('correct-ans');
-            } else if (isMyAnswer && !isCorrectAnswer) {
-                btn.classList.add('wrong-ans');
+        const btn = document.createElement('button');
+        btn.className = 'btn-primary';
+        btn.textContent = userAnswers[currentQuestionIndex] ? '정답 숨기기' : '정답 확인하기';
+        btn.onclick = () => {
+            if (userAnswers[currentQuestionIndex]) {
+                userAnswers[currentQuestionIndex] = null;
+                ansBox.style.display = 'none';
+                btn.textContent = '정답 확인하기';
+            } else {
+                userAnswers[currentQuestionIndex] = true;
+                ansBox.style.display = 'block';
+                btn.textContent = '정답 숨기기';
             }
-        } else {
-            // Only attach click handler in solving mode
-            btn.onclick = () => {
-                userAnswers[currentQuestionIndex] = optNum;
-                renderQuestion(); // re-render to update selection
-                
-                // Auto next after 0.3s
-                setTimeout(() => {
-                    if (currentQuestionIndex < currentQuestions.length - 1) {
-                        nextQuestion();
-                    }
-                }, 300);
-            };
-        }
+            renderOMR(); // Update OMR to reflect viewed status
+        };
 
-        btn.innerHTML = `
-            <div class="opt-num">${optNum}</div>
-            <div style="flex: 1; word-break: keep-all;">${optText}</div>
-        `;
-        optsEl.appendChild(btn);
-    });
+        ansContainer.appendChild(btn);
+        ansContainer.appendChild(ansBox);
+        optsEl.appendChild(ansContainer);
+    } else {
+        qInfo.o.forEach((optText, index) => {
+            const optNum = index + 1;
+            const btn = document.createElement('div');
+            btn.className = 'option-btn';
+            
+            if (userAnswers[currentQuestionIndex] === optNum) {
+                btn.classList.add('selected');
+            }
+
+            // Review Mode Logic
+            if (isReviewMode) {
+                const isCorrectAnswer = (optNum === qInfo.a);
+                const isMyAnswer = (optNum === userAnswers[currentQuestionIndex]);
+                
+                if (isCorrectAnswer) {
+                    btn.classList.add('correct-ans');
+                } else if (isMyAnswer && !isCorrectAnswer) {
+                    btn.classList.add('wrong-ans');
+                }
+            } else {
+                // Only attach click handler in solving mode
+                btn.onclick = () => {
+                    userAnswers[currentQuestionIndex] = optNum;
+                    renderQuestion(); // re-render to update selection
+                    
+                    // Auto next after 0.3s
+                    setTimeout(() => {
+                        if (currentQuestionIndex < currentQuestions.length - 1) {
+                            nextQuestion();
+                        }
+                    }, 300);
+                };
+            }
+
+            btn.innerHTML = `
+                <div class="opt-num">${optNum}</div>
+                <div style="flex: 1; word-break: keep-all;">${optText}</div>
+            `;
+            optsEl.appendChild(btn);
+        });
+    }
 
     // Update bottom nav buttons
     document.getElementById('prevBtn').disabled = (currentQuestionIndex === 0);
@@ -379,33 +418,45 @@ function renderOMR() {
         const bubbles = document.createElement('div');
         bubbles.className = 'omr-bubbles';
 
-        for (let opt = 1; opt <= 4; opt++) {
+        const qInfo = currentQuestions[i];
+        if (qInfo.is_subjective) {
             const bubble = document.createElement('div');
             bubble.className = 'omr-bubble';
-            bubble.textContent = opt;
-            
-            if (userAnswers[i] === opt) {
+            bubble.style.width = '60px';
+            bubble.textContent = userAnswers[i] ? '확인됨' : '미확인';
+            if (userAnswers[i]) {
                 bubble.classList.add('selected');
             }
-
-            bubble.onclick = (e) => {
-                e.stopPropagation(); // prevent modal close or row click
-                
-                // Toggle off if same bubble clicked again
-                if (userAnswers[i] === opt) {
-                    userAnswers[i] = null;
-                } else {
-                    userAnswers[i] = opt;
-                }
-                
-                renderOMR();
-                
-                // Also update the main screen if we are currently on this question
-                if (currentQuestionIndex === i) {
-                    renderQuestion();
-                }
-            };
             bubbles.appendChild(bubble);
+        } else {
+            for (let opt = 1; opt <= 4; opt++) {
+                const bubble = document.createElement('div');
+                bubble.className = 'omr-bubble';
+                bubble.textContent = opt;
+                
+                if (userAnswers[i] === opt) {
+                    bubble.classList.add('selected');
+                }
+
+                bubble.onclick = (e) => {
+                    e.stopPropagation(); // prevent modal close or row click
+                    
+                    // Toggle off if same bubble clicked again
+                    if (userAnswers[i] === opt) {
+                        userAnswers[i] = null;
+                    } else {
+                        userAnswers[i] = opt;
+                    }
+                    
+                    renderOMR();
+                    
+                    // Also update the main screen if we are currently on this question
+                    if (currentQuestionIndex === i) {
+                        renderQuestion();
+                    }
+                };
+                bubbles.appendChild(bubble);
+            }
         }
 
         row.appendChild(num);
@@ -453,7 +504,11 @@ function calculateResult() {
     let correctCount = 0;
     
     currentQuestions.forEach((q, idx) => {
-        if (userAnswers[idx] === q.a) correctCount++;
+        if (q.is_subjective) {
+            if (userAnswers[idx]) correctCount++;
+        } else {
+            if (userAnswers[idx] === q.a) correctCount++;
+        }
     });
 
     const total = currentQuestions.length;
@@ -474,8 +529,11 @@ function calculateResult() {
         let secTotal = 0;
         for (let i = sec.start; i < sec.end && i < total; i++) {
             secTotal++;
-            if (userAnswers[i] === currentQuestions[i].a) {
-                secCorrect++;
+            const q = currentQuestions[i];
+            if (q.is_subjective) {
+                if (userAnswers[i]) secCorrect++;
+            } else {
+                if (userAnswers[i] === q.a) secCorrect++;
             }
         }
         return secTotal > 0 ? Math.round((secCorrect / secTotal) * 100) : 0;
@@ -566,8 +624,17 @@ function renderAnalysisTable() {
 
     currentQuestions.forEach((q, idx) => {
         const myAns = userAnswers[idx];
-        const correctAns = q.a;
-        const isCorrect = (myAns === correctAns);
+        let isCorrect = false;
+        let myAnsStr = myAns || '-';
+        let correctAnsStr = q.a;
+        
+        if (q.is_subjective) {
+            isCorrect = !!myAns;
+            myAnsStr = isCorrect ? '확인됨' : '미확인';
+            correctAnsStr = '주관식';
+        } else {
+            isCorrect = (myAns === q.a);
+        }
 
         const tr = document.createElement('tr');
         if (!isCorrect) {
@@ -579,8 +646,8 @@ function renderAnalysisTable() {
 
         tr.innerHTML = `
             <td>${idx + 1}</td>
-            <td style="color: ${myAns === null ? '#94a3b8' : 'white'}">${myAns || '-'}</td>
-            <td style="color: var(--primary-light); font-weight: bold;">${correctAns}</td>
+            <td style="color: ${myAns === null ? '#94a3b8' : 'white'}">${myAnsStr}</td>
+            <td style="color: var(--primary-light); font-weight: bold;">${correctAnsStr}</td>
             <td class="ox-mark ${isCorrect ? 'ox-o' : 'ox-x'}">${isCorrect ? 'O' : 'X'}</td>
         `;
         tbody.appendChild(tr);
