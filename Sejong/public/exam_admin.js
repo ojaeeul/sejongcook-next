@@ -250,6 +250,8 @@ function sendToKakao() {
     const studentName = document.getElementById('reportStudent').textContent.split(' ')[0] || '학생';
     
     // Call Kakao SDK synchronously to avoid Safari popup blocker
+    const viewerUrl = `https://sejongcook.co.kr/sejong/view_image.html?url=${encodeURIComponent(preloadedKakaoUrl)}`;
+    
     Kakao.Share.sendDefault({
         objectType: 'feed',
         content: {
@@ -257,16 +259,16 @@ function sendToKakao() {
             description: '세종요리제과기술학원 모의고사 결과 분석표입니다.',
             imageUrl: preloadedKakaoUrl,
             link: {
-                mobileWebUrl: 'https://sejongcook.co.kr',
-                webUrl: 'https://sejongcook.co.kr'
+                mobileWebUrl: viewerUrl,
+                webUrl: viewerUrl
             }
         },
         buttons: [
             {
-                title: '학원 홈페이지',
+                title: '크게 보기 (확대/저장)',
                 link: {
-                    mobileWebUrl: 'https://sejongcook.co.kr',
-                    webUrl: 'https://sejongcook.co.kr'
+                    mobileWebUrl: viewerUrl,
+                    webUrl: viewerUrl
                 }
             }
         ]
