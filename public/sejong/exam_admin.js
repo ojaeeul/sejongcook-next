@@ -57,6 +57,21 @@ async function fetchData() {
     }
 }
 
+function getStudentName(examPhone) {
+    if (!examPhone) return '알수없음';
+    if (membersData[examPhone]) return membersData[examPhone];
+    
+    // Check if examPhone is 4 digits and match the end of member phones
+    const cleanedExamPhone = examPhone.replace(/-/g, '');
+    for (const phone in membersData) {
+        const cleanedPhone = phone.replace(/-/g, '');
+        if (cleanedPhone.endsWith(cleanedExamPhone)) {
+            return membersData[phone];
+        }
+    }
+    return '알수없음';
+}
+
 function formatDate(isoString) {
     if (!isoString) return '-';
     const d = new Date(isoString);
@@ -120,7 +135,7 @@ function filterExamsByDate(dateString) {
     
     filteredExams.forEach(item => {
         const exam = item.exam;
-        const name = membersData[exam.phone] ? `${membersData[exam.phone]}` : `알수없음`;
+        const name = getStudentName(exam.phone);
         const timeStr = formatDate(exam.startTime);
         
         const tr = document.createElement('tr');
@@ -245,7 +260,7 @@ function openAnalysis(index) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
     const exam = examsData[index];
-    const name = membersData[exam.phone] ? membersData[exam.phone] : `알수없음`;
+    const name = getStudentName(exam.phone);
     const examQuestions = questionsData[exam.examKey] || [];
     
     // Header Info
