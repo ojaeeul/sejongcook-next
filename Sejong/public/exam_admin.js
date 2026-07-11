@@ -213,7 +213,7 @@ function preloadKakaoImage(studentName, exam) {
                 Kakao.Share.uploadImage({
                     file: fileList
                 }).then(function(response) {
-                    preloadedKakaoUrl = response.infos.original.url;
+                    preloadedKakaoUrl = response.infos.original.url.replace('http://', 'https://');
                     isPreloadingKakao = false;
                 }).catch(function(error) {
                     console.error("Kakao preload failed", error);
