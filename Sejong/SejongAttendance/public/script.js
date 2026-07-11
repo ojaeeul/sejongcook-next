@@ -2030,13 +2030,14 @@ window.loadExamView = async function (key) {
         const answersHtml = questions.map((item, index) => {
             if (item.is_subjective) {
                 return `
-                    <div class="pdf-answer-item" style="grid-column: span 10; display: flex; flex-direction: column; text-align: left; padding: 10px; margin-bottom: 0px; border-bottom: 1px dashed #ccc; align-items: flex-start;">
-                        <div style="font-weight: bold; margin-bottom: 5px; display: flex;">
-                            <span class="num" style="min-width: 30px; font-size: 0.95rem;">${index + 1}.</span>
-                            <span style="word-break: break-word; font-size: 0.95rem;">${item.q}</span>
+                    <div class="pdf-answer-item" style="grid-column: span 10; display: flex; flex-direction: column; text-align: left; padding: 15px; margin-bottom: 0px; border-bottom: 1px dashed #ccc; align-items: flex-start;">
+                        <div style="font-weight: bold; margin-bottom: 8px; display: flex;">
+                            <span class="num" style="min-width: 30px; font-size: 0.95rem; flex-shrink: 0;">${index + 1}.</span>
+                            <span style="word-break: break-word; font-size: 0.95rem; line-height: 1.5;">${item.q}</span>
                         </div>
-                        <div style="font-size: 0.95rem; white-space: pre-wrap; word-break: break-word; color: #ff6b6b; padding-left: 30px;">
-                            <span style="color: #666; font-weight: normal; margin-right: 5px;">정답:</span>${item.a_text}
+                        <div style="display: flex; width: 100%; font-size: 0.95rem; padding-left: 30px; line-height: 1.5;">
+                            <span style="color: #666; font-weight: normal; margin-right: 8px; flex-shrink: 0;">정답:</span>
+                            <span style="color: #ff6b6b; white-space: pre-wrap; word-break: break-word; text-align: left; flex: 1;">${item.a_text}</span>
                         </div>
                     </div>
                 `;
