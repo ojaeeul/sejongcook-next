@@ -231,7 +231,8 @@ function sendToKakao() {
                         ]
                     });
                 }).catch(function(error) {
-                    alert("카카오 연결 오류: " + JSON.stringify(error) + "\n\n1. 주소창이 http://localhost:3000/... 이 맞는지 확인해주세요.\n2. 새로고침을 반드시 해주세요!");
+                    const errorMsg = error.message || error.msg || error.code || JSON.stringify(error, Object.getOwnPropertyNames(error));
+                    alert("카카오 연결 오류: " + errorMsg + "\n\n1. 주소창이 http://localhost:3000/... 이 맞는지 확인해주세요.\n2. 새로고침을 반드시 해주세요!");
                     fallbackDownload(blob, filename);
                 });
             } else {
