@@ -250,7 +250,7 @@ function sendToKakao() {
     const studentName = document.getElementById('reportStudent').textContent.split(' ')[0] || '학생';
     
     // Call Kakao SDK synchronously to avoid Safari popup blocker
-    const viewerUrl = `https://sejongcook.co.kr/sejong/view_image.html?url=${encodeURIComponent(preloadedKakaoUrl)}`;
+    const viewerUrl = `https://sejongcook.co.kr/sejong/student/view_image.html?url=${encodeURIComponent(preloadedKakaoUrl)}`;
     
     Kakao.Share.sendDefault({
         objectType: 'feed',
