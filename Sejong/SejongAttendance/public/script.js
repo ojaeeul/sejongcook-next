@@ -1912,6 +1912,11 @@ window.loadExamView = async function (key) {
         });
     }
 
+    const topHeader = document.querySelector('.top-header');
+    if (topHeader) {
+        topHeader.style.display = 'none';
+    }
+
     // Show Container
     container.style.display = 'block';
     container.classList.remove('hidden');
@@ -2088,6 +2093,11 @@ window.closeExamView = function () {
             if (t.classList.contains('time-tabs')) t.style.display = 'flex';
             t.classList.remove('hidden');
         });
+    }
+
+    const topHeader = document.querySelector('.top-header');
+    if (topHeader) {
+        topHeader.style.display = 'flex';
     }
 };
 
