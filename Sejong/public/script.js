@@ -1879,7 +1879,11 @@ let examData = null;
 window.loadExamView = async function (key) {
     console.log('Loading Exam View for key:', key);
 
-    const [subject, year] = key.includes('_') ? key.split('_') : [key, ''];
+    const parts = key.split('_');
+    let fileName = parts.pop() || key;
+    fileName = fileName.replace('.hwp', '').replace('.pdf', '');
+    let courseName = parts.length > 0 ? parts.pop() : '';
+
     const container = document.getElementById('examBoardContainer');
     const memberSection = document.getElementById('memberListSection');
     const filterSection = document.querySelector('.filter-section');
@@ -1921,19 +1925,23 @@ window.loadExamView = async function (key) {
     container.style.display = 'block';
     container.classList.remove('hidden');
 
-    let titleText = `${year}년 ${subject} 조리/기능사 기출문제`;
-    if (subject === '오재을') {
-        // 확장자가 있다면 제거 (선택적)
-        titleText = year.replace('.hwp', '').replace('.pdf', '');
+    let displayTitle = fileName;
+    if (courseName && courseName !== '오재을') {
+        displayTitle = `${courseName} 필기 기출문제 (${fileName})`;
+    } else {
+        displayTitle = `필기 기출문제 (${fileName})`;
     }
 
     title.innerHTML = `
-        <div class="print-header-web" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 15px;">
-            <h1 style="font-family: 'Noto Sans KR', sans-serif; font-size: 1.8rem; font-weight: 800; margin: 0;">${titleText}</h1>
-            <div style="display: flex; gap: 10px;">
+        <div class="print-header-web" style="margin-bottom: 20px;">
+            <div class="header-actions" style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 30px;">
                 <button onclick="window.print()" class="filter-btn" style="background-color: #00b050; color: white; font-weight: 700;">인쇄하기</button>
                 <button onclick="closeExamView()" class="filter-btn">뒤로가기</button>
             </div>
+            <div style="text-align: right; font-size: 1.1rem; font-weight: 600; margin-bottom: 5px; color: #333; letter-spacing: 0.5px;">
+                ${displayTitle}
+            </div>
+            <div style="border-bottom: 3px solid #000; margin-bottom: 20px;"></div>
         </div>
     `;
 
