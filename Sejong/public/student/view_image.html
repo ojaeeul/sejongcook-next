@@ -2,84 +2,19 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-    <title>모의고사 결과표</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #f0f0f0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        }
-        .header {
-            width: 100%;
-            background: #ffffff;
-            color: #333;
-            padding: 15px 10px;
-            text-align: center;
-            font-size: 15px;
-            font-weight: bold;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 10;
-        }
-        .content {
-            margin-top: 60px;
-            width: 100%;
-            padding: 10px;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        img {
-            max-width: 100%;
-            height: auto;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-            border-radius: 8px;
-            background: #fff;
-        }
-        .notice {
-            color: #666;
-            font-size: 13px;
-            text-align: center;
-            margin-top: 15px;
-            margin-bottom: 20px;
-            padding: 10px;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            width: 90%;
-            max-width: 400px;
-        }
-    </style>
+    <title>모의고사 결과표 로딩중...</title>
 </head>
 <body>
-    <div class="header">
-        ✌️ 두 손가락으로 화면을 확대/축소할 수 있습니다.
-    </div>
-    <div class="content">
-        <img id="resultImage" src="" alt="모의고사 결과표 (로딩중...)">
-        <div class="notice">
-            💡 <b>사진 저장 방법</b><br><br>
-            사진을 <b>2~3초간 꾹 누르고 계시면</b> '사진 앱에 저장' 또는 '이미지 다운로드' 메뉴가 나타납니다.
-        </div>
-    </div>
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const imgUrl = urlParams.get('url');
         if (imgUrl) {
-            // Fix mixed content issue by forcing https for kakaocdn
+            // Fix mixed content and instantly redirect to the raw image URL
+            // Kakao Webview will render raw images with native zoom & save support
             const secureUrl = imgUrl.replace('http://', 'https://');
-            document.getElementById('resultImage').src = secureUrl;
+            window.location.replace(secureUrl);
         } else {
-            alert('이미지를 불러올 수 없습니다. 잘못된 접근입니다.');
+            alert('이미지를 불러올 수 없습니다.');
         }
     </script>
 </body>
