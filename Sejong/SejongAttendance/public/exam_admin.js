@@ -265,6 +265,13 @@ function sendToKakao() {
         },
         buttons: [
             {
+                title: '모바일웹에서 열기',
+                link: {
+                    mobileWebUrl: viewerUrl,
+                    webUrl: viewerUrl
+                }
+            },
+            {
                 title: '크게 보기 (확대/저장)',
                 link: {
                     mobileWebUrl: viewerUrl + '&btn=1',
