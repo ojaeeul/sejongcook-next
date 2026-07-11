@@ -231,13 +231,16 @@ function selectCourse(courseName) {
     const sortedExams = courses[courseName].sort((a,b) => b.localeCompare(a));
 
     sortedExams.forEach(examKey => {
-        const year = examKey.split('_')[1] || '미상';
+        const parts = examKey.split('_');
+        let examTitle = parts.pop() || examKey;
+        examTitle = examTitle.replace('.hwp', '').replace('.pdf', '').normalize('NFC');
+        
         const item = document.createElement('div');
         item.className = 'exam-item';
         item.style.borderBottom = '1px solid var(--border-color)';
         item.innerHTML = `
             <div>
-                <h4 style="font-size: 1.1rem; font-weight: 700;">${year}년도 기출문제</h4>
+                <h4 style="font-size: 1.1rem; font-weight: 700;">${examTitle}</h4>
                 <p style="font-size: 0.8rem; color: var(--text-sub); margin-top: 5px;">총 ${questionsData[examKey].length}문항</p>
             </div>
             <span class="material-icons" style="color: var(--primary-light);">play_circle</span>

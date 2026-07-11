@@ -1881,8 +1881,8 @@ window.loadExamView = async function (key) {
 
     const parts = key.split('_');
     let fileName = parts.pop() || key;
-    fileName = fileName.replace('.hwp', '').replace('.pdf', '');
-    let courseName = parts.length > 0 ? parts.pop() : '';
+    fileName = fileName.replace('.hwp', '').replace('.pdf', '').normalize('NFC');
+    let courseName = parts.length > 0 ? parts.pop().normalize('NFC') : '';
 
     const container = document.getElementById('examBoardContainer');
     const memberSection = document.getElementById('memberListSection');
@@ -2030,7 +2030,7 @@ window.loadExamView = async function (key) {
         answerHeader.style.fontWeight = '800';
         answerHeader.style.fontSize = '1.2rem';
         answerHeader.style.marginBottom = '10px';
-        answerHeader.textContent = `${year}년 ${subject} 정 답 표`;
+        answerHeader.textContent = `${displayTitle} 정답표`;
 
         const answerGrid = document.createElement('div');
         answerGrid.className = 'pdf-answer-grid';
