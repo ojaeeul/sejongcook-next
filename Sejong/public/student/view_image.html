@@ -2,66 +2,53 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title>모의고사 결과표</title>
     <style>
         body {
-            margin: 0; padding: 0; background-color: #222; color: white;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            min-height: 100vh; font-family: sans-serif;
+            margin: 0; padding: 0; background-color: #f4f4f4; color: #333;
+            display: flex; flex-direction: column; align-items: center; 
+            min-height: 100vh; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            text-align: center;
+        }
+        .header {
+            width: 100%; background: #FEE500; padding: 15px 0; font-size: 16px; font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100;
+        }
+        .instruction {
+            font-size: 14px; margin: 15px 10px; line-height: 1.5; color: #555; background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .img-container {
+            width: 100%; max-width: 800px; padding: 10px; box-sizing: border-box;
+            /* Allow natural zoom */
         }
         img {
-            max-width: 100%; height: auto;
+            width: 100%; height: auto; display: block; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            -webkit-touch-callout: default; /* Enables long-press save on iOS */
         }
-        .btn {
-            display: inline-block; padding: 15px 30px; background-color: #FEE500; color: #000;
-            text-decoration: none; font-weight: bold; border-radius: 8px; margin-top: 20px;
-            font-size: 16px; border: none; cursor: pointer; text-align: center;
-        }
-        .notice { text-align: center; padding: 20px; font-size: 14px; line-height: 1.5; color: #ddd; }
     </style>
 </head>
 <body>
-    <div id="content" style="display:none; flex-direction:column; align-items:center; width:100%;">
-        <div class="notice">
-            ⚠️ <b>카카오톡 내부에서는 화면 확대 및 저장이 원활하지 않습니다.</b><br><br>
-            아래 버튼을 눌러 <b>기본 브라우저(사파리/크롬)</b>로 여시면<br>
-            자유롭게 <b>확대</b>와 <b>사진 저장</b>이 가능합니다!
-        </div>
-        <button class="btn" onclick="openExternal()">🌐 기본 브라우저에서 열기 (확대/저장)</button>
-        <br><br>
-        <img id="resultImage" src="" alt="결과표">
+    <div class="header">📋 모의고사 결과표</div>
+    <div class="instruction">
+        💡 <b>확대/축소:</b> 두 손가락으로 화면을 벌려서 확대할 수 있습니다.<br>
+        💾 <b>사진 저장:</b> 아래 이미지를 <b>2~3초간 꾹 누르면</b> 사진을 저장할 수 있습니다.
+    </div>
+    
+    <div class="img-container">
+        <img id="resultImage" src="" alt="결과표 이미지">
     </div>
 
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         let imgUrl = urlParams.get('url');
 
-        function openExternal() {
-            if (!imgUrl) return;
-            const secureUrl = imgUrl.replace('http://', 'https://');
-            const targetUrl = encodeURIComponent(secureUrl);
-            location.href = 'kakaotalk://web/openExternal?url=' + targetUrl;
-        }
-
         if (imgUrl) {
+            // HTTPS로 강제 변환
             const secureUrl = imgUrl.replace('http://', 'https://');
-            const ua = navigator.userAgent.toLowerCase();
-            
-            // 카카오톡 인앱 브라우저인지 확인
-            if (ua.indexOf('kakaotalk') > -1) {
-                document.getElementById('content').style.display = 'flex';
-                document.getElementById('resultImage').src = secureUrl;
-                // 자동 이동 시도 (최신 버전에선 막힐 수 있으므로 버튼도 함께 제공)
-                setTimeout(() => {
-                    location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(secureUrl);
-                }, 500);
-            } else {
-                // 카카오톡이 아니면(사파리/크롬 등) 바로 이미지 자체로 리다이렉트 (완벽한 네이티브 확대/저장 지원)
-                window.location.replace(secureUrl);
-            }
+            document.getElementById('resultImage').src = secureUrl;
         } else {
-            alert('이미지를 불러올 수 없습니다.');
+            alert('이미지 정보를 찾을 수 없습니다.');
         }
     </script>
 </body>
