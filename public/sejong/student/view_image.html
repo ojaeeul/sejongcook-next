@@ -2,17 +2,64 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>모의고사 결과표 로딩중...</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>모의고사 결과표</title>
+    <style>
+        body {
+            margin: 0; padding: 0; background-color: #222; color: white;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            min-height: 100vh; font-family: sans-serif;
+        }
+        img {
+            max-width: 100%; height: auto;
+        }
+        .btn {
+            display: inline-block; padding: 15px 30px; background-color: #FEE500; color: #000;
+            text-decoration: none; font-weight: bold; border-radius: 8px; margin-top: 20px;
+            font-size: 16px; border: none; cursor: pointer; text-align: center;
+        }
+        .notice { text-align: center; padding: 20px; font-size: 14px; line-height: 1.5; color: #ddd; }
+    </style>
 </head>
 <body>
+    <div id="content" style="display:none; flex-direction:column; align-items:center; width:100%;">
+        <div class="notice">
+            ⚠️ <b>카카오톡 내부에서는 화면 확대 및 저장이 원활하지 않습니다.</b><br><br>
+            아래 버튼을 눌러 <b>기본 브라우저(사파리/크롬)</b>로 여시면<br>
+            자유롭게 <b>확대</b>와 <b>사진 저장</b>이 가능합니다!
+        </div>
+        <button class="btn" onclick="openExternal()">🌐 기본 브라우저에서 열기 (확대/저장)</button>
+        <br><br>
+        <img id="resultImage" src="" alt="결과표">
+    </div>
+
     <script>
         const urlParams = new URLSearchParams(window.location.search);
-        const imgUrl = urlParams.get('url');
-        if (imgUrl) {
-            // Fix mixed content and instantly redirect to the raw image URL
-            // Kakao Webview will render raw images with native zoom & save support
+        let imgUrl = urlParams.get('url');
+
+        function openExternal() {
+            if (!imgUrl) return;
             const secureUrl = imgUrl.replace('http://', 'https://');
-            window.location.replace(secureUrl);
+            const targetUrl = encodeURIComponent(secureUrl);
+            location.href = 'kakaotalk://web/openExternal?url=' + targetUrl;
+        }
+
+        if (imgUrl) {
+            const secureUrl = imgUrl.replace('http://', 'https://');
+            const ua = navigator.userAgent.toLowerCase();
+            
+            // 카카오톡 인앱 브라우저인지 확인
+            if (ua.indexOf('kakaotalk') > -1) {
+                document.getElementById('content').style.display = 'flex';
+                document.getElementById('resultImage').src = secureUrl;
+                // 자동 이동 시도 (최신 버전에선 막힐 수 있으므로 버튼도 함께 제공)
+                setTimeout(() => {
+                    location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(secureUrl);
+                }, 500);
+            } else {
+                // 카카오톡이 아니면(사파리/크롬 등) 바로 이미지 자체로 리다이렉트 (완벽한 네이티브 확대/저장 지원)
+                window.location.replace(secureUrl);
+            }
         } else {
             alert('이미지를 불러올 수 없습니다.');
         }
