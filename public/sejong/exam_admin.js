@@ -280,7 +280,32 @@ function fallbackDownload(blob, filename) {
     link.download = filename;
     link.click();
     URL.revokeObjectURL(url);
-    alert("이미지가 다운로드 되었습니다.\n카카오톡 파일 전송으로 첨부해주세요.");
+    alert("이미지가 다운로드 되었습니다.\n카카오톡 앨범에서 사진으로 직접 전송하시면 학부모님이 확대해서 보실 수 있습니다!");
+}
+
+function downloadImage() {
+    const reportArea = document.getElementById('reportArea');
+    const originalBorder = reportArea.style.border;
+    const originalShadow = reportArea.style.boxShadow;
+    const originalRadius = reportArea.style.borderRadius;
+    
+    reportArea.style.border = 'none';
+    reportArea.style.boxShadow = 'none';
+    reportArea.style.borderRadius = '0';
+    
+    html2canvas(reportArea, { scale: 2, useCORS: true }).then(canvas => {
+        reportArea.style.border = originalBorder;
+        reportArea.style.boxShadow = originalShadow;
+        reportArea.style.borderRadius = originalRadius;
+        
+        canvas.toBlob(blob => {
+            if (!blob) return;
+            const studentName = document.getElementById('reportStudent').textContent.split(' ')[0] || '학생';
+            const dateStr = document.getElementById('reportDate').textContent.replace(/\//g, '-').replace(/:/g, '');
+            const filename = `모의고사결과_${studentName}_${dateStr}.png`;
+            fallbackDownload(blob, filename);
+        }, "image/png");
+    });
 }
 
 function openAnalysis(index) {

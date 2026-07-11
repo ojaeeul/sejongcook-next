@@ -6,7 +6,7 @@
     <title>모의고사 결과 관리</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="exam_admin.css?v=20260711-37">
+    <link rel="stylesheet" href="exam_admin.css?v=20260711-38">
     <!-- Chart.js, html2canvas & Kakao SDK -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
@@ -161,11 +161,12 @@
         
         <div class="report-bottom-action" style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">
             <button class="print-send-btn" onclick="sendToKakao()" style="background: #fee500; color: #3c1e1e; border-color: #fada0a;"><span class="material-icons" style="vertical-align: middle; margin-right: 5px;">chat_bubble</span>카톡으로 보내기</button>
+            <button class="print-send-btn" onclick="downloadImage()" style="background: #4ade80; color: #1e3c1e; border-color: #38c16b;"><span class="material-icons" style="vertical-align: middle; margin-right: 5px;">download</span>이미지 저장</button>
             <button class="print-send-btn" onclick="window.print()"><span class="material-icons" style="vertical-align: middle; margin-right: 5px;">print</span>평가지 출력</button>
         </div>
         </div> <!-- End of reportContainer -->
     </div>
 
-    <script src="exam_admin.js?v=20260711-37"></script>
+    <script src="exam_admin.js?v=20260711-38"></script>
 </body>
 </html>
