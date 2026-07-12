@@ -1993,7 +1993,7 @@ window.loadExamView = async function (key) {
                 examData = window.EXAM_DATA_DB;
             } else {
                 // Fallback to fetch if needed
-                const res = await fetch('questions_data.json');
+                const res = await fetch('questions_data.json?v=' + Date.now());
                 examData = await res.json();
             }
         }

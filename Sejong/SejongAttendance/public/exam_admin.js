@@ -35,7 +35,7 @@ async function fetchData() {
         const [examsRes, membersRes, qRes] = await Promise.all([
             fetch('/api/sejong/exams'),
             fetch('/api/sejong/members'),
-            fetch('questions_data.json')
+            fetch('questions_data.json?v=' + Date.now())
         ]);
         
         examsData = await examsRes.json();
