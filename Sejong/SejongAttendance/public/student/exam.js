@@ -351,6 +351,7 @@ function renderQuestion() {
     } else {
         qInfo.o.forEach((optText, index) => {
             const optNum = index + 1;
+            const optLabel = ['가', '나', '다', '라'][index];
             const btn = document.createElement('div');
             btn.className = 'option-btn';
             
@@ -391,7 +392,7 @@ function renderQuestion() {
             }
 
             btn.innerHTML = `
-                <div class="opt-num">${optNum}</div>
+                <div class="opt-num">${optLabel}</div>
                 <div style="flex: 1; word-break: keep-all;">${optText}</div>
             `;
             optsEl.appendChild(btn);
@@ -470,9 +471,10 @@ function renderOMR() {
             bubbles.appendChild(bubble);
         } else {
             for (let opt = 1; opt <= 4; opt++) {
+                const optLabel = ['가', '나', '다', '라'][opt - 1];
                 const bubble = document.createElement('div');
                 bubble.className = 'omr-bubble';
-                bubble.textContent = opt;
+                bubble.textContent = optLabel;
                 
                 if (userAnswers[i] === opt) {
                     bubble.classList.add('selected');
@@ -666,8 +668,8 @@ function renderAnalysisTable() {
     currentQuestions.forEach((q, idx) => {
         const myAns = userAnswers[idx];
         let isCorrect = false;
-        let myAnsStr = myAns || '-';
-        let correctAnsStr = q.a;
+        let myAnsStr = '-';
+        let correctAnsStr = '-';
         
         if (q.is_subjective) {
             isCorrect = !!myAns;
@@ -675,6 +677,8 @@ function renderAnalysisTable() {
             correctAnsStr = '주관식';
         } else {
             isCorrect = (myAns === q.a);
+            myAnsStr = myAns ? ['가', '나', '다', '라'][myAns - 1] : '-';
+            correctAnsStr = q.a ? ['가', '나', '다', '라'][q.a - 1] : '-';
         }
 
         const tr = document.createElement('tr');
