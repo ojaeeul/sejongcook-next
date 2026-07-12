@@ -1,126 +1,108 @@
-import os
 import json
-import time
+import os
 import subprocess
-import requests
+import re
+import unicodedata
 
-QUESTIONS_FILE = "/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejk 4/sejongcook-next/Sejong/SejongAttendance/public/questions_data.json"
-COURSES_FILE = "/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejk 4/sejongcook-next/Sejong/SejongAttendance/public/exam_courses.json"
-TARGET_DIR = "/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejk 4/sejongcook-next/기출문제"
+def normalize(text):
+    return unicodedata.normalize('NFC', text)
 
-# Import helper functions
-import sys
-sys.path.append("/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejk 4/sejongcook-next/Sejong/SejongAttendance/public")
-from batch_parse_exams import extract_text_hwp, parse_with_ai, resolve_answer
+with open('questions_data.json', 'r', encoding='utf-8') as f:
+    data = json.load(f)
 
-def main():
-    if not os.path.exists(QUESTIONS_FILE):
-        db = {}
-    else:
-        with open(QUESTIONS_FILE, 'r', encoding='utf-8') as f:
-            db = json.load(f)
+hwp_dir = normalize('/Users/ojaeeul/Downloads/제과제빵필기')
 
-    # 1. Collect all files
-    all_files = []
-    for root, _, files in os.walk(TARGET_DIR):
-        for file in files:
-            if file.lower().endswith('.hwp'):
-                all_files.append(os.path.join(root, file))
+hwp_files = {}
+for root, dirs, files in os.walk(hwp_dir):
+    for file in files:
+        if file.endswith('.hwp'):
+            hwp_files[normalize(file)] = os.path.join(root, file)
 
-    def find_answer_file(main_file, all_files):
-        base = os.path.basename(main_file).replace('.hwp', '')
-        if "답지" in base or "정답" in base:
-            return None
-        for f in all_files:
-            f_base = os.path.basename(f)
-            if ("답지" in f_base or "정답" in f_base) and (base[:5] in f_base):
-                if f != main_file:
-                    return f
-        return None
+total_added = 0
 
-    added = 0
-    total_files = len(all_files)
-    
-    for idx, filepath in enumerate(all_files):
-        filename = os.path.basename(filepath)
-        if "답지" in filename or "정답" in filename:
-            continue
+for exam_key, questions in data.items():
+    if isinstance(questions, list):
+        if len(questions) < 60 and exam_key.endswith('.hwp'):
+            original_filename = exam_key
+            if original_filename.startswith('오재을_제과제빵_'):
+                original_filename = original_filename.replace('오재을_제과제빵_', '')
             
-        new_key = f"오재을_{filename}"
-        if new_key in db and len(db.get(new_key, [])) == 60:
-            continue
-
-        print(f"[{idx+1}/{total_files}] Processing {filename}...")
-        
-        text = extract_text_hwp(filepath)
-        if not text or len(text.strip()) < 50:
-            continue
+            norm_filename = normalize(original_filename)
             
-        ans_filepath = find_answer_file(filepath, all_files)
-        if ans_filepath:
-            ans_text = extract_text_hwp(ans_filepath)
-            text += "\n\n[별도 파일 정답지 내용]\n" + ans_text
-
-        questions = []
-        attempts = 0
-        while len(questions) == 0 and attempts < 10:
-            attempts += 1
-            questions = parse_with_ai(text)
-            if questions and len(questions) > 0:
-                break
-            print(f"  [WARN] Failed attempt {attempts}, waiting 15s...")
-            time.sleep(15)
-
-        if questions and len(questions) > 0:
-            final_questions = []
-            for q_obj in questions:
-                ans_idx = resolve_answer(q_obj)
-                if ans_idx:
-                    q_obj["a"] = ans_idx
-                else:
-                    q_obj["a"] = 1
-                    q_obj["q"] = str(q_obj.get("q", "")) + "\n[정답 확인 필요]"
-                final_questions.append(q_obj)
-            
-            db[new_key] = final_questions
-            added += 1
-            print(f"  -> Extracted {len(final_questions)} questions!")
-            
-            # Save incrementally
-            with open(QUESTIONS_FILE, 'w', encoding='utf-8') as f:
-                json.dump(db, f, ensure_ascii=False, indent=2)
-        else:
-            print(f"  -> Failed to extract questions for {filename} after all attempts.")
-
-    print(f"\nFinished! Added {added} missing exams.")
-    
-    if added > 0:
-        # Rebuild JS
-        js_content = "window.QUESTIONS_DATA = " + json.dumps(db, ensure_ascii=False) + ";"
-        with open(QUESTIONS_FILE.replace(".json", ".js"), 'w', encoding='utf-8') as f:
-            f.write(js_content)
-            
-        # Also update courses if needed
-        with open(COURSES_FILE, 'r', encoding='utf-8') as f:
-            ec = json.load(f)
-            
-        for cat in ec:
-            if cat.get('category') == '전체과정':
-                ojae_course = next((c for c in cat.get('courses', []) if isinstance(c, dict) and c.get('name') == '오재을'), None)
-                if ojae_course:
-                    existing_keys = [ex['key'] for ex in ojae_course.get('exams', [])]
-                    for filepath in all_files:
-                        fname = os.path.basename(filepath)
-                        if "답지" in fname or "정답" in fname: continue
-                        nkey = f"오재을_{fname}"
-                        if nkey in db and nkey not in existing_keys:
-                            ojae_course['exams'].append({"name": fname.replace('.hwp', ''), "key": nkey})
+            hwp_path = None
+            if norm_filename in hwp_files:
+                hwp_path = hwp_files[norm_filename]
+            else:
+                for k, v in hwp_files.items():
+                    if norm_filename in k or k in norm_filename:
+                        hwp_path = v
+                        break
+                        
+            if hwp_path:
+                print(f"Parsing missing questions for {exam_key} (Current length: {len(questions)})...")
+                try:
+                    text = subprocess.check_output(['hwp5txt', hwp_path], stderr=subprocess.STDOUT, timeout=10).decode('utf-8')
+                    
+                    start_q_num = len(questions) + 1
+                    added_for_this = 0
+                    
+                    for q_num in range(start_q_num, 61):
+                        pattern = rf'(?:^|\n)\s*{q_num}\s*[\.\)](.*?)(?:(?=\n\s*{q_num+1}\s*[\.\)])|(?=\n\s*61\s*[\.\)])|$)'
+                        match = re.search(pattern, text, re.DOTALL)
+                        
+                        if match:
+                            q_text_block = match.group(1).strip()
+                            opt_pattern = r'(가[\.\)]|①)\s*(.*)'
+                            opt_search = re.search(opt_pattern, q_text_block, re.DOTALL)
                             
-        with open(COURSES_FILE, 'w', encoding='utf-8') as f:
-            json.dump(ec, f, ensure_ascii=False, indent=2)
+                            if opt_search:
+                                q_body = q_text_block[:opt_search.start()].strip()
+                                opts_block = q_text_block[opt_search.start():].strip()
+                            else:
+                                q_body = q_text_block
+                                opts_block = ""
+                                
+                            question_text = f"{q_num}. {q_body}"
+                            options = []
+                            if opts_block:
+                                markers = re.finditer(r'(?:가|나|다|라|①|②|③|④)[\.\)]', opts_block)
+                                marker_indices = [m.start() for m in markers]
+                                
+                                for i in range(len(marker_indices)):
+                                    start_idx = marker_indices[i]
+                                    marker_len = 2
+                                    
+                                    if i < len(marker_indices) - 1:
+                                        end_idx = marker_indices[i+1]
+                                        opt_text = opts_block[start_idx+marker_len:end_idx].strip()
+                                    else:
+                                        opt_text = opts_block[start_idx+marker_len:].strip()
+                                        
+                                    options.append(re.sub(r'\s+', ' ', opt_text))
+                                    
+                            while len(options) < 4:
+                                options.append("보기 미제공")
+                                
+                            questions.append({
+                                "question": question_text,
+                                "options": options[:4],
+                                "answer": "정답 미제공"
+                            })
+                            added_for_this += 1
+                            total_added += 1
+                        else:
+                            print(f"  Warning: Question {q_num} not found in {norm_filename}")
+                            break
+                            
+                    print(f"  Added {added_for_this} questions. New length: {len(questions)}")
+                except Exception as e:
+                    print(f"  Error parsing {hwp_path}: {e}")
+            else:
+                print(f"HWP file not found for {exam_key} (tried {norm_filename})")
 
-        print("Deploying changes...")
-        subprocess.run(["/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejk 4/sejongcook-next/시스템_시작.command"])
+print(f"Total missing questions added: {total_added}")
 
-if __name__ == "__main__":
-    main()
+with open('questions_data.json', 'w', encoding='utf-8') as f:
+    json.dump(data, f, ensure_ascii=False, indent=4)
+    
+print("Updated questions_data.json")
