@@ -120,7 +120,7 @@ def extract_questions(file_path):
             if 1 <= num <= 60:
                 if current_q:
                     questions.append(current_q)
-                current_q = {'q': l, 'options': [], 'a': ''}
+                current_q = {'q': l, 'o': [], 'a': ''}
                 continue
                 
         if current_q:
@@ -137,8 +137,8 @@ def extract_questions(file_path):
             if opt_matches:
                 for opt in opt_matches:
                     clean_opt = re.sub(r'^[①②③④가나다라]\s*\.\s*', '', opt).strip()
-                    if len(current_q['options']) < 4:
-                        current_q['options'].append(clean_opt)
+                    if len(current_q['o']) < 4:
+                        current_q['o'].append(clean_opt)
             else:
                 ans_match = re.search(r'\[정답\]\s*([가나다라1234①②③④])', l)
                 if ans_match:
@@ -152,8 +152,8 @@ def extract_questions(file_path):
         questions.append(current_q)
         
     for q in questions:
-        while len(q['options']) < 4:
-            q['options'].append('')
+        while len(q['o']) < 4:
+            q['o'].append('')
             
     return questions
 
