@@ -115,21 +115,28 @@ def parse_all_answers(root_dir):
 
 def extract_questions(file_path):
     try:
-        result = subprocess.run([HWP5TXT_BIN, file_path], capture_output=True, text=True, check=True)
-        text = result.stdout
+        html_dir = f"/tmp/hwp_extract_{os.path.basename(file_path).replace(' ', '_')}"
+        shutil.rmtree(html_dir, ignore_errors=True)
+        subprocess.run([HWP5HTML_BIN, "--output", html_dir, file_path], 
+                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+        
+        index_path = os.path.join(html_dir, "index.xhtml")
+        if not os.path.exists(index_path):
+            return []
+            
+        with open(index_path, "r", encoding="utf-8") as html_f:
+            soup = BeautifulSoup(html_f, "html.parser")
+            
+        text = soup.get_text('\n')
     except Exception as e:
         print(f"Error reading {file_path}: {e}")
         return []
 
-    lines = text.split('\n')
+    lines = [l.strip() for l in text.split('\n') if l.strip()]
     questions = []
     current_q = None
     
     for l in lines:
-        l = l.strip()
-        if not l:
-            continue
-            
         m_q = re.match(r'^(\d+)\.\s*(.*)', l)
         if m_q:
             num = int(m_q.group(1))
@@ -141,12 +148,12 @@ def extract_questions(file_path):
                 
         if current_q:
             opt_matches = []
-            if re.match(r'^[①②③④가나다라]\s*\.', l):
-                for m in re.finditer(r'([①②③④가나다라]\s*\..*?)(?=(?<![가-힣])다\s*\.|[①②③④가나라]\s*\.|$)', l):
+            if re.match(r'^\s*[①②③④가나다라]\s*\.', l):
+                for m in re.finditer(r'(?:^|\s+)([①②③④가나다라]\s*\..*?)(?=(?:\s+[①②③④가나다라]\s*\.)|$)', l):
                     opt = m.group(1).strip()
                     if opt: opt_matches.append(opt)
             else:
-                for m in re.finditer(r'([①②③④가나다라]\s*\..*?)(?=(?<![가-힣])다\s*\.|[①②③④가나라]\s*\.|$)', l):
+                for m in re.finditer(r'(?:^|\s+)([①②③④가나다라]\s*\..*?)(?=(?:\s+[①②③④가나다라]\s*\.)|$)', l):
                     opt = m.group(1).strip()
                     if opt: opt_matches.append(opt)
                 
