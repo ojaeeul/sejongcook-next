@@ -175,6 +175,13 @@ def main():
         print("bakery course not found")
         return
         
+    # Remove old bakery exams from db and courses
+    old_keys = [k for k in db.keys() if k.startswith("오재을_제과제빵_")]
+    for k in old_keys:
+        del db[k]
+        
+    bakery_course['exams'] = []
+        
     for root, dirs, files in os.walk(DOWNLOADS_DIR):
         for f in files:
             f_nfc = unicodedata.normalize('NFC', f)
