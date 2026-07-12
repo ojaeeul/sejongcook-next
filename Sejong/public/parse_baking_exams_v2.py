@@ -188,8 +188,11 @@ def main():
             if not f_nfc.endswith(".hwp") or "답" in f_nfc or "정답" in f_nfc:
                 continue
                 
-            file_path = os.path.join(root, f)
             base_name = f_nfc.replace('.hwp', '')
+            if base_name in ["중요문제정리(과목별로구분)", "공통과목-재료 숙제"]:
+                continue
+                
+            file_path = os.path.join(root, f)
             
             exam_id = f"제과제빵은행_{base_name.replace(' ', '_')}"
             
