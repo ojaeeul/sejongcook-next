@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>모의고사 - 세종요리학원</title>
-    <link rel="stylesheet" href="exam.css?v=20260712-0">
+    <link rel="stylesheet" href="exam.css?v=20260712-1">
     <!-- Chart.js for Result Analysis -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Canvas Confetti for Pass Celebration -->
@@ -165,7 +165,7 @@
             <div class="result-header">
                 <div id="resultStatus" class="result-status">채점 중...</div>
                 <div id="resultScore" class="result-score">0</div>
-                <p style="color: var(--text-sub);">총 60문제 중 <span id="correctCount" style="color: var(--text-main); font-weight: bold;">0</span>문제 정답</p>
+                <p style="color: var(--text-sub);">총 <span id="totalCountDisplay">60</span>문제 중 <span id="correctCount" style="color: var(--text-main); font-weight: bold;">0</span>문제 정답</p>
             </div>
 
             <!-- Chart Analysis -->
@@ -202,6 +202,6 @@
         </div>
     </div>
 
-    <script src="exam.js?v=20260712-0"></script>
+    <script src="exam.js?v=20260712-1"></script>
 </body>
 </html>

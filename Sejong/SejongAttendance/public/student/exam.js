@@ -610,6 +610,7 @@ function calculateResult() {
 
     document.getElementById('resultScore').textContent = `${score}점`;
     document.getElementById('correctCount').textContent = correctCount;
+    document.getElementById('totalCountDisplay').textContent = total;
     
     const statusEl = document.getElementById('resultStatus');
     if (passed) {
