@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>시험지 관리 - 세종요리제과학원</title>
-    <link rel="stylesheet" href="style.css?v=20260712-15">
+    <link rel="stylesheet" href="style.css?v=20260712-16">
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -343,7 +343,7 @@
         </div>
     </div>
 
-    <script src="questions_data.js?v=20260712-15"></script>
+    <script src="questions_data.js?v=20260712-16"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             try {
@@ -368,9 +368,9 @@
 
                 coursesData.forEach(cat => {
                     cat.courses.forEach(course => {
-                        // Filter A~G exams
-                        const agExams = course.exams.filter(e => e.key.includes('_A_Z_'));
-                        if (agExams.length === 0) return;
+                        // All exams in course.exams are now valid A~Z exams
+                        const agExams = course.exams;
+                        if (!agExams || agExams.length === 0) return;
 
                         const card = document.createElement('div');
                         card.className = 'course-card';
@@ -422,7 +422,7 @@
 
         </main>
     </div>
-    <script src="sidebar_sync.js?v=20260712-15"></script>
+    <script src="sidebar_sync.js?v=20260712-16"></script>
     <script>
         function toggleSidebar() {
             document.querySelector('.sidebar').classList.toggle('active');
