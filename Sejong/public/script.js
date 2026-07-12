@@ -2031,10 +2031,10 @@ window.loadExamView = async function (key) {
                 `;
             } else {
                 const optionsHtml = item.o.map((opt, i) => {
-                    const cleanOpt = String(opt).replace(/^[①②③④⑤]\s*/, '').trim();
+                    const cleanOpt = String(opt).replace(/^[①②③④⑤가나다라]\s*/, '').trim();
                     return `
                     <div class="pdf-opt">
-                        <span class="pdf-opt-num">${['①', '②', '③', '④'][i]}</span> 
+                        <span class="pdf-opt-num">${['가', '나', '다', '라'][i]}</span> 
                         <span class="pdf-opt-content">${cleanOpt}</span>
                     </div>
                     `;
@@ -2085,7 +2085,7 @@ window.loadExamView = async function (key) {
                     </div>
                 `;
             } else {
-                const ansChar = ['①', '②', '③', '④'][item.a - 1];
+                const ansChar = ['가', '나', '다', '라'][item.a - 1] || '-';
                 return `
                     <div class="pdf-answer-item">
                         <span class="num">${index + 1}</span>
