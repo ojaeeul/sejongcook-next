@@ -2340,8 +2340,8 @@ window.renderExamCourseButtons = function() {
              </div>`;
 
     // 1. Render Category Tabs (대분류)
-    const isAllActive = window.currentExamCategory === '전체과정' || !window.currentExamCategory;
-    html += `<button class="mode-btn ${isAllActive ? 'active' : ''}" data-category="전체과정" style="padding: 6px 12px; font-size: 0.95rem; border-radius: 8px 8px 0 0; border-bottom: ${isAllActive ? '2px solid #2563eb' : 'none'}; background: ${isAllActive ? '#f1f5f9' : 'transparent'}; box-shadow: none;">📁 전체과정</button>`;
+    const isAllActive = window.currentExamCategory === '문제은행' || !window.currentExamCategory;
+    html += `<button class="mode-btn ${isAllActive ? 'active' : ''}" data-category="문제은행" style="padding: 6px 12px; font-size: 0.95rem; border-radius: 8px 8px 0 0; border-bottom: ${isAllActive ? '2px solid #2563eb' : 'none'}; background: ${isAllActive ? '#f1f5f9' : 'transparent'}; box-shadow: none;">📁 문제은행</button>`;
 
     window.allExamCourses.forEach(catObj => {
         const isActive = catObj.category === window.currentExamCategory;

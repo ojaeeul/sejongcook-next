@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 
 const defaultCourses = [
     {
-        category: "전체과정",
+        category: "문제은행",
         courses: []
     },
     {

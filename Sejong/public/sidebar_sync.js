@@ -59,7 +59,7 @@ window.syncSidebar = async function (forceData = null) {
                 html += `<div class="nav-category toggle-category" onclick="if(typeof toggleNavSub === 'function') toggleNavSub(this)">📁 ${catObj.category}</div>\n`;
                 html += `<div class="nav-sub-menu">\n`;
                 
-                if (catObj.category === '전체과정') {
+                if (catObj.category === '문제은행') {
                     // 1. 유저가 추가한 하위 과정(courses) 렌더링
                     if (catObj.courses && catObj.courses.length > 0) {
                         catObj.courses.forEach(courseObj => {

@@ -854,7 +854,7 @@ function renderTable(container, title, members, id) {
                 `}).join('');
 
             let uniquePaid = [...paid];
-            // 전체과정(null)과 특정 과정이 동시에 있다면 중복 표기를 막기 위해 특정 과정을 남기거나 묶어줌
+            // 문제은행(null)과 특정 과정이 동시에 있다면 중복 표기를 막기 위해 특정 과정을 남기거나 묶어줌
             // 여기서는 단순히 '실' 항목이 여러 개 생기는 걸 방지하기 위해 필터링
             if (uniquePaid.length > 1 && uniquePaid.some(up => !up.course || up.course === 'null' || up.course === 'undefined' || up.course === '')) {
                 uniquePaid = uniquePaid.filter(up => up.course && up.course !== 'null' && up.course !== 'undefined' && up.course !== '');
