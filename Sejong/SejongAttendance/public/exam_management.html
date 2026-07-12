@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>시험지 관리 - 세종요리제과학원</title>
-    <link rel="stylesheet" href="style.css?v=20260712-14">
+    <link rel="stylesheet" href="style.css?v=20260712-15">
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -87,6 +87,50 @@
             background: #fee2e2;
             color: #ef4444;
         }
+    </style>
+    <!-- Swiper CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
+    <style>
+        .exam-item { cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+        .exam-item:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); border-color: var(--primary); }
+        
+        /* 3D Slider Modal */
+        #sliderModal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.95); z-index: 9999; backdrop-filter: blur(5px);
+            flex-direction: column; justify-content: center; align-items: center;
+        }
+        .close-slider {
+            position: absolute; top: 30px; right: 40px; color: white; font-size: 3rem;
+            cursor: pointer; z-index: 10000; transition: transform 0.2s;
+        }
+        .close-slider:hover { transform: scale(1.1); color: #ef4444; }
+        .slider-title {
+            position: absolute; top: 40px; left: 40px; color: white; font-size: 1.8rem;
+            font-weight: 700; z-index: 10000;
+        }
+        
+        .swiper {
+            width: 100%; padding-top: 50px; padding-bottom: 50px;
+        }
+        .swiper-slide {
+            background-position: center; background-size: cover;
+            width: 400px; height: 500px; background: white; border-radius: 20px;
+            padding: 40px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+            display: flex; flex-direction: column;
+            border: 1px solid #e2e8f0;
+        }
+        .slide-q { font-size: 1.3rem; font-weight: 700; color: #1e293b; margin-bottom: 30px; line-height: 1.5; }
+        .slide-opts { display: flex; flex-direction: column; gap: 15px; }
+        .slide-opt { 
+            background: #f8fafc; padding: 15px 20px; border-radius: 10px; 
+            border: 1px solid #e2e8f0; font-size: 1.1rem; color: #475569;
+        }
+        .slide-ans {
+            margin-top: auto; padding-top: 20px; border-top: 1px dashed #cbd5e1;
+            font-weight: bold; color: #3b82f6; font-size: 1.1rem; text-align: center;
+        }
+        .swiper-pagination-fraction { color: white; font-size: 1.2rem; font-weight: bold; bottom: 20px; }
     </style>
 </head>
 <body>
@@ -260,7 +304,21 @@
         </aside>
         <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
         
-        <main class="main-content">
+        <div id="sliderModal">
+        <div class="slider-title" id="sliderTitle">시험지 A</div>
+        <div class="close-slider" onclick="closeSlider()">&times;</div>
+        
+        <div class="swiper mySwiper">
+            <div class="swiper-wrapper" id="swiperWrapper">
+                <!-- Slides will be injected here -->
+            </div>
+            <div class="swiper-pagination"></div>
+            <div class="swiper-button-next" style="color:white;"></div>
+            <div class="swiper-button-prev" style="color:white;"></div>
+        </div>
+    </div>
+    
+    <main class="main-content">
             
     <header class="header">
         <div style="display:flex; align-items:center; gap:15px;">
@@ -285,7 +343,7 @@
         </div>
     </div>
 
-    <script src="questions_data.js?v=20260712-14"></script>
+    <script src="questions_data.js?v=20260712-15"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             try {
@@ -306,11 +364,12 @@
                 content.innerHTML = '';
 
                 let totalGenerated = 0;
+                window.qDataGlobal = qData;
 
                 coursesData.forEach(cat => {
                     cat.courses.forEach(course => {
                         // Filter A~G exams
-                        const agExams = course.exams.filter(e => e.key.includes('_A_G_'));
+                        const agExams = course.exams.filter(e => e.key.includes('_A_Z_'));
                         if (agExams.length === 0) return;
 
                         const card = document.createElement('div');
@@ -363,7 +422,7 @@
 
         </main>
     </div>
-    <script src="sidebar_sync.js?v=20260712-14"></script>
+    <script src="sidebar_sync.js?v=20260712-15"></script>
     <script>
         function toggleSidebar() {
             document.querySelector('.sidebar').classList.toggle('active');
@@ -375,6 +434,78 @@
                 subMenu.classList.toggle('show');
                 element.classList.toggle('active');
             }
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
+    <script>
+        let swiperInstance = null;
+
+        function showExamSlider(examKey, examName) {
+            document.getElementById('sliderModal').style.display = 'flex';
+            document.getElementById('sliderTitle').textContent = examName;
+            
+            const questions = window.qDataGlobal[examKey] || [];
+            const wrapper = document.getElementById('swiperWrapper');
+            wrapper.innerHTML = '';
+            
+            questions.forEach((q, idx) => {
+                const slide = document.createElement('div');
+                slide.className = 'swiper-slide';
+                
+                let optsHtml = '';
+                if(q.o && Array.isArray(q.o)) {
+                    q.o.forEach((opt, i) => {
+                        optsHtml += `<div class="slide-opt">${i+1}. ${opt}</div>`;
+                    });
+                }
+                
+                let ansText = '정답 미제공';
+                if(q.a && q.o && q.o[q.a - 1]) {
+                    ansText = `정답: ${q.a}번 (${q.o[q.a - 1]})`;
+                } else if(q.a) {
+                    ansText = `정답: ${q.a}번`;
+                }
+                
+                slide.innerHTML = `
+                    <div class="slide-q">${idx + 1}. ${q.q || '문제 없음'}</div>
+                    <div class="slide-opts">${optsHtml}</div>
+                    <div class="slide-ans"><i class="fas fa-check-circle"></i> ${ansText}</div>
+                `;
+                wrapper.appendChild(slide);
+            });
+            
+            if(swiperInstance) {
+                swiperInstance.destroy(true, true);
+            }
+            
+            swiperInstance = new Swiper(".mySwiper", {
+                effect: "coverflow",
+                grabCursor: true,
+                centeredSlides: true,
+                slidesPerView: "auto",
+                coverflowEffect: {
+                    rotate: 50,
+                    stretch: 0,
+                    depth: 100,
+                    modifier: 1,
+                    slideShadows: true,
+                },
+                pagination: {
+                    el: ".swiper-pagination",
+                    type: "fraction",
+                },
+                navigation: {
+                    nextEl: ".swiper-button-next",
+                    prevEl: ".swiper-button-prev",
+                },
+                keyboard: {
+                    enabled: true,
+                }
+            });
+        }
+        
+        function closeSlider() {
+            document.getElementById('sliderModal').style.display = 'none';
         }
     </script>
 </body>
