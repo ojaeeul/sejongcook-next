@@ -176,7 +176,7 @@ def main():
         return
         
     # Remove old bakery exams from db and courses
-    old_keys = [k for k in db.keys() if k.startswith("오재을_제과제빵_")]
+    old_keys = [k for k in db.keys() if k.startswith("오재을_제과제빵_") or k.startswith("제과제빵은행_")]
     for k in old_keys:
         del db[k]
         
@@ -191,7 +191,7 @@ def main():
             file_path = os.path.join(root, f)
             base_name = f_nfc.replace('.hwp', '')
             
-            exam_id = f"오재을_제과제빵_{base_name.replace(' ', '_')}"
+            exam_id = f"제과제빵은행_{base_name.replace(' ', '_')}"
             
             questions = extract_questions(file_path)
             if len(questions) < 10:
