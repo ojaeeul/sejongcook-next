@@ -18,10 +18,25 @@ HWP5HTML_BIN = os.path.abspath(os.path.join(BASE_DIR, "../../../hwp_env/bin/hwp5
 
 GLOBAL_ANSWERS = {}
 
-def normalize_title(t):
-    t = unicodedata.normalize('NFC', t)
-    t = t.replace(" ", "").replace("년", "").replace("도", "").replace("회", "")
-    return t
+def normalize_title(text):
+    text = unicodedata.normalize("NFC", text)
+    if "식품위생학" in text: return "식품위생학"
+    if "최종모의고사" in text: return "최종모의고사"
+    
+    m_year = re.search(r"(20\d\d)", text)
+    year = m_year.group(1) if m_year else ""
+    
+    if "상시" in text: subject = "상시"
+    elif "제빵" in text: subject = "제빵"
+    else: subject = "제과"
+    
+    t_no_year = re.sub(r"20\d\d", "", text)
+    m_round = re.search(r"(\d+)", t_no_year)
+    round_num = m_round.group(1) if m_round else ""
+    
+    if year and round_num:
+        return f"{year}_{subject}_{round_num}"
+    return text.replace(" ", "").replace("년", "").replace("도", "").replace("회", "")
 
 def parse_all_answers(root_dir):
     print("Building global answers cache...")
@@ -50,52 +65,53 @@ def parse_all_answers(root_dir):
                     soup = BeautifulSoup(html_f, "html.parser")
                 
                 all_elements = soup.find_all(['p', 'table'])
-                titles = []
-                tables = []
+                titles_queue = []
                 
                 for el in all_elements:
+                    # Also look for titles inside table cells or paragraphs
+                    text_content = ""
                     if el.name == 'p':
-                        pt = el.get_text(strip=True)
-                        found = re.findall(r"20\d\d\s*년?도?\s*상시\s*\d*회?|식품위생학|최종모의고사|20\d\d\s*년?도?\s*\d*회?\s*제[과빵]\s*\d*회?|20\d\d\s*년?도?\s*제[과빵]\s*\d*회?", pt)
-                        titles.extend([normalize_title(t) for t in found])
+                        text_content = el.get_text(strip=True)
+                        parts = re.split(r'\s{2,}', text_content)
+                        for part in parts:
+                            if len(part) < 50 and ("20" in part and ("회" in part or "제과" in part or "제빵" in part or "상시" in part) or "식품위생학" in part or "최종모의고사" in part):
+                                titles_queue.append(normalize_title(part))
                     elif el.name == 'table':
                         rows = el.find_all("tr")
                         grid = []
                         for row in rows:
                             cells = row.find_all(["td", "th"])
+                            # Check if the row contains a title
+                            row_text = row.get_text(strip=True)
+                            if len(row_text) < 50 and ("20" in row_text and ("회" in row_text or "제과" in row_text or "제빵" in row_text or "상시" in row_text) or "식품위생학" in row_text or "최종모의고사" in row_text):
+                                titles_queue.append(normalize_title(row_text))
+                                
                             grid.append([c.get_text(strip=True) for c in cells])
                             
                         answers = {}
                         for i in range(len(grid)):
                             for j in range(len(grid[i])):
-                                val = grid[i][j]
-                                if val.isdigit() and 1 <= int(val) <= 60:
-                                    q_num = int(val)
-                                    ans_found = False
-                                    if j + 1 < len(grid[i]):
-                                        ans_str = grid[i][j+1]
-                                        if ans_str in ans_map:
-                                            answers[q_num] = ans_map[ans_str]
-                                            ans_found = True
-                                    if not ans_found and i + 1 < len(grid):
-                                        if j < len(grid[i+1]):
-                                            ans_str = grid[i+1][j]
-                                            if ans_str in ans_map:
-                                                answers[q_num] = ans_map[ans_str]
-                        if len(answers) > 40:
-                            tables.append(answers)
-                            
-                # Special case: If file is "2008년 1회제과(2008년답안지포함).hwp", the titles might be parsed differently, 
-                # but zip will pair the first ones. 
-                # If the title is in the filename and no titles were found inside:
-                if len(titles) == 0 and len(tables) == 1:
-                    t = re.findall(r"20\d\d\s*년?\s*\d*회?\s*제[과빵]", f_nfc)
-                    if t:
-                        titles = [normalize_title(t[0])]
-                
-                for t, ans in zip(titles, tables):
-                    GLOBAL_ANSWERS[t] = ans
-                    print(f"  -> Mapped answer key for {t} ({len(ans)} answers)")
+                                val = grid[i][j].replace(" ", "").replace("\n", "")
+                                m = re.match(r"^(\d+)(.*)$", val)
+                                if m:
+                                    q_num = int(m.group(1))
+                                    ans_str = m.group(2)
+                                    
+                                    right_str = grid[i][j+1].replace(" ", "").replace("\n", "") if j + 1 < len(grid[i]) else ""
+                                    below_str = grid[i+1][j].replace(" ", "").replace("\n", "") if i + 1 < len(grid) and j < len(grid[i+1]) else ""
+                                    
+                                    if ans_str in ans_map:
+                                        answers[q_num] = ans_map[ans_str]
+                                    elif below_str in ans_map:
+                                        answers[q_num] = ans_map[below_str]
+                                    elif right_str in ans_map:
+                                        answers[q_num] = ans_map[right_str]
+                                            
+                        if titles_queue and len(answers) > 40:
+                            t = titles_queue.pop(0)
+                            GLOBAL_ANSWERS[t] = answers
+                            print(f"  -> Mapped answer key for {t} ({len(answers)} answers)")
+
 
 def extract_questions(file_path):
     try:
@@ -201,15 +217,13 @@ def main():
                 continue
                 
             # Find answer key
-            t = re.findall(r"20\d\d\s*년?도?\s*상시\s*\d*회?|식품위생학|최종모의고사|20\d\d\s*년?도?\s*\d*회?\s*제[과빵]\s*\d*회?|20\d\d\s*년?도?\s*제[과빵]\s*\d*회?", base_name)
-            if t:
-                norm_title = normalize_title(t[0])
-                if norm_title in GLOBAL_ANSWERS:
-                    ans_dict = GLOBAL_ANSWERS[norm_title]
-                    for idx, q in enumerate(questions):
-                        q_num = idx + 1
-                        if q_num in ans_dict:
-                            q['a'] = ans_dict[q_num]
+            norm_title = normalize_title(base_name)
+            if norm_title in GLOBAL_ANSWERS:
+                ans_dict = GLOBAL_ANSWERS[norm_title]
+                for idx, q in enumerate(questions):
+                    q_num = idx + 1
+                    if q_num in ans_dict:
+                        q['a'] = ans_dict[q_num]
             
             file_title = base_name.replace(' ', '_')
             

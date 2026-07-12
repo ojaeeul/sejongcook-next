@@ -138,16 +138,17 @@ def main():
         json.dump(qdata, f, ensure_ascii=False, indent=2)
         
     # Update exam_courses
-    # Find or create "전체과정"
-    cat_all = next((cat for cat in ec if cat.get('category') == '전체과정'), None)
+    # Update exam_courses
+    # Find or create "문제은행"
+    cat_all = next((cat for cat in ec if cat.get('category') == '문제은행'), None)
     if not cat_all:
-        cat_all = {"category": "전체과정", "courses": []}
+        cat_all = {"category": "문제은행", "courses": []}
         ec.append(cat_all)
         
-    # Find or create "오재을(주관식)"
-    subj_course = next((c for c in cat_all.get('courses', []) if c.get('name') == '오재을(주관식)'), None)
+    # Find or create "주관식은행"
+    subj_course = next((c for c in cat_all.get('courses', []) if c.get('name') == '주관식은행'), None)
     if not subj_course:
-        subj_course = {"name": "오재을(주관식)", "exams": []}
+        subj_course = {"name": "주관식은행", "exams": []}
         cat_all['courses'].append(subj_course)
         
     # Add exams avoiding duplicates
