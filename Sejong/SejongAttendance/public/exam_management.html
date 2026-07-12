@@ -4,15 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>시험지 관리 - 세종요리제과학원</title>
-    <link rel="stylesheet" href="style.css?v=20260712-7">
+    <link rel="stylesheet" href="style.css?v=20260712-8">
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
+        body {
+            overflow: auto !important; /* style.css의 overflow: hidden 덮어쓰기 */
+            height: auto !important;
+        }
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
+            padding-bottom: 50px;
         }
         .header {
             display: flex;
@@ -33,48 +38,49 @@
         .course-card {
             background: white;
             border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            padding: 15px 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             margin-bottom: 20px;
         }
         .course-title {
-            font-size: 1.3rem;
+            font-size: 1.1rem;
             font-weight: bold;
             color: #334155;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
             border-bottom: 2px solid #e2e8f0;
         }
         .exam-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 10px;
         }
         .exam-item {
             background: #f8fafc;
             border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            padding: 15px;
+            border-radius: 6px;
+            padding: 10px;
             text-align: center;
             transition: all 0.2s ease;
         }
         .exam-item:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             border-color: #3b82f6;
         }
         .exam-name {
+            font-size: 0.85rem;
             font-weight: 600;
             color: #1e293b;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
         .exam-count {
             display: inline-block;
             background: #dbeafe;
             color: #2563eb;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.9rem;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
             font-weight: 600;
         }
         .exam-count.error {
@@ -107,7 +113,7 @@
         </div>
     </div>
 
-    <script src="questions_data.js?v=20260712-7"></script>
+    <script src="questions_data.js?v=20260712-8"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             try {
