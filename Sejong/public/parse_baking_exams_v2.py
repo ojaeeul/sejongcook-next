@@ -56,7 +56,7 @@ def parse_all_answers(root_dir):
                 for el in all_elements:
                     if el.name == 'p':
                         pt = el.get_text(strip=True)
-                        found = re.findall(r"20\d\d\s*년?\s*상시\s*\d*회?|식품위생학|최종모의고사|20\d\d\s*년?\s*\d*회?\s*제[과빵]", pt)
+                        found = re.findall(r"20\d\d\s*년?도?\s*상시\s*\d*회?|식품위생학|최종모의고사|20\d\d\s*년?도?\s*\d*회?\s*제[과빵]\s*\d*회?|20\d\d\s*년?도?\s*제[과빵]\s*\d*회?", pt)
                         titles.extend([normalize_title(t) for t in found])
                     elif el.name == 'table':
                         rows = el.find_all("tr")
@@ -126,11 +126,11 @@ def extract_questions(file_path):
         if current_q:
             opt_matches = []
             if re.match(r'^[①②③④가나다라]\s*\.', l):
-                for m in re.finditer(r'([①②③④가나다라]\s*\..*?)(?=[①②③④가나다라]\s*\.|$)', l):
+                for m in re.finditer(r'([①②③④가나다라]\s*\..*?)(?=(?<![가-힣])다\s*\.|[①②③④가나라]\s*\.|$)', l):
                     opt = m.group(1).strip()
                     if opt: opt_matches.append(opt)
             else:
-                for m in re.finditer(r'([①②③④가나다라]\s*\..*?)(?=[①②③④가나다라]\s*\.|$)', l):
+                for m in re.finditer(r'([①②③④가나다라]\s*\..*?)(?=(?<![가-힣])다\s*\.|[①②③④가나라]\s*\.|$)', l):
                     opt = m.group(1).strip()
                     if opt: opt_matches.append(opt)
                 
@@ -198,7 +198,7 @@ def main():
                 continue
                 
             # Find answer key
-            t = re.findall(r"20\d\d\s*년?\s*상시\s*\d*회?|20\d\d\s*년?\s*\d*회?\s*제[과빵]", base_name)
+            t = re.findall(r"20\d\d\s*년?도?\s*상시\s*\d*회?|식품위생학|최종모의고사|20\d\d\s*년?도?\s*\d*회?\s*제[과빵]\s*\d*회?|20\d\d\s*년?도?\s*제[과빵]\s*\d*회?", base_name)
             if t:
                 norm_title = normalize_title(t[0])
                 if norm_title in GLOBAL_ANSWERS:
