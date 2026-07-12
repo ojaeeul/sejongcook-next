@@ -42,7 +42,7 @@ def parse_text(text):
         except:
             continue
             
-        opts_split = re.split(r'\s*(?:가\.|나\.|다\.|라\.|가\)|나\)|다\)|라\)|①|②|③|④)\s*', q_body)
+        opts_split = re.split(r'(?<![가-힣])\s*(?:가\.|나\.|다\.|라\.|가\)|나\)|다\)|라\)|①|②|③|④)\s*', q_body)
         
         if len(opts_split) >= 5:
             q_text = opts_split[0].strip()
@@ -56,7 +56,7 @@ def parse_text(text):
             if q_text and o1 and o2 and o3 and o4:
                 questions.append({"q": q_text, "o": [o1, o2, o3, o4], "a": 1})
         else:
-            opts_split = re.split(r'\s*(?:1\)|2\)|3\)|4\)|1\.|2\.|3\.|4\.)\s*', q_body)
+            opts_split = re.split(r'(?<![가-힣0-9])\s*(?:1\)|2\)|3\)|4\)|1\.|2\.|3\.|4\.)\s*', q_body)
             if len(opts_split) >= 5:
                 q_text = opts_split[0].strip()
                 q_text = re.sub(r'\n+', ' ', q_text).strip()
@@ -68,6 +68,7 @@ def parse_text(text):
                 
                 if q_text and o1 and o2 and o3 and o4:
                     questions.append({"q": q_text, "o": [o1, o2, o3, o4], "a": 1})
+
     
     return questions
 
@@ -97,15 +98,26 @@ def extract_answers_html(hwp_path, filename):
             cells = row.find_all(["td", "th"])
             grid.append([c.get_text(strip=True) for c in cells])
             
-        for i in range(len(grid) - 1):
+        for i in range(len(grid)):
             for j in range(len(grid[i])):
                 val = grid[i][j]
                 if val.isdigit() and 1 <= int(val) <= 60:
                     q_num = int(val)
-                    if j < len(grid[i+1]):
-                        ans_str = grid[i+1][j]
+                    ans_found = False
+                    
+                    # Check next column in same row
+                    if j + 1 < len(grid[i]):
+                        ans_str = grid[i][j+1]
                         if ans_str in ans_map:
                             answers[q_num] = ans_map[ans_str]
+                            ans_found = True
+                    
+                    # Check same column in next row
+                    if not ans_found and i + 1 < len(grid):
+                        if j < len(grid[i+1]):
+                            ans_str = grid[i+1][j]
+                            if ans_str in ans_map:
+                                answers[q_num] = ans_map[ans_str]
     
     shutil.rmtree(html_dir, ignore_errors=True)
     return answers
@@ -128,10 +140,7 @@ def main():
             key = f"오재을_제과제빵_{filename}"
             
             # Skip if already exists and has 50+ valid questions
-            if key in qdata and len(qdata[key]) >= 50:
-                print(f"Skipping {filename}, already parsed.")
-                processed_keys.append({"name": filename.replace('.hwp', ''), "key": key})
-                continue
+            # REMOVED TO FORCE RE-PARSE
                 
             print(f"Processing {filename}...")
             
@@ -148,7 +157,8 @@ def main():
                 ans_file = None
                 base_name = filename.replace('.hwp', '')
                 for f in os.listdir(root):
-                    if f != filename and ("답" in f or "정답" in f) and base_name[:4] in f:
+                    f_nfc = unicodedata.normalize('NFC', f)
+                    if f != filename and ("답" in f_nfc or "정답" in f_nfc) and base_name[:4] in f:
                         ans_file = os.path.join(root, f)
                         break
                 if ans_file:
