@@ -4,11 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>모의고사 - 세종요리학원</title>
-    <link rel="stylesheet" href="exam.css?v=20260713-16">
+    <link rel="stylesheet" href="exam.css?v=20260713-17">
     <!-- Chart.js for Result Analysis -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Canvas Confetti for Pass Celebration -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 </head>
 <body>
     <canvas id="confetti-canvas"></canvas>
@@ -105,137 +106,13 @@
             
             <!-- 3D Paper Preview (Only visible on wide screens) -->
             <div class="paper-preview-wrapper" id="paperPreviewWrapper">
-                <div class="paper-preview-container" id="paperPreviewContainer">
-                    <div class="paper-3d" id="paper3d">
-                        <!-- Front of paper -->
-                        <div class="paper-front">
-                            <div class="paper-title" id="paperTitle3D">시험지 미리보기</div>
-                            <div class="paper-lines">
-                                <div class="paper-line"></div>
-                                <div class="paper-line"></div>
-                                <div class="paper-line" style="width: 80%;"></div>
-                                <div class="paper-line" style="margin-top: 20px;"></div>
-                                <div class="paper-line"></div>
-                                <div class="paper-line"></div>
-                                <div class="paper-line" style="width: 60%;"></div>
-                                <div class="paper-line" style="margin-top: 20px;"></div>
-                                <div class="paper-line"></div>
-                                <div class="paper-line"></div>
-                                <div class="paper-line" style="width: 90%;"></div>
-                            </div>
-                            <div class="paper-qtext" id="paperQText3D"></div>
-                        </div>
-                        <!-- Back of paper -->
-                        <div class="paper-back">
-                            <div style="transform: scaleX(-1); color: #ccc; text-align: center; margin-top: 50%;">여백</div>
-                        </div>
+                <div class="swiper mySwiperCards" style="width: 320px; height: 450px; padding: 10px;">
+                    <div class="swiper-wrapper" id="swiperWrapperContent">
+                        <!-- Slides injected by JS -->
                     </div>
                 </div>
-                <div class="paper-controls">
-                    <span class="material-icons" style="color: var(--text-sub); font-size: 1.2rem;">360</span>
-                    <input type="range" id="paperSlider" min="-180" max="180" value="0" style="flex: 1;">
+                <div class="paper-controls" style="margin-top: 15px; color: #94a3b8; font-size: 0.9rem; text-align: center;">
+                    <span class="material-icons" style="font-size: 1.2rem; vertical-align: middle; margin-right: 5px;">swipe</span>마우스로 넘겨보기
                 </div>
             </div>
-        </div>
 
-        <div class="bottom-nav">
-            <button class="nav-btn prev" id="prevBtn" onclick="prevQuestion()">
-                <span class="material-icons">chevron_left</span> 이전
-            </button>
-            <button class="omr-btn" onclick="toggleOMR()">
-                <span class="material-icons">grid_view</span>
-            </button>
-            <button class="nav-btn next" id="nextBtn" onclick="nextQuestion()">
-                다음 <span class="material-icons">chevron_right</span>
-            </button>
-        </div>
-
-        <!-- OMR Grid Modal -->
-        <div id="omrModal" class="omr-modal">
-            <div class="omr-content">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                    <h3 style="font-weight: 900; font-size: 1.2rem;">답안 현황</h3>
-                    <button onclick="toggleOMR()" style="background: none; border: none; color: var(--text-main); font-size: 24px; cursor: pointer;">
-                        <span class="material-icons">close</span>
-                    </button>
-                </div>
-                <div class="omr-grid" id="omrGrid">
-                    <!-- Populated by JS -->
-                </div>
-                <button onclick="submitExam()" style="width: 100%; padding: 15px; margin-top: 15px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 1.1rem; font-weight: 900; cursor: pointer;">
-                    제출하기
-                </button>
-            </div>
-        </div>
-
-        <!-- Teacher Extension Modal -->
-        <div id="extensionModal" class="omr-modal" style="justify-content: center; align-items: center; padding: 20px;">
-            <div class="glass-container" style="background: var(--bg-dark); padding: 20px; border-radius: 20px; width: 100%; max-width: 320px; text-align: center; transform: none;">
-                <h3 style="margin-bottom: 15px; font-weight: 900;">관리자 시간 연장</h3>
-                
-                <div id="extPinSection">
-                    <p style="color: var(--text-sub); font-size: 0.9rem; margin-bottom: 10px;">관리자 비밀번호를 입력하세요.</p>
-                    <input type="password" id="extPinInput" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.05); color: white; font-size: 1.2rem; text-align: center; letter-spacing: 5px; margin-bottom: 15px;">
-                    <button onclick="checkExtPin()" style="width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 10px; font-weight: bold; font-size: 1.1rem; cursor: pointer;">확인</button>
-                </div>
-
-                <div id="extTimeSection" style="display: none;">
-                    <p style="color: var(--text-sub); font-size: 0.9rem; margin-bottom: 15px;">연장할 시간을 선택하세요.</p>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px;">
-                        <button onclick="extendTime(10)" style="padding: 10px; background: rgba(255,255,255,0.1); color: white; border: 1px solid var(--border-color); border-radius: 8px; font-weight: bold; cursor: pointer;">+10분</button>
-                        <button onclick="extendTime(20)" style="padding: 10px; background: rgba(255,255,255,0.1); color: white; border: 1px solid var(--border-color); border-radius: 8px; font-weight: bold; cursor: pointer;">+20분</button>
-                        <button onclick="extendTime(30)" style="padding: 10px; background: rgba(255,255,255,0.1); color: white; border: 1px solid var(--border-color); border-radius: 8px; font-weight: bold; cursor: pointer;">+30분</button>
-                    </div>
-                </div>
-
-                <button onclick="closeExtensionModal()" style="margin-top: 15px; background: none; border: none; color: var(--text-sub); text-decoration: underline; cursor: pointer;">닫기</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Screen 4: Result Screen -->
-    <div id="resultScreen" class="screen">
-        <div class="glass-container" style="padding: 20px; flex: 1; overflow-y: auto;">
-            <div class="result-header">
-                <div id="resultStatus" class="result-status">채점 중...</div>
-                <div id="resultScore" class="result-score">0</div>
-                <p style="color: var(--text-sub);">총 <span id="totalCountDisplay">60</span>문제 중 <span id="correctCount" style="color: var(--text-main); font-weight: bold;">0</span>문제 정답</p>
-            </div>
-
-            <!-- Chart Analysis -->
-            <div class="chart-container">
-                <canvas id="resultChart"></canvas>
-            </div>
-
-            <!-- O/X Analysis Table -->
-            <h3 style="margin-bottom: 15px; font-weight: 900; display: flex; align-items: center; gap: 8px;">
-                <span class="material-icons" style="color: var(--primary-light);">analytics</span>
-                문항별 진단 분석표
-            </h3>
-            <p style="font-size: 0.8rem; color: var(--text-sub); margin-bottom: 10px;">* 붉은색 오답 문항을 터치하면 오답노트를 확인할 수 있습니다.</p>
-            
-            <div class="analysis-table-container">
-                <table class="analysis-table">
-                    <thead>
-                        <tr>
-                            <th width="15%">번호</th>
-                            <th width="25%">내 답안</th>
-                            <th width="25%">정답</th>
-                            <th width="35%">채점 결과</th>
-                        </tr>
-                    </thead>
-                    <tbody id="analysisTableBody">
-                        <!-- Populated by JS -->
-                    </tbody>
-                </table>
-            </div>
-
-            <button class="nav-btn next" style="width: 100%; justify-content: center; padding: 15px; margin-top: 10px;" onclick="goBackToExamList()">
-                다른 시험지 풀기
-            </button>
-        </div>
-    </div>
-
-    <script src="exam.js?v=20260713-16"></script>
-</body>
-</html>

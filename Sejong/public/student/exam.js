@@ -343,6 +343,8 @@ function startExam(examKey, completedRecord = null) {
     
     showScreen('solving');
     renderQuestion();
+    if(window.updatePaperPreviewSwiper) window.updatePaperPreviewSwiper();
+    if(window.initPaperPreviewSwiper) window.initPaperPreviewSwiper();
 
     if (isReviewMode) {
         document.getElementById('headerTitle').textContent = '응시 완료된 시험지 (오답 노트)';
@@ -448,7 +450,8 @@ function renderQuestion() {
                 // Only attach click handler in solving mode
                 btn.onclick = () => {
                     userAnswers[currentQuestionIndex] = optNum;
-                    renderQuestion(); // re-render to update selection
+                    renderQuestion();
+    if(window.updatePaperPreviewSwiper) window.updatePaperPreviewSwiper(); // re-render to update selection
                     
                     // Auto next after 0.3s or check submit status on last question
                     setTimeout(() => {
@@ -498,6 +501,7 @@ function prevQuestion() {
     if (currentQuestionIndex > 0) {
         currentQuestionIndex--;
         renderQuestion();
+    if(window.updatePaperPreviewSwiper) window.updatePaperPreviewSwiper();
     }
 }
 
@@ -505,6 +509,7 @@ function nextQuestion() {
     if (currentQuestionIndex < currentQuestions.length - 1) {
         currentQuestionIndex++;
         renderQuestion();
+    if(window.updatePaperPreviewSwiper) window.updatePaperPreviewSwiper();
     }
 }
 
@@ -582,10 +587,12 @@ function renderOMR() {
                         // Also update the main screen if we are currently on this question
                         if (currentQuestionIndex === i) {
                             renderQuestion();
+    if(window.updatePaperPreviewSwiper) window.updatePaperPreviewSwiper();
                         } else if (wasUnsolved) {
                             // 못푼 문제 답안을 클릭하면 그문제로 가게 해주세요
                             currentQuestionIndex = i;
                             renderQuestion();
+    if(window.updatePaperPreviewSwiper) window.updatePaperPreviewSwiper();
                             setTimeout(() => {
                                 const modal = document.getElementById('omrModal');
                                 if (modal.classList.contains('open')) {
@@ -606,6 +613,7 @@ function renderOMR() {
         row.onclick = () => {
             currentQuestionIndex = i;
             renderQuestion();
+    if(window.updatePaperPreviewSwiper) window.updatePaperPreviewSwiper();
             toggleOMR();
         };
 
@@ -802,6 +810,8 @@ function reviewQuestion(index) {
     currentQuestionIndex = index;
     showScreen('solving');
     renderQuestion();
+    if(window.updatePaperPreviewSwiper) window.updatePaperPreviewSwiper();
+    if(window.initPaperPreviewSwiper) window.initPaperPreviewSwiper();
 
     // Change back button behavior in review mode
     document.getElementById('backBtn').onclick = () => {
@@ -920,80 +930,94 @@ function extendTime(minutes) {
 }
 
 // ---------------------------------
-// 3D Paper Preview Logic
-let paperIsDragging = false;
-let paperStartMouseX = 0;
-let paperCurrentRotY = 0;
-
-document.addEventListener('DOMContentLoaded', () => {
-    const paper3d = document.getElementById('paper3d');
-    const paperSlider = document.getElementById('paperSlider');
-    const container = document.getElementById('paperPreviewContainer');
-
-    if (paperSlider && paper3d) {
-        paperSlider.addEventListener('input', (e) => {
-            const rotY = e.target.value;
-            paper3d.style.transform = `rotateY(${rotY}deg)`;
-            paperCurrentRotY = parseFloat(rotY);
-        });
-    }
-
-    if (container && paper3d && paperSlider) {
-        container.addEventListener('mousedown', (e) => {
-            paperIsDragging = true;
-            paperStartMouseX = e.clientX;
-            paper3d.style.transition = 'none'; // Disable transition for smooth dragging
-        });
-
-        window.addEventListener('mousemove', (e) => {
-            if (!paperIsDragging) return;
-            const deltaX = e.clientX - paperStartMouseX;
-            // Adjust sensitivity
-            let newRotY = paperCurrentRotY + (deltaX * 0.5);
+// Swiper Cards Exam Paper Preview Logic
+window.initPaperPreviewSwiper = function() {
+    const wrapper = document.getElementById('swiperWrapperContent');
+    if (!wrapper) return;
+    
+    // Create slides (10 questions per slide)
+    const questionsPerCard = 10;
+    const numCards = Math.ceil(currentQuestions.length / questionsPerCard);
+    
+    wrapper.innerHTML = '';
+    
+    for (let i = 0; i < numCards; i++) {
+        const slide = document.createElement('div');
+        slide.className = 'swiper-slide';
+        
+        const startQ = i * questionsPerCard;
+        const endQ = Math.min(startQ + questionsPerCard, currentQuestions.length);
+        
+        let html = `<div class="card-title">시험지 - ${i + 1}페이지 (${startQ + 1}~${endQ}번)</div>`;
+        html += `<div class="card-questions">`;
+        
+        for (let j = startQ; j < endQ; j++) {
+            const q = currentQuestions[j];
+            let answerText = '';
+            // If the user has already answered (in review mode or just current progress), we can show it
+            const ans = userAnswers[j];
+            const isCorrect = isReviewMode && q.a && parseInt(q.a) === ans;
+            const isWrong = isReviewMode && ans && q.a && parseInt(q.a) !== ans;
             
-            // Limit to -180 to 180
-            if (newRotY > 180) newRotY = 180;
-            if (newRotY < -180) newRotY = -180;
-
-            paper3d.style.transform = `rotateY(${newRotY}deg)`;
-            paperSlider.value = newRotY;
-            
-            // update start for continuous delta
-            paperStartMouseX = e.clientX;
-            paperCurrentRotY = newRotY;
-        });
-
-        window.addEventListener('mouseup', () => {
-            if (paperIsDragging) {
-                paperIsDragging = false;
-                paper3d.style.transition = 'transform 0.1s ease-out';
+            let highlightStyle = '';
+            if (isReviewMode) {
+                if (isCorrect) highlightStyle = 'color: #16a34a; font-weight: bold;';
+                else if (isWrong) highlightStyle = 'color: #dc2626; text-decoration: line-through;';
+            } else if (ans !== null && ans !== undefined) {
+                highlightStyle = 'color: #2563eb; font-weight: bold;'; // User marked an answer
             }
-        });
+
+            html += `<div class="card-q-item" id="card-q-${j}" style="${highlightStyle}">
+                        <strong>Q${j + 1}.</strong> ${q.q}
+                     </div>`;
+        }
         
-        container.addEventListener('touchstart', (e) => {
-            paperIsDragging = true;
-            paperStartMouseX = e.touches[0].clientX;
-            paper3d.style.transition = 'none';
-        }, {passive: true});
-        
-        window.addEventListener('touchmove', (e) => {
-            if (!paperIsDragging) return;
-            const deltaX = e.touches[0].clientX - paperStartMouseX;
-            let newRotY = paperCurrentRotY + (deltaX * 0.5);
-            if (newRotY > 180) newRotY = 180;
-            if (newRotY < -180) newRotY = -180;
-            paper3d.style.transform = `rotateY(${newRotY}deg)`;
-            paperSlider.value = newRotY;
-            paperStartMouseX = e.touches[0].clientX;
-            paperCurrentRotY = newRotY;
-        }, {passive: true});
-        
-        window.addEventListener('touchend', () => {
-            if (paperIsDragging) {
-                paperIsDragging = false;
-                paper3d.style.transition = 'transform 0.1s ease-out';
-            }
-        });
+        html += `</div>`;
+        slide.innerHTML = html;
+        wrapper.appendChild(slide);
     }
-});
+    
+    if (window.paperSwiper) {
+        window.paperSwiper.destroy(true, true);
+    }
+    
+    window.paperSwiper = new Swiper(".mySwiperCards", {
+        effect: "cards",
+        grabCursor: true,
+    });
+};
+
+window.updatePaperPreviewSwiper = function() {
+    // Call this when answering a question to highlight it in the paper
+    // Or just re-init to be lazy, but it's better to just update the DOM element.
+    if (!currentQuestions) return;
+    
+    for (let j = 0; j < currentQuestions.length; j++) {
+        const el = document.getElementById(`card-q-${j}`);
+        if (!el) continue;
+        
+        const q = currentQuestions[j];
+        const ans = userAnswers[j];
+        const isCorrect = isReviewMode && q.a && parseInt(q.a) === ans;
+        const isWrong = isReviewMode && ans && q.a && parseInt(q.a) !== ans;
+        
+        let highlightStyle = '';
+        if (isReviewMode) {
+            if (isCorrect) highlightStyle = 'color: #16a34a; font-weight: bold;';
+            else if (isWrong) highlightStyle = 'color: #dc2626; text-decoration: line-through;';
+        } else if (ans !== null && ans !== undefined) {
+            highlightStyle = 'color: #2563eb; font-weight: bold;'; // User marked an answer
+        } else {
+            highlightStyle = ''; // default
+        }
+        
+        el.setAttribute('style', highlightStyle);
+    }
+    
+    // Move to the card containing the current question
+    if (window.paperSwiper) {
+        const cardIndex = Math.floor(currentQuestionIndex / 10);
+        window.paperSwiper.slideTo(cardIndex);
+    }
+};
 
