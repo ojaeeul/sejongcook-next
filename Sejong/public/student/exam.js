@@ -279,27 +279,29 @@ function selectCourse(courseName) {
         }
         
         // Check if the student has already taken this exam
-        let isCompleted = false;
+        let completedRecord = null;
         if (currentPin !== '7777' && window.allExams) {
-            isCompleted = window.allExams.some(e => e.phone === currentPin && e.examKey === examKey && e.score !== undefined);
+            completedRecord = window.allExams.find(e => e.phone === currentPin && e.examKey === examKey && e.score !== undefined);
         }
 
         const item = document.createElement('div');
         item.className = 'exam-item';
         item.style.borderBottom = '1px solid var(--border-color)';
         
-        if (isCompleted) {
+        if (completedRecord) {
             item.style.backgroundColor = '#f1f5f9';
-            item.style.opacity = '0.7';
+            item.style.opacity = '0.8';
             item.innerHTML = `
                 <div>
                     <h4 style="font-size: 1.1rem; font-weight: 700; color: #64748b;">${examTitle}</h4>
-                    <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 5px;">총 ${questionsData[examKey].length}문항 (응시 완료)</p>
+                    <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 5px;">총 ${questionsData[examKey].length}문항 (응시 완료 - ${completedRecord.score}점)</p>
                 </div>
                 <span class="material-icons" style="color: #cbd5e1;">check_circle</span>
             `;
             item.onclick = () => {
-                alert('이미 응시한 시험입니다. 재응시하려면 원장님께 초기화 요청을 해주세요.');
+                if(confirm('이미 응시하여 제출을 완료한 시험입니다.\n확인을 누르시면 오답노트(확인) 모드로 진입합니다.')) {
+                    startExam(examKey, completedRecord);
+                }
             };
         } else {
             item.innerHTML = `
@@ -318,23 +320,33 @@ function selectCourse(courseName) {
     showScreen('exam');
 }
 
-function startExam(examKey) {
+function startExam(examKey, completedRecord = null) {
     currentExamKey = examKey;
     currentQuestions = questionsData[examKey];
-    userAnswers = new Array(currentQuestions.length).fill(null);
     currentQuestionIndex = 0;
-    isReviewMode = false;
     
-    // Start Timer
-    timeRemaining = 3600; // 60 minutes
-    examStartTime = new Date().toISOString();
-    startTimer();
+    if (completedRecord) {
+        userAnswers = [...completedRecord.answers];
+        isReviewMode = true;
+    } else {
+        userAnswers = new Array(currentQuestions.length).fill(null);
+        isReviewMode = false;
+        
+        // Start Timer
+        timeRemaining = 3600; // 60 minutes
+        examStartTime = new Date().toISOString();
+        startTimer();
+    }
     
     // reset omr
     document.getElementById('omrModal').classList.remove('open');
     
     showScreen('solving');
     renderQuestion();
+
+    if (isReviewMode) {
+        document.getElementById('headerTitle').textContent = '응시 완료된 시험지 (오답 노트)';
+    }
 }
 
 function renderQuestion() {
@@ -355,7 +367,7 @@ function renderQuestion() {
         
         const ansBox = document.createElement('div');
         ansBox.className = 'subjective-answer';
-        ansBox.style.display = userAnswers[currentQuestionIndex] ? 'block' : 'none';
+        ansBox.style.display = (userAnswers[currentQuestionIndex] || isReviewMode) ? 'block' : 'none';
         ansBox.style.background = 'rgba(255, 255, 255, 0.1)';
         ansBox.style.padding = '20px';
         ansBox.style.borderRadius = '10px';
@@ -365,24 +377,36 @@ function renderQuestion() {
         ansBox.style.whiteSpace = 'pre-wrap';
         ansBox.textContent = qInfo.a_text;
 
-        const btn = document.createElement('button');
-        btn.className = 'btn-primary';
-        btn.textContent = userAnswers[currentQuestionIndex] ? '정답 숨기기' : '정답 확인하기';
-        btn.onclick = () => {
-            if (userAnswers[currentQuestionIndex]) {
-                userAnswers[currentQuestionIndex] = null;
-                ansBox.style.display = 'none';
-                btn.textContent = '정답 확인하기';
-            } else {
-                userAnswers[currentQuestionIndex] = true;
-                ansBox.style.display = 'block';
-                btn.textContent = '정답 숨기기';
-            }
-            renderOMR(); // Update OMR to reflect viewed status
-        };
+        if (isReviewMode) {
+             const label = document.createElement('div');
+             label.style.color = 'var(--text-sub)';
+             label.style.marginBottom = '10px';
+             label.textContent = userAnswers[currentQuestionIndex] ? '✔ 본인 확인 여부: 확인됨' : '본인 확인 여부: 미확인';
+             if (userAnswers[currentQuestionIndex]) label.style.color = '#059669';
+             
+             ansContainer.appendChild(label);
+             ansContainer.appendChild(ansBox);
+        } else {
+            const btn = document.createElement('button');
+            btn.className = 'btn-primary';
+            btn.textContent = userAnswers[currentQuestionIndex] ? '정답 숨기기' : '정답 확인하기';
+            btn.onclick = () => {
+                if (userAnswers[currentQuestionIndex]) {
+                    userAnswers[currentQuestionIndex] = null;
+                    ansBox.style.display = 'none';
+                    btn.textContent = '정답 확인하기';
+                } else {
+                    userAnswers[currentQuestionIndex] = true;
+                    ansBox.style.display = 'block';
+                    btn.textContent = '정답 숨기기';
+                }
+                renderOMR(); // Update OMR to reflect viewed status
+            };
 
-        ansContainer.appendChild(btn);
-        ansContainer.appendChild(ansBox);
+            ansContainer.appendChild(btn);
+            ansContainer.appendChild(ansBox);
+        }
+        
         optsEl.appendChild(ansContainer);
     } else {
         qInfo.o.forEach((optText, index) => {
@@ -400,11 +424,21 @@ function renderQuestion() {
                 const isCorrectAnswer = (optNum === qInfo.a);
                 const isMyAnswer = (optNum === userAnswers[currentQuestionIndex]);
                 
+                let correctStyle = isCorrectAnswer ? 'background: rgba(239, 68, 68, 0.1); border-color: #ef4444;' : '';
+                let numStyle = isCorrectAnswer ? 'background: #ef4444 !important; color: white;' : '';
+                
+                let checkMark = isMyAnswer ? ' <span class="material-icons" style="color: #059669; font-size: 1.1rem; vertical-align: middle; margin-left: 5px;">check_circle</span>' : '';
+
                 if (isCorrectAnswer) {
-                    btn.classList.add('correct-ans');
-                } else if (isMyAnswer && !isCorrectAnswer) {
-                    btn.classList.add('wrong-ans');
+                    btn.setAttribute('style', correctStyle);
                 }
+
+                btn.innerHTML = `
+                    <div class="opt-num" style="${numStyle}">${optLabel}</div>
+                    <div style="flex: 1; word-break: keep-all; display: flex; align-items: center;">
+                        ${optText}${checkMark}
+                    </div>
+                `;
             } else {
                 // Only attach click handler in solving mode
                 btn.onclick = () => {
@@ -425,12 +459,12 @@ function renderQuestion() {
                         }
                     }, 300);
                 };
+                
+                btn.innerHTML = `
+                    <div class="opt-num">${optLabel}</div>
+                    <div style="flex: 1; word-break: keep-all;">${optText}</div>
+                `;
             }
-
-            btn.innerHTML = `
-                <div class="opt-num">${optLabel}</div>
-                <div style="flex: 1; word-break: keep-all;">${optText}</div>
-            `;
             optsEl.appendChild(btn);
         });
     }
@@ -516,35 +550,46 @@ function renderOMR() {
                     bubble.classList.add('selected');
                 }
 
-                bubble.onclick = (e) => {
-                    e.stopPropagation(); // prevent modal close or row click
-                    
-                    const wasUnsolved = (userAnswers[i] === null);
+                if (isReviewMode) {
+                    if (qInfo.a === opt) {
+                        bubble.style.background = '#ef4444';
+                        bubble.style.color = 'white';
+                        bubble.style.borderColor = '#ef4444';
+                    }
+                    if (userAnswers[i] === opt && qInfo.a !== opt) {
+                         // keep it selected (blue/green), maybe change it slightly if needed, but default selected is fine
+                    }
+                } else {
+                    bubble.onclick = (e) => {
+                        e.stopPropagation(); // prevent modal close or row click
+                        
+                        const wasUnsolved = (userAnswers[i] === null);
 
-                    // Toggle off if same bubble clicked again
-                    if (userAnswers[i] === opt) {
-                        userAnswers[i] = null;
-                    } else {
-                        userAnswers[i] = opt;
-                    }
-                    
-                    renderOMR();
-                    
-                    // Also update the main screen if we are currently on this question
-                    if (currentQuestionIndex === i) {
-                        renderQuestion();
-                    } else if (wasUnsolved) {
-                        // 못푼 문제 답안을 클릭하면 그문제로 가게 해주세요
-                        currentQuestionIndex = i;
-                        renderQuestion();
-                        setTimeout(() => {
-                            const modal = document.getElementById('omrModal');
-                            if (modal.classList.contains('open')) {
-                                toggleOMR();
-                            }
-                        }, 150);
-                    }
-                };
+                        // Toggle off if same bubble clicked again
+                        if (userAnswers[i] === opt) {
+                            userAnswers[i] = null;
+                        } else {
+                            userAnswers[i] = opt;
+                        }
+                        
+                        renderOMR();
+                        
+                        // Also update the main screen if we are currently on this question
+                        if (currentQuestionIndex === i) {
+                            renderQuestion();
+                        } else if (wasUnsolved) {
+                            // 못푼 문제 답안을 클릭하면 그문제로 가게 해주세요
+                            currentQuestionIndex = i;
+                            renderQuestion();
+                            setTimeout(() => {
+                                const modal = document.getElementById('omrModal');
+                                if (modal.classList.contains('open')) {
+                                    toggleOMR();
+                                }
+                            }, 150);
+                        }
+                    };
+                }
                 bubbles.appendChild(bubble);
             }
         }
