@@ -246,7 +246,7 @@ function selectCourse(courseName) {
     sortedExams.forEach(examKey => {
         const parts = examKey.split('_');
         let examTitle = parts.pop() || examKey;
-        examTitle = examTitle.replace('.hwp', '').replace('.pdf', '').normalize('NFC');
+        examTitle = examTitle.replace('.hwp', '').replace('.pdf', '').replace('(교사용)', '').normalize('NFC');
         
         const dateMap = {
   "2004년제과1회": "2004.3.7", "2004년제과2회": "2004.5.9", "2004년제과4회": "2004.8.8", "2004년제과5회": "2004.10.10",
