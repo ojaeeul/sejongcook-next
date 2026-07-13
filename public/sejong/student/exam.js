@@ -985,10 +985,10 @@ window.initPaperPreviewSwiper = function() {
                         <div style="${highlightStyle}"><strong>Q${j + 1}.</strong> ${q.q}</div>`;
             
             // Add Options
-            if (q.options && q.options.length > 0) {
+            if (q.o && q.o.length > 0) {
                 html += `<div style="margin-top: 4px; padding-left: 10px; color: #475569; font-size: 0.8rem; line-height: 1.4; display: grid; grid-template-columns: 1fr 1fr; gap: 2px 8px;">`;
                 const circleNums = ['①', '②', '③', '④', '⑤'];
-                q.options.forEach((opt, idx) => {
+                q.o.forEach((opt, idx) => {
                     let optStyle = '';
                     if (isReviewMode) {
                         if (idx + 1 === parseInt(q.a)) optStyle = 'color: #16a34a; font-weight: bold;';
@@ -1040,10 +1040,10 @@ window.updatePaperPreviewSwiper = function() {
         }
 
         let html = `<div style="${highlightStyle}"><strong>Q${j + 1}.</strong> ${q.q}</div>`;
-        if (q.options && q.options.length > 0) {
+        if (q.o && q.o.length > 0) {
             html += `<div style="margin-top: 4px; padding-left: 10px; color: #475569; font-size: 0.8rem; line-height: 1.4; display: grid; grid-template-columns: 1fr 1fr; gap: 2px 8px;">`;
             const circleNums = ['①', '②', '③', '④', '⑤'];
-            q.options.forEach((opt, idx) => {
+            q.o.forEach((opt, idx) => {
                 let optStyle = '';
                 if (isReviewMode) {
                     if (idx + 1 === parseInt(q.a)) optStyle = 'color: #16a34a; font-weight: bold;';
