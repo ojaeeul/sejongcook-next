@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>모의고사 - 세종요리학원</title>
-    <link rel="stylesheet" href="exam.css?v=20260713-14">
+    <link rel="stylesheet" href="exam.css?v=20260713-15">
     <!-- Chart.js for Result Analysis -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Canvas Confetti for Pass Celebration -->
@@ -95,11 +95,45 @@
             </div>
         </div>
         
-        <div style="padding: 20px; display: flex; flex-direction: column; flex: 1;">
-            <div class="question-container" id="questionContainer">
+        <div style="padding: 20px; display: flex; flex-direction: row; flex: 1; gap: 20px; overflow: hidden; justify-content: center; width: 100%;">
+            <div class="question-container" id="questionContainer" style="flex: 1; max-width: 800px;">
                 <div class="question-text" id="qText">Q. 문제를 불러오는 중입니다...</div>
                 <div class="options-list" id="optionsList">
                     <!-- Populated by JS -->
+                </div>
+            </div>
+            
+            <!-- 3D Paper Preview (Only visible on wide screens) -->
+            <div class="paper-preview-wrapper" id="paperPreviewWrapper">
+                <div class="paper-preview-container" id="paperPreviewContainer">
+                    <div class="paper-3d" id="paper3d">
+                        <!-- Front of paper -->
+                        <div class="paper-front">
+                            <div class="paper-title" id="paperTitle3D">시험지 미리보기</div>
+                            <div class="paper-lines">
+                                <div class="paper-line"></div>
+                                <div class="paper-line"></div>
+                                <div class="paper-line" style="width: 80%;"></div>
+                                <div class="paper-line" style="margin-top: 20px;"></div>
+                                <div class="paper-line"></div>
+                                <div class="paper-line"></div>
+                                <div class="paper-line" style="width: 60%;"></div>
+                                <div class="paper-line" style="margin-top: 20px;"></div>
+                                <div class="paper-line"></div>
+                                <div class="paper-line"></div>
+                                <div class="paper-line" style="width: 90%;"></div>
+                            </div>
+                            <div class="paper-qtext" id="paperQText3D"></div>
+                        </div>
+                        <!-- Back of paper -->
+                        <div class="paper-back">
+                            <div style="transform: scaleX(-1); color: #ccc; text-align: center; margin-top: 50%;">여백</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="paper-controls">
+                    <span class="material-icons" style="color: var(--text-sub); font-size: 1.2rem;">360</span>
+                    <input type="range" id="paperSlider" min="-180" max="180" value="0" style="flex: 1;">
                 </div>
             </div>
         </div>
@@ -202,6 +236,6 @@
         </div>
     </div>
 
-    <script src="exam.js?v=20260713-14"></script>
+    <script src="exam.js?v=20260713-15"></script>
 </body>
 </html>

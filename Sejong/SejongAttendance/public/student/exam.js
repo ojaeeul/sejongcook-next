@@ -355,6 +355,11 @@ function renderQuestion() {
     
     const textEl = document.getElementById('qText');
     textEl.innerHTML = `<span style="color: var(--primary-light); margin-right: 5px;">Q${currentQuestionIndex + 1}.</span> ${qInfo.q}`;
+    
+    const paperQText = document.getElementById('paperQText3D');
+    if (paperQText) {
+        paperQText.innerHTML = `Q${currentQuestionIndex + 1}. ${qInfo.q}`;
+    }
 
     const optsEl = document.getElementById('optionsList');
     optsEl.innerHTML = '';
@@ -913,4 +918,82 @@ function extendTime(minutes) {
     alert(`시험 시간이 ${minutes}분 연장되었습니다.`);
     closeExtensionModal();
 }
+
 // ---------------------------------
+// 3D Paper Preview Logic
+let paperIsDragging = false;
+let paperStartMouseX = 0;
+let paperCurrentRotY = 0;
+
+document.addEventListener('DOMContentLoaded', () => {
+    const paper3d = document.getElementById('paper3d');
+    const paperSlider = document.getElementById('paperSlider');
+    const container = document.getElementById('paperPreviewContainer');
+
+    if (paperSlider && paper3d) {
+        paperSlider.addEventListener('input', (e) => {
+            const rotY = e.target.value;
+            paper3d.style.transform = `rotateY(${rotY}deg)`;
+            paperCurrentRotY = parseFloat(rotY);
+        });
+    }
+
+    if (container && paper3d && paperSlider) {
+        container.addEventListener('mousedown', (e) => {
+            paperIsDragging = true;
+            paperStartMouseX = e.clientX;
+            paper3d.style.transition = 'none'; // Disable transition for smooth dragging
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!paperIsDragging) return;
+            const deltaX = e.clientX - paperStartMouseX;
+            // Adjust sensitivity
+            let newRotY = paperCurrentRotY + (deltaX * 0.5);
+            
+            // Limit to -180 to 180
+            if (newRotY > 180) newRotY = 180;
+            if (newRotY < -180) newRotY = -180;
+
+            paper3d.style.transform = `rotateY(${newRotY}deg)`;
+            paperSlider.value = newRotY;
+            
+            // update start for continuous delta
+            paperStartMouseX = e.clientX;
+            paperCurrentRotY = newRotY;
+        });
+
+        window.addEventListener('mouseup', () => {
+            if (paperIsDragging) {
+                paperIsDragging = false;
+                paper3d.style.transition = 'transform 0.1s ease-out';
+            }
+        });
+        
+        container.addEventListener('touchstart', (e) => {
+            paperIsDragging = true;
+            paperStartMouseX = e.touches[0].clientX;
+            paper3d.style.transition = 'none';
+        }, {passive: true});
+        
+        window.addEventListener('touchmove', (e) => {
+            if (!paperIsDragging) return;
+            const deltaX = e.touches[0].clientX - paperStartMouseX;
+            let newRotY = paperCurrentRotY + (deltaX * 0.5);
+            if (newRotY > 180) newRotY = 180;
+            if (newRotY < -180) newRotY = -180;
+            paper3d.style.transform = `rotateY(${newRotY}deg)`;
+            paperSlider.value = newRotY;
+            paperStartMouseX = e.touches[0].clientX;
+            paperCurrentRotY = newRotY;
+        }, {passive: true});
+        
+        window.addEventListener('touchend', () => {
+            if (paperIsDragging) {
+                paperIsDragging = false;
+                paper3d.style.transition = 'transform 0.1s ease-out';
+            }
+        });
+    }
+});
+
