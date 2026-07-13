@@ -986,7 +986,8 @@ window.initPaperPreviewSwiper = function() {
             
             // Add Options
             if (q.options && q.options.length > 0) {
-                html += `<div style="margin-top: 4px; padding-left: 10px; color: #475569; font-size: 0.8rem; line-height: 1.4;">`;
+                html += `<div style="margin-top: 4px; padding-left: 10px; color: #475569; font-size: 0.8rem; line-height: 1.4; display: grid; grid-template-columns: 1fr 1fr; gap: 2px 8px;">`;
+                const circleNums = ['①', '②', '③', '④', '⑤'];
                 q.options.forEach((opt, idx) => {
                     let optStyle = '';
                     if (isReviewMode) {
@@ -995,7 +996,8 @@ window.initPaperPreviewSwiper = function() {
                     } else if (ans === idx + 1) {
                         optStyle = 'color: #2563eb; font-weight: bold;';
                     }
-                    html += `<div style="${optStyle}">${idx + 1}) ${opt}</div>`;
+                    const numStr = circleNums[idx] || (idx + 1 + ')');
+                    html += `<div style="${optStyle}">${numStr} ${opt}</div>`;
                 });
                 html += `</div>`;
             }
@@ -1018,8 +1020,6 @@ window.initPaperPreviewSwiper = function() {
 };
 
 window.updatePaperPreviewSwiper = function() {
-    // Call this when answering a question to highlight it in the paper
-    // Or just re-init to be lazy, but it's better to just update the DOM element.
     if (!currentQuestions) return;
     
     for (let j = 0; j < currentQuestions.length; j++) {
@@ -1037,11 +1037,26 @@ window.updatePaperPreviewSwiper = function() {
             else if (isWrong) highlightStyle = 'color: #dc2626; text-decoration: line-through;';
         } else if (ans !== null && ans !== undefined) {
             highlightStyle = 'color: #2563eb; font-weight: bold;'; // User marked an answer
-        } else {
-            highlightStyle = ''; // default
         }
-        
-        el.setAttribute('style', highlightStyle);
+
+        let html = `<div style="${highlightStyle}"><strong>Q${j + 1}.</strong> ${q.q}</div>`;
+        if (q.options && q.options.length > 0) {
+            html += `<div style="margin-top: 4px; padding-left: 10px; color: #475569; font-size: 0.8rem; line-height: 1.4; display: grid; grid-template-columns: 1fr 1fr; gap: 2px 8px;">`;
+            const circleNums = ['①', '②', '③', '④', '⑤'];
+            q.options.forEach((opt, idx) => {
+                let optStyle = '';
+                if (isReviewMode) {
+                    if (idx + 1 === parseInt(q.a)) optStyle = 'color: #16a34a; font-weight: bold;';
+                    else if (idx + 1 === ans) optStyle = 'color: #dc2626; text-decoration: line-through;';
+                } else if (ans === idx + 1) {
+                    optStyle = 'color: #2563eb; font-weight: bold;';
+                }
+                const numStr = circleNums[idx] || (idx + 1 + ')');
+                html += `<div style="${optStyle}">${numStr} ${opt}</div>`;
+            });
+            html += `</div>`;
+        }
+        el.innerHTML = html;
     }
     
     // Move to the card containing the current question
