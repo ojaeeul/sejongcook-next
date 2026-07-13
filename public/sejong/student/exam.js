@@ -976,7 +976,7 @@ window.initPaperPreviewSwiper = function() {
             let highlightStyle = '';
             if (isReviewMode) {
                 if (isCorrect) highlightStyle = 'color: #16a34a; font-weight: bold;';
-                else if (isWrong) highlightStyle = 'color: #dc2626; text-decoration: line-through;';
+                else if (isWrong) highlightStyle = 'color: #dc2626; font-weight: bold;';
             } else if (ans !== null && ans !== undefined) {
                 highlightStyle = 'color: #2563eb; font-weight: bold;'; // User marked an answer
             }
@@ -1046,7 +1046,7 @@ window.updatePaperPreviewSwiper = function() {
         let highlightStyle = '';
         if (isReviewMode) {
             if (isCorrect) highlightStyle = 'color: #16a34a; font-weight: bold;';
-            else if (isWrong) highlightStyle = 'color: #dc2626; text-decoration: line-through;';
+            else if (isWrong) highlightStyle = 'color: #dc2626; font-weight: bold;';
         } else if (ans !== null && ans !== undefined) {
             highlightStyle = 'color: #2563eb; font-weight: bold;'; // User marked an answer
         }
