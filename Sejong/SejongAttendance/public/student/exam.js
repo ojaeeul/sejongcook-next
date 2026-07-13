@@ -986,7 +986,7 @@ window.initPaperPreviewSwiper = function() {
             
             // Add Options
             if (q.o && q.o.length > 0) {
-                html += `<div style="margin-top: 4px; padding-left: 10px; color: #475569; font-size: 0.8rem; line-height: 1.4; display: grid; grid-template-columns: 1fr 1fr; gap: 2px 8px;">`;
+                html += `<div style="margin-top: 4px; padding-left: 10px; color: #475569; font-size: 0.8rem; line-height: 1.4; display: flex; flex-direction: column; gap: 2px;">`;
                 const circleNums = ['①', '②', '③', '④', '⑤'];
                 q.o.forEach((opt, idx) => {
                     let optStyle = '';
@@ -1016,6 +1016,18 @@ window.initPaperPreviewSwiper = function() {
     window.paperSwiper = new Swiper(".mySwiperCards", {
         effect: "cards",
         grabCursor: true,
+        keyboard: {
+            enabled: true,
+        },
+        mousewheel: {
+            invert: false,
+        },
+        cardsEffect: {
+            perSlideOffset: 8,
+            perSlideRotate: 2,
+            rotate: true,
+            slideShadows: true,
+        },
     });
 };
 
@@ -1041,7 +1053,7 @@ window.updatePaperPreviewSwiper = function() {
 
         let html = `<div style="${highlightStyle}"><strong>Q${j + 1}.</strong> ${q.q}</div>`;
         if (q.o && q.o.length > 0) {
-            html += `<div style="margin-top: 4px; padding-left: 10px; color: #475569; font-size: 0.8rem; line-height: 1.4; display: grid; grid-template-columns: 1fr 1fr; gap: 2px 8px;">`;
+            html += `<div style="margin-top: 4px; padding-left: 10px; color: #475569; font-size: 0.8rem; line-height: 1.4; display: flex; flex-direction: column; gap: 2px;">`;
             const circleNums = ['①', '②', '③', '④', '⑤'];
             q.o.forEach((opt, idx) => {
                 let optStyle = '';
