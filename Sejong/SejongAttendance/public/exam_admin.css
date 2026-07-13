@@ -11,36 +11,6 @@
     --sejong-orange: #f97316;
 }
 
-body {
-    margin: 0;
-    padding: 0;
-    font-family: 'Noto Sans KR', sans-serif;
-    background: var(--bg-main);
-    color: var(--text-main);
-}
-
-.admin-header {
-    background: var(--primary);
-    color: white;
-    padding: 15px 20px;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-}
-
-.admin-header h1 {
-    margin: 0;
-    font-size: 1.2rem;
-    font-weight: 700;
-}
-
-.admin-header .back-btn {
-    color: white;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-}
 
 .student-select {
     margin-left: auto;
