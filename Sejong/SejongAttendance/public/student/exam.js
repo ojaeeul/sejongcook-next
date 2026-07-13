@@ -931,12 +931,24 @@ function extendTime(minutes) {
 
 // ---------------------------------
 // Swiper Cards Exam Paper Preview Logic
+window.swiperQuestionsPerCard = 5;
+
+window.setQuestionsPerCard = function(num) {
+    window.swiperQuestionsPerCard = num;
+    if (window.initPaperPreviewSwiper) {
+        window.initPaperPreviewSwiper();
+        // Also update highlight for the new elements
+        if (window.updatePaperPreviewSwiper) {
+            window.updatePaperPreviewSwiper();
+        }
+    }
+};
+
 window.initPaperPreviewSwiper = function() {
     const wrapper = document.getElementById('swiperWrapperContent');
     if (!wrapper) return;
     
-    // Create slides (10 questions per slide)
-    const questionsPerCard = 10;
+    const questionsPerCard = window.swiperQuestionsPerCard || 5;
     const numCards = Math.ceil(currentQuestions.length / questionsPerCard);
     
     wrapper.innerHTML = '';
@@ -944,17 +956,19 @@ window.initPaperPreviewSwiper = function() {
     for (let i = 0; i < numCards; i++) {
         const slide = document.createElement('div');
         slide.className = 'swiper-slide';
+        // Allow scrolling inside the card if content is too long
+        slide.style.overflowY = 'auto'; 
+        slide.style.maxHeight = '100%';
         
         const startQ = i * questionsPerCard;
         const endQ = Math.min(startQ + questionsPerCard, currentQuestions.length);
         
-        let html = `<div class="card-title">시험지 - ${i + 1}페이지 (${startQ + 1}~${endQ}번)</div>`;
+        let html = `<div class="card-title" style="position: sticky; top: 0; background: white; z-index: 10;">시험지 - ${i + 1}페이지 (${startQ + 1}~${endQ}번)</div>`;
         html += `<div class="card-questions">`;
         
         for (let j = startQ; j < endQ; j++) {
             const q = currentQuestions[j];
             let answerText = '';
-            // If the user has already answered (in review mode or just current progress), we can show it
             const ans = userAnswers[j];
             const isCorrect = isReviewMode && q.a && parseInt(q.a) === ans;
             const isWrong = isReviewMode && ans && q.a && parseInt(q.a) !== ans;
@@ -967,9 +981,25 @@ window.initPaperPreviewSwiper = function() {
                 highlightStyle = 'color: #2563eb; font-weight: bold;'; // User marked an answer
             }
 
-            html += `<div class="card-q-item" id="card-q-${j}" style="${highlightStyle}">
-                        <strong>Q${j + 1}.</strong> ${q.q}
-                     </div>`;
+            html += `<div class="card-q-item" id="card-q-${j}" style="margin-bottom: 10px;">
+                        <div style="${highlightStyle}"><strong>Q${j + 1}.</strong> ${q.q}</div>`;
+            
+            // Add Options
+            if (q.options && q.options.length > 0) {
+                html += `<div style="margin-top: 4px; padding-left: 10px; color: #475569; font-size: 0.8rem; line-height: 1.4;">`;
+                q.options.forEach((opt, idx) => {
+                    let optStyle = '';
+                    if (isReviewMode) {
+                        if (idx + 1 === parseInt(q.a)) optStyle = 'color: #16a34a; font-weight: bold;';
+                        else if (idx + 1 === ans) optStyle = 'color: #dc2626; text-decoration: line-through;';
+                    } else if (ans === idx + 1) {
+                        optStyle = 'color: #2563eb; font-weight: bold;';
+                    }
+                    html += `<div style="${optStyle}">${idx + 1}) ${opt}</div>`;
+                });
+                html += `</div>`;
+            }
+            html += `</div>`;
         }
         
         html += `</div>`;
@@ -1016,7 +1046,8 @@ window.updatePaperPreviewSwiper = function() {
     
     // Move to the card containing the current question
     if (window.paperSwiper) {
-        const cardIndex = Math.floor(currentQuestionIndex / 10);
+        const questionsPerCard = window.swiperQuestionsPerCard || 5;
+        const cardIndex = Math.floor(currentQuestionIndex / questionsPerCard);
         window.paperSwiper.slideTo(cardIndex);
     }
 };
