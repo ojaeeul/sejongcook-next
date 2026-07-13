@@ -109,7 +109,11 @@ async function loadNotebookData() {
         col.setAttribute('contenteditable', 'true');
         col.setAttribute('spellcheck', 'false');
     });
-    if (typeof updateExpensePagination === 'function') updateExpensePagination();
+
+    // 고정지출 자동 기재 (조용히 실행)
+    if (window.applyFixedExpensesToNotebook) {
+        setTimeout(() => window.applyFixedExpensesToNotebook(true), 500);
+    }
 }
 
 async function changeExpenseYear(delta) {

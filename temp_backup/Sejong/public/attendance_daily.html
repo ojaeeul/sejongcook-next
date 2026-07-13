@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>일일 출석부 - 세종요리</title>
+    <link rel="stylesheet" href="style.css?v=20260302_1">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="attendance_daily.js?v=20260302_1" defer></script>
+    <style>
+        .daily-container {
+            display: flex;
+            gap: 20px;
+            height: calc(100vh - 100px);
+            padding: 20px 0;
+            background: #f1f5f9;
+        }
+
+        /* 1. Left Sidebar: Course Selection */
+        .daily-panel-left {
+            width: 250px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            background: #1e3a8a;
+            /* Deep blue from screenshot */
+            color: white;
+            padding: 15px 20px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toggle-section {
+            padding: 15px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 0.9rem;
+            color: #475569;
+        }
+
+        .course-list-header {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+            border-bottom: 2px solid #e2e8f0;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: #334155;
+        }
+
+        .course-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .course-item {
+            padding: 12px 20px;
+            border-bottom: 1px solid #f1f5f9;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #334155;
+            font-size: 0.95rem;
+            transition: background 0.2s;
+        }
+
+        .course-item:hover {
+            background: #f8fafc;
+        }
+
+        .course-item.active {
+            background: #1e3a8a;
+            color: white;
+            font-weight: 700;
+        }
+
+        /* 2. Main Content: Attendance Table */
+        .daily-panel-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow: hidden;
+        }
+
+        /* Top Actions Bar */
+        .top-action-bar {
+            background: #1e3a8a;
+            color: white;
+            border-radius: 12px;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .date-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .date-selector i {
+            cursor: pointer;
+        }
+
+        .date-selector input[type="date"] {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 1.1rem;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .date-selector input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+        }
+
+        .action-buttons {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .save-sms-check {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.85rem;
+            color: white;
+            /* Ensure text is visible on blue background */
+        }
+
+        .btn-green {
+            background: #4ade80;
+            color: #1e293b;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .btn-green:hover {
+            background: #22c55e;
+        }
+
+        .btn-blue {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 6px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .btn-blue:hover {
+            background: #2563eb;
+        }
+
+        /* Summary Stats */
+        .stats-box {
+            background: white;
+            border-radius: 12px;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 300;
+        }
+
+        .stat-present {
+            color: #22c55e;
+        }
+
+        /* 출석: 초록 */
+        .stat-absent {
+            color: #ef4444;
+        }
+
+        /* 결석: 빨강 */
+        .stat-late {
+            color: #f59e0b;
+        }
+
+        /* 지각: 주황 */
+        .stat-early {
+            color: #06b6d4;
+        }
+
+        /* 조퇴: 청록 */
+        .stat-makeup {
+            color: #d946ef;
+        }
+
+        /* 보강: 보라 */
+
+        /* Main Table */
+        .table-container {
+            flex: 1;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #3b82f6;
+            color: white;
+            font-weight: 700;
+            padding: 12px 15px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        td {
+            padding: 10px 15px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+
+        .student-cell {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 700;
+            color: #334155;
+            min-width: 150px;
+        }
+
+        .edit-btn {
+            background: #dbeafe;
+            color: #3b82f6;
+            border: none;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .edit-btn i {
+            font-size: 1rem;
+        }
+
+        .status-btn-group {
+            display: flex;
+            gap: 5px;
+        }
+
+        .status-btn {
+            padding: 8px 15px;
+            border: 1px solid #cbd5e1;
+            background: white;
+            color: #64748b;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            flex: 1;
+            text-align: center;
+        }
+
+        /* Active States */
+        .status-btn.active[data-type="present"] {
+            background: #22c55e;
+            color: white;
+            border-color: #22c55e;
+        }
+
+        .status-btn.active[data-type="absent"] {
+            background: #ef4444;
+            color: white;
+            border-color: #ef4444;
+        }
+
+        .status-btn.active[data-type="late"] {
+            background: #f59e0b;
+            color: white;
+            border-color: #f59e0b;
+        }
+
+        .status-btn.active[data-type="early"] {
+            background: #06b6d4;
+            color: white;
+            border-color: #06b6d4;
+        }
+
+        .status-btn.active[data-type="makeup"] {
+            background: #d946ef;
+            color: white;
+            border-color: #d946ef;
+        }
+
+        /* Footer Bar */
+        .footer-action-bar {
+            background: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #e2e8f0;
+            font-weight: 700;
+            color: #334155;
+            border-radius: 0 0 12px 12px;
+            position: sticky;
+            bottom: 0;
+            box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+        <aside class="sidebar">
+            <div class="brand-logo">
+                <span class="logo-text">세종요리</span>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">수강 관리</div>
+                <div class="nav-sub-menu show">
+                    <a href="register.html" id="navRegister" class="nav-item">수강생 등록</a>
+                    <a href="index.html" id="navIndex" class="nav-item">수강생 대장</a>
+                    <a href="phonebook.html" id="navPhoneBook" class="nav-item">전화번호부</a>
+                    <a href="sheet.html" id="navSheet" class="nav-item">월간 출석부</a>
+                </div>
+                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">수강료</div>
+                <div class="nav-sub-menu show">
+                    <a href="tuition.html" class="nav-item">수강료 관리</a>
+                    <a href="ledger.html" class="nav-item">수강료 납부대장</a>
+                    <a href="paid_list.html" class="nav-item">납부완료 명단</a>
+                </div>
+                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">소통</div>
+                <div class="nav-sub-menu show">
+                    <a href="notice.html" class="nav-item">학원 공지</a>
+                    <a href="feed.html" class="nav-item">피드 관리</a>
+                    <a href="wagashi.html" class="nav-item">학원 홍보</a>
+                </div>
+                <div class="nav-category toggle-category" onclick="toggleNavSub(this)">시험지</div>
+                <div class="nav-sub-menu">
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">한식기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('한식_2021')" class="nav-item">2021년 한식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('한식_2022')" class="nav-item">2022년 한식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('한식_2023')" class="nav-item">2023년 한식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('한식_2024')" class="nav-item">2024년 한식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('한식_2025')" class="nav-item">2025년 한식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('한식_2026')" class="nav-item">2026년 한식</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">양식기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('양식_2021')" class="nav-item">2021년 양식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('양식_2022')" class="nav-item">2022년 양식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('양식_2023')" class="nav-item">2023년 양식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('양식_2024')" class="nav-item">2024년 양식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('양식_2025')" class="nav-item">2025년 양식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('양식_2026')" class="nav-item">2026년 양식</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">일식기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('일식_2021')" class="nav-item">2021년 일식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('일식_2022')" class="nav-item">2022년 일식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('일식_2023')" class="nav-item">2023년 일식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('일식_2024')" class="nav-item">2024년 일식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('일식_2025')" class="nav-item">2025년 일식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('일식_2026')" class="nav-item">2026년 일식</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">중식기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('중식_2021')" class="nav-item">2021년 중식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('중식_2022')" class="nav-item">2022년 중식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('중식_2023')" class="nav-item">2023년 중식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('중식_2024')" class="nav-item">2024년 중식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('중식_2025')" class="nav-item">2025년 중식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('중식_2026')" class="nav-item">2026년 중식</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">제과기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('제과_2021')" class="nav-item">2021년 제과</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과_2022')" class="nav-item">2022년 제과</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과_2023')" class="nav-item">2023년 제과</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과_2024')" class="nav-item">2024년 제과</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과_2025')" class="nav-item">2025년 제과</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과_2026')" class="nav-item">2026년 제과</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">제빵기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2021')" class="nav-item">2021년 제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2022')" class="nav-item">2022년 제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2023')" class="nav-item">2023년 제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2024')" class="nav-item">2024년 제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2025')" class="nav-item">2025년 제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2026')" class="nav-item">2026년 제빵</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">제과제빵기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('제과제빵_2021')" class="nav-item">2021년 제과제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과제빵_2022')" class="nav-item">2022년 제과제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과제빵_2023')" class="nav-item">2023년 제과제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과제빵_2024')" class="nav-item">2024년 제과제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과제빵_2025')" class="nav-item">2025년 제과제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과제빵_2026')" class="nav-item">2026년 제과제빵</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">복어기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('복어_2021')" class="nav-item">2021년 복어</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('복어_2022')" class="nav-item">2022년 복어</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('복어_2023')" class="nav-item">2023년 복어</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('복어_2024')" class="nav-item">2024년 복어</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('복어_2025')" class="nav-item">2025년 복어</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('복어_2026')" class="nav-item">2026년 복어</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">산업기사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" class="nav-item">준비중입니다</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">가정요리</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" class="nav-item">준비중입니다</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">브런치</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" class="nav-item">준비중입니다</a>
+                    </div>
+                </div>
+                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">기타</div>
+                <div class="nav-sub-menu show">
+                    <a href="javascript:void(0)" onclick="openSettingsModal()" class="nav-item">
+                        <span class="material-icons" style="font-size: 1.2rem; margin-right: 8px;">settings</span>
+                        수업 요일 설정
+                    </a>
+                    <a href="index.html?filter=archive" id="navArchive" class="nav-item">수료생 보관함</a>
+                    <a href="index.html?filter=trash" id="navTrash" class="nav-item">휴지통</a>
+                    <a href="stats.html" class="nav-item">통계 및 납부</a>
+                </div>
+                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">학원문자</div>
+                <div class="nav-sub-menu show">
+                    <a href="attendance_daily.html" id="navDailyAttendance" class="nav-item active">일일 출석부</a>
+                    <a href="sms.html" id="navSms" class="nav-item">문자 발송</a>
+                </div>
+                <a href="monitor.html?v=20260301_03" target="_blank" class="nav-item highlight">키오스크 모니터</a>
+            </nav>
+        </aside>
+
+        <main class="main-wrapper" style="padding: 0 20px;">
+            <header class="top-header"
+                style="background: transparent; box-shadow: none; border-bottom: none; padding-bottom: 0;">
+                <button class="hamburger-btn" onclick="toggleSidebar()">
+                    <span class="material-icons">menu</span>
+                </button>
+                <div class="page-title-container">
+                    <h1 class="page-title-text" style="color: #1e3a8a;">일 일 출 석 부</h1>
+                </div>
+            </header>
+
+            <div class="daily-container">
+                <!-- 1. Left Panel Selection -->
+                <div class="daily-panel-left">
+                    <div class="toggle-section">
+                        <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                            <input type="checkbox" id="includeInactive"> 퇴원생 포함
+                        </label>
+                    </div>
+                    <div class="course-list-header">
+                        <span>반목록</span>
+                        <span id="courseCount">0개</span>
+                    </div>
+                    <div class="course-list" id="courseList">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- 2. Main Content -->
+                <div class="daily-panel-main">
+
+                    <div class="top-action-bar">
+                        <div class="date-selector">
+                            <i class="material-icons" onclick="changeDate(-1)">navigate_before</i>
+                            <input type="date" id="attendanceDate">
+                            <i class="material-icons" onclick="changeDate(1)">navigate_next</i>
+                        </div>
+
+                        <div class="action-buttons">
+                            <label class="save-sms-check">
+                                <input type="checkbox" id="sendSmsOnSave" checked>
+                                <span style="border:1px dashed #ffffff; padding:2px 5px; border-radius:50px;">저장 시 문자
+                                    전송</span> <span style="font-size:0.7rem;">(※체크시 유지됩니다)</span>
+                            </label>
+                            <button class="btn-green" onclick="markAllPresent()">전체출석</button>
+                            <button class="btn-blue" onclick="saveDailyAttendance()">저장</button>
+                        </div>
+                    </div>
+
+                    <div class="stats-box">
+                        <div class="stat-item stat-present">
+                            <div class="stat-label">출석</div>
+                            <div class="stat-value" id="statPresent">0</div>
+                        </div>
+                        <div class="stat-item stat-absent">
+                            <div class="stat-label">결석</div>
+                            <div class="stat-value" id="statAbsent">0</div>
+                        </div>
+                        <div class="stat-item stat-late">
+                            <div class="stat-label">지각</div>
+                            <div class="stat-value" id="statLate">0</div>
+                        </div>
+                        <div class="stat-item stat-early">
+                            <div class="stat-label">조퇴</div>
+                            <div class="stat-value" id="statEarly">0</div>
+                        </div>
+                        <div class="stat-item stat-makeup">
+                            <div class="stat-label">보강</div>
+                            <div class="stat-value" id="statMakeup">0</div>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="width: 20%; border-right: 1px solid #60a5fa;">학생</th>
+                                    <th>출결사항</th>
+                                </tr>
+                            </thead>
+                            <tbody id="attendanceTbody">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+
+                        <div class="footer-action-bar">
+                            <span id="totalStudentsCount">총원 0명</span>
+                            <button class="btn-blue" onclick="sendDismissalSms()"
+                                style="padding: 8px 15px; font-size:0.9rem;">하원문자발송</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('active');
+            document.querySelector('.sidebar-overlay').classList.toggle('active');
+        }
+        function toggleNavSub(el) {
+            el.classList.toggle('active');
+            el.nextElementSibling.classList.toggle('show');
+        }
+    </script>
+</body>
+
+</html>

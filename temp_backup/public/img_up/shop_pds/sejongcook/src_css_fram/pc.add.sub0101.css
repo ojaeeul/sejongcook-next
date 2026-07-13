@@ -1,0 +1,22 @@
+
+/* ****************** 1칸 레이아웃  ****************** */
+
+.layout_381268_ {clear:both; min-width:320px; max-width:1000px; margin:0 auto;}
+.layout_381268_ > div:after {content:''; display:block; clear:both;}
+.layout_381268_ > div > [class^=container_] {float:left; position:relative; width:100%; box-sizing:border-box;}
+
+@media \0screen{
+	.layout_381268_ {min-width:1000px;}
+}
+
+/* ****************** 이미지  ****************** */
+
+.img_381270_ {display:inline-block; overflow:hidden; position:relative; width:px; max-width:100%; vertical-align:top;}
+.img_381270_ * {box-sizing:border-box;}
+.img_381270_ a {display:block; text-decoration:none;}
+.img_381270_ img {max-width:100%; vertical-align:top;}
+
+/* ****************** HTML 편집기  ****************** */
+
+.html_381269_ {overflow:hidden;}
+.html_381269_:after {content:''; display:block; clear:both;}

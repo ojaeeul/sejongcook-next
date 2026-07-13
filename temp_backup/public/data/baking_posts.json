@@ -1,0 +1,74 @@
+[
+    {
+        "id": "1",
+        "category": "수업뉴스",
+        "title": "제과기능사 실기 품목 마들렌 만들기 실습",
+        "author": "관리자",
+        "date": "2024-01-20",
+        "hit": "150",
+        "content": "<p>오늘은 제과기능사 실기 품목 중 하나인 마들렌을 만들어보았습니다.</p><p><img src=\"/images/gallery/baking/마들렌.jpg\" alt=\"마들렌 실습\" style=\"max-width:100%;\" /></p>"
+    },
+    {
+        "id": "2",
+        "category": "갤러리",
+        "title": "달콤한 마카롱 만들기 수업 현장",
+        "author": "홍길동",
+        "date": "2024-01-18",
+        "hit": "230",
+        "content": "<p>알록달록 예쁜 마카롱을 만드는 학생들의 모습입니다.</p><p><img src=\"/images/gallery/baking/마카롱.jpg\" alt=\"마카롱 실습\" style=\"max-width:100%;\" /></p>"
+    },
+    {
+        "id": "3",
+        "category": "갤러리",
+        "title": "폭신폭신 단팥빵 만들기",
+        "author": "관리자",
+        "date": "2024-01-15",
+        "hit": "120",
+        "content": "<p>직접 팥 앙금을 넣고 만든 단팥빵입니다.</p><p><img src=\"/images/gallery/baking/단팥빵.jpg\" alt=\"단팥빵\" style=\"max-width:100%;\" /></p>"
+    },
+    {
+        "id": "4",
+        "category": "갤러리",
+        "title": "담백한 베이글 굽기",
+        "author": "관리자",
+        "date": "2024-01-12",
+        "hit": "85",
+        "content": "<p>쫄깃한 식감이 살아있는 베이글을 구웠습니다.</p><p><img src=\"/images/gallery/baking/베이글.jpg\" alt=\"베이글\" style=\"max-width:100%;\" /></p>"
+    },
+    {
+        "id": "5",
+        "category": "갤러리",
+        "title": "추억의 소보로빵 만들기",
+        "author": "관리자",
+        "date": "2024-01-10",
+        "hit": "95",
+        "content": "<p>고소한 소보로가 가득 올라간 소보로빵입니다.</p><p><img src=\"/images/gallery/baking/소보로빵.jpg\" alt=\"소보로빵\" style=\"max-width:100%;\" /></p>"
+    },
+    {
+        "id": "6",
+        "category": "수업뉴스",
+        "title": "달콤한 초코머핀 실습",
+        "author": "관리자",
+        "date": "2024-01-08",
+        "hit": "110",
+        "content": "<p>진한 초콜릿 향이 가득한 초코머핀을 만들었습니다.</p><p><img src=\"/images/gallery/baking/초코머핀.jpg\" alt=\"초코머핀\" style=\"max-width:100%;\" /></p>"
+    },
+    {
+        "id": "7",
+        "category": "갤러리",
+        "title": "영양 만점 호두파이",
+        "author": "관리자",
+        "date": "2024-01-05",
+        "hit": "135",
+        "content": "<p>고소한 호두가 듬뿍 들어간 호두파이입니다.</p><p><img src=\"/images/gallery/baking/호두파이.jpg\" alt=\"호두파이\" style=\"max-width:100%;\" /></p>"
+    },
+    {
+        "id": "8",
+        "category": "갤러리",
+        "title": "부드러운 크림빵 만들기",
+        "author": "관리자",
+        "date": "2024-01-03",
+        "hit": "105",
+        "content": "<p>달콤한 크림이 가득한 크림빵을 만들었습니다.</p><p><img src=\"/images/gallery/baking/크림빵.jpg\" alt=\"크림빵\" style=\"max-width:100%;\" /></p>"
+    }
+]

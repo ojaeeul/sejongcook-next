@@ -1,0 +1,115 @@
+
+/* ****************** 1칸 레이아웃  ****************** */
+
+.layout_381170_ {clear:both; min-width:320px; max-width:1000px; margin:0 auto;}
+.layout_381170_ > div:after {content:''; display:block; clear:both;}
+.layout_381170_ > div > [class^=container_] {float:left; position:relative; width:100%; box-sizing:border-box;}
+
+@media \0screen{
+	.layout_381170_ {min-width:1000px;}
+}
+
+/* ****************** 지도 (직접입력)  ****************** */
+
+.map_381171_ p {display:none; margin:0; padding:1em 0; font-size:13px;}
+
+/* ****************** 공백  ****************** */
+
+.empty_line_381172_ {display:block; width:100%; height:20px;}
+
+/* ****************** 1칸 레이아웃  ****************** */
+
+.layout_381173_ {clear:both; min-width:320px; max-width:1000px; margin:0 auto;}
+.layout_381173_ > div:after {content:''; display:block; clear:both;}
+.layout_381173_ > div > [class^=container_] {float:left; position:relative; width:100%; box-sizing:border-box;}
+
+@media \0screen{
+	.layout_381173_ {min-width:1000px;}
+}
+
+/* ****************** 타이틀 텍스트  ****************** */
+
+.title_381176_ {font-size:0;}
+.title_381176_ p {
+	display:inline-block; position:relative; margin:0; padding:0;
+	font-size:24px; font-weight:bold; color:#000000; line-height:1.4em;
+}
+.title_381176_ p:before {content:''; position:absolute; background:#d00000; font-size:0;}
+
+.title_381176_.style_top p {padding-top:10px;}
+.title_381176_.style_top p:before {left:0; top:0; width:24px; height:4px;}
+
+.title_381176_.style_right p {padding-right:14px;}
+.title_381176_.style_right p:before {right:0; top:10px; width:4px; height:24px;}
+
+.title_381176_.style_bottom p {padding-bottom:12px;}
+.title_381176_.style_bottom p:before {left:0; bottom:0; width:24px; height:4px;}
+
+.title_381176_.style_left p {padding-left:14px;}
+.title_381176_.style_left p:before {left:0; top:10px; width:4px; height:24px;}
+
+.title_381176_.style_circle1 p {padding-left:20px;}
+.title_381176_.style_circle1 p:before {
+	left:0; top:11px; width:12px; height:12px;
+	border-radius:12px;
+}
+
+.title_381176_.style_circle2 p {padding-left:20px;}
+.title_381176_.style_circle2 p:before {
+	left:0; top:11px; width:12px; height:12px;
+	border:2px solid #d00000; border-radius:12px; background:none; box-sizing:border-box;
+}
+
+/* ****************** 블릿형 리스트  ****************** */
+
+@font-face {
+	font-family: 'icomoon_contents';
+	src:url('../../aramfarm/design/icomoon_contents/icomoon.eot');
+	src:url('../../aramfarm/design/icomoon_contents/icomoon%EF%B9%96.eot#iefix') format('embedded-opentype'),
+		url('../../aramfarm/design/icomoon_contents/icomoon.woff') format('woff'),
+		url('../../aramfarm/design/icomoon_contents/icomoon.ttf') format('truetype'),
+		url('../../aramfarm/design/icomoon_contents/icomoon.svg#icomoon_contents') format('svg');
+	font-weight: normal;
+	font-style: normal;
+}
+
+.text_list_381174_ ul {display:table; margin:0; padding:0; list-style:none;}
+.text_list_381174_ li {display:table-row; font-size:16px; line-height:1.5em;}
+.text_list_381174_ span {display:table-cell; padding:5px; font-weight:normal; font-family:NanumGothic; color:#e66d1e; vertical-align:top;}
+.text_list_381174_ span:before {content:'\e60f'; font-family:"icomoon_contents";}
+.text_list_381174_ p {display:table-cell; padding:5px; font-weight:bold; color:#000000; vertical-align:middle;}
+
+	.text_list_381174_ span {padding-right:.4em; font-size:1.5em; line-height:1em;}
+
+/* ****************** 블릿형 리스트  ****************** */
+
+@font-face {
+	font-family: 'icomoon_contents';
+	src:url('../../aramfarm/design/icomoon_contents/icomoon.eot');
+	src:url('../../aramfarm/design/icomoon_contents/icomoon%EF%B9%96.eot#iefix') format('embedded-opentype'),
+		url('../../aramfarm/design/icomoon_contents/icomoon.woff') format('woff'),
+		url('../../aramfarm/design/icomoon_contents/icomoon.ttf') format('truetype'),
+		url('../../aramfarm/design/icomoon_contents/icomoon.svg#icomoon_contents') format('svg');
+	font-weight: normal;
+	font-style: normal;
+}
+
+.text_list_381175_ ul {display:table; margin:0; padding:0; list-style:none;}
+.text_list_381175_ li {display:table-row; font-size:16px; line-height:1.5em;}
+.text_list_381175_ span {display:table-cell; padding:5px; font-weight:normal; font-family:NanumGothic; color:#e66d1e; vertical-align:top;}
+.text_list_381175_ span:before {content:'\e613'; font-family:"icomoon_contents";}
+.text_list_381175_ p {display:table-cell; padding:5px; font-weight:bold; color:#000000; vertical-align:middle;}
+
+	.text_list_381175_ span {padding-right:.4em; font-size:1.5em; line-height:1em;}
+
+/* ****************** 공백  ****************** */
+
+.empty_line_381177_ {display:block; width:100%; height:30px;}
+
+/* ****************** 공백/실선/점선  ****************** */
+
+.line_381182_ {display:block; position:relative; width:100%; height:20px;}
+.line_381182_:before {content:''; position:absolute; left:0; top:50%; width:100%; height:0; border-top:2px solid #777777;}
+.line_381182_.type_none:before {border-top-style:none;}
+.line_381182_.type_solid:before {border-top-style:solid;}
+.line_381182_.type_dashed:before {border-top-style:dashed;}

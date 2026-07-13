@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>세종요리 | 수제 화과자 홍보</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Noto+Serif+KR:wght@200;400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="wagashi.css">
+</head>
+
+<body>
+    <header>
+        <nav>
+            <div class="logo">SEJONG COOKING</div>
+            <div class="menu-hint">Scroll Down</div>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <div class="hero-bg" style="background-image: url('wagashi.jpg');"></div>
+        <div class="hero-content">
+            <span class="sub-title">Traditional Korean Sweets</span>
+            <h1>계절을 빚어 담다,<br>세종 수제 화과자</h1>
+            <p class="description">
+                정성을 다해 하나하나 손으로 빚어낸<br>
+                세종요리의 화과자는 단순한 디저트를 넘어선 하나의 작품입니다.
+            </p>
+            <div class="scroll-indicator">
+                <span></span>
+            </div>
+        </div>
+    </section>
+
+    <section class="philosophy">
+        <div class="container">
+            <div class="text-block" data-aos="fade-up">
+                <span class="accent">Philosophy</span>
+                <h2>달콤한 예술, 그 이상의 가치</h2>
+                <p>
+                    화과자는 '눈으로 먹고 입으로 즐기는 과자'라 불립니다.<br>
+                    우리는 천연 재료를 사용하여 건강함은 물론,<br>
+                    계절의 변화를 담아내는 섬세한 표현력으로 감동을 전합니다.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section class="gallery">
+        <div class="image-wrapper" data-aos="zoom-in">
+            <img src="wagashi.jpg" alt="수제 화과자 세트">
+        </div>
+        <div class="gallery-text">
+            <p>15가지의 다양한 꽃과 과일 모티브</p>
+            <h3>프리미엄 기프트 세트</h3>
+            <p class="price">Special Seasonal Edition</p>
+        </div>
+    </section>
+
+    <section class="features">
+        <div class="grid">
+            <div class="feature-item">
+                <h3>100% 수공예</h3>
+                <p>장인의 손길로 완성되는 정교한 디자인</p>
+            </div>
+            <div class="feature-item">
+                <h3>최고급 재료</h3>
+                <p>엄선된 앙금과 견과류를 사용한 풍미</p>
+            </div>
+            <div class="feature-item">
+                <h3>맞춤형 주문</h3>
+                <p>명절, 상견례, 선물용 맞춤 제작 서비스</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta">
+        <div class="container">
+            <h2>품격 있는 선물을 준비하세요</h2>
+            <p>세종요리 아카데미에서 직접 수강하거나 주문하실 수 있습니다.</p>
+            <div class="contact-info">
+                <p class="phone">📞 010-8799-9122</p>
+                <p class="instagram">📸 @rebong_cake</p>
+            </div>
+            <div class="btn-group">
+                <a href="tel:010-8799-9122" class="btn primary">주문 문의하기</a>
+                <a href="https://instagram.com/rebong_cake" target="_blank" class="btn secondary">인스타그램 방문</a>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <p>세종요리 아카데미 | 문의: 010-8799-9122 | Instagram: @rebong_cake</p>
+            <p>&copy; 2026 Sejong Cooking Academy. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Simple Intersection Observer for scroll animations
+        const observerOptions = {
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('[data-aos]').forEach(el => {
+            observer.observe(el);
+        });
+    </script>
+</body>
+
+</html>

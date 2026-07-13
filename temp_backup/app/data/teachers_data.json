@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "name": "오재을 (Master Oh)",
+    "role": "대표 (CEO)",
+    "description": "30년 경력의 베테랑 셰프. 요리 교육의 혁신을 이끄는 리더. 학생들의 꿈을 실현하기 위한 최고의 멘토.",
+    "image": "/chef_masteroh_uniform_v4.png",
+    "order": 1
+  },
+  {
+    "id": 2,
+    "name": "이미선 (Director Lee)",
+    "role": "학원장",
+    "description": "대한민국 조리 기능장. 풍부한 현장 경험과 교육 철학을 바탕으로 인재 양성에 힘쓰고 있습니다.",
+    "image": "/chef_leemisun_subtle.png",
+    "order": 2
+  },
+  {
+    "id": 3,
+    "name": "유서현",
+    "role": "제과제빵기능사 주임강사",
+    "description": "부드러운 카리스마로 학생들을 지도하는 제과제빵 전문가. 현재 박사과정 진행중. 기본기부터 실무 테크닉까지 꼼꼼하게 전수합니다.",
+    "image": "/chef_yuseohyun_anime.png",
+    "order": 3
+  }
+]

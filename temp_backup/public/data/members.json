@@ -1,0 +1,16 @@
+[
+  {
+    "id": "user1",
+    "username": "student_kim",
+    "email": "kim@example.com",
+    "status": "approved",
+    "joinedAt": "2026-01-24T10:03:24.801Z"
+  },
+  {
+    "id": "user2",
+    "username": "baker_lee",
+    "email": "lee@bakery.com",
+    "status": "approved",
+    "joinedAt": "2026-01-24T10:03:24.801Z"
+  }
+]

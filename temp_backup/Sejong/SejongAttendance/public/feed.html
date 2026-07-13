@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>피드 관리 - 세종요리</title>
+    <link rel="stylesheet" href="style.css?v=20260228_6">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="script.js?v=20260228_9" defer></script>
+    <style>
+        .feed-layout { display: flex; gap: 24px; }
+        .feed-main { flex: 2; height: calc(100vh - 250px); overflow-y: auto; padding-right: 10px; }
+        .feed-sidebar { flex: 1; display: flex; flex-direction: column; gap: 20px; height: calc(100vh - 250px); overflow-y: auto; padding-right: 10px;}
+        .post-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; transition: transform 0.2s; cursor: pointer; border: 2px solid transparent; }
+        .post-card:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); border-color: #e2e8f0; }
+        .post-card.selected { border-color: #3b82f6; background-color: #f8fafc; }
+        .post-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .post-author { display: flex; align-items: center; gap: 10px; }
+        .author-avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; background-color: #94a3b8; }
+        .post-meta span { font-weight: 600; display: block; color: #1e293b; }
+        .post-meta small { color: #64748b; font-size: 0.8rem; }
+        .post-content { color: #475569; line-height: 1.6; margin-bottom: 15px; white-space: pre-wrap; }
+        .post-stats { border-top: 1px solid #f1f5f9; padding-top: 15px; display: flex; gap: 15px; font-size: 0.9rem; color: #64748b; }
+        .reader-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .reader-card h4 { margin-top: 0; margin-bottom: 15px; color: #1e293b; border-bottom: 2px solid #3b82f6; padding-bottom: 10px; display: inline-block; }
+        .tag { background: #f1f5f9; padding: 4px 10px; border-radius: 16px; font-size: 0.85rem; color: #475569; display: inline-block; margin-bottom: 5px; margin-right: 5px;}
+        .tag.yellow { background: #fef08a; color: #854d0e; }
+        .tag.blue { background: #e0f2fe; color: #0369a1; }
+        .comment-item { display: flex; gap: 12px; margin-bottom: 15px; }
+        .comment-content { background: #f8fafc; padding: 12px; border-radius: 8px; flex: 1; font-size: 0.9rem; }
+        .comment-meta { display: flex; justify-content: space-between; margin-top: 8px; font-size: 0.8rem; color: #94a3b8; }
+        .write-comment { border-top: 1px solid #e2e8f0; padding-top: 15px; margin-top: 15px; }
+        .comment-input { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; margin-bottom: 10px; box-sizing: border-box; }
+        .action-btns { display: flex; justify-content: space-between; align-items: center; }
+        .submit-btn { background: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        .submit-btn:hover { background: #2563eb; }
+        .btn-primary { background: #3b82f6; color: white; border: none; font-weight: 600; cursor: pointer; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.2s; }
+        .btn-primary:hover { background: #2563eb; }
+        .feed-tabs { display: flex; gap: 20px; border-bottom: 1px solid #cbd5e1; margin-bottom: 20px; }
+        .tab-item { padding: 10px 5px; cursor: pointer; color: #64748b; font-weight: 500; transition: color 0.2s; }
+        .tab-item:hover { color: #3b82f6;}
+        .tab-item.active { color: #3b82f6; border-bottom: 2px solid #3b82f6; font-weight: 700; }
+        
+        /* Modal Styles */
+        .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; display: flex; justify-content:center; align-items:center; }
+        .hidden { display: none !important; }
+        .modal-content { background:white; padding:30px; border-radius:12px; width:600px; max-width:90%; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .modal-header { display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding-bottom:15px; margin-bottom:20px; }
+        .modal-header h2 { margin:0; font-size:1.4rem; color: #1e293b; }
+        .close-btn { background:none; border:none; font-size:1.5rem; cursor:pointer; color: #94a3b8; }
+        .close-btn:hover { color: #1e293b; }
+        .form-group { margin-bottom:15px; }
+        .form-group label { display:block; margin-bottom:5px; font-weight:600; color: #475569; }
+        .form-control { width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; box-sizing: border-box; font-family: inherit; }
+        .form-control:focus { outline: none; border-color: #3b82f6; ring: 2px solid #bfdbfe; }
+        .modal-footer { display:flex; justify-content:flex-end; gap:10px; margin-top: 20px; }
+        
+        .stat-btn { background: none; border: none; cursor: pointer; color: #64748b; padding: 4px 8px; border-radius: 4px; transition: background 0.2s;}
+        .stat-btn:hover { background: #f1f5f9; color: #3b82f6; }
+        .liked { color: #ef4444 !important; }
+
+        /* Linter Fixes */
+        .feed-controls { display: flex; justify-content: space-between; margin-bottom: 24px; margin-top: 10px; }
+        .feed-filter-select { padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; min-width: 200px; color: #475569; outline: none; }
+        .btn-compose { padding: 10px 24px; font-size: 0.95rem; }
+        .icon-sm { font-size: 18px; }
+        .icon-lg { font-size: 48px; margin-bottom: 10px; }
+        .bg-instructor { background-color: #f59e0b; }
+        .fw-600 { font-weight: 600; }
+        .image-placeholder { background-color: #f8fafc; height: 300px; margin-top: 15px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #94a3b8; border: 2px dashed #cbd5e1; }
+        .stat-icon { font-size: 16px; vertical-align: text-bottom; }
+        .text-red { color: #ef4444; }
+        .text-blue { color: #3b82f6; }
+        .bg-admin { background-color: #3b82f6; }
+        .tag-gray { background: #e2e8f0; font-weight: 600; }
+        .text-gray { color: #94a3b8; }
+        .flex-wrap-gap-8 { display: flex; gap: 8px; flex-wrap: wrap; }
+        .reader-card-flex { flex: 1; }
+        .avatar-sm-student { width: 32px; height: 32px; font-size: 0.8rem; background-color: #cbd5e1; }
+        .comment-header-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
+        .comment-author-name { font-weight: 700; color: #1e293b; }
+        .tag-yellow-sm { font-size: 0.7rem; padding: 2px 6px; }
+        .comment-text { margin: 0; color: #475569; }
+        .avatar-sm-instructor { width: 32px; height: 32px; font-size: 0.8rem; background-color: #f59e0b; }
+        .comment-content-admin { background-color: white; border: 1px solid #e2e8f0; }
+        .secret-comment-label { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 0.9rem; color: #475569; cursor: pointer; }
+        .icon-sm-align-middle { font-size: 18px; vertical-align: middle; }
+    </style>
+
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Mobile Sidebar Overlay -->
+        <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="brand-logo">
+                <span class="logo-text">세종요리</span>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">수강 관리</div>
+                <div class="nav-sub-menu show">
+                    <a href="register.html" id="navRegister" class="nav-item">수강생 등록</a>
+                    <a href="index.html" id="navIndex" class="nav-item">수강생 대장</a>
+                    <a href="phonebook.html" id="navPhoneBook" class="nav-item">전화번호부</a>
+                    <a href="sheet.html" id="navSheet" class="nav-item">월간 출석부</a>
+                </div>
+                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">수강료</div>
+                <div class="nav-sub-menu show">
+                    <a href="tuition.html" class="nav-item">수강료 관리</a>
+                    <a href="ledger.html" class="nav-item">수강료 납부대장</a>
+                    <a href="paid_list.html" class="nav-item">납부완료 명단</a>
+                </div>
+                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">소통</div>
+                <div class="nav-sub-menu show">
+                    <a href="notice.html" class="nav-item">학원 공지</a>
+                    <a href="feed.html" class="nav-item active">피드 관리</a>
+                    <a href="wagashi.html" class="nav-item">학원 홍보</a>
+                </div>
+                <div class="nav-category toggle-category" onclick="toggleNavSub(this)">시험지</div>
+                <div class="nav-sub-menu">
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">한식기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('한식_2021')" class="nav-item">2021년 한식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('한식_2022')" class="nav-item">2022년 한식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('한식_2023')" class="nav-item">2023년 한식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('한식_2024')" class="nav-item">2024년 한식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('한식_2025')" class="nav-item">2025년 한식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('한식_2026')" class="nav-item">2026년 한식</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">양식기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('양식_2021')" class="nav-item">2021년 양식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('양식_2022')" class="nav-item">2022년 양식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('양식_2023')" class="nav-item">2023년 양식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('양식_2024')" class="nav-item">2024년 양식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('양식_2025')" class="nav-item">2025년 양식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('양식_2026')" class="nav-item">2026년 양식</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">일식기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('일식_2021')" class="nav-item">2021년 일식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('일식_2022')" class="nav-item">2022년 일식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('일식_2023')" class="nav-item">2023년 일식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('일식_2024')" class="nav-item">2024년 일식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('일식_2025')" class="nav-item">2025년 일식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('일식_2026')" class="nav-item">2026년 일식</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">중식기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('중식_2021')" class="nav-item">2021년 중식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('중식_2022')" class="nav-item">2022년 중식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('중식_2023')" class="nav-item">2023년 중식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('중식_2024')" class="nav-item">2024년 중식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('중식_2025')" class="nav-item">2025년 중식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('중식_2026')" class="nav-item">2026년 중식</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">제과기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('제과_2021')" class="nav-item">2021년 제과</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과_2022')" class="nav-item">2022년 제과</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과_2023')" class="nav-item">2023년 제과</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과_2024')" class="nav-item">2024년 제과</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과_2025')" class="nav-item">2025년 제과</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과_2026')" class="nav-item">2026년 제과</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">제빵기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2021')" class="nav-item">2021년 제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2022')" class="nav-item">2022년 제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2023')" class="nav-item">2023년 제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2024')" class="nav-item">2024년 제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2025')" class="nav-item">2025년 제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2026')" class="nav-item">2026년 제빵</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">제과제빵기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('제과제빵_2021')" class="nav-item">2021년 제과제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과제빵_2022')" class="nav-item">2022년 제과제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과제빵_2023')" class="nav-item">2023년 제과제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과제빵_2024')" class="nav-item">2024년 제과제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과제빵_2025')" class="nav-item">2025년 제과제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과제빵_2026')" class="nav-item">2026년 제과제빵</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">복어기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('복어_2021')" class="nav-item">2021년 복어</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('복어_2022')" class="nav-item">2022년 복어</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('복어_2023')" class="nav-item">2023년 복어</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('복어_2024')" class="nav-item">2024년 복어</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('복어_2025')" class="nav-item">2025년 복어</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('복어_2026')" class="nav-item">2026년 복어</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">산업기사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" class="nav-item">준비중입니다</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">가정요리</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" class="nav-item">준비중입니다</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">브런치</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" class="nav-item">준비중입니다</a>
+                    </div>
+                </div>
+                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">기타</div>
+                <div class="nav-sub-menu show">
+                    <a href="javascript:void(0)" onclick="openSettingsModal()" class="nav-item">
+                        <span class="material-icons" style="font-size: 1.2rem; margin-right: 8px;">settings</span>
+                        수업 요일 설정
+                    </a>
+                    <a href="index.html?filter=archive" id="navArchive" class="nav-item">수료생 보관함</a>
+                    <a href="index.html?filter=trash" id="navTrash" class="nav-item">휴지통</a>
+                    <a href="stats.html" class="nav-item">통계 및 납부</a>
+                </div>
+                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">학원문자</div>
+                <div class="nav-sub-menu show">
+                    <a href="attendance_daily.html" id="navDailyAttendance" class="nav-item">일일 출석부</a>
+                    <a href="sms.html" id="navSms" class="nav-item">문자 발송</a>
+                </div>
+                <a href="monitor.html?v=20260301_03" target="_blank" class="nav-item highlight">키오스크 모니터</a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-wrapper">
+            <header class="top-header">
+                <button class="hamburger-btn" onclick="toggleSidebar()">
+                    <span>MENU</span>
+                    <span class="material-icons">menu</span>
+                </button>
+                <div class="page-title-container">
+                    <h1 id="pageTitle" class="page-title-text">피 드 관 리</h1>
+                </div>
+                <div class="header-actions"></div>
+            </header>
+
+            <div class="content-scroll">
+                <!-- Filter Dropdown & Write Button Strip -->
+                <div class="feed-controls">
+                    <select id="feedFilter" class="form-control feed-filter-select" title="피드 필터" onchange="renderFeeds()">
+                        <option value="all">전체 피드 보기</option>
+                        <option value="한식기능사">한식기능사 피드</option>
+                        <option value="양식기능사">양식기능사 피드</option>
+                        <option value="제과기능사반">제과기능사 피드</option>
+                        <option value="제빵기능사">제빵기능사 피드</option>
+                        <option value="알림장">알림장 피드</option>
+                    </select>
+                    <button class="btn-primary btn-compose" onclick="openWriteModal()">
+                        새 작성 <span class="material-icons material-icons icon-sm">send</span>
+                    </button>
+                </div>
+
+                <div class="feed-layout">
+                    <!-- Feed Timeline (Left) -->
+                    <div class="feed-main">
+                        <div class="feed-tabs">
+                            <div class="tab-item active">피드 타임라인 (<span id="feedCount">0</span>)</div>
+                        </div>
+
+                        <!-- Posts will be injected here by Javascript -->
+                        <div id="feedListContainer"></div>
+
+                    </div>
+
+                    <!-- Sidebar (Right) - Contextually changes based on selected post -->
+                    <div class="feed-sidebar">
+                        <div id="sidePanelEmpty" class="reader-card reader-card empty-state">
+                            <span class="material-icons material-icons icon-lg">chat</span>
+                            <p>좌측 타임라인에서 피드를 선택하시면<br>댓글과 읽은 사람 정보를 확인할 수 있습니다.</p>
+                        </div>
+                        
+                        <div id="sidePanelContent" class="side-panel-content">
+                            <!-- Read By -->
+                            <div class="reader-card">
+                                <h4>읽은 사람 (<span id="readersCount">0</span>)</h4>
+                                <div id="readersContainer" class="flex-wrap-gap-8">
+                                    <!-- Readers injected here -->
+                                </div>
+                            </div>
+    
+                            <!-- Comments -->
+                            <div class="reader-card reader-card flex-1">
+                                <h4>댓글 (<span id="commentsCount">0</span>)</h4>
+    
+                                <div id="commentsContainer" class="comments-container">
+                                    <!-- Comments injected here -->
+                                </div>
+    
+                                <!-- Write Box -->
+                                <div class="write-comment">
+                                    <input type="text" id="newCommentText" class="comment-input" placeholder="답글을 입력하세요..." onkeypress="handleCommentEnter(event)">
+                                    <div class="action-btns">
+                                        <div class="comment-hint">Enter키를 눌러 전송가능</div>
+                                        <button class="submit-btn" onclick="addComment()">등록</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Write Feed Modal (Hidden) -->
+    <div id="writeFeedModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>새 피드 작성하기</h2>
+                <button class="close-btn" onclick="closeWriteModal()">&times;</button>
+            </div>
+            
+            <div class="form-group">
+                <label>작성자 권한</label>
+                <select id="feedAuthor" class="form-control">
+                    <option value="원장">원장</option>
+                    <option value="강사" selected>우현승 강사 (제과/제빵)</option>
+                    <option value="교무부">교무실</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>카테고리(반 지정)</label>
+                <select id="feedCategory" class="form-control">
+                    <option value="제과기능사반">제과기능사반</option>
+                    <option value="제빵기능사반">제빵기능사반</option>
+                    <option value="한식기능사">한식기능사</option>
+                    <option value="양식기능사">양식기능사</option>
+                    <option value="일식기능사">일식기능사</option>
+                    <option value="알림장">전체 알림장</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>내용</label>
+                <textarea id="feedContent" class="form-control form-control feed-textarea" title="내용 입력" placeholder="수강생분들께 전할 재미있는 수업 소식이나 과제를 적어보세요!"></textarea>
+            </div>
+            
+            <div class="modal-footer">
+                <button onclick="closeWriteModal()" class="btn-cancel">취소</button>
+                <button onclick="saveFeed()" class="submit-btn btn-submit-timeline">타임라인에 등록</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Use LocalStorage to persist feeds during session, or fallback to default data
+        const defaultFeeds = [
+            {
+                id: 1,
+                authorRole: "강사",
+                authorName: "이세라 강사 (제과/제빵)",
+                dateStr: "2026.02.28 14:30",
+                category: "제과기능사반",
+                categoryColor: "blue",
+                content: "<strong>오늘은 버터 스펀지 케이크 실습!</strong>\n\n제과기능사반 수강생 여러분, 오늘 버터 스펀지 케이크(공립법) 만드시느라 정말 고생 많으셨습니다! 🎂\n반죽 온도와 비중 맞추기가 까다로웠음에도 불구하고 다들 너무 훌륭하게 부풀어 올랐네요.\n다가오는 필기시험도 화이팅입니다! ✨",
+                hasImage: true,
+                likes: 15,
+                likedByMe: false,
+                readers: ["김지원 수강생", "박민수 수강생", "최유리 수강생", "정다은 수강생"],
+                comments: [
+                    {
+                        authorType: "수강",
+                        authorName: "김지원",
+                        tag: "수강생",
+                        content: "선생님! 오늘 오븐 온도가 조금 높았던 것 같은데, 다음 실습 때는 몇 도로 맞추는 게 좋을까요?",
+                        timeAgo: "1시간 전",
+                        bgColor: "#cbd5e1"
+                    },
+                    {
+                        authorType: "강사",
+                        authorName: "이세라 강사",
+                        content: "지원님~ 우리 학원 B오븐이 온도가 5도 정도 높게 잡히는 경향이 있어요! 다음엔 175도로 세팅해보세요! 😊",
+                        timeAgo: "55분 전",
+                        bgColor: "#f59e0b",
+                        isAdmin: true
+                    }
+                ]
+            },
+            {
+                id: 2,
+                authorRole: "원장",
+                authorName: "세종요리 학원장",
+                dateStr: "2026.02.26 09:00",
+                category: "한식기능사",
+                categoryColor: "yellow",
+                content: "안녕하세요. 세종요리제과학원입니다.\n이번 주 금요일(3/6) 한식기능사 기초반 수업은 학원 내부 설비 점검(소방 안전 점검)으로 인하여 안전상 부득이하게 휴강하게 되었습니다.\n보강 일정은 다음 주 월요일 수업 시간에 개별 안내해 드리겠습니다. 양해 부탁드립니다.",
+                hasImage: false,
+                likes: 2,
+                likedByMe: false,
+                readers: ["이재형 수강생", "홍길동 수강생"],
+                comments: []
+            }
+        ];
+
+        let feedsData = [];
+        let selectedFeedId = null;
+
+        function loadFeeds() {
+            const saved = localStorage.getItem('sejong_feeds');
+            if (saved) {
+                feedsData = JSON.parse(saved);
+            } else {
+                feedsData = JSON.parse(JSON.stringify(defaultFeeds));
+                saveFeedsToLocal();
+            }
+        }
+
+        function saveFeedsToLocal() {
+            localStorage.setItem('sejong_feeds', JSON.stringify(feedsData));
+        }
+
+        function renderFeeds() {
+            const container = document.getElementById('feedListContainer');
+            const filter = document.getElementById('feedFilter').value;
+            
+            container.innerHTML = '';
+            
+            let filteredFeeds = feedsData;
+            if (filter !== 'all') {
+                filteredFeeds = feedsData.filter(f => f.category.includes(filter) || (filter === '알림장' && f.authorRole === '원장'));
+            }
+            
+            document.getElementById('feedCount').textContent = filteredFeeds.length;
+            
+            filteredFeeds.sort((a,b) => b.id - a.id).forEach(feed => {
+                const card = document.createElement('div');
+                card.className = `post-card ${selectedFeedId === feed.id ? 'selected' : ''}`;
+                card.onclick = () => selectFeed(feed.id);
+                
+                // Author tag colors
+                let authorBg = "#94a3b8";
+                if(feed.authorRole === "강사") authorBg = "#f59e0b";
+                if(feed.authorRole === "원장") authorBg = "#3b82f6";
+                if(feed.authorRole === "교무부") authorBg = "#10b981";
+                
+                // Category badge colors
+                let catClass = "tag";
+                if(feed.category.includes("제과") || feed.category.includes("제빵")) catClass = "tag blue";
+                if(feed.category.includes("양식") || feed.category.includes("한식")) catClass = "tag yellow";
+                
+                let imageBlock = '';
+                if(feed.hasImage) {
+                    imageBlock = `
+                        <div class="image-placeholder">
+                            <span class="material-icons material-icons img-icon-lg">image</span>
+                            <span>[참부 이미지]</span>
+                        </div>
+                    `;
+                }
+
+                card.innerHTML = `
+                    <div class="post-header">
+                        <div class="post-author">
+                            <div class="author-avatar" style="background-color: ${authorBg};">${feed.authorRole}</div>
+                            <div class="post-meta">
+                                <span>${feed.authorName}</span>
+                                <small>${feed.dateStr}</small>
+                            </div>
+                        </div>
+                        <span class="${catClass} fw-600">${feed.category}</span>
+                    </div>
+                    <div class="post-content">${feed.content.replace(/\n/g, '<br>')}${imageBlock}</div>
+                    <div class="post-stats">
+                        <button class="stat-btn ${feed.likedByMe ? 'liked' : ''}" onclick="event.stopPropagation(); toggleLike(${feed.id})">
+                            <span class="material-icons material-icons stat-icon">favorite</span> 좋아요 <strong>${feed.likes}</strong>
+                        </button>
+                        <button class="stat-btn">
+                            <span class="material-icons material-icons stat-icon">chat_bubble</span> 댓글 <strong>${feed.comments.length}</strong>
+                        </button>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+            
+            if (filteredFeeds.length === 0) {
+                container.innerHTML = `<div class="empty-msg">작성된 피드가 없습니다.</div>`;
+            }
+        }
+        
+        function selectFeed(id) {
+            selectedFeedId = id;
+            renderFeeds(); // re-render to highlight selected card
+            
+            const feed = feedsData.find(f => f.id === id);
+            if(!feed) return;
+            
+            document.getElementById('sidePanelEmpty').style.display = 'none';
+            document.getElementById('sidePanelContent').style.display = 'flex';
+            
+            // Render Readers
+            document.getElementById('readersCount').textContent = feed.readers.length;
+            const rContainer = document.getElementById('readersContainer');
+            rContainer.innerHTML = '';
+            feed.readers.forEach(r => {
+                rContainer.innerHTML += `<span class="tag">${r}</span>`;
+            });
+            if(feed.readers.length === 0) rContainer.innerHTML = '<span class="empty-sm-msg">조회한 사람이 없습니다.</span>';
+            
+            // Render Comments
+            document.getElementById('commentsCount').textContent = feed.comments.length;
+            const cContainer = document.getElementById('commentsContainer');
+            cContainer.innerHTML = '';
+            feed.comments.forEach(c => {
+                const isAdmin = c.isAdmin ? 'background-color: white; border: 1px solid #e2e8f0;' : '';
+                const tagHtml = c.tag ? `<span class="tag yellow tag yellow sm">${c.tag}</span>` : '';
+                
+                cContainer.innerHTML += `
+                    <div class="comment-item">
+                        <div class="author-avatar author-avatar sm md-avatar" style=" background-color: ${c.bgColor};">${c.authorType}</div>
+                        <div class="comment-content" style="${isAdmin}">
+                            <div class="comment-header-row">
+                                <span class="comment-author-name">${c.authorName}</span>
+                                ${tagHtml}
+                            </div>
+                            <p class="comment-text">${c.content}</p>
+                            <div class="comment-meta">
+                                <span>${c.timeAgo}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            if(feed.comments.length === 0) {
+               cContainer.innerHTML = '<div class="empty-msg-sm">첫 번째 댓글을 남겨보세요!</div>';
+            }
+            
+            // scroll to bottom of comments
+            cContainer.scrollTop = cContainer.scrollHeight;
+        }
+        
+        function handleCommentEnter(e) {
+            if(e.key === 'Enter') {
+                addComment();
+            }
+        }
+        
+        function toggleLike(id) {
+            const feed = feedsData.find(f => f.id === id);
+            if(feed) {
+                if(feed.likedByMe) {
+                    feed.likes--;
+                    feed.likedByMe = false;
+                } else {
+                    feed.likes++;
+                    feed.likedByMe = true;
+                }
+                saveFeedsToLocal();
+                renderFeeds(); // refresh UI
+            }
+        }
+        
+        function addComment() {
+            if(!selectedFeedId) return;
+            const input = document.getElementById('newCommentText');
+            const text = input.value.trim();
+            if(!text) return;
+            
+            const feed = feedsData.find(f => f.id === selectedFeedId);
+            feed.comments.push({
+                authorType: "학원",
+                authorName: "관리자",
+                tag: "행정/운영",
+                content: text,
+                timeAgo: "방금 전",
+                bgColor: "#3b82f6",
+                isAdmin: true
+            });
+            
+            input.value = '';
+            saveFeedsToLocal();
+            selectFeed(selectedFeedId); // Re-render sidebar
+            renderFeeds(); // Re-render feed card to update number
+        }
+
+        function openWriteModal() {
+            document.getElementById('writeFeedModal').classList.remove('hidden');
+            document.getElementById('feedContent').value = '';
+        }
+        
+        function closeWriteModal() {
+            document.getElementById('writeFeedModal').classList.add('hidden');
+        }
+        
+        function saveFeed() {
+            const authorRole = document.getElementById('feedAuthor').value;
+            let authorName = authRoleMap(authorRole);
+            const category = document.getElementById('feedCategory').value;
+            const content = document.getElementById('feedContent').value.trim();
+            
+            if(!content) {
+                alert('내용을 입력해주세요.');
+                return;
+            }
+            
+            const now = new Date();
+            const dateStr = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+            
+            const newId = feedsData.length > 0 ? Math.max(...feedsData.map(f => f.id)) + 1 : 1;
+            
+            feedsData.push({
+                id: newId,
+                authorRole: authorRole,
+                authorName: authorName,
+                dateStr: dateStr,
+                category: category,
+                content: content,
+                hasImage: false,
+                likes: 0,
+                likedByMe: false,
+                readers: [],
+                comments: []
+            });
+            
+            saveFeedsToLocal();
+            closeWriteModal();
+            renderFeeds();
+            
+            // Automatically select the new feed
+            selectFeed(newId);
+        }
+        
+        function authRoleMap(role) {
+            if(role === '원장') return "세종요리 학원장";
+            if(role === '교무부') return "교무부 담당자";
+            return "우현승 강사 (조리)";
+        }
+
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            loadFeeds();
+            renderFeeds();
+            // Select first feed if exists
+            if(feedsData.length > 0) {
+                const maxId = Math.max(...feedsData.map(f => f.id));
+                selectFeed(maxId);
+            }
+        });
+    </script>
+</body>
+
+</html>

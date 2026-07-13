@@ -1,0 +1,638 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=euc-kr" />
+<title>Api_Sample</title>
+<style>
+body, table, th, td, input{
+font-size:9pt;
+}
+table th{
+background-color:#efefef;
+}
+</style>
+</head>
+<body>
+<script>
+POPUP=0;
+var strLoginID="070XXXXXX";
+var strLoginPwd="";
+var RedirectConfMode=0;
+var UserExten;
+
+function clearS(){
+	tf= document.all.iform;
+	tf.Primarychan1.value="";
+	tf.Primarychan2.value="";
+        tf.uidchan21.value="";
+        tf.uidchan22.value="";
+        tf.uidchan11.value="";
+        tf.uidchan12.value="";
+        tf.chan1.value="";
+        tf.chan2.value="";
+	tf.Primarystatus.value="";
+	tf.Secondstatus.value="";
+        tf.inexten.value="";
+        tf.callernumber.value="";
+        tf.callernumber2.value="";
+
+}
+function setInfoval(ch1,ch2,iscall,evt,Insp,act){
+	tf= document.all.iform;
+	ch1=ch1.replace(",1","");
+	ch1=ch1.replace(",2","");
+	ch2=ch2.replace(",1","");
+	ch2=ch2.replace(",2","");
+	ch1=(ch1 == "")?"NONE":ch1;
+	ch2=(ch2 == "")?"NONE":ch2;
+        if(evt =="RINGEVENT"){
+        	if( tf.Primarychan1.value == ""){
+        		tf.Primarychan1.value=ch1;
+        		tf.Primarychan2.value=ch2;
+			tf.inexten.value=Insp["INEXTEN"];
+			tf.callernumber.value=Insp["CALLERID"];
+			tf.uidchan11.value=Insp["UNIQUEID"];
+			tf.uidchan12.value="";
+			tf.Primarystatus.value="RING";
+		}else{
+        		tf.chan1.value=ch1;
+        		tf.chan2.value=ch2;
+			tf.uidchan21.value=Insp["UNIQUEID"];
+			tf.uidchan22.value="";
+			tf.inexten.value=Insp["INEXTEN"];
+			tf.callernumber2.value=Insp["CALLERID"];
+			tf.Secondstatus.value="RING";
+		}
+        }
+        if(evt =="CHANNELLIST"){
+        	if( tf.chan1.value == "" && tf.chan2.value == "" && (tf.Primarychan1.value == "" || tf.Primarystatus.value=="RING")){
+        		tf.Primarychan1.value=ch1;
+        		tf.Primarychan2.value=ch2;
+        		tf.uidchan11.value=Insp["UNIQUEID1"];
+        		tf.uidchan12.value=Insp["UNIQUEID2"];
+			tf.Primarystatus.value="LINK";
+		}else{
+			preChan1= tf.Primarychan1.value;
+			preChan2= tf.Primarychan2.value;
+			if((preChan1 == ch1 && preChan2 == ch2) || (preChan1 == ch2 && preChan2 == ch1)){
+        			tf.Primarychan1.value=ch1;
+        			tf.Primarychan2.value=ch2;
+        			tf.uidchan11.value=Insp["UNIQUEID1"];
+        			tf.uidchan12.value=Insp["UNIQUEID2"];
+				tf.Primarystatus.value="LINK";
+			}else{
+				tf.chan1.value=ch1;
+				tf.chan2.value=ch2;
+				tf.uidchan21.value=Insp["UNIQUEID1"];
+       				tf.uidchan22.value=Insp["UNIQUEID2"];
+				tf.Secondstatus.value="LINK";
+			}
+		}
+        }
+        if(evt =="CHANNELOUT"){
+		preChan11= tf.Primarychan1.value;
+		preChan12= tf.Primarychan2.value;
+		preChan21= tf.chan1.value;
+		preChan22= tf.chan2.value;
+		OK=0;
+		uid1=Insp["UNIQUEID"];
+		uid2=Insp["SRCUNIQUEID"];
+		preUidChan11= tf.uidchan11.value;
+		preUidChan12= tf.uidchan12.value;
+		preUidChan21= tf.uidchan21.value;
+		preUidChan22= tf.uidchan22.value;
+//alert(uid1 +"/"+uid2+"\n"+preUidChan21+"/"+preUidChan22+"\n"+preUidChan11+"/"+preUidChan12);
+		if((preUidChan21 == uid1 &&  preUidChan22 == uid2) || (preUidChan21 == uid2 && preUidChan22 == uid1)){
+			tf.chan1.value="";
+			tf.chan2.value="";
+			tf.uidchan21.value="";
+			tf.uidchan22.value="";
+			tf.Secondstatus.value="ENDU2";
+			OK=1;
+		}else if((preUidChan11 == uid1 &&  preUidChan12 == uid2) || (preUidChan11 == uid2 && preUidChan12 == uid1)){
+        		tf.Primarychan1.value="";
+        		tf.Primarychan2.value="";
+        		tf.uidchan11.value="";
+        		tf.uidchan12.value="";
+			tf.Primarystatus.value="ENDU1";
+			OK=1;
+		}else if((preChan21 == ch1 && preChan22 == ch2) || (preChan21 == ch2 && preChan22 == ch1)){
+			tf.chan1.value="";
+			tf.chan2.value="";
+			tf.uidchan21.value="";
+			tf.uidchan22.value="";
+			tf.Secondstatus.value="ENDP2";
+			OK=1;
+		}else if((preChan11 == ch1 && preChan12 == ch2 )|| (preChan11 == ch2 && preChan12 == ch1)){
+        		tf.Primarychan1.value="";
+        		tf.Primarychan2.value="";
+        		tf.uidchan11.value="";
+        		tf.uidchan12.value="";
+			tf.Primarystatus.value="ENPC1";
+			OK=1;
+		}else if(preChan21 == ch1 || preChan22 == ch2 || preChan21 == ch2 || preChan22 == ch1){
+			tf.chan1.value="";
+			tf.chan2.value="";
+			tf.uidchan21.value="";
+			tf.uidchan22.value="";
+			tf.Secondstatus.value="ENDC2";
+			OK=1;
+		}else if(preChan11 == ch1 || preChan12 == ch2 || preChan11 == ch2 || preChan12 == ch1){
+        		tf.Primarychan1.value="";
+        		tf.Primarychan2.value="";
+        		tf.uidchan11.value="";
+        		tf.uidchan12.value="";
+			tf.Primarystatus.value="ENDC1";
+			OK=1;
+		}
+		if(OK == 0){
+			if(preUidChan21 == uid1 || preUidChan22 == uid2 || preUidChan21 == uid2 || preUidChan22 == uid1){
+				tf.chan1.value="";
+				tf.chan2.value="";
+				tf.uidchan21.value="";
+				tf.uidchan22.value="";
+				tf.Secondstatus.value="ENDRU2";
+				OK=1;
+			}else if(preUidChan11 == uid1 || preUidChan12 == uid2 || preUidChan11 == uid2 || preUidChan12 == uid1){
+				tf.Primarychan1.value="";
+				tf.Primarychan2.value="";
+				tf.uidchan11.value="";
+				tf.uidchan12.value="";
+				tf.Primarystatus.value="ENDRU1";
+				OK=1;
+			}
+		}
+		if(OK == 0){
+			var remain1= tf.Primarychan1.value;
+			var status1= tf.Primarystatus.value;
+			var remain2= tf.chan1.value;
+			var status2= tf.Secondstatus.value;
+			if((status2 != "RING" || Insp["CHANNEL"].indexOf("/"+UserExten+"-") > 0) && remain2 != ""){
+				tf.chan1.value="";
+				tf.chan2.value="";
+				tf.uidchan21.value="";
+				tf.uidchan22.value="";
+				tf.Secondstatus.value="ENDCLEAN2";
+				OK=1;
+			}else if((status1 != "RING" ||Insp["CHANNEL"].indexOf("/"+UserExten+"-") > 0) && remain1 != ""){
+				tf.Primarychan1.value="";
+				tf.Primarychan2.value="";
+				tf.uidchan11.value="";
+				tf.uidchan12.value="";
+				tf.Primarystatus.value="ENDCLEAN1";
+				OK=1;
+			}
+
+		}
+		if(RedirectConfMode == 1){
+			clearS();
+		}
+        }
+}
+
+function atxfer(){
+	document.all.EventClientCtrl.Atxfer(document.all.iform.transnum.value);
+}
+function playDtmf(){
+}
+function answer(){
+	document.all.EventClientCtrl.Answer();
+}
+function hangup(){
+	document.all.EventClientCtrl.HangUp();
+}
+function hangup2(){
+	document.all.EventClientCtrl.HangUpDst();
+}
+function dial(){
+	document.all.EventClientCtrl.Click2Call(document.all.iform.inputnum.value,"outbound","");
+}
+function pickup(){
+	document.all.EventClientCtrl.PickUp(document.all.iform.inputnum.value);
+}
+function redirect(){
+	document.all.EventClientCtrl.Transfer(document.all.iform.transnum.value);
+}
+function hold(t){
+	
+	if(t == 1)
+		document.all.EventClientCtrl.UnHold();
+	else
+		document.all.EventClientCtrl.Hold();
+}
+function goconference(act){
+	ConferenceAction(document.all.iform.chan1.value,document.all.iform.chan2.value,document.all.iform.inputnum.value,"FHCRMCONF",act);
+}
+function sendcmd(cmd){
+	SIPCommand(cmd);
+}
+function sendsms(){
+	var type="0";//예약:1
+	var typeinfo="0";//예약시 예약시간 년월일 시:분:00
+	var peers=document.all.iform.smspeers.value; //구분자','
+	var msg=document.all.iform.smsmsg.value;//\n\r없이
+alert(peers+"/"+msg);
+	document.all.EventClientCtrl.SendSMS(type,typeinfo,peers,msg);
+}
+function getpeerinfo(peers){
+	document.all.EventClientCtrl.GetPeerInfo(peers);
+}
+
+function SendPeerMsg(  strType, strInfo, strPeers,  strMsg) {
+	document.all.EventClientCtrl.SendPeerMsg(  strType, strInfo, strPeers,  strMsg);
+}
+function getCallHistory(cat,inout,start,end,search){
+	document.all.EventClientCtrl.GetCallHistory(cat,inout,start,end,search);
+}
+function getRecordList(inout,start,end,search){
+	// Kimos
+	document.all.EventClientCtrl.GetRecordList(inout,start,end,search);
+}
+function GetListConfMember(room){
+	document.all.EventClientCtrl.GetListConfMember(room);
+}
+function RedirectConference(){
+RedirectConfMode=1;
+	document.all.EventClientCtrl.RedirectConference("conf111");
+}
+function InviteConference(peers){
+	document.all.EventClientCtrl.InviteConference("conf111",peers);
+}
+function RemoveConference(room,channels){
+	document.all.EventClientCtrl.RemoveConference(room,channels);
+}
+
+function CallWithConference(peers){
+	document.all.EventClientCtrl.CallWithConference("V111",peers);
+}
+function SetForward(use,type,num,start,end,etc){
+	document.all.EventClientCtrl.SetForward(use,type,num,start,end,"");
+//document.all.EventClientCtrl.SetForward("0","","","","","");
+}
+
+function MagAddr(type,keyidx,gname,pname,tel1,tel2,tel3,tel4,tel5,def,memo){
+        document.all.EventClientCtrl.MagAddrList(type,keyidx,gname,pname,tel1,tel2,tel3,tel4,tel5,def,memo);
+}
+
+function GetVarinfo(name){
+        document.all.EventClientCtrl.GetVarInfo(name);
+}
+
+function GetQStatus(type,qname,member){
+        document.all.EventClientCtrl.GetQStatus(type,qname,member);
+}
+
+function hangupChannel(chan){
+        document.all.EventClientCtrl.HangupChannel(chan);
+}
+
+function GetStatusPeers(peers,option){
+        document.all.EventClientCtrl.GetStatusPeers(peers,option);
+}
+
+function getrecvsmslist(p){
+        document.all.EventClientCtrl.GetRecvSmsList(p,"");
+}
+
+window.focus();
+</script>
+<form name=ifrom id=iform style='margin:0;padding:0;'>
+<li> 통화채널 (로그인상태:<span id="loginStatus" name="loginStatus">접속을 클릭해 주세요</span> )
+<table border=0 width=100% cellpadding=0 cellspcing=0><td bgcolor=#acacac>
+<table border=0 width=100% cellpadding=2 cellspcing=1>
+<tr bgcolor=#FFFFFF><th>Primarychan</th><td><input type=text name=Primarychan1><input type=text name=uidchan11 size=15></td><td><input type=text name=Primarychan2><input type=text name=uidchan12 size=10></td><td><input type=text name=callernumber><input type=text name=Primarystatus size=9></td>
+<td><input type=button name=chanHangupBtn1 id=HangupBtn1 value="끊기" onClick="hangupChannel(this.form.Primarychan1.value)">
+<input type=button name=chanHangup2Btn id=Hangup2Btn value="상대끊기" onClick="hangupChannel(this.form.Primarychan2.value)">
+</td></tr>
+<tr bgcolor=#FFFFFF><th>Secondchan</th><td><input type=text name=chan1><input type=text name=uidchan21 size=15></td><td><input type=text name=chan2><input type=text name=uidchan22 size=10></td><td><input type=text name=callernumber2><input type=text name=Secondstatus size=9></td><td>
+<input type=button value="clear" onClick="clearS()">
+</td></tr>
+</table>
+</td></table>
+<span id=InfoView style="display:none;">
+<li>OutMessage:<input type=text name=ch1><input type=text name=ch2>/ <input type=text name=uid1><input type=text name=uid2> 
+callernumber:<input type=text name=inexten>
+backchan:<input type=text name=backchan1>/ <input type=text name=backchan2>( <input type=text name=iscall>)
+</span>
+<li> 접속기능
+<table border=0 width=100% cellpadding=0 cellspcing=0><td bgcolor=#acacac>
+<table border=0 width=100% cellpadding=2 cellspcing=1>
+<tr bgcolor=#efefef><th>ID:<INPUT TYPE=TEXT size=14 ID=LOGIN_ID NAME=LOGIN_ID VALUE="">
+PASS:<INPUT TYPE=password size=7 ID=LOGIN_PWD NAME=LOGIN_PWD VALUE="" ></td>
+<!--th>ServerIP:<INPUT TYPE=text size=12 ID=SERVER_IP NAME=SERVER_IP VALUE="" ></th-->
+
+<th><input type=checkbox name=SetSeed id=SetSeed checked>Seed
+<input type=button id=BtnCONN name=BtnCONN onClick="return sConnect();" value="접속">
+</th>
+
+</table>
+</td></table>
+<li> <a href=# onClick="return viewMenu('CtiTable');">CTI기능</A>
+<table border=0 width=100% cellpadding=0 cellspcing=0 id=CtiTable name=CtiTable style="display:none;"><td bgcolor=#acacac>
+
+<table border=0 width=100% cellpadding=3 cellspcing=0>
+<tr bgcolor=#FFFFFF><th width=150 align=right>전화걸기</th>
+<td>
+대상번호:<input type=text name=inputnum size=10>
+<input type=button name=DialBtn id=DialBtn value="전화걸기"  onClick="dial()">
+<input type=button name=PickupBtn id=PickupBtn value="당겨받기"  onClick="pickup()">
+</td></tr>
+<tr bgcolor=#FFFFFF><th align=right>동시회의통화</th>
+<td>
+회의참석자번호:<input type=text size=14 name=WithConfInviteNum id=WithConfInviteNum value="3456">
+<input type=button name=WithConfBtn1 id=WithConfBtn1 value="동시회의통화시작" onClick="CallWithConference(WithConfInviteNum.value)">
+<input type=button name=CaonfStatusBtn1 id=CaonfStatusBtn1 value="통화상태" onClick="GetStatusPeers(WithConfInviteNum.value,'')">
+
+</td></tr>
+
+<tr bgcolor=#FFFFFF><th align=right>Ring시</th>
+<td>
+<input type=button name=AnsBtn id=AnsBtn value="전화받기" onClick="answer()">
+<input type=button name=HangupBtn id=HangupBtn value="수신거부" onClick="hangup()">
+</td></tr>
+
+<tr bgcolor=#FFFFFF><th  align=right>통화시</th>
+<td>
+<input type=button name=HangupBtn1 id=HangupBtn1 value="끊기" onClick="hangup()">
+<input type=button name=Hangup2Btn id=Hangup2Btn value="상대끊기" onClick="hangup2()">
+<input type=button name=HoldBtn id=HoldBtn value="Hold" onClick="hold()">
+<input type=button name=UnHoldBtn id=UnHoldBtn value="UnHold" onClick="hold(1)">
+<input type=button name=RecordBtn id=RecordBtn value="StartRecord" onClick="document.all.EventClientCtrl.StartRecord()">
+<input type=button name=RecordBtn1 id=RecordBtn1 value="StopRecord" onClick="document.all.EventClientCtrl.StopRecord()">
+<li>돌려줄번호:<input type=text name=transnum size=10 value="3456">
+<input type=button name=TransBtn id=TransBtn value="통화후전달" onClick="atxfer()">
+<input type=button name=RedirectBtn id=RedirectBtn value="전환" onClick="redirect()">
+<li>회의통화:<input type=button name=ConfBtn id=ConfBtn value="통화중회의" onClick="RedirectConference()">
+<input type=text size=14 name=ConfInviteNum id=ConfInviteNum value="3456">
+<input type=button name=ConfBtn1 id=ConfBtn1 value="초대통화" onClick="InviteConference(ConfInviteNum.value)">
+
+</td></tr>
+</table></td></table>
+<script>
+function viewMenu(id,v){
+	obj=eval("document.all."+id);
+	obj.style.display=(obj.style.display == "" && v != "1")?"none":"";	
+	return false;
+}
+</script>
+<li> <a href=# onClick="return viewMenu('OamTable');">OAM기능</A>
+<table border=0 width=100% cellpadding=0 cellspcing=0 id=OamTable name=OamTable style="display:none;"><td bgcolor=#acacac>
+<table border=0 width=100% cellpadding=2 cellspcing=1>
+<tr bgcolor=#FFFFFF><th width=150 align=right>SMS</th><td>
+수신번호:<input type=text name=smspeers id=smspeers value="">
+메세지:<input type=text name=smsmsg id=smsmsg value="우리는 민족">
+<input type=button name=SendSMSBtn id=SendSMSBtn value="SendSMS" onClick="sendsms()">
+</td></tr>
+<tr bgcolor=#FFFFFF><th align=right>SendPeerMsg</th><td>
+수신번호:<input type=text name=msgpeers id=msgpeers value="3456,3457">
+메세지:<input type=text name=peersmsg id=peersmsg value="우리는 민족">
+<input type=button name=PeerMsgBtn id=PeerMsgBtn value="알림전송" onClick="SendPeerMsg('0','',msgpeers.value,peersmsg.value)">
+</td></tr>
+
+<tr bgcolor=#FFFFFF><th align=right>PEERINFO</th><td><input type=text name=infopeer id=infopeer value="3021,3022,3033">
+<input type=button name=InfoPeerBtn id=InfoPeerBtn value="InfoPEER" onClick="getpeerinfo(this.form.infopeer.value)">
+<input type=button name=peerStatusBtn1 id=peerStatusBtn1 value="통화상태" onClick="GetStatusPeers(this.form.infopeer.value,'')">
+</td></tr>
+
+<tr bgcolor=#FFFFFF><th align=right>착신전환</th><td> 
+
+착신전환번호:<input type=text name=forwardNum id=forwardNum  size=12 value="07012341234">
+착신전환방식:<select name=forwardType>
+<option value="0">무조건
+<option value="1">불가시
+<option value="2">통화중(C)
+<option value="3">통시링(C)
+</select>
+<br>
+착전시간
+:<input type=text name=forwardStart id=forwardStart size=10 value="2011091700">~
+<input type=text name=forwardEnd id=forwardEnd size=10 value="">
+<input type=button name=BtnForward value="착전설정" onClick="SetForward('1',this.form.forwardType.value,forwardNum.value,forwardStart.value,forwardEnd.value,'')">
+<input type=button name=BtnForward value="착전해제" onClick="SetForward('0','','','','','')">
+</td></tr>
+</tr>
+
+<tr bgcolor=#FFFFFF><th align=right>CallLog</th><td>
+<select name=callinout>
+<option value=0> 수신
+<option value=1> 발신
+<option value=9> 건수
+</select>
+
+<select name=callcat>
+<option value=1> 개인
+<option value=0> 도메인전체
+</select>
+
+기간:<input type=text name=callstart size=8 id=callstart value="20110901">
+~<input type=text name=callend id=callend size=8 value="20110930">
+<select name=callsearch>
+<option value=9> 전체
+<option value=0> 내부
+<option value=1> 시내/외
+<option value=2> 이동전화
+<option value=5> 국제전화
+</select>
+<input type=button name=HistoryBtn id=HistoryBtn value="History" onClick="getCallHistory(this.form.callcat.value,this.form.callinout.value,this.form.callstart.value,this.form.callend.value,this.form.callsearch.value)">
+</td></tr>
+<tr bgcolor=#FFFFFF><th align=right> SMS 수신목록 </th><td> 
+<input type=text name=smspage id=smspage value=1>
+<input type=button value="수신SMS list" onClick="getrecvsmslist(this.form.smspage.value);">
+</td></tr>
+
+</table></td></table>
+
+<br>
+<input type=button onClick="recvlog.value='';" value="ClearLog"><br>
+<textarea  style="width:100%;height:350px;" name=recvlog id=recvlog style='display;'></textarea>
+<div  name=dispinfo id=dispinfo style='display:;width:100%;'></div>
+</form>
+
+
+<script id="OnSendRingEvent" for="EventClientCtrl" event="SendRingEvent(bstrRingEvent)">
+	parseMsg(bstrRingEvent);
+</script>
+<script id="OnSendChannelListEvent" for="EventClientCtrl" event="SendChannelListEvent(bstrChannelList)">
+	parseMsg(bstrChannelList);
+</script>
+<script id="OnSendChannelOutEvent" for="EventClientCtrl" event="SendChannelOutEvent(bstrChannelOut)">
+	parseMsg(bstrChannelOut);
+</script>
+<script id="OnSendLoginResultEvent" for="EventClientCtrl" event="SendLoginResultEvent(bstrLoginResult)">
+	parseMsg(bstrLoginResult);
+</script>
+<script id="OnSendCommandResultEvent" for="EventClientCtrl" event="SendCommandResultEvent(bstrCommandResult)">
+	CommandResultEvent(bstrCommandResult);
+</script>
+
+<script id="OnSendNetworkErrorEvent" for="EventClientCtrl" event="SendNetworkErrorEvent()">
+        document.all.EventClientCtrl.DisconnectServer();
+	document.all.BtnCONN.value="접속";
+	document.all.loginStatus.innerHTML="접속종료";
+	viewMenu('CtiTable');
+	ISCON=0;
+document.all.ifrom.recvlog.value+="disconnected......\n";
+</script>
+<script id="OnSendEtcEvent" for="EventClientCtrl" event="SendEtcEvent(strEventName,strEventValue)">
+        EtcEvent(strEventName,strEventValue);
+</script>
+<script id="OnSendSMSEvent" for="EventClientCtrl" event="SendSMSEvent(strEventValue)">
+        EtcEvent("SendSMSEvent",strEventValue);
+</script>
+<script id="OnSendPeerMsgEvent" for="EventClientCtrl" event="SendPeerMsgEvent(strEventValue)">
+        EtcEvent("SendPeerMsgEvent",strEventValue);
+</script>
+<script id="OnSendCmdErrorEvent" for="EventClientCtrl" event="SendCmdErrorEvent(strCmd,strEventValue)">
+if(strCmd!="Connect"){
+	alert("CmdError: cmd("+strCmd+")"+strEventValue);
+}
+        EtcEvent("SendDtmfEvent",strEventValue);
+</script>
+
+<script>
+var OutStr="<object style='display:;' ID=\"EventClientCtrl\" WIDTH=100 HEIGHT=100 CLASSID=\"CLSID:86019F2F-2899-4C4C-A6FE-24CFF7CD6D4C\"  codebase=\"./LGUBaseOpenApi_1.0.1.21.cab#version=1,0,1,21\"></object>";
+document.writeln(OutStr);
+
+var ISCON=0;
+var ISCALL=0;
+var STAT=0;
+var READY=0;
+var timerID=null;
+var isExtened=0;
+var PhoneNum="";
+var PhoneCaller="";
+var popuptime=0;
+
+function sConnect(ctype)
+{
+	if(!READY ){
+		alert("컨터롤이 시작되지 못했습니다.");
+		return false;
+	}
+	if(ISCON){
+		document.all.EventClientCtrl.DisconnectServer();
+		ISCON=0;
+	}else{
+		strLoginID = document.all.LOGIN_ID.value;
+		strLoginPwd = document.all.LOGIN_PWD.value;
+		strLoginIP = "";
+		document.all.EventClientCtrl.SetAutoReconnect(20);//default 10
+if(document.all.SetSeed.checked)
+document.all.EventClientCtrl.SetSeedEncryption();
+
+		document.all.EventClientCtrl.LoginServer( strLoginID,strLoginPwd,"");
+	}
+	return false;	
+}
+
+function CheckConnect()
+{
+	if(document.all.EventClientCtrl != null ) 
+	{
+		var bConnect = document.all.EventClientCtrl.IsConnected();
+		alert( "연결상태 : " + bConnect );
+	}
+}
+
+if(document.all.EventClientCtrl.readyState == 4 ){
+ 	READY=1;
+}
+function EtcEvent(strEventName,strEventValue){
+document.all.ifrom.recvlog.value+=strEventValue+"\n";
+        var msgs=strEventValue.split("|");
+        var Insp=new Object();
+        Insp["EVENT"]=msgs[0];
+
+        if(Insp["EVENT"] == "CMDRESULTEND"){
+        }
+        if(Insp["EVENT"] == "CONFERENCEEVENT"){
+	     for(i=1;i<msgs.length;i++){
+		keyval=msgs[i].split(":");
+		Insp[keyval[0]]=keyval[1];	
+	     }	
+		if(Insp["CMD"] == "CONFMEMBERDEL"){
+			alert(Insp["CHANNEL"]);
+	 		setInfoval(Insp["CHANNEL"],"",0,"CHANNELOUT",Insp,"");
+		}
+	}
+
+}
+function parseMsg(msg){
+//document.all.ifrom.recvlog.value+=msg+"\n"+document.all.ifrom.recvlog.value;
+document.all.ifrom.recvlog.value+=msg+"\n";
+	var msgs=msg.split("|");
+	var Insp=new Object();
+	Insp["EVENT"]=msgs[0];
+	var disp="";
+	for(i=1;i<msgs.length;i++){
+		keyval=msgs[i].split(":");
+		Insp[keyval[0]]=keyval[1];	
+	}	
+	
+	var caller=Insp["CALLERID"];
+	var caller1=Insp["CALLER1ID"];
+	var caller2=Insp["CALLER2ID"];
+	var channel1=Insp["CHANNEL1"];
+	var channel2=Insp["CHANNEL2"];
+	var msg=Insp["MSG"];
+	var status=Insp["STATUS"];
+
+	if(Insp["EVENT"] == "CMDRESULT"){
+		
+	}else if(Insp["EVENT"] == "RINGEVENT"){
+		setInfoval(Insp["CHANNEL"],Insp["RECHANNEL"],Insp["ISDIAL"],Insp["EVENT"],Insp,1);
+	}else if(Insp["EVENT"] == "LOGINRESULT"){
+                if(status == "1"){
+			viewMenu('CtiTable',1);
+			document.all.BtnCONN.value="종료";
+                        linfos=msg.split(",");
+                        PhoneNum=linfos[0];
+UserExten=Insp["EXTEN"];
+                        PhoneCaller=linfos[1];
+			ISCON=1;
+			document.all.loginStatus.innerHTML="로그인성공:"+PhoneNum+"/"+PhoneCaller;
+                }else{
+                        document.all.EventClientCtrl.DisconnectServer();
+			document.all.loginStatus.innerHTML="로그인실패";
+                        alert("LOGIN 실패:"+msg);
+		}
+	}else if(Insp["EVENT"] == "CHANNELLIST"){
+		setInfoval(Insp["CHANNEL1"],Insp["CHANNEL2"],ISCALL,Insp["EVENT"],Insp,2);
+	}else if(Insp["EVENT"] == "CHANNELOUT"){
+		setInfoval(Insp["CHANNEL"],Insp["RECHANNEL"],"",Insp["EVENT"],Insp,0);
+	}
+	return false;
+}
+function clearInfo(){
+	document.all.dispinfo.innerHTML="";	
+}
+
+
+function OnPageLoad()
+{
+	if(document.all.EventClientCtrl != null ) 
+	{
+		document.all.LOGIN_ID.value=strLoginID;
+		document.all.LOGIN_PWD.value=strLoginPwd; 
+	}else{
+alert("ActiveX Control Error");
+	}
+}
+
+function SIPCommand(strCommand)
+{
+	if(strCommand != "" && strCommand != "undefined" && READY == 1 && document.all.EventClientCtrl != null ) 
+	{
+		document.all.EventClientCtrl.SendSIPCommand("CMD|"+strCommand);
+	}
+	return false;
+}
+function CommandResultEvent(bstrCommandResult){
+	document.all.ifrom.recvlog.value+=bstrCommandResult+"\n";
+
+}
+window.onload=OnPageLoad;
+
+</script>
+</body>
+</html>
+

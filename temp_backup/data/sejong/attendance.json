@@ -1,0 +1,989 @@
+[
+  {
+    "memberId": "1769666245375",
+    "date": "2026-01-04",
+    "status": "extension"
+  },
+  {
+    "memberId": "1769750865408",
+    "date": "2026-01-14",
+    "status": "present"
+  },
+  {
+    "memberId": "1769750865408",
+    "date": "2026-01-20",
+    "status": "present"
+  },
+  {
+    "memberId": "1769750865408",
+    "date": "2026-01-02",
+    "status": "present"
+  },
+  {
+    "memberId": "1769750865408",
+    "date": "2026-01-16",
+    "status": "present"
+  },
+  {
+    "memberId": "1769750865408",
+    "date": "2026-01-17",
+    "status": "present"
+  },
+  {
+    "memberId": "1769750865408",
+    "date": "2026-01-07",
+    "status": "extension"
+  },
+  {
+    "memberId": "1769750865408",
+    "date": "2026-01-05",
+    "status": "present"
+  },
+  {
+    "memberId": "1769756681840",
+    "date": "2026-01-05",
+    "status": "present"
+  },
+  {
+    "memberId": "1769756681840",
+    "date": "2026-01-07",
+    "status": "present"
+  },
+  {
+    "memberId": "1769767328754",
+    "date": "2026-01-30",
+    "status": "present"
+  },
+  {
+    "memberId": "1769767328754",
+    "date": "2026-02-02",
+    "status": "present"
+  },
+  {
+    "memberId": "1769756681840",
+    "date": "2026-02-02",
+    "status": "present"
+  },
+  {
+    "memberId": "1769750865408",
+    "date": "2026-02-03",
+    "status": "present"
+  },
+  {
+    "memberId": "1769750865408",
+    "date": "2026-02-05",
+    "status": "present"
+  },
+  {
+    "memberId": "1769767328754",
+    "date": "2026-02-04",
+    "status": "present"
+  },
+  {
+    "memberId": "1769767328754",
+    "date": "2026-02-05",
+    "status": "present"
+  },
+  {
+    "memberId": "1769767328754",
+    "date": "2026-02-06",
+    "status": "present"
+  },
+  {
+    "memberId": "1769767328754",
+    "date": "2026-02-07",
+    "status": "present"
+  },
+  {
+    "memberId": "1769767328754",
+    "date": "2026-02-09",
+    "status": "present"
+  },
+  {
+    "memberId": "1769756681840",
+    "date": "2026-02-09",
+    "status": "present"
+  },
+  {
+    "memberId": "1769767328754",
+    "date": "2026-02-10",
+    "status": "present"
+  },
+  {
+    "memberId": "1769750865408",
+    "date": "2026-02-10",
+    "status": "present"
+  },
+  {
+    "memberId": "1769750865408",
+    "date": "2026-02-12",
+    "status": "present"
+  },
+  {
+    "memberId": "1769767328754",
+    "date": "2026-02-12",
+    "status": "present"
+  },
+  {
+    "memberId": "1769756681840",
+    "date": "2026-02-11",
+    "status": "present"
+  },
+  {
+    "memberId": "1769756681840",
+    "date": "2026-02-04",
+    "status": "present"
+  },
+  {
+    "memberId": "1769767328754",
+    "date": "2026-02-13",
+    "status": "present"
+  },
+  {
+    "memberId": "1769767328754",
+    "date": "2026-02-14",
+    "status": "present"
+  },
+  {
+    "memberId": "1769767328754",
+    "date": "2026-02-16",
+    "status": "present"
+  },
+  {
+    "memberId": "1769750865408",
+    "date": "2026-02-17",
+    "status": "present"
+  },
+  {
+    "memberId": "1769756681840",
+    "date": "2026-02-18",
+    "status": "present"
+  },
+  {
+    "memberId": "1769666245375",
+    "date": "2026-02-02",
+    "status": null
+  },
+  {
+    "memberId": "1769767328754",
+    "date": "2026-02-26",
+    "status": "present"
+  },
+  {
+    "memberId": "1769750865408",
+    "date": "2026-02-26",
+    "status": "present"
+  },
+  {
+    "memberId": "1769756681840",
+    "date": "2026-02-16",
+    "status": "present"
+  },
+  {
+    "memberId": "1769767328754",
+    "date": "2026-02-24",
+    "status": "absent"
+  },
+  {
+    "memberId": "1769767328754",
+    "date": "2026-02-23",
+    "status": "present"
+  },
+  {
+    "memberId": "1769767328754",
+    "date": "2026-02-25",
+    "status": "present"
+  },
+  {
+    "memberId": "1769756681840",
+    "date": "2026-02-25",
+    "status": "present"
+  },
+  {
+    "memberId": "1769767328754",
+    "date": "2026-02-21",
+    "status": "present"
+  },
+  {
+    "memberId": "1769750865408",
+    "date": "2026-02-24",
+    "status": "present"
+  },
+  {
+    "memberId": "1769666245375",
+    "date": "2026-02-28",
+    "status": "extension"
+  },
+  {
+    "memberId": "1769767328754",
+    "date": "2026-02-17",
+    "status": "present"
+  },
+  {
+    "memberId": "1769767328754",
+    "date": "2026-02-18",
+    "status": "present"
+  },
+  {
+    "memberId": "1769767328754",
+    "date": "2026-02-20",
+    "status": "present"
+  },
+  {
+    "memberId": "1769750865408",
+    "date": "2026-02-02",
+    "status": null
+  },
+  {
+    "memberId": "1769750865408",
+    "date": "2026-01-13",
+    "status": "present"
+  },
+  {
+    "memberId": "1770529179643",
+    "date": "2026-02-02",
+    "status": "present"
+  },
+  {
+    "memberId": "1770517159336",
+    "date": "2026-02-02",
+    "status": "present"
+  },
+  {
+    "memberId": "1770551037066",
+    "date": "2026-03-03",
+    "status": "extension",
+    "course": "가정요리(10:00)"
+  },
+  {
+    "memberId": "1770551037066",
+    "date": "2026-03-02",
+    "status": "extension",
+    "course": "가정요리(10:00)"
+  },
+  {
+    "memberId": "1770517159336",
+    "date": "2026-02-02",
+    "status": "present",
+    "course": "한식기능사"
+  },
+  {
+    "memberId": "1770517159336",
+    "date": "2026-02-04",
+    "status": "present",
+    "course": "한식기능사"
+  },
+  {
+    "memberId": "1770517159336",
+    "date": "2026-02-09",
+    "status": "present",
+    "course": "한식기능사"
+  },
+  {
+    "memberId": "1770517159336",
+    "date": "2026-02-18",
+    "status": "absent",
+    "course": "한식기능사"
+  },
+  {
+    "memberId": "1770517159336",
+    "date": "2026-02-23",
+    "status": "present",
+    "course": "한식기능사"
+  },
+  {
+    "memberId": "1770517159336",
+    "date": "2026-02-25",
+    "status": "present",
+    "course": "한식기능사"
+  },
+  {
+    "memberId": "1770529179643",
+    "date": "2026-02-02",
+    "status": "present",
+    "course": "한식기능사"
+  },
+  {
+    "memberId": "1770529179643",
+    "date": "2026-02-04",
+    "status": "present",
+    "course": "한식기능사"
+  },
+  {
+    "memberId": "1770529179643",
+    "date": "2026-02-09",
+    "status": "present",
+    "course": "한식기능사"
+  },
+  {
+    "memberId": "1770529179643",
+    "date": "2026-02-11",
+    "status": "present",
+    "course": "한식기능사"
+  },
+  {
+    "memberId": "1770529179643",
+    "date": "2026-02-23",
+    "status": "present",
+    "course": "한식기능사"
+  },
+  {
+    "memberId": "1770529179643",
+    "date": "2026-02-25",
+    "status": "absent",
+    "course": "한식기능사"
+  },
+  {
+    "memberId": "1770517159336",
+    "date": "2026-02-16",
+    "status": "present",
+    "course": "한식기능사"
+  },
+  {
+    "memberId": "1770517159336",
+    "date": "2026-02-11",
+    "status": "present",
+    "course": "한식기능사"
+  },
+  {
+    "memberId": "1770529179643",
+    "date": "2026-02-15",
+    "status": "present",
+    "course": "한식기능사"
+  },
+  {
+    "memberId": "1770529179643",
+    "date": "2026-02-18",
+    "status": "present",
+    "course": "한식기능사"
+  },
+  {
+    "memberId": "1770517693101",
+    "date": "2026-02-03",
+    "status": "present",
+    "course": "양식기능사"
+  },
+  {
+    "memberId": "1770517014506",
+    "date": "2026-02-03",
+    "status": "연 /독감",
+    "course": "양식기능사"
+  },
+  {
+    "memberId": "1770517016128",
+    "date": "2026-02-03",
+    "status": "present",
+    "course": "양식기능사"
+  },
+  {
+    "memberId": "1770517017920",
+    "date": "2026-02-03",
+    "status": "present",
+    "course": "양식기능사"
+  },
+  {
+    "memberId": "1770517017002",
+    "date": "2026-02-03",
+    "status": "present",
+    "course": "양식기능사"
+  },
+  {
+    "memberId": "1770517693101",
+    "date": "2026-02-05",
+    "status": "present",
+    "course": "양식기능사"
+  },
+  {
+    "memberId": "1770517017002",
+    "date": "2026-02-05",
+    "status": "present",
+    "course": "양식기능사"
+  },
+  {
+    "memberId": "1770517016128",
+    "date": "2026-02-05",
+    "status": "absent",
+    "course": "양식기능사"
+  },
+  {
+    "memberId": "1770517017920",
+    "date": "2026-02-05",
+    "status": "absent",
+    "course": "양식기능사"
+  },
+  {
+    "memberId": "1770517017002",
+    "date": "2026-02-10",
+    "status": "present",
+    "course": "양식기능사"
+  },
+  {
+    "memberId": "1770517017920",
+    "date": "2026-02-12",
+    "status": "absent",
+    "course": "양식기능사"
+  },
+  {
+    "memberId": "1770517017002",
+    "date": "2026-02-12",
+    "status": "present",
+    "course": "양식기능사"
+  },
+  {
+    "memberId": "1770517016128",
+    "date": "2026-02-12",
+    "status": "present",
+    "course": "양식기능사"
+  },
+  {
+    "memberId": "1770551100795",
+    "date": "2026-02-03",
+    "status": "present",
+    "course": "제빵기능사"
+  },
+  {
+    "memberId": "1770551214556",
+    "date": "2026-02-03",
+    "status": "present",
+    "course": "제빵기능사"
+  },
+  {
+    "memberId": "1770556890568",
+    "date": "2026-02-03",
+    "status": "present",
+    "course": "제빵기능사"
+  },
+  {
+    "memberId": "1770551100795",
+    "date": "2026-02-05",
+    "status": "present",
+    "course": "제빵기능사"
+  },
+  {
+    "memberId": "1770517693101",
+    "date": "2026-02-05",
+    "status": "absent",
+    "course": "제과제빵기능사"
+  },
+  {
+    "memberId": "1770551214556",
+    "date": "2026-02-05",
+    "status": "present",
+    "course": "제빵기능사"
+  },
+  {
+    "memberId": "1770556890568",
+    "date": "2026-02-05",
+    "status": "present",
+    "course": "제빵기능사"
+  },
+  {
+    "memberId": "1770551100795",
+    "date": "2026-02-10",
+    "status": "present",
+    "course": "제빵기능사"
+  },
+  {
+    "memberId": "1770517693101",
+    "date": "2026-02-10",
+    "status": "present",
+    "course": "제과제빵기능사"
+  },
+  {
+    "memberId": "1770551214556",
+    "date": "2026-02-10",
+    "status": "absent",
+    "course": "제빵기능사"
+  },
+  {
+    "memberId": "1770556890568",
+    "date": "2026-02-10",
+    "status": "present",
+    "course": "제빵기능사"
+  },
+  {
+    "memberId": "1770551100795",
+    "date": "2026-02-12",
+    "status": "present",
+    "course": "제빵기능사"
+  },
+  {
+    "memberId": "1770551214556",
+    "date": "2026-02-12",
+    "status": "present",
+    "course": "제빵기능사"
+  },
+  {
+    "memberId": "1770551214556",
+    "date": "2026-02-03",
+    "status": "present",
+    "course": "일식기능사"
+  },
+  {
+    "memberId": "1770551214556",
+    "date": "2026-02-05",
+    "status": "present",
+    "course": "일식기능사"
+  },
+  {
+    "memberId": "1770551214556",
+    "date": "2026-02-10",
+    "status": "present",
+    "course": "일식기능사"
+  },
+  {
+    "memberId": "1770551214556",
+    "date": "2026-02-12",
+    "status": "present",
+    "course": "일식기능사"
+  },
+  {
+    "memberId": "1770517693101",
+    "date": "2026-02-09",
+    "status": "present",
+    "course": "제과제빵기능사"
+  },
+  {
+    "memberId": "1770517693101",
+    "date": "2026-02-04",
+    "status": "present",
+    "course": "제과제빵기능사"
+  },
+  {
+    "memberId": "1770517693101",
+    "date": "2026-02-02",
+    "status": "present",
+    "course": "제과제빵기능사"
+  },
+  {
+    "memberId": "1770551214556",
+    "date": "2026-02-03",
+    "status": "absent",
+    "course": "중식기능사"
+  },
+  {
+    "memberId": "1770551214556",
+    "date": "2026-02-05",
+    "status": "present",
+    "course": "중식기능사"
+  },
+  {
+    "memberId": "1770551214556",
+    "date": "2026-02-10",
+    "status": "present",
+    "course": "중식기능사"
+  },
+  {
+    "memberId": "1770551214556",
+    "date": "2026-02-12",
+    "status": "present",
+    "course": "중식기능사"
+  },
+  {
+    "memberId": "1770551214556",
+    "date": "2026-01-06",
+    "status": "present",
+    "course": "중식기능사"
+  },
+  {
+    "memberId": "1770551214556",
+    "date": "2026-01-08",
+    "status": "present",
+    "course": "중식기능사"
+  },
+  {
+    "memberId": "1770551214556",
+    "date": "2026-01-13",
+    "status": "extension",
+    "course": "중식기능사"
+  },
+  {
+    "memberId": "1770551214556",
+    "date": "2026-01-15",
+    "status": "extension",
+    "course": "중식기능사"
+  },
+  {
+    "memberId": "1770551214556",
+    "date": "2026-01-29",
+    "status": "present",
+    "course": "중식기능사"
+  },
+  {
+    "memberId": "1770517693101",
+    "date": "2026-02-12",
+    "status": "present",
+    "course": "제과제빵기능사"
+  },
+  {
+    "memberId": "1770517693101",
+    "date": "2026-02-10",
+    "status": "present",
+    "course": "양식기능사"
+  },
+  {
+    "memberId": "1770517014506",
+    "date": "2026-01-01",
+    "status": "present",
+    "course": "양식기능사"
+  },
+  {
+    "memberId": "1770517014506",
+    "date": "2026-01-06",
+    "status": "present",
+    "course": "양식기능사"
+  },
+  {
+    "memberId": "1770517014506",
+    "date": "2026-01-08",
+    "status": "present",
+    "course": "양식기능사"
+  },
+  {
+    "memberId": "1770551214556",
+    "date": "2026-02-01",
+    "status": "present",
+    "course": "중식기능사"
+  },
+  {
+    "memberId": "1770517693101",
+    "date": "2026-02-11",
+    "status": "present",
+    "course": "제과제빵기능사"
+  },
+  {
+    "memberId": "1770517693101",
+    "date": "2026-01-20",
+    "status": "present",
+    "course": "제과제빵기능사"
+  },
+  {
+    "memberId": "1770517693101",
+    "date": "2026-01-21",
+    "status": "present",
+    "course": "제과제빵기능사"
+  },
+  {
+    "memberId": "1770517693101",
+    "date": "2026-01-22",
+    "status": "present",
+    "course": "제과제빵기능사"
+  },
+  {
+    "memberId": "1770517693101",
+    "date": "2026-01-27",
+    "status": "present",
+    "course": "제과제빵기능사"
+  },
+  {
+    "memberId": "1770517693101",
+    "date": "2026-01-26",
+    "status": "present",
+    "course": "제과제빵기능사"
+  },
+  {
+    "memberId": "1770517693101",
+    "date": "2026-01-28",
+    "status": "present",
+    "course": "제과제빵기능사"
+  },
+  {
+    "memberId": "1770517693101",
+    "date": "2026-02-03",
+    "status": "present",
+    "course": "제과제빵기능사"
+  },
+  {
+    "memberId": "1770517017920",
+    "date": "2026-01-08",
+    "status": "present",
+    "course": "양식기능사"
+  },
+  {
+    "memberId": "1770517017920",
+    "date": "2026-01-06",
+    "status": "present",
+    "course": "양식기능사"
+  },
+  {
+    "memberId": "1770517017002",
+    "date": "2026-01-06",
+    "status": "present",
+    "course": "양식기능사"
+  },
+  {
+    "memberId": "1770517017002",
+    "date": "2026-01-08",
+    "status": "present",
+    "course": "양식기능사"
+  },
+  {
+    "memberId": "1770517017920",
+    "date": "2026-01-13",
+    "status": "present",
+    "course": "양식기능사"
+  },
+  {
+    "memberId": "1770517017920",
+    "date": "2026-01-15",
+    "status": "present",
+    "course": "양식기능사"
+  },
+  {
+    "memberId": "1770517017920",
+    "date": "2026-01-20",
+    "status": "present",
+    "course": "양식기능사"
+  },
+  {
+    "memberId": "1770517017920",
+    "date": "2026-01-22",
+    "status": "present",
+    "course": "양식기능사"
+  },
+  {
+    "memberId": "1770517017920",
+    "date": "2026-01-27",
+    "status": "present",
+    "course": "양식기능사"
+  },
+  {
+    "memberId": "1770517017920",
+    "date": "2026-01-29",
+    "status": "extension",
+    "course": "양식기능사"
+  },
+  {
+    "memberId": "1770517017002",
+    "date": "2026-01-13",
+    "status": "present",
+    "course": "양식기능사"
+  },
+  {
+    "memberId": "1770517014506",
+    "date": "2026-01-15",
+    "status": "present",
+    "course": "양식기능사"
+  },
+  {
+    "memberId": "1770517014506",
+    "date": "2026-01-13",
+    "status": "present",
+    "course": "양식기능사"
+  },
+  {
+    "memberId": "1770517693101",
+    "date": "2026-01-13",
+    "status": "present",
+    "course": "양식기능사"
+  },
+  {
+    "memberId": "1770517693101",
+    "date": "2026-01-15",
+    "status": "present",
+    "course": "양식기능사"
+  },
+  {
+    "memberId": "1770517693101",
+    "date": "2026-01-20",
+    "status": "present",
+    "course": "양식기능사"
+  },
+  {
+    "memberId": "1770517693101",
+    "date": "2026-01-22",
+    "status": "present",
+    "course": "양식기능사"
+  },
+  {
+    "memberId": "1770517693101",
+    "date": "2026-01-27",
+    "status": "present",
+    "course": "양식기능사"
+  },
+  {
+    "memberId": "1770517693101",
+    "date": "2026-01-29",
+    "status": "present",
+    "course": "양식기능사"
+  },
+  {
+    "memberId": "1770517014506",
+    "date": "2026-01-27",
+    "status": "present",
+    "course": "양식기능사"
+  },
+  {
+    "memberId": "1770517014506",
+    "date": "2026-01-29",
+    "status": "present",
+    "course": "양식기능사"
+  },
+  {
+    "memberId": "1770517693101",
+    "date": "2026-01-29",
+    "status": "present",
+    "course": "제과제빵기능사"
+  },
+  {
+    "memberId": "1770517693101",
+    "date": "2026-01-15",
+    "status": "present",
+    "course": "제과제빵기능사"
+  },
+  {
+    "memberId": "1770517693101",
+    "date": "2026-01-13",
+    "status": "present",
+    "course": "제과제빵기능사"
+  },
+  {
+    "memberId": "1770517693101",
+    "date": "2026-01-08",
+    "status": "present",
+    "course": "제과제빵기능사"
+  },
+  {
+    "memberId": "1770517693101",
+    "date": "2026-01-06",
+    "status": "present",
+    "course": "제과제빵기능사"
+  },
+  {
+    "memberId": "1770517693101",
+    "date": "2026-01-07",
+    "status": "present",
+    "course": "제과제빵기능사"
+  },
+  {
+    "memberId": "1770517693101",
+    "date": "2026-01-05",
+    "status": "present",
+    "course": "제과제빵기능사"
+  },
+  {
+    "memberId": "1770517693101",
+    "date": "2026-01-14",
+    "status": "present",
+    "course": "제과제빵기능사"
+  },
+  {
+    "memberId": "1770517693101",
+    "date": "2026-01-12",
+    "status": "present",
+    "course": "제과제빵기능사"
+  },
+  {
+    "memberId": "1770551214556",
+    "date": "2026-01-06",
+    "status": "present",
+    "course": "산업기사"
+  },
+  {
+    "memberId": "1770551214556",
+    "date": "2026-01-08",
+    "status": "present",
+    "course": "산업기사"
+  },
+  {
+    "memberId": "1770551214556",
+    "date": "2026-01-13",
+    "status": "present",
+    "course": "산업기사"
+  },
+  {
+    "memberId": "1770551214556",
+    "date": "2026-01-15",
+    "status": "present",
+    "course": "산업기사"
+  },
+  {
+    "memberId": "1770551214556",
+    "date": "2026-01-20",
+    "status": "present",
+    "course": "산업기사"
+  },
+  {
+    "memberId": "1770551214556",
+    "date": "2026-01-22",
+    "status": "present",
+    "course": "산업기사"
+  },
+  {
+    "memberId": "1770551214556",
+    "date": "2026-01-29",
+    "status": "present",
+    "course": "산업기사"
+  },
+  {
+    "memberId": "1770551214556",
+    "date": "2026-01-27",
+    "status": "present",
+    "course": "산업기사"
+  },
+  {
+    "memberId": "1770551100795",
+    "date": "2026-01-29",
+    "status": "present",
+    "course": "산업기사"
+  },
+  {
+    "memberId": "1770551100795",
+    "date": "2026-01-20",
+    "status": "present",
+    "course": "산업기사"
+  },
+  {
+    "memberId": "1770551100795",
+    "date": "2026-01-22",
+    "status": "present",
+    "course": "산업기사"
+  },
+  {
+    "memberId": "1770551100795",
+    "date": "2026-01-13",
+    "status": "present",
+    "course": "산업기사"
+  },
+  {
+    "memberId": "1770551100795",
+    "date": "2026-01-08",
+    "status": "present",
+    "course": "산업기사"
+  },
+  {
+    "memberId": "1770517014506",
+    "date": "2026-02-11",
+    "status": "present"
+  },
+  {
+    "memberId": "1770556890568",
+    "date": "2026-02-03",
+    "status": "present",
+    "course": "제과기능사"
+  },
+  {
+    "memberId": "1770556890568",
+    "date": "2026-02-04",
+    "status": "present",
+    "course": "제과기능사"
+  },
+  {
+    "memberId": "1770551100795",
+    "date": "2026-02-10",
+    "status": "present",
+    "course": "산업기사"
+  },
+  {
+    "memberId": "1770551100795",
+    "date": "2026-02-09",
+    "status": "present",
+    "course": "산업기사"
+  },
+  {
+    "memberId": "1770551100795",
+    "date": "2026-02-11",
+    "status": "present",
+    "course": "산업기사"
+  }
+]
