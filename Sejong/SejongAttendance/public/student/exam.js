@@ -483,6 +483,8 @@ function renderOMR() {
                 bubble.onclick = (e) => {
                     e.stopPropagation(); // prevent modal close or row click
                     
+                    const wasUnsolved = (userAnswers[i] === null);
+
                     // Toggle off if same bubble clicked again
                     if (userAnswers[i] === opt) {
                         userAnswers[i] = null;
@@ -495,6 +497,16 @@ function renderOMR() {
                     // Also update the main screen if we are currently on this question
                     if (currentQuestionIndex === i) {
                         renderQuestion();
+                    } else if (wasUnsolved) {
+                        // 못푼 문제 답안을 클릭하면 그문제로 가게 해주세요
+                        currentQuestionIndex = i;
+                        renderQuestion();
+                        setTimeout(() => {
+                            const modal = document.getElementById('omrModal');
+                            if (modal.classList.contains('open')) {
+                                toggleOMR();
+                            }
+                        }, 150);
                     }
                 };
                 bubbles.appendChild(bubble);
