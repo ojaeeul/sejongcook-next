@@ -7,7 +7,7 @@
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>지출내역 및 날짜별 매출</title>
-    <link rel="stylesheet" href="style.css?v=20260714-2">
+    <link rel="stylesheet" href="style.css?v=20260714-3">
     <!-- Material Icons for sidebar -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <!-- 손글씨 느낌을 위한 폰트 -->
@@ -574,7 +574,7 @@
     <!-- Settings Gear Icon -->
     <!-- Print Button -->
     <!-- Fixed Expense Button -->
-    <button id="fixed-expense-btn" title="고정지출 설정" style="position: absolute; top: 10px; right: 140px; z-index: 100; background: none; border: none; cursor: pointer; color: #64748b; padding: 5px;" onclick="alert('고정지출 기능 준비중입니다. 클릭 시 어떤 화면을 띄울지 원장님 의견을 남겨주세요!')">
+    <button id="fixed-expense-btn" title="고정지출 설정" style="position: absolute; top: 10px; right: 140px; z-index: 100; background: none; border: none; cursor: pointer; color: #64748b; padding: 5px;" onclick="openFixedExpenseConfig()">
         <i class="material-icons" style="font-size: 24px; text-shadow: 0 1px 2px rgba(0,0,0,0.1);">account_balance_wallet</i>
     </button>
     <button id="notebook-align-btn" title="날짜별 자동 줄맞춤 정렬" onclick="if(window.alignAllDates) alignAllDates();" style="position: absolute; top: 10px; right: 100px; z-index: 100; background: none; border: none; cursor: pointer; color: #64748b; padding: 5px;">
@@ -677,7 +677,7 @@
 
     </div>
 
-    <script src="expense_logic.js?v=20260714-2"></script>
+    <script src="expense_logic.js?v=20260714-3"></script>
     <script>
         // 기존 하드코딩된 contenteditable 부분은 expense_logic.js로 통합됨
     </script>
@@ -776,9 +776,9 @@
         }
 
     </style>
-    <script src="expense_settings.js?v=20260714-2"></script>
-    <script src="sidebar_sync.js?v=20260714-2"></script>
-    <script src="fixed_expense_logic.js?v=20260714-2"></script>
+    <script src="expense_settings.js?v=20260714-3"></script>
+    <script src="sidebar_sync.js?v=20260714-3"></script>
+    <script src="fixed_expense_logic.js?v=20260714-3"></script>
 
     <!-- Fixed Expenses Config Modal -->
     <div id="fixed-expense-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
