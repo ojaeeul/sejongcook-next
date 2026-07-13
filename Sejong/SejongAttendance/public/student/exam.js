@@ -1010,7 +1010,7 @@ window.initPaperPreviewSwiper = function() {
     }
     
     if (window.paperSwiper) {
-        window.paperSwiper.destroy(true, true);
+        window.paperSwiper.destroy(true, false);
     }
     
     window.paperSwiper = new Swiper(".mySwiperCards", {
