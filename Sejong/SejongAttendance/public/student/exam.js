@@ -57,6 +57,19 @@ async function loadData() {
             console.error('Failed to load members', e);
         }
 
+        // Fetch Exam Records
+        try {
+            const examsRes = await fetch('/api/sejong/exams?t=' + Date.now());
+            if (examsRes.ok) {
+                window.allExams = await examsRes.json();
+            } else {
+                window.allExams = [];
+            }
+        } catch (e) {
+            console.error('Failed to load exams', e);
+            window.allExams = [];
+        }
+
         checkAutoLogin();
     } catch (e) {
         console.error('Failed to load data', e);
@@ -265,17 +278,40 @@ function selectCourse(courseName) {
             }
         }
         
+        // Check if the student has already taken this exam
+        let isCompleted = false;
+        if (currentPin !== '7777' && window.allExams) {
+            isCompleted = window.allExams.some(e => e.phone === currentPin && e.examKey === examKey && e.score !== undefined);
+        }
+
         const item = document.createElement('div');
         item.className = 'exam-item';
         item.style.borderBottom = '1px solid var(--border-color)';
-        item.innerHTML = `
-            <div>
-                <h4 style="font-size: 1.1rem; font-weight: 700;">${examTitle}</h4>
-                <p style="font-size: 0.8rem; color: var(--text-sub); margin-top: 5px;">총 ${questionsData[examKey].length}문항</p>
-            </div>
-            <span class="material-icons" style="color: var(--primary-light);">play_circle</span>
-        `;
-        item.onclick = () => startExam(examKey);
+        
+        if (isCompleted) {
+            item.style.backgroundColor = '#f1f5f9';
+            item.style.opacity = '0.7';
+            item.innerHTML = `
+                <div>
+                    <h4 style="font-size: 1.1rem; font-weight: 700; color: #64748b;">${examTitle}</h4>
+                    <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 5px;">총 ${questionsData[examKey].length}문항 (응시 완료)</p>
+                </div>
+                <span class="material-icons" style="color: #cbd5e1;">check_circle</span>
+            `;
+            item.onclick = () => {
+                alert('이미 응시한 시험입니다. 재응시하려면 원장님께 초기화 요청을 해주세요.');
+            };
+        } else {
+            item.innerHTML = `
+                <div>
+                    <h4 style="font-size: 1.1rem; font-weight: 700;">${examTitle}</h4>
+                    <p style="font-size: 0.8rem; color: var(--text-sub); margin-top: 5px;">총 ${questionsData[examKey].length}문항</p>
+                </div>
+                <span class="material-icons" style="color: var(--primary-light);">play_circle</span>
+            `;
+            item.onclick = () => startExam(examKey);
+        }
+        
         list.appendChild(item);
     });
 

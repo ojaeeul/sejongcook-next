@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>시험지 관리 - 세종요리제과학원</title>
-    <link rel="stylesheet" href="style.css?v=20260713-10">
+    <link rel="stylesheet" href="style.css?v=20260713-11">
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -335,6 +335,39 @@
             모든 시험지는 무작위로 추출된 서로 다른 60문항(주관식 제외)으로 이루어져 있습니다.
         </p>
 
+        <div id="calendarSection" style="margin-bottom: 40px; background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">
+                <h3 style="font-size: 1.2rem; color: #1e293b; margin: 0;"><i class="far fa-calendar-alt" style="color: #3b82f6; margin-right: 8px;"></i>일자별 응시 현황 (재응시 해제)</h3>
+                <div style="display:flex; align-items:center; gap: 15px;">
+                    <button onclick="changeMonth(-1)" style="background:none; border:1px solid #cbd5e1; border-radius:4px; padding:5px 10px; cursor:pointer;"><i class="fas fa-chevron-left"></i></button>
+                    <span id="calendarMonthLabel" style="font-weight:bold; font-size:1.1rem; min-width: 100px; text-align:center;">-</span>
+                    <button onclick="changeMonth(1)" style="background:none; border:1px solid #cbd5e1; border-radius:4px; padding:5px 10px; cursor:pointer;"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+            
+            <div id="calendarGrid" style="display:grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align:center; margin-bottom: 20px;">
+                <!-- Days header -->
+                <div style="font-weight:bold; color:#ef4444; padding:10px 0;">일</div>
+                <div style="font-weight:bold; color:#64748b; padding:10px 0;">월</div>
+                <div style="font-weight:bold; color:#64748b; padding:10px 0;">화</div>
+                <div style="font-weight:bold; color:#64748b; padding:10px 0;">수</div>
+                <div style="font-weight:bold; color:#64748b; padding:10px 0;">목</div>
+                <div style="font-weight:bold; color:#64748b; padding:10px 0;">금</div>
+                <div style="font-weight:bold; color:#3b82f6; padding:10px 0;">토</div>
+                <!-- Days will be generated here -->
+            </div>
+            
+            <div id="examDetailList" style="display:none; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; transition: all 0.3s ease;">
+                <div style="display:flex; justify-content:space-between; margin-bottom: 15px; align-items:center;">
+                    <h4 id="detailListTitle" style="margin:0; color:#1e293b; font-size:1.1rem;"></h4>
+                    <button onclick="closeDetailList()" style="background:none; border:none; cursor:pointer; color:#94a3b8;"><i class="fas fa-times fa-lg"></i></button>
+                </div>
+                <div id="detailListContent">
+                    <!-- List goes here -->
+                </div>
+            </div>
+        </div>
+
         <div id="content">
             <div style="text-align:center; padding:50px;">
                 <i class="fas fa-spinner fa-spin fa-3x" style="color:#cbd5e1;"></i>
@@ -343,9 +376,224 @@
         </div>
     </div>
 
-    <script src="questions_data.js?v=20260713-10"></script>
+    <script src="questions_data.js?v=20260713-11"></script>
     <script>
+        let currentCalDate = new Date();
+        let examRecords = [];
+        let memberMap = {};
+
+        async function loadExamAndMembers() {
+            try {
+                const [examRes, memRes] = await Promise.all([
+                    fetch('/api/sejong/exams?t=' + Date.now()),
+                    fetch('/api/sejong/members?t=' + Date.now())
+                ]);
+                
+                let allMembers = [];
+                if (examRes.ok) examRecords = await examRes.json();
+                if (memRes.ok) allMembers = await memRes.json();
+                else {
+                    const fallbackMem = await fetch('test_members.json');
+                    allMembers = await fallbackMem.json();
+                }
+                
+                allMembers.forEach(m => {
+                    memberMap[m.phone] = m.name;
+                });
+                
+                renderCalendar();
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        function changeMonth(delta) {
+            currentCalDate.setMonth(currentCalDate.getMonth() + delta);
+            renderCalendar();
+        }
+
+        function renderCalendar() {
+            const year = currentCalDate.getFullYear();
+            const month = currentCalDate.getMonth();
+            document.getElementById('calendarMonthLabel').textContent = `${year}년 ${month + 1}월`;
+            
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            
+            const grid = document.getElementById('calendarGrid');
+            
+            while (grid.children.length > 7) {
+                grid.removeChild(grid.lastChild);
+            }
+            
+            const recordsByDay = {};
+            examRecords.forEach(r => {
+                if (!r.submitTime) return;
+                const dateStr = r.submitTime.split('T')[0];
+                if (!recordsByDay[dateStr]) recordsByDay[dateStr] = [];
+                recordsByDay[dateStr].push(r);
+            });
+            
+            for (let i = 0; i < firstDay; i++) {
+                const empty = document.createElement('div');
+                empty.style.padding = '10px';
+                grid.appendChild(empty);
+            }
+            
+            // Generate zero-padded today string in KST
+            const now = new Date();
+            const offset = now.getTimezoneOffset() * 60000;
+            const todayKST = new Date(now.getTime() - offset);
+            const todayStr = todayKST.toISOString().split('T')[0];
+            
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dateObj = new Date(year, month, d);
+                const yStr = dateObj.getFullYear();
+                const mStr = String(dateObj.getMonth() + 1).padStart(2, '0');
+                const dStr = String(dateObj.getDate()).padStart(2, '0');
+                const ds = `${yStr}-${mStr}-${dStr}`;
+                
+                const dayCell = document.createElement('div');
+                dayCell.style.padding = '15px 5px';
+                dayCell.style.border = '1px solid #f1f5f9';
+                dayCell.style.borderRadius = '6px';
+                dayCell.style.position = 'relative';
+                dayCell.style.cursor = 'pointer';
+                dayCell.style.minHeight = '70px';
+                
+                if (ds === todayStr) {
+                    dayCell.style.backgroundColor = '#eff6ff';
+                    dayCell.style.borderColor = '#bfdbfe';
+                }
+                
+                let color = '#475569';
+                if (dateObj.getDay() === 0) color = '#ef4444';
+                else if (dateObj.getDay() === 6) color = '#3b82f6';
+                
+                let html = `<div style="font-weight:500; color:${color}">${d}</div>`;
+                
+                if (recordsByDay[ds] && recordsByDay[ds].length > 0) {
+                    const count = recordsByDay[ds].length;
+                    html += `<div style="margin-top:8px; background:#10b981; color:white; font-size:0.75rem; border-radius:12px; padding:2px 0; font-weight:bold; box-shadow:0 1px 2px rgba(0,0,0,0.1);">${count}명 응시</div>`;
+                    if (ds !== todayStr) {
+                        dayCell.style.backgroundColor = '#f0fdf4';
+                        dayCell.style.borderColor = '#bbf7d0';
+                    }
+                    dayCell.onclick = () => showDetailList(ds, recordsByDay[ds]);
+                } else {
+                    dayCell.onclick = () => showDetailList(ds, []);
+                }
+                
+                dayCell.innerHTML = html;
+                dayCell.onmouseover = () => dayCell.style.transform = 'translateY(-2px)';
+                dayCell.onmouseout = () => dayCell.style.transform = 'none';
+                
+                grid.appendChild(dayCell);
+            }
+        }
+
+        function showDetailList(dateStr, records) {
+            const listDiv = document.getElementById('examDetailList');
+            const title = document.getElementById('detailListTitle');
+            const content = document.getElementById('detailListContent');
+            
+            listDiv.style.display = 'block';
+            title.innerHTML = `<i class="far fa-calendar-check" style="margin-right:8px; color:#10b981;"></i>${dateStr} 응시 내역 (총 ${records.length}명)`;
+            
+            if (records.length === 0) {
+                content.innerHTML = '<div style="text-align:center; padding:20px; color:#94a3b8;">해당 일자에 응시 내역이 없습니다.</div>';
+                return;
+            }
+            
+            let html = \`
+                <div style="overflow-x:auto;">
+                <table style="width:100%; border-collapse:collapse; background:white; border-radius:8px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+                    <thead>
+                        <tr style="background:#f1f5f9; color:#475569; text-align:left;">
+                            <th style="padding:12px; border-bottom:1px solid #e2e8f0; white-space:nowrap;">이름(전화번호)</th>
+                            <th style="padding:12px; border-bottom:1px solid #e2e8f0;">과정명</th>
+                            <th style="padding:12px; border-bottom:1px solid #e2e8f0;">점수</th>
+                            <th style="padding:12px; border-bottom:1px solid #e2e8f0;">제출시간</th>
+                            <th style="padding:12px; border-bottom:1px solid #e2e8f0; text-align:center;">관리</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            \`;
+            
+            records.sort((a,b) => new Date(b.submitTime) - new Date(a.submitTime)).forEach(r => {
+                const studentName = memberMap[r.phone] || (r.name ? r.name : '알수없음');
+                const displayName = \`\${studentName} (\${r.phone || '없음'})\`;
+                const scoreText = r.score !== undefined ? \`\${r.score}점 (\${r.correctCount}/\${r.total})\` : '미채점';
+                const timeText = new Date(r.submitTime).toLocaleTimeString('ko-KR');
+                
+                const rJson = JSON.stringify(r).replace(/"/g, '&quot;');
+                
+                html += \`
+                    <tr style="border-bottom:1px solid #e2e8f0;">
+                        <td style="padding:12px; color:#1e293b; font-weight:500;">\${displayName}</td>
+                        <td style="padding:12px; color:#3b82f6; white-space:nowrap;">\${r.examKey}</td>
+                        <td style="padding:12px; color:#ef4444; font-weight:bold; white-space:nowrap;">\${scoreText}</td>
+                        <td style="padding:12px; color:#64748b; font-size:0.9rem; white-space:nowrap;">\${timeText}</td>
+                        <td style="padding:12px; text-align:center;">
+                            <button onclick="unlockExam(this, '\${rJson}')" style="background:#ef4444; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:0.85rem; font-weight:600; box-shadow:0 1px 2px rgba(0,0,0,0.1); white-space:nowrap; transition: background 0.2s;">
+                                <i class="fas fa-unlock-alt" style="margin-right:5px;"></i>해제
+                            </button>
+                        </td>
+                    </tr>
+                \`;
+            });
+            
+            html += \`</tbody></table></div>\`;
+            content.innerHTML = html;
+        }
+
+        function closeDetailList() {
+            document.getElementById('examDetailList').style.display = 'none';
+        }
+
+        async function unlockExam(btn, recordJsonStr) {
+            if(!confirm("해당 시험 기록을 완전히 삭제하여 학생의 재응시를 허용하시겠습니까? (이전 점수는 복구할 수 없습니다)")) return;
+            
+            const record = JSON.parse(recordJsonStr);
+            
+            try {
+                btn.textContent = '처리중...';
+                btn.disabled = true;
+                btn.style.opacity = '0.7';
+                
+                const updatedExams = examRecords.filter(r => !(r.phone === record.phone && r.examKey === record.examKey && r.submitTime === record.submitTime));
+                
+                const res = await fetch('/api/sejong/exams', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updatedExams)
+                });
+                
+                if (res.ok) {
+                    alert('성공적으로 해제(삭제)되었습니다.');
+                    examRecords = updatedExams;
+                    renderCalendar();
+                    
+                    const dateStr = record.submitTime.split('T')[0];
+                    const recordsOnDay = examRecords.filter(r => r.submitTime && r.submitTime.startsWith(dateStr));
+                    showDetailList(dateStr, recordsOnDay);
+                } else {
+                    alert('처리 중 오류가 발생했습니다.');
+                    btn.innerHTML = '<i class="fas fa-unlock-alt" style="margin-right:5px;"></i>해제';
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                }
+            } catch(e) {
+                console.error(e);
+                alert('네트워크 오류가 발생했습니다.');
+                btn.innerHTML = '<i class="fas fa-unlock-alt" style="margin-right:5px;"></i>해제';
+                btn.disabled = false;
+                btn.style.opacity = '1';
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', async () => {
+            loadExamAndMembers();
             try {
                 // 1. Load courses
                 const cRes = await fetch('exam_courses.json?v=' + Date.now());
@@ -422,7 +670,7 @@
 
         </main>
     </div>
-    <script src="sidebar_sync.js?v=20260713-10"></script>
+    <script src="sidebar_sync.js?v=20260713-11"></script>
     <script>
         function toggleSidebar() {
             document.querySelector('.sidebar').classList.toggle('active');
