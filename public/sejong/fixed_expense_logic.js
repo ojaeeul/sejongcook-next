@@ -1,6 +1,7 @@
 // ==================== 고정지출 관리 기능 ====================
 
 let fixedExpensesData = [];
+let editingIndex = -1;
 
 // 1. 고정지출 설정 모달 열기 및 데이터 로드
 window.openFixedExpenseConfig = async function() {
@@ -68,34 +69,62 @@ window.renderFixedExpenseList = function() {
     fixedExpensesData.forEach((item, index) => {
         const div = document.createElement('div');
         div.style.cssText = 'display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding: 8px 4px;';
-        div.innerHTML = `
-            <div style="display: flex; gap: 10px; align-items: center; flex: 1; overflow: hidden; margin-right: 8px;">
-                <span style="white-space: nowrap; font-weight: bold; color: #444; background: #f3f4f6; border-radius: 4px; padding: 4px 8px; text-align: center;">매월 ${item.day}일</span>
-                <span style="flex: 1; color: #333; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.desc}</span>
-                <span style="color: #2563eb; font-weight: bold; white-space: nowrap;">${item.amount}</span>
-            </div>
-            <div style="display: flex; gap: 4px; flex-shrink: 0;">
-                <button onclick="editFixedExpense(${index})" style="white-space: nowrap; color: #059669; border: 1px solid #a7f3d0; background: #ecfdf5; padding: 4px 8px; border-radius: 4px; font-size: 13px; cursor: pointer;">수정</button>
-                <button onclick="removeFixedExpense(${index})" style="white-space: nowrap; color: #dc2626; border: 1px solid #fecaca; background: #fef2f2; padding: 4px 8px; border-radius: 4px; font-size: 13px; cursor: pointer;">삭제</button>
-            </div>
-        `;
+        
+        if (index === editingIndex) {
+            div.innerHTML = `
+                <div style="display: flex; gap: 4px; align-items: center; flex: 1; margin-right: 8px;">
+                    <span style="font-size: 13px;">매월</span>
+                    <input type="number" id="inline-fe-day" value="${item.day}" style="width: 40px; border: 1px solid #ccc; border-radius: 4px; padding: 4px 2px; font-size: 13px; text-align: center;">
+                    <span style="font-size: 13px;">일</span>
+                    <input type="text" id="inline-fe-desc" value="${item.desc}" style="flex: 1; min-width: 0; border: 1px solid #ccc; border-radius: 4px; padding: 4px; font-size: 13px;">
+                    <input type="text" id="inline-fe-amount" value="${item.amount}" style="width: 70px; border: 1px solid #ccc; border-radius: 4px; padding: 4px; font-size: 13px;">
+                </div>
+                <div style="display: flex; gap: 4px; flex-shrink: 0;">
+                    <button onclick="saveInlineEdit(${index})" style="white-space: nowrap; color: white; background: #059669; border: none; padding: 4px 8px; border-radius: 4px; font-size: 13px; cursor: pointer;">완료</button>
+                    <button onclick="cancelInlineEdit()" style="white-space: nowrap; color: #374151; background: #e5e7eb; border: none; padding: 4px 8px; border-radius: 4px; font-size: 13px; cursor: pointer;">취소</button>
+                </div>
+            `;
+        } else {
+            div.innerHTML = `
+                <div style="display: flex; gap: 10px; align-items: center; flex: 1; overflow: hidden; margin-right: 8px;">
+                    <span style="white-space: nowrap; font-weight: bold; color: #444; background: #f3f4f6; border-radius: 4px; padding: 4px 8px; text-align: center;">매월 ${item.day}일</span>
+                    <span style="flex: 1; color: #333; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.desc}</span>
+                    <span style="color: #2563eb; font-weight: bold; white-space: nowrap;">${item.amount}</span>
+                </div>
+                <div style="display: flex; gap: 4px; flex-shrink: 0;">
+                    <button onclick="startInlineEdit(${index})" style="white-space: nowrap; color: #059669; border: 1px solid #a7f3d0; background: #ecfdf5; padding: 4px 8px; border-radius: 4px; font-size: 13px; cursor: pointer;">수정</button>
+                    <button onclick="removeFixedExpense(${index})" style="white-space: nowrap; color: #dc2626; border: 1px solid #fecaca; background: #fef2f2; padding: 4px 8px; border-radius: 4px; font-size: 13px; cursor: pointer;">삭제</button>
+                </div>
+            `;
+        }
         listEl.appendChild(div);
     });
 };
 
-// 3.5 고정지출 항목 수정 (입력창으로 불러오기)
-window.editFixedExpense = function(index) {
-    const item = fixedExpensesData[index];
-    document.getElementById('fe-day').value = item.day;
-    document.getElementById('fe-desc').value = item.desc;
-    document.getElementById('fe-amount').value = item.amount;
-    
-    // 항목을 지우고 다시 추가하도록 유도
-    fixedExpensesData.splice(index, 1);
+// 3.5 인라인 수정 기능
+window.startInlineEdit = function(index) {
+    editingIndex = index;
     if (window.renderFixedExpenseList) window.renderFixedExpenseList();
+};
+
+window.cancelInlineEdit = function() {
+    editingIndex = -1;
+    if (window.renderFixedExpenseList) window.renderFixedExpenseList();
+};
+
+window.saveInlineEdit = function(index) {
+    const day = document.getElementById('inline-fe-day').value;
+    const desc = document.getElementById('inline-fe-desc').value;
+    const amount = document.getElementById('inline-fe-amount').value;
     
-    // 입력창 포커스
-    document.getElementById('fe-day').focus();
+    if (!day || !desc || !amount) {
+        alert("날짜, 내용, 금액을 모두 입력해주세요.");
+        return;
+    }
+    
+    fixedExpensesData[index] = { day: parseInt(day), desc, amount };
+    editingIndex = -1;
+    if (window.renderFixedExpenseList) window.renderFixedExpenseList();
 };
 
 // 4. 고정지출 항목 추가
