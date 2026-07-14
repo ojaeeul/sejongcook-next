@@ -2467,7 +2467,18 @@ function renderMembers() {
 
         // 2. Filter by Course (if not archive/trash mode, or apply to all?)
         if (currentFilter !== 'all' && currentFilter !== 'archive' && currentFilter !== 'trash') {
-            displayMembers = displayMembers.filter(m => m.course && m.course.includes(currentFilter));
+            displayMembers = displayMembers.filter(m => {
+                if (!m.course) return false;
+                if (currentFilter === '제과제빵기능사') {
+                    return m.course.includes('제과제빵기능사') || m.course.includes('제과기능사') || m.course.includes('제빵기능사');
+                } else if (currentFilter === '제과') {
+                    return m.course.includes('제과기능사') || m.course.includes('제과제빵기능사(제과기능사)');
+                } else if (currentFilter === '제빵') {
+                    return m.course.includes('제빵기능사') || m.course.includes('제과제빵기능사(제빵기능사)');
+                } else {
+                    return m.course.includes(currentFilter);
+                }
+            });
         }
 
         // 3. Filter by Unified Search Term
