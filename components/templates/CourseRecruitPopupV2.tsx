@@ -25,7 +25,7 @@ export default function CourseRecruitPopupV2({ content, onClose, link }: Props) 
     return (
         <div
             className="w-full h-full relative flex flex-col font-sans select-none overflow-hidden bg-white text-gray-800 shadow-2xl group"
-            /* onClick={handleBackgroundClick} -> Removing background click to close, so user must use X button */
+            onClick={handleBackgroundClick}
         >
             {/* {link && <Link href={link} className="absolute inset-0 z-10" />} */}
 
