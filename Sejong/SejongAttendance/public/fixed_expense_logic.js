@@ -67,17 +67,35 @@ window.renderFixedExpenseList = function() {
     
     fixedExpensesData.forEach((item, index) => {
         const div = document.createElement('div');
-        div.className = 'flex justify-between items-center border-b py-2 px-1';
+        div.style.cssText = 'display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding: 8px 4px;';
         div.innerHTML = `
-            <div class="flex gap-4 items-center">
-                <span class="w-20 font-bold text-gray-700 bg-gray-100 rounded px-2 py-1 text-center">매월 ${item.day}일</span>
-                <span class="w-48 text-gray-800 font-medium">${item.desc}</span>
-                <span class="text-blue-600 font-semibold">${item.amount}</span>
+            <div style="display: flex; gap: 16px; align-items: center;">
+                <span style="width: 80px; font-weight: bold; color: #444; background: #f3f4f6; border-radius: 4px; padding: 4px 8px; text-align: center;">매월 ${item.day}일</span>
+                <span style="width: 200px; color: #333; font-weight: 500;">${item.desc}</span>
+                <span style="color: #2563eb; font-weight: bold;">${item.amount}</span>
             </div>
-            <button onclick="removeFixedExpense(${index})" class="text-red-500 hover:text-red-700 text-sm px-3 py-1 border border-red-200 rounded bg-red-50 hover:bg-red-100 transition-colors">삭제</button>
+            <div style="display: flex; gap: 8px;">
+                <button onclick="editFixedExpense(${index})" style="color: #059669; border: 1px solid #a7f3d0; background: #ecfdf5; padding: 4px 12px; border-radius: 4px; font-size: 13px; cursor: pointer;">수정</button>
+                <button onclick="removeFixedExpense(${index})" style="color: #dc2626; border: 1px solid #fecaca; background: #fef2f2; padding: 4px 12px; border-radius: 4px; font-size: 13px; cursor: pointer;">삭제</button>
+            </div>
         `;
         listEl.appendChild(div);
     });
+};
+
+// 3.5 고정지출 항목 수정 (입력창으로 불러오기)
+window.editFixedExpense = function(index) {
+    const item = fixedExpensesData[index];
+    document.getElementById('fe-day').value = item.day;
+    document.getElementById('fe-desc').value = item.desc;
+    document.getElementById('fe-amount').value = item.amount;
+    
+    // 항목을 지우고 다시 추가하도록 유도
+    fixedExpensesData.splice(index, 1);
+    if (window.renderFixedExpenseList) window.renderFixedExpenseList();
+    
+    // 입력창 포커스
+    document.getElementById('fe-day').focus();
 };
 
 // 4. 고정지출 항목 추가
