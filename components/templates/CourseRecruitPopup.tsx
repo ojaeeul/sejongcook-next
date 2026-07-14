@@ -70,11 +70,11 @@ export default function CourseRecruitPopup({ content, onClose, link }: Props) {
 
     return (
         <div
-            className="cursor-pointer w-full h-full relative flex flex-col font-sans select-none overflow-hidden bg-black text-white shadow-2xl group"
-            onClick={handleBackgroundClick}
+            className="w-full h-full relative flex flex-col font-sans select-none overflow-hidden bg-black text-white shadow-2xl group"
+            /* onClick={handleBackgroundClick} */
         >
             {/* Link Wrapper */}
-            {link && <Link href={link} className="absolute inset-0 z-10" />}
+            {/* {link && <Link href={link} className="absolute inset-0 z-10" />} */}
 
             {/* Background Layer */}
             <div className="absolute inset-0 z-0">
