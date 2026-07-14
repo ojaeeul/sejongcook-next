@@ -138,7 +138,15 @@ export default function MainPopup() {
             `}} />
             
             {/* Backdrop for drawing attention to the popup first */}
-            <div className="fixed inset-0 z-[9998] bg-black/50 transition-opacity" aria-hidden="true" />
+            <div 
+                className="fixed inset-0 z-[9998] bg-black/50 transition-opacity" 
+                aria-hidden="true" 
+                onClick={() => {
+                    if (popups.length > 0) {
+                        closePopup(popups[0].id, false);
+                    }
+                }}
+            />
 
             <div className="popup-wrapper">
                 {popups.length > 0 && [popups[0]].map((popup, index) => (
@@ -174,28 +182,6 @@ export default function MainPopup() {
                         // Fallback/Default Image Popup
                         <>
                             <div className="relative flex-1 overflow-hidden bg-white">
-                                {popup.link ? (
-                                    <Link href={popup.link}>
-                                        {popup.imageUrl ? (
-                                            <Image
-                                                src={popup.imageUrl}
-                                                alt={popup.title}
-                                                width={popup.size?.width || 500}
-                                                height={popup.size?.height || 500}
-                                                sizes="100vw"
-                                                style={{
-                                                    width: '100%',
-                                                    height: 'auto',
-                                                    display: 'block'
-                                                }}
-                                            />
-                                        ) : (
-                                            <div style={{ width: '100%', height: '200px', backgroundColor: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                <span className="text-gray-400 font-bold">이미지가 없습니다</span>
-                                            </div>
-                                        )}
-                                    </Link>
-                                ) : (
                                     <div 
                                         className="cursor-pointer" 
                                         onClick={() => closePopup(popup.id, false)}
@@ -220,7 +206,6 @@ export default function MainPopup() {
                                             </div>
                                         )}
                                     </div>
-                                )}
                             </div>
                             <div className="bg-gray-800 text-white text-xs p-2 flex justify-between items-center">
                                 <label className="flex items-center gap-2 cursor-pointer hover:text-gray-200">

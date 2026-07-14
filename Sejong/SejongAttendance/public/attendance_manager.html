@@ -7,13 +7,13 @@
     <meta http-equiv="Expires" content="0">    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>세종요리 출결관리</title>
-    <link rel="stylesheet" href="style.css?v=20260715-7">
-    <link rel="stylesheet" href="exam_view.css?v=20260715-7">
+    <link rel="stylesheet" href="style.css?v=20260715-8">
+    <link rel="stylesheet" href="exam_view.css?v=20260715-8">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="script.js?v=20260715-7" defer></script>
-    <script src="questions_data.js?v=20260715-7" defer></script>
+    <script src="script.js?v=20260715-8" defer></script>
+    <script src="questions_data.js?v=20260715-8" defer></script>
     <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#ffffff">
@@ -191,6 +191,10 @@
                 <a href="monitor.html?v=1780796013_211823" target="_blank" class="nav-item highlight">키오스크 모니터</a>
                 <a href="kiosk_admin.html" id="navKioskAdmin" class="nav-item">키오스크 설정</a>
                 <a href="admin_account.html" id="navAdminAccount" class="nav-item">아이디</a>
+                <a href="#" onclick="logoutAdmin(event)" class="nav-item" style="color: #ef4444;">
+                    <span class="material-icons" style="font-size: 1.2rem; margin-right: 8px;">logout</span>
+                    로그아웃
+                </a>
                 <a href="https://github.com/ojaeeul/sejongcook-next/archive/refs/heads/main.zip" class="nav-item">깃허브 백업 다운로드</a>
             </nav>
         </aside>
@@ -431,6 +435,6 @@
             init();
         };
     </script>
-    <script src="sidebar_sync.js?v=20260715-7"></script>
+    <script src="sidebar_sync.js?v=20260715-8"></script>
 </body>
 </html>

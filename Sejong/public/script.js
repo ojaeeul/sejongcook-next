@@ -29,6 +29,15 @@ sejongSyncChannel.onmessage = function(event) {
 window.notifyMemberUpdate = function() {
     sejongSyncChannel.postMessage('MEMBER_UPDATED');
 };
+
+window.logoutAdmin = function(e) {
+    if (e) e.preventDefault();
+    if(confirm("로그아웃 하시겠습니까?")) {
+        try { localStorage.removeItem('adminToken'); } catch(e) {}
+        document.cookie = "admin_auth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+        window.location.href = '/admin/login';
+    }
+};
 // ------------------------------------------------
 
 // 공통으로 사용될 전역 변수들

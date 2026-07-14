@@ -89,6 +89,7 @@ export default function AdminAccountPage() {
                         <input 
                             type="text" 
                             id="adminId" 
+                            autoComplete="off"
                             placeholder="아이디를 입력하세요" 
                             value={adminId}
                             onChange={(e) => setAdminId(e.target.value)}
@@ -101,6 +102,7 @@ export default function AdminAccountPage() {
                         <input 
                             type={showPw ? "text" : "password"} 
                             id="adminPw" 
+                            autoComplete="new-password"
                             placeholder="비밀번호를 입력하세요" 
                             value={adminPw}
                             onChange={(e) => setAdminPw(e.target.value)}
