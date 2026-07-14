@@ -450,13 +450,49 @@ function processCourses() {
     });
 }
 
+function getCombinedMembers(cName) {
+    let displayMembers = [];
+    if (cName.startsWith('제과제빵기능사')) {
+        const timeSuffix = cName.replace('제과제빵기능사', '');
+        ['제과기능사', '제빵기능사', '제과제빵기능사'].forEach(prefix => {
+            const key = prefix + timeSuffix;
+            if (groupedCourses[key]) displayMembers = displayMembers.concat(groupedCourses[key]);
+        });
+    } else if (cName.startsWith('제과기능사')) {
+        const timeSuffix = cName.replace('제과기능사', '');
+        ['제과기능사', '제과제빵기능사(제과기능사)'].forEach(prefix => {
+            const key = prefix + timeSuffix;
+            if (groupedCourses[key]) displayMembers = displayMembers.concat(groupedCourses[key]);
+        });
+    } else if (cName.startsWith('제빵기능사')) {
+        const timeSuffix = cName.replace('제빵기능사', '');
+        ['제빵기능사', '제과제빵기능사(제빵기능사)'].forEach(prefix => {
+            const key = prefix + timeSuffix;
+            if (groupedCourses[key]) displayMembers = displayMembers.concat(groupedCourses[key]);
+        });
+    } else {
+        if (groupedCourses[cName]) displayMembers = groupedCourses[cName];
+    }
+    
+    const uniqueMembers = [];
+    const seenPhones = new Set();
+    displayMembers.forEach(m => {
+        if (!seenPhones.has(m.phone)) {
+            seenPhones.add(m.phone);
+            uniqueMembers.push(m);
+        }
+    });
+    return uniqueMembers;
+}
+
 function populateCourseSelect() {
     const sel = document.getElementById('courseSelect');
     sel.innerHTML = '<option value="">반(과정)을 선택하세요</option>';
     Object.keys(groupedCourses).sort().forEach(cName => {
+        const combined = getCombinedMembers(cName);
         const opt = document.createElement('option');
         opt.value = cName;
-        opt.textContent = `${cName} (${groupedCourses[cName].length}명)`;
+        opt.textContent = `${cName} (${combined.length}명)`;
         sel.appendChild(opt);
     });
     
@@ -503,7 +539,8 @@ function renderStudentList() {
         { val: 'extension', label: '연장' }
     ];
 
-    groupedCourses[cName].forEach(m => {
+    const membersToRender = getCombinedMembers(cName);
+    membersToRender.forEach(m => {
         const curStat = getStatusForMember(m.phone);
         if (stats[curStat] !== undefined) stats[curStat]++;
         
@@ -616,6 +653,6 @@ function showToast(msg) {
     setTimeout(() => { t.style.opacity = '0'; }, 2000);
 }
 </script>
-    <script src="sidebar_sync.js?v=20260715-11"></script>
+    <script src="sidebar_sync.js?v=20260715-12"></script>
 </body>
 </html>
