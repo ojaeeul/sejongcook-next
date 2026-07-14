@@ -22,16 +22,38 @@ function AdminLoginForm() {
         setLoading(true);
         setError('');
 
-        // 🟢 Development Backdoor / Hardcoded Login
-        if (username === 'admin' && password === '1234') {
-            document.cookie = "admin_auth=true; path=/; max-age=86400"; // Set cookie for middleware
-            login(); // Sets local token
-            if (from.startsWith('/sejong')) {
-                window.location.href = from;
-            } else {
-                router.push(from);
+        // 🟢 Dynamic Backdoor / Hardcoded Login Fallback
+        try {
+            const res = await fetch('/api/sejong/settings');
+            let customId = 'admin';
+            let customPw = '1234';
+            if (res.ok) {
+                const data = await res.json();
+                if (data.adminAccount && data.adminAccount.id && data.adminAccount.pw) {
+                    customId = data.adminAccount.id;
+                    customPw = data.adminAccount.pw;
+                }
             }
-            return;
+
+            if (username === customId && password === customPw) {
+                document.cookie = "admin_auth=true; path=/; max-age=86400"; // Set cookie for middleware
+                login(); // Sets local token
+                if (from.startsWith('/sejong')) {
+                    window.location.href = from;
+                } else {
+                    router.push(from);
+                }
+                return;
+            }
+        } catch (e) {
+            console.error("Failed to fetch custom admin credentials", e);
+            // Fallback to strict hardcoded if fetch fails entirely
+            if (username === 'admin' && password === '1234') {
+                document.cookie = "admin_auth=true; path=/; max-age=86400";
+                login();
+                router.push(from);
+                return;
+            }
         }
 
         try {

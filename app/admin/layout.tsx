@@ -118,6 +118,7 @@ export default function AdminLayout({
         { name: '명예의 전당', href: '/admin/honor', icon: ImageIcon }, // Re-using ImageIcon or similar
         { name: '사이트 링크', href: '/admin/links', icon: LinkIcon },
         { name: '하단 정보 (Footer)', href: '/admin/footer', icon: FileText },
+        { name: '아이디/비밀번호', href: '/admin/account', icon: Settings },
         { name: '환경 설정', href: '/admin/settings', icon: Settings },
     ];
 
