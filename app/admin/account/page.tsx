@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { UserCog } from 'lucide-react';
 
 export default function AdminAccountPage() {
+    const [currentId, setCurrentId] = useState('로딩중...');
+    const [currentPw, setCurrentPw] = useState('');
     const [adminId, setAdminId] = useState('');
     const [adminPw, setAdminPw] = useState('');
     const [showPw, setShowPw] = useState(false);
@@ -15,8 +17,8 @@ export default function AdminAccountPage() {
                 if (res.ok) {
                     const data = await res.json();
                     if (data.adminAccount) {
-                        setAdminId(data.adminAccount.id || '');
-                        setAdminPw(data.adminAccount.pw || '');
+                        setCurrentId(data.adminAccount.id || '없음');
+                        setCurrentPw(data.adminAccount.pw || '');
                     }
                 }
             } catch (e) {
@@ -25,8 +27,8 @@ export default function AdminAccountPage() {
                 if (stored) {
                     try {
                         const parsed = JSON.parse(stored);
-                        setAdminId(parsed.id || '');
-                        setAdminPw(parsed.pw || '');
+                        setCurrentId(parsed.id || '없음');
+                        setCurrentPw(parsed.pw || '');
                     } catch(e2) {}
                 }
             }
@@ -37,11 +39,11 @@ export default function AdminAccountPage() {
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
         
-        const id = adminId.trim();
-        const pw = adminPw.trim();
+        const id = adminId.trim() || currentId;
+        const pw = adminPw.trim() || currentPw;
         
-        if (!id || !pw) {
-            alert("아이디와 비밀번호를 모두 입력해주세요.");
+        if (!id || !pw || id === '로딩중...' || id === '없음') {
+            alert("저장할 계정 정보가 유효하지 않습니다.");
             return;
         }
         
@@ -83,14 +85,21 @@ export default function AdminAccountPage() {
                     관리자 아이디/비밀번호
                 </h2>
                 
+                <div className="mb-6 p-4 bg-slate-50 rounded-xl border border-slate-200">
+                    <div className="text-sm text-slate-500 mb-1">현재 아이디</div>
+                    <div className="text-lg font-bold text-slate-900">{currentId}</div>
+                </div>
+                
                 <form onSubmit={handleSave}>
                     <div className="mb-6">
-                        <label htmlFor="adminId" className="block mb-2.5 font-semibold text-slate-700">새로운 아이디</label>
+                        <label htmlFor="adminId" className="block mb-2.5 font-semibold text-slate-700">
+                            변경할 아이디 <span className="text-sm font-normal text-slate-500">(변경하지 않으려면 비워두세요)</span>
+                        </label>
                         <input 
                             type="text" 
                             id="adminId" 
                             autoComplete="off"
-                            placeholder="아이디를 입력하세요" 
+                            placeholder="새로운 아이디" 
                             value={adminId}
                             onChange={(e) => setAdminId(e.target.value)}
                             className="w-full p-3.5 border border-slate-300 rounded-xl text-base outline-none transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
@@ -98,12 +107,14 @@ export default function AdminAccountPage() {
                     </div>
                     
                     <div className="mb-6">
-                        <label htmlFor="adminPw" className="block mb-2.5 font-semibold text-slate-700">새로운 비밀번호</label>
+                        <label htmlFor="adminPw" className="block mb-2.5 font-semibold text-slate-700">
+                            변경할 비밀번호 <span className="text-sm font-normal text-slate-500">(변경하지 않으려면 비워두세요)</span>
+                        </label>
                         <input 
                             type={showPw ? "text" : "password"} 
                             id="adminPw" 
                             autoComplete="new-password"
-                            placeholder="비밀번호를 입력하세요" 
+                            placeholder="새로운 비밀번호" 
                             value={adminPw}
                             onChange={(e) => setAdminPw(e.target.value)}
                             className="w-full p-3.5 border border-slate-300 rounded-xl text-base outline-none transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500"

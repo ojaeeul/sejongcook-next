@@ -1,3 +1,6 @@
+let currentStoredId = '';
+let currentStoredPw = '';
+
 document.addEventListener('DOMContentLoaded', () => {
     loadAdminAccount();
 });
@@ -8,8 +11,9 @@ async function loadAdminAccount() {
         if (res.ok) {
             const data = await res.json();
             if (data.adminAccount) {
-                document.getElementById('adminId').value = data.adminAccount.id || '';
-                document.getElementById('adminPw').value = data.adminAccount.pw || '';
+                currentStoredId = data.adminAccount.id || '';
+                currentStoredPw = data.adminAccount.pw || '';
+                document.getElementById('currentIdDisplay').textContent = currentStoredId || '없음';
             }
         }
     } catch (e) {
@@ -20,19 +24,23 @@ async function loadAdminAccount() {
             const stored = localStorage.getItem('adminAccount');
             if (stored) {
                 const parsed = JSON.parse(stored);
-                document.getElementById('adminId').value = parsed.id || '';
-                document.getElementById('adminPw').value = parsed.pw || '';
+                currentStoredId = parsed.id || '';
+                currentStoredPw = parsed.pw || '';
+                document.getElementById('currentIdDisplay').textContent = currentStoredId || '없음';
             }
         } catch(e2) {}
     }
 }
 
 async function saveAdminAccount() {
-    const id = document.getElementById('adminId').value.trim();
-    const pw = document.getElementById('adminPw').value.trim();
+    const newId = document.getElementById('adminId').value.trim();
+    const newPw = document.getElementById('adminPw').value.trim();
+    
+    const id = newId || currentStoredId;
+    const pw = newPw || currentStoredPw;
     
     if (!id || !pw) {
-        alert("아이디와 비밀번호를 모두 입력해주세요.");
+        alert("저장할 계정 정보가 유효하지 않습니다.");
         return;
     }
     
