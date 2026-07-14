@@ -11,7 +11,7 @@ export default function AdminAccountPage() {
     useEffect(() => {
         const fetchSettings = async () => {
             try {
-                const res = await fetch('/api/sejong/settings');
+                const res = await fetch('/api/sejong/settings', { cache: 'no-store' });
                 if (res.ok) {
                     const data = await res.json();
                     if (data.adminAccount) {
@@ -50,7 +50,7 @@ export default function AdminAccountPage() {
         } catch(e) {}
         
         try {
-            const res = await fetch('/api/sejong/settings');
+            const res = await fetch('/api/sejong/settings', { cache: 'no-store' });
             let currentSettings: any = {};
             if (res.ok) {
                 currentSettings = await res.json();

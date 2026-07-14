@@ -24,7 +24,7 @@ function AdminLoginForm() {
 
         // 🟢 Dynamic Backdoor / Hardcoded Login Fallback
         try {
-            const res = await fetch('/api/sejong/settings');
+            const res = await fetch('/api/sejong/settings', { cache: 'no-store' });
             let customId = 'admin';
             let customPw = '1234';
             if (res.ok) {

@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function loadAdminAccount() {
     try {
-        const res = await fetch('/api/sejong/settings');
+        const res = await fetch('/api/sejong/settings', { cache: 'no-store' });
         if (res.ok) {
             const data = await res.json();
             if (data.adminAccount) {
@@ -42,7 +42,7 @@ async function saveAdminAccount() {
     } catch(e) {}
     
     try {
-        const res = await fetch('/api/sejong/settings');
+        const res = await fetch('/api/sejong/settings', { cache: 'no-store' });
         let currentSettings = {};
         if (res.ok) {
             currentSettings = await res.json();
