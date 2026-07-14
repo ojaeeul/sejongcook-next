@@ -69,14 +69,14 @@ window.renderFixedExpenseList = function() {
         const div = document.createElement('div');
         div.style.cssText = 'display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding: 8px 4px;';
         div.innerHTML = `
-            <div style="display: flex; gap: 16px; align-items: center;">
-                <span style="width: 80px; font-weight: bold; color: #444; background: #f3f4f6; border-radius: 4px; padding: 4px 8px; text-align: center;">매월 ${item.day}일</span>
-                <span style="width: 200px; color: #333; font-weight: 500;">${item.desc}</span>
-                <span style="color: #2563eb; font-weight: bold;">${item.amount}</span>
+            <div style="display: flex; gap: 10px; align-items: center; flex: 1; overflow: hidden; margin-right: 8px;">
+                <span style="white-space: nowrap; font-weight: bold; color: #444; background: #f3f4f6; border-radius: 4px; padding: 4px 8px; text-align: center;">매월 ${item.day}일</span>
+                <span style="flex: 1; color: #333; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.desc}</span>
+                <span style="color: #2563eb; font-weight: bold; white-space: nowrap;">${item.amount}</span>
             </div>
-            <div style="display: flex; gap: 8px;">
-                <button onclick="editFixedExpense(${index})" style="color: #059669; border: 1px solid #a7f3d0; background: #ecfdf5; padding: 4px 12px; border-radius: 4px; font-size: 13px; cursor: pointer;">수정</button>
-                <button onclick="removeFixedExpense(${index})" style="color: #dc2626; border: 1px solid #fecaca; background: #fef2f2; padding: 4px 12px; border-radius: 4px; font-size: 13px; cursor: pointer;">삭제</button>
+            <div style="display: flex; gap: 4px; flex-shrink: 0;">
+                <button onclick="editFixedExpense(${index})" style="white-space: nowrap; color: #059669; border: 1px solid #a7f3d0; background: #ecfdf5; padding: 4px 8px; border-radius: 4px; font-size: 13px; cursor: pointer;">수정</button>
+                <button onclick="removeFixedExpense(${index})" style="white-space: nowrap; color: #dc2626; border: 1px solid #fecaca; background: #fef2f2; padding: 4px 8px; border-radius: 4px; font-size: 13px; cursor: pointer;">삭제</button>
             </div>
         `;
         listEl.appendChild(div);
