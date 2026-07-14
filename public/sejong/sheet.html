@@ -12,12 +12,12 @@
     <meta name="keywords" content="세종요리, 김포요리, 세종요리학원, 김포요리학원, 요리학원, 출석관리, 수강생관리, 요리자격증">
     <meta property="og:title" content="세종요리제과학원 월간 출석부">
     <meta property="og:description" content="수강생들의 출석 현황을 한눈에 확인하세요.">
-    <link rel="stylesheet" href="style.css?v=20260715-12">
+    <link rel="stylesheet" href="style.css?v=20260715-13">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="shared_calc.js?v=20260715-12"></script>
-    <script src="script.js?v=20260715-12" defer></script>
+    <script src="shared_calc.js?v=20260715-13"></script>
+    <script src="script.js?v=20260715-13" defer></script>
     <style>
         .sheet-container {
             background: white;
@@ -2176,23 +2176,28 @@
                 });
 
                 // [신규 - 전체 동기화] 현재 학원에 등록된 모든 과정/모든 학생에 대해 (필터 무관) 실제 레드박스 예정일 계산 및 동기화 저장
-                if (typeof window.calculateRedBoxesForMonth === 'function') {
-                    allCourseRows.forEach(row => {
-                        const m = row.member;
-                        const rowCourseNameScope = row.courseName;
-                        if (m && m.id) {
-                            const result = window.calculateRedBoxesForMonth(m, currentYear, currentMonth, attendanceData || [], rowCourseNameScope, window.GLOBAL_DATA_ADJUSTMENTS || {}, window.paymentsData || []);
-                            const syncKeyNow = `${m.id}_${currentYear}_${currentMonth}_${rowCourseNameScope || 'all'}`;
-                            
-                            if (result && result.redDays && result.redDays.length > 0 && !result.isSimulated && result.hasAnyAttendance) {
-                                window.ledgerSyncData[syncKeyNow] = result.redDays;
-                            } else {
-                                delete window.ledgerSyncData[syncKeyNow];
+                // 성능 최적화: 월이나 출석 데이터가 변경되었을 때만 재계산
+                const currentSyncStateStr = `${currentYear}_${currentMonth}_${lastAttendanceHash}`;
+                if (window.lastLedgerSyncStateStr !== currentSyncStateStr) {
+                    if (typeof window.calculateRedBoxesForMonth === 'function') {
+                        allCourseRows.forEach(row => {
+                            const m = row.member;
+                            const rowCourseNameScope = row.courseName;
+                            if (m && m.id) {
+                                const result = window.calculateRedBoxesForMonth(m, currentYear, currentMonth, attendanceData || [], rowCourseNameScope, window.GLOBAL_DATA_ADJUSTMENTS || {}, window.paymentsData || []);
+                                const syncKeyNow = `${m.id}_${currentYear}_${currentMonth}_${rowCourseNameScope || 'all'}`;
+                                
+                                if (result && result.redDays && result.redDays.length > 0 && !result.isSimulated && result.hasAnyAttendance) {
+                                    window.ledgerSyncData[syncKeyNow] = result.redDays;
+                                } else {
+                                    delete window.ledgerSyncData[syncKeyNow];
+                                }
                             }
-                        }
-                    });
+                        });
+                    }
+                    localStorage.setItem('sejong_ledger_sync', JSON.stringify(window.ledgerSyncData));
+                    window.lastLedgerSyncStateStr = currentSyncStateStr;
                 }
-                localStorage.setItem('sejong_ledger_sync', JSON.stringify(window.ledgerSyncData));
 
                 // 3. Filter by Payment Students if checked
                 const showOnlyPaymentStudents = document.getElementById('showOnlyPaymentStudents') && document.getElementById('showOnlyPaymentStudents').checked;
@@ -2218,6 +2223,7 @@
                 // Body - Fixed 20 Rows
                 const tbody = document.getElementById('sheetBody');
                 tbody.innerHTML = '';
+                const tbodyFragment = document.createDocumentFragment();
 
                 const renderedArrows = new Set(); // memberId_date
                 const membersWithRedBox = new Set();
@@ -2831,8 +2837,9 @@
                         tdErr.style.color = 'red';
                         tr.appendChild(tdErr);
                     }
-                    tbody.appendChild(tr);
+                    tbodyFragment.appendChild(tr);
                 }
+                tbody.appendChild(tbodyFragment);
 
                 // 모든 행 렌더링이 끝난 후 결재일 수강생 수 업데이트
                 const hcSpan2 = document.getElementById('currentHeadcount');
@@ -3548,8 +3555,8 @@
             }
         });
     </script>
-    <script src="ui_arrows.js?v=20260715-12"></script>
-    <script src="sidebar_sync.js?v=20260715-12"></script>
+    <script src="ui_arrows.js?v=20260715-13"></script>
+    <script src="sidebar_sync.js?v=20260715-13"></script>
 </body>
 
 </html>
