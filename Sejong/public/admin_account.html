@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>관리자 계정 설정 - 세종요리제과학원</title>
-    <link rel="stylesheet" href="style.css?v=20260715-1">
+    <link rel="stylesheet" href="style.css?v=20260715-2">
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -53,6 +53,10 @@
         <div class="form-group">
             <label for="adminPw">새로운 비밀번호</label>
             <input type="password" id="adminPw" placeholder="비밀번호를 입력하세요">
+            <label style="display: flex; align-items: center; gap: 8px; margin-top: 12px; font-weight: 400; color: #475569; font-size: 0.95rem; cursor: pointer;">
+                <input type="checkbox" id="showPwCheckbox" onchange="togglePasswordVisibility()" style="width: 18px; height: 18px; margin: 0; padding: 0; cursor: pointer; accent-color: #3b82f6;">
+                비밀번호 표시
+            </label>
         </div>
         
         <button class="btn-save" onclick="saveAdminAccount()">변경사항 저장</button>
@@ -65,6 +69,6 @@
         </div>
     </div>
 
-    <script src="admin_account.js?v=20260715-1"></script>
+    <script src="admin_account.js?v=20260715-2"></script>
 </body>
 </html>

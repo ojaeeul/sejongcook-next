@@ -66,3 +66,13 @@ async function saveAdminAccount() {
         alert("로컬 저장소에는 저장되었으나, 서버 동기화에 실패했습니다.");
     }
 }
+
+function togglePasswordVisibility() {
+    const pwInput = document.getElementById('adminPw');
+    const checkbox = document.getElementById('showPwCheckbox');
+    if (checkbox.checked) {
+        pwInput.type = 'text';
+    } else {
+        pwInput.type = 'password';
+    }
+}
