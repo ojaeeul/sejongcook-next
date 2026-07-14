@@ -5,7 +5,7 @@ let fixedExpensesData = [];
 // 1. 고정지출 설정 모달 열기 및 데이터 로드
 window.openFixedExpenseConfig = async function() {
     const modal = document.getElementById('fixed-expense-modal');
-    if (modal) modal.classList.remove('hidden');
+    if (modal) modal.style.display = 'flex';
     
     // 데이터 불러오기
     try {
@@ -52,7 +52,7 @@ window.openFixedExpenseConfig = async function() {
 // 2. 고정지출 모달 닫기
 window.closeFixedExpenseConfig = function() {
     const modal = document.getElementById('fixed-expense-modal');
-    if (modal) modal.classList.add('hidden');
+    if (modal) modal.style.display = 'none';
 };
 
 // 3. 고정지출 리스트 렌더링
