@@ -86,8 +86,21 @@ export default function AdminAccountPage() {
                 </h2>
                 
                 <div className="mb-6 p-4 bg-slate-50 rounded-xl border border-slate-200">
-                    <div className="text-sm text-slate-500 mb-1">현재 아이디</div>
-                    <div className="text-lg font-bold text-slate-900">{currentId}</div>
+                    <div className="flex justify-between items-center mb-2 border-b border-slate-200 pb-2">
+                        <span className="text-sm font-semibold text-slate-500">현재 계정 정보</span>
+                    </div>
+                    <div className="flex flex-col gap-2 mt-2">
+                        <div className="flex justify-between items-center">
+                            <span className="text-sm text-slate-500">아이디</span>
+                            <span className="text-lg font-bold text-slate-900">{currentId}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <span className="text-sm text-slate-500">비밀번호</span>
+                            <span className="text-lg font-bold text-slate-900 tracking-wider">
+                                {currentPw ? (showPw ? currentPw : '•'.repeat(currentPw.length)) : '로딩중...'}
+                            </span>
+                        </div>
+                    </div>
                 </div>
                 
                 <form onSubmit={handleSave}>

@@ -14,6 +14,7 @@ async function loadAdminAccount() {
                 currentStoredId = data.adminAccount.id || '';
                 currentStoredPw = data.adminAccount.pw || '';
                 document.getElementById('currentIdDisplay').textContent = currentStoredId || '없음';
+                document.getElementById('currentPwDisplay').textContent = currentStoredPw ? '•'.repeat(currentStoredPw.length) : '없음';
             }
         }
     } catch (e) {
@@ -27,6 +28,7 @@ async function loadAdminAccount() {
                 currentStoredId = parsed.id || '';
                 currentStoredPw = parsed.pw || '';
                 document.getElementById('currentIdDisplay').textContent = currentStoredId || '없음';
+                document.getElementById('currentPwDisplay').textContent = currentStoredPw ? '•'.repeat(currentStoredPw.length) : '없음';
             }
         } catch(e2) {}
     }
@@ -78,9 +80,17 @@ async function saveAdminAccount() {
 function togglePasswordVisibility() {
     const pwInput = document.getElementById('adminPw');
     const checkbox = document.getElementById('showPwCheckbox');
+    const currentPwDisplay = document.getElementById('currentPwDisplay');
+    
     if (checkbox.checked) {
         pwInput.type = 'text';
+        if (currentPwDisplay && currentStoredPw) {
+            currentPwDisplay.textContent = currentStoredPw;
+        }
     } else {
         pwInput.type = 'password';
+        if (currentPwDisplay && currentStoredPw) {
+            currentPwDisplay.textContent = '•'.repeat(currentStoredPw.length);
+        }
     }
 }
