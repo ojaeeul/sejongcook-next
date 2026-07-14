@@ -12,12 +12,12 @@
     <meta name="keywords" content="세종요리, 김포요리, 세종요리학원, 김포요리학원, 요리학원, 출석관리, 수강생관리, 요리자격증">
     <meta property="og:title" content="세종요리제과학원 월간 출석부">
     <meta property="og:description" content="수강생들의 출석 현황을 한눈에 확인하세요.">
-    <link rel="stylesheet" href="style.css?v=20260715-13">
+    <link rel="stylesheet" href="style.css?v=20260715-14">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="shared_calc.js?v=20260715-13"></script>
-    <script src="script.js?v=20260715-13" defer></script>
+    <script src="shared_calc.js?v=20260715-14"></script>
+    <script src="script.js?v=20260715-14" defer></script>
     <style>
         .sheet-container {
             background: white;
@@ -2228,6 +2228,20 @@
                 const renderedArrows = new Set(); // memberId_date
                 const membersWithRedBox = new Set();
                 let redBoxOccurrences = 0;
+                // Pre-group attendance data by member ID and pre-clean course names to optimize the row loop
+                const attendanceByMember = new Map();
+                if (attendanceData) {
+                    attendanceData.forEach(l => {
+                        const mid = String(l.memberId);
+                        if (!attendanceByMember.has(mid)) attendanceByMember.set(mid, []);
+                        // Cache cleaned course name to avoid running regex millions of times
+                        if (l.course && typeof l.course === 'string') {
+                            l._courseClean = l.course.replace(/\([^)]*\)/g, '').trim();
+                        }
+                        attendanceByMember.get(mid).push(l);
+                    });
+                }
+
                 const maxRows = Math.max(20, filteredRows.length);
                 for (let r = 0; r < maxRows; r++) {
                     const tr = document.createElement('tr');
@@ -2282,15 +2296,15 @@
                         isDualCourse = effectiveCourseName.replace(/\s/g, '').includes('제과제빵');
                         const attendanceIncrement = isDualCourse ? 1.0 : 1;
 
-                        const rowLogsRaw = attendanceData.filter(l => {
-                            if (String(l.memberId) !== String(m.id)) return false;
+                        const memberAllLogs = attendanceByMember.get(String(m.id)) || [];
+                        const rCourseClean = rowCourseNameScope ? rowCourseNameScope.replace(/\([^)]*\)/g, '').trim() : '';
+
+                        const rowLogsRaw = memberAllLogs.filter(l => {
                             if (!l.course) return true; // Global logs are always included
                             if (!rowCourseNameScope) return false;
 
-                            // Normalize both for comparison
-                            const lCourseClean = l.course.replace(/\([^)]*\)/g, '').trim();
-                            const rCourseClean = rowCourseNameScope.replace(/\([^)]*\)/g, '').trim();
-                            return lCourseClean === rCourseClean;
+                            // Use precomputed clean names
+                            return l._courseClean === rCourseClean;
                         });
                         const uniqueRowLogsMap = new Map();
 
@@ -2585,13 +2599,27 @@
                         }
                     }
 
+                    // [신규] 31일 루프 전 데이터 해시맵화 (O(1) 검색 최적화)
+                    const uniqueLogsByDate = new Map();
+                    uniqueLogs.forEach(l => uniqueLogsByDate.set(l.date, l));
+                    
+                    const memberArrowsByDate = new Map();
+                    const memberAllLogs = attendanceByMember.get(String(m ? m.id : '')) || [];
+                    memberAllLogs.forEach(l => {
+                        if (l.status === 'arrow') memberArrowsByDate.set(l.date, l);
+                    });
+
                     // Days (Always 1-31)
                     for (let i = 1; i <= 31; i++) {
                         const td = document.createElement('td');
                         td.className = 'cell-check';
+                        
+                        let logForDayCache = undefined;
 
                         if (i <= daysInMonth) {
                             const dateStr = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+                            logForDayCache = uniqueLogsByDate.get(dateStr);
+                            
                             const isHolidayInSys = holidaysData.find(h => h.date === dateStr);
                             const isNationalHoliday = !!KOREAN_HOLIDAYS_MAP[dateStr];
                             const isHoliday = isHolidayInSys || isNationalHoliday;
@@ -2637,7 +2665,7 @@
 
                                 // [HOTFIX] If there is an actual attendance log or if it's a red box date, DO NOT restrict the cell.
                                 // We need to check log status before applying restriction so the user can see existing records.
-                                const isLogPresent = m && uniqueLogs.find(l => l.date === dateStr && l.status !== 'unchecked');
+                                const isLogPresent = m && (logForDayCache && logForDayCache.status !== 'unchecked');
                                 if (isRestricted && (isLogPresent || redBoxDates.has(dateStr))) {
                                     isRestricted = false;
                                 }
@@ -2659,9 +2687,9 @@
                                 td.dataset.course = rowCourseNameScope || '';
 
                                 // UI Lookup using pre-filtered uniqueLogs which cleanly matches course names (ignores time parentheses)
-                                const log = m ? uniqueLogs.find(l => l.date === dateStr) : undefined;
+                                const log = logForDayCache;
 
-                                const globalArrowLog = m ? attendanceData.find(l => l.memberId === m.id && l.date === dateStr && l.status === 'arrow') : undefined;
+                                const globalArrowLog = memberArrowsByDate.get(dateStr);
                                 let status = globalArrowLog ? 'arrow' : (log ? log.status : 'unchecked');
 
                                 // Only show arrow on ONE row for the member
@@ -2694,8 +2722,8 @@
                                     if (status === 'extension') {
                                         setCellSymbol(td, status);
                                     } else if (status === 'arrow') {
-                                        const isPrevArrow = m ? !!attendanceData.find(l => l.memberId === m.id && l.date === prevDateStr && l.status === 'arrow') : false;
-                                        const isNextArrow = m ? !!attendanceData.find(l => l.memberId === m.id && l.date === nextDateStr && l.status === 'arrow') : false;
+                                        const isPrevArrow = memberArrowsByDate.has(prevDateStr);
+                                        const isNextArrow = memberArrowsByDate.has(nextDateStr);
                                         renderThinArrow(td, isPrevArrow, isNextArrow);
                                     } else {
                                         setCellSymbol(td, status);
@@ -3555,8 +3583,8 @@
             }
         });
     </script>
-    <script src="ui_arrows.js?v=20260715-13"></script>
-    <script src="sidebar_sync.js?v=20260715-13"></script>
+    <script src="ui_arrows.js?v=20260715-14"></script>
+    <script src="sidebar_sync.js?v=20260715-14"></script>
 </body>
 
 </html>
