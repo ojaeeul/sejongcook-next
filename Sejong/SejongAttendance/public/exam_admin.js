@@ -134,13 +134,8 @@ function renderCalendar() {
         const timeField = r.submitTime || r.startTime;
         if (!timeField) return;
         
-        // Convert UTC to KST (Korean Standard Time) to accurately place in correct date
-        const dateObj = new Date(timeField);
-        const kstDate = new Date(dateObj.getTime() + (9 * 60 * 60 * 1000));
-        const yStr = kstDate.getUTCFullYear();
-        const mStr = String(kstDate.getUTCMonth() + 1).padStart(2, '0');
-        const dStr = String(kstDate.getUTCDate()).padStart(2, '0');
-        const dateStr = `${yStr}-${mStr}-${dStr}`;
+        // Use exact same UTC date string as exam_management.html to ensure 100% match
+        const dateStr = timeField.split('T')[0];
         
         if (!recordsByDay[dateStr]) recordsByDay[dateStr] = [];
         recordsByDay[dateStr].push(r);
@@ -226,12 +221,7 @@ function filterExamsByDate(dateString) {
             const timeField = item.exam.submitTime || item.exam.startTime;
             if (!timeField) return false;
             
-            const dateObj = new Date(timeField);
-            const kstDate = new Date(dateObj.getTime() + (9 * 60 * 60 * 1000));
-            const yStr = kstDate.getUTCFullYear();
-            const mStr = String(kstDate.getUTCMonth() + 1).padStart(2, '0');
-            const dStr = String(kstDate.getUTCDate()).padStart(2, '0');
-            const examDateStr = `${yStr}-${mStr}-${dStr}`;
+            const examDateStr = timeField.split('T')[0];
             
             return examDateStr === dateString;
         });
