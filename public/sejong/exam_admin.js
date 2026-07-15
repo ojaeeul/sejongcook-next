@@ -33,8 +33,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function fetchData() {
     try {
         const [examsRes, membersRes, qRes] = await Promise.all([
-            fetch('/api/sejong/exams'),
-            fetch('/api/sejong/members'),
+            fetch('/api/sejong/exams?t=' + Date.now()),
+            fetch('/api/sejong/members?t=' + Date.now()),
             fetch('questions_data.json?v=' + Date.now())
         ]);
         
@@ -49,8 +49,8 @@ async function fetchData() {
             membersData[m.phone] = m.name;
         });
         
-        // Sort exams by start time descending
-        examsData.sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
+        // Sort exams by submit time descending
+        examsData.sort((a, b) => new Date(b.submitTime || b.startTime || 0) - new Date(a.submitTime || a.startTime || 0));
         
     } catch (e) {
         console.error("Failed to fetch data:", e);
@@ -131,8 +131,17 @@ function renderCalendar() {
     
     const recordsByDay = {};
     examsData.forEach(r => {
-        if (!r.startTime) return;
-        const dateStr = r.startTime.split('T')[0];
+        const timeField = r.submitTime || r.startTime;
+        if (!timeField) return;
+        
+        // Convert UTC to KST (Korean Standard Time) to accurately place in correct date
+        const dateObj = new Date(timeField);
+        const kstDate = new Date(dateObj.getTime() + (9 * 60 * 60 * 1000));
+        const yStr = kstDate.getUTCFullYear();
+        const mStr = String(kstDate.getUTCMonth() + 1).padStart(2, '0');
+        const dStr = String(kstDate.getUTCDate()).padStart(2, '0');
+        const dateStr = `${yStr}-${mStr}-${dStr}`;
+        
         if (!recordsByDay[dateStr]) recordsByDay[dateStr] = [];
         recordsByDay[dateStr].push(r);
     });
@@ -214,8 +223,17 @@ function filterExamsByDate(dateString) {
     // dateString format is "YYYY-MM-DD"
     const filteredExams = examsData.map((exam, index) => ({ exam, index }))
         .filter(item => {
-            if (!item.exam.startTime) return false;
-            return item.exam.startTime.startsWith(dateString);
+            const timeField = item.exam.submitTime || item.exam.startTime;
+            if (!timeField) return false;
+            
+            const dateObj = new Date(timeField);
+            const kstDate = new Date(dateObj.getTime() + (9 * 60 * 60 * 1000));
+            const yStr = kstDate.getUTCFullYear();
+            const mStr = String(kstDate.getUTCMonth() + 1).padStart(2, '0');
+            const dStr = String(kstDate.getUTCDate()).padStart(2, '0');
+            const examDateStr = `${yStr}-${mStr}-${dStr}`;
+            
+            return examDateStr === dateString;
         });
         
     if (filteredExams.length === 0) {
