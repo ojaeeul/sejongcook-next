@@ -75524,11 +75524,11 @@ const questionsData = {
       "a": 4
     },
     {
-      "q": "다음은 식단 작성의 순서이",
+      "q": "다음은 식단 작성의 순서이다. 맞게 연결된 것은? <div style=\"margin-top: 10px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9; border-radius: 5px; color: #333; font-size: 0.9em; text-align: left; box-sizing: border-box; width: 100%;\">\nㄱ. 급식대상자의 영양소 필요량 산출<br>ㄴ. 영양 급여 기준량의 결정<br>ㄷ. 식사 형태 및 기준 단가 결정<br>ㄹ. 식품 섭취 횟수와 식품 섭취량 배분<br>ㅁ. 식단 작성<br>ㅂ. 급식표 작성 및 평가\n</div>",
       "o": [
-        "맞게 연결된 것은?\n\n<표>",
         "ㄷ→ㄴ→ㄱ→ㄹ→ㅂ→ㅁ",
         "ㄹ→ㄱ→ㄷ→ㄴ→ㅂ→ㅁ",
+        "ㄱ→ㄴ→ㄷ→ㄹ→ㅂ→ㅁ",
         "ㅁ→ㄱ→ㄴ→ㅂ→ㄷ→ㄹ"
       ],
       "a": 3
@@ -84468,11 +84468,11 @@ const questionsData = {
       "a": 4
     },
     {
-      "q": "다음은 식단 작성의 순서이",
+      "q": "다음은 식단 작성의 순서이다. 맞게 연결된 것은? <div style=\"margin-top: 10px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9; border-radius: 5px; color: #333; font-size: 0.9em; text-align: left; box-sizing: border-box; width: 100%;\">\nㄱ. 급식대상자의 영양소 필요량 산출<br>ㄴ. 영양 급여 기준량의 결정<br>ㄷ. 식사 형태 및 기준 단가 결정<br>ㄹ. 식품 섭취 횟수와 식품 섭취량 배분<br>ㅁ. 식단 작성<br>ㅂ. 급식표 작성 및 평가\n</div>",
       "o": [
-        "맞게 연결된 것은?\n\n<표>",
         "ㄷ→ㄴ→ㄱ→ㄹ→ㅂ→ㅁ",
         "ㄹ→ㄱ→ㄷ→ㄴ→ㅂ→ㅁ",
+        "ㄱ→ㄴ→ㄷ→ㄹ→ㅂ→ㅁ",
         "ㅁ→ㄱ→ㄴ→ㅂ→ㄷ→ㄹ"
       ],
       "a": 3
@@ -130712,7 +130712,7 @@ const questionsData = {
       "a": 2
     },
     {
-      "q": "3. 다음의 조건에서 물 온도를 계산하면?",
+      "q": "3. 다음의 조건에서 물 온도를 계산하면? <div style=\"margin-top: 10px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9; border-radius: 5px; color: #333; font-size: 0.9em; text-align: left; box-sizing: border-box; width: 100%;\">\n희망 반죽 온도: 24℃<br>실내 온도: 20℃<br>밀가루 온도: 20℃<br>마찰 계수: 20\n</div>",
       "o": [
         "0℃",
         "3℃",
@@ -132538,7 +132538,7 @@ const questionsData = {
       "a": 4
     },
     {
-      "q": "5. 아래의 조건에서 물 온도를 계산하면?",
+      "q": "5. 아래의 조건에서 물 온도를 계산하면? <div style=\"margin-top: 10px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9; border-radius: 5px; color: #333; font-size: 0.9em; text-align: left; box-sizing: border-box; width: 100%;\">\n희망 반죽 온도: 27℃<br>실내 온도: 25℃<br>밀가루 온도: 25℃<br>마찰 계수: 28<br>수돗물 온도: 20℃\n</div>",
       "o": [
         "0℃",
         "3℃",
@@ -149136,7 +149136,7 @@ const questionsData = {
       "q_num": 14
     },
     {
-      "q": "5. 아래의 조건에서 물 온도를 계산하면?",
+      "q": "5. 아래의 조건에서 물 온도를 계산하면? <div style=\"margin-top: 10px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9; border-radius: 5px; color: #333; font-size: 0.9em; text-align: left; box-sizing: border-box; width: 100%;\">\n희망 반죽 온도: 27℃<br>실내 온도: 25℃<br>밀가루 온도: 25℃<br>마찰 계수: 28<br>수돗물 온도: 20℃\n</div>",
       "o": [
         "0℃",
         "3℃",
@@ -155899,7 +155899,7 @@ const questionsData = {
       "q_num": 27
     },
     {
-      "q": "3. 다음의 조건에서 물 온도를 계산하면?",
+      "q": "3. 다음의 조건에서 물 온도를 계산하면? <div style=\"margin-top: 10px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9; border-radius: 5px; color: #333; font-size: 0.9em; text-align: left; box-sizing: border-box; width: 100%;\">\n희망 반죽 온도: 24℃<br>실내 온도: 20℃<br>밀가루 온도: 20℃<br>마찰 계수: 20\n</div>",
       "o": [
         "0℃",
         "3℃",
