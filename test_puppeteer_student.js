@@ -2,14 +2,28 @@ const puppeteer = require('puppeteer');
 (async () => {
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
+  
+  await page.setRequestInterception(true);
+  page.on('request', request => {
+      if (request.url().includes('/api/sejong/members')) {
+          request.respond({
+              status: 404,
+              contentType: 'application/json',
+              body: JSON.stringify({ error: 'not found' })
+          });
+      } else {
+          request.continue();
+      }
+  });
+
   await page.goto('http://localhost:3000/sejong/student/exam.html', { waitUntil: 'networkidle0' });
   await new Promise(r => setTimeout(r, 2000));
   
   await page.evaluate(() => {
       inputPin(9);
-      inputPin(0);
-      inputPin(7);
-      inputPin(3);
+      inputPin(9);
+      inputPin(9);
+      inputPin(9);
   });
   
   await new Promise(r => setTimeout(r, 1000));
@@ -30,8 +44,13 @@ const puppeteer = require('puppeteer');
 
   // Test selecting '제과기능사'
   await page.evaluate(() => {
-      selectCourse('제과기능사');
-      showScreen('exam');
+      const courses = document.querySelectorAll('.course-card');
+      for (let c of courses) {
+          if (c.textContent.includes('제과기능사')) {
+              c.click();
+              break;
+          }
+      }
   });
 
   await new Promise(r => setTimeout(r, 1000));

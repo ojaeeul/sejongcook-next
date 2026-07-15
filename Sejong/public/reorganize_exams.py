@@ -6,7 +6,18 @@ os.chdir('/Users/ojaeeul/Downloads/세종요리제과하
 with open('exam_courses.json', 'r', encoding='utf-8') as f:
     courses_data = json.load(f)
 
-# Find '제과기능사' and '제빵기능사'
+def is_generated(exam):
+    name = exam.get('name', '')
+    key = exam.get('key', '')
+    if '_A_G_' in key or '_A_Z_' in key:
+        return True
+    if '(60문항)' in name:
+        return True
+    for char in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
+        if f'시험지 {char}' in name:
+            return True
+    return False
+
 j_course = None
 b_course = None
 for cat in courses_data:
@@ -20,9 +31,8 @@ if not j_course or not b_course:
     print("Could not find 제과기능사 or 제빵기능사")
     exit(1)
 
-# Clean out generated exams from j_course and b_course
-j_course['exams'] = [e for e in j_course.get('exams', []) if '_A_G_' not in e.get('key', '') and '_A_Z_' not in e.get('key', '') and '시험지 A' not in e.get('name', '') and '시험지 B' not in e.get('name', '') and '시험지 C' not in e.get('name', '')]
-b_course['exams'] = [e for e in b_course.get('exams', []) if '_A_G_' not in e.get('key', '') and '_A_Z_' not in e.get('key', '') and '시험지 A' not in e.get('name', '') and '시험지 B' not in e.get('name', '') and '시험지 C' not in e.get('name', '')]
+j_course['exams'] = [e for e in j_course.get('exams', []) if not is_generated(e)]
+b_course['exams'] = [e for e in b_course.get('exams', []) if not is_generated(e)]
 
 new_courses_data = []
 
@@ -30,15 +40,13 @@ for cat in courses_data:
     new_cat = {'category': cat['category'], 'courses': []}
     for course in cat.get('courses', []):
         if '과거기출' in course['name']:
-            continue # Remove 과거기출조리기능사
+            continue
 
         if course['name'] == '제과제빵은행':
-            # Split these into 제과 and 제빵
             for exam in course.get('exams', []):
-                if '_A_G_' in exam.get('key', '') or '_A_Z_' in exam.get('key', ''):
+                if is_generated(exam):
                     continue
 
-                # Add to corresponding course if not present
                 j_keys = [e['key'] for e in j_course['exams']]
                 b_keys = [e['key'] for e in b_course['exams']]
                 
@@ -53,10 +61,9 @@ for cat in courses_data:
                         j_course['exams'].append(exam)
                     if exam['key'] not in b_keys:
                         b_course['exams'].append(exam)
-            continue # Do not add 제과제빵은행
+            continue
 
-        # For all other courses, clean out generated exams
-        course['exams'] = [e for e in course.get('exams', []) if '_A_G_' not in e.get('key', '') and '_A_Z_' not in e.get('key', '') and '시험지 A' not in e.get('name', '') and '시험지 B' not in e.get('name', '') and '시험지 C' not in e.get('name', '')]
+        course['exams'] = [e for e in course.get('exams', []) if not is_generated(e)]
 
         if course['name'] == '제과기능사':
             new_cat['courses'].append(j_course)
