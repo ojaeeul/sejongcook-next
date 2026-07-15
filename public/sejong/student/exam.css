@@ -618,3 +618,32 @@ body {
 .card-q-item {
     margin-bottom: 12px;
 }
+
+/* Responsive Design for Mobile/Tablets */
+@media (max-width: 1024px) {
+    .paper-preview-wrapper {
+        display: none !important;
+    }
+    .question-container {
+        overflow-y: auto;
+        padding-right: 5px;
+        max-width: 100% !important;
+    }
+    .options-list {
+        margin-bottom: 30px;
+    }
+}
+
+/* For small phones */
+@media (max-width: 480px) {
+    .course-grid {
+        grid-template-columns: 1fr;
+    }
+    .question-text {
+        font-size: 1.1rem;
+    }
+    .option-btn {
+        padding: 15px;
+        font-size: 1rem;
+    }
+}
