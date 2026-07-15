@@ -90,6 +90,8 @@ function formatDuration(startTime, submitTime) {
     return `${diffMins}분 ${diffSecs}초`;
 }
 
+let currentCalDate = new Date();
+
 function initCalendar() {
     const dateSelect = document.getElementById('examDateSelect');
     // Set today as default
@@ -99,18 +101,112 @@ function initCalendar() {
     const dd = String(today.getDate()).padStart(2, '0');
     dateSelect.value = `${yyyy}-${mm}-${dd}`;
     
-    filterExamsByDate(dateSelect.value);
+    // Show calendar by default instead of filtering to today immediately
+    renderCalendar();
 }
+
+function changeMonth(delta) {
+    currentCalDate.setMonth(currentCalDate.getMonth() + delta);
+    renderCalendar();
+}
+
+function renderCalendar() {
+    document.getElementById('reportContainer').style.display = 'none';
+    document.getElementById('dateListArea').style.display = 'none';
+    document.getElementById('noDataMessage').style.display = 'none';
+    document.getElementById('calendarSection').style.display = 'block';
+
+    const year = currentCalDate.getFullYear();
+    const month = currentCalDate.getMonth();
+    document.getElementById('calendarMonthLabel').textContent = `${year}년 ${month + 1}월`;
+    
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    
+    const grid = document.getElementById('calendarGrid');
+    
+    while (grid.children.length > 7) {
+        grid.removeChild(grid.lastChild);
+    }
+    
+    const recordsByDay = {};
+    examsData.forEach(r => {
+        if (!r.startTime) return;
+        const dateStr = r.startTime.split('T')[0];
+        if (!recordsByDay[dateStr]) recordsByDay[dateStr] = [];
+        recordsByDay[dateStr].push(r);
+    });
+    
+    for (let i = 0; i < firstDay; i++) {
+        const empty = document.createElement('div');
+        empty.style.padding = '10px';
+        grid.appendChild(empty);
+    }
+    
+    const now = new Date();
+    const offset = now.getTimezoneOffset() * 60000;
+    const todayKST = new Date(now.getTime() - offset);
+    const todayStr = todayKST.toISOString().split('T')[0];
+    
+    for (let d = 1; d <= daysInMonth; d++) {
+        const dateObj = new Date(year, month, d);
+        const yStr = dateObj.getFullYear();
+        const mStr = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const dStr = String(dateObj.getDate()).padStart(2, '0');
+        const ds = `${yStr}-${mStr}-${dStr}`;
+        
+        const dayCell = document.createElement('div');
+        dayCell.style.padding = '15px 5px';
+        dayCell.style.border = '1px solid #f1f5f9';
+        dayCell.style.borderRadius = '6px';
+        dayCell.style.position = 'relative';
+        dayCell.style.cursor = 'pointer';
+        dayCell.style.minHeight = '70px';
+        
+        if (ds === todayStr) {
+            dayCell.style.backgroundColor = '#eff6ff';
+            dayCell.style.borderColor = '#bfdbfe';
+        }
+        
+        let color = '#475569';
+        if (dateObj.getDay() === 0) color = '#ef4444';
+        else if (dateObj.getDay() === 6) color = '#3b82f6';
+        
+        let html = `<div style="font-weight:500; color:${color}">${d}</div>`;
+        
+        if (recordsByDay[ds] && recordsByDay[ds].length > 0) {
+            const count = recordsByDay[ds].length;
+            html += `<div style="margin-top:8px; background:#10b981; color:white; font-size:0.75rem; border-radius:12px; padding:2px 0; font-weight:bold; box-shadow:0 1px 2px rgba(0,0,0,0.1);">${count}명 응시</div>`;
+            if (ds !== todayStr) {
+                dayCell.style.backgroundColor = '#f0fdf4';
+                dayCell.style.borderColor = '#bbf7d0';
+            }
+        }
+        
+        dayCell.onclick = () => {
+            document.getElementById('examDateSelect').value = ds;
+            filterExamsByDate(ds);
+        };
+        
+        dayCell.innerHTML = html;
+        dayCell.onmouseover = () => dayCell.style.transform = 'translateY(-2px)';
+        dayCell.onmouseout = () => dayCell.style.transform = 'none';
+        
+        grid.appendChild(dayCell);
+    }
+}
+
 
 function filterExamsByDate(dateString) {
     const tbody = document.getElementById('dateListBody');
     tbody.innerHTML = '';
     
     document.getElementById('reportContainer').style.display = 'none';
+    document.getElementById('calendarSection').style.display = 'none';
     
     if (!dateString) {
         document.getElementById('noDataMessage').style.display = 'block';
-        document.getElementById('noDataMessage').textContent = '날짜를 선택해 주세요.';
+        document.getElementById('noDataMessage').querySelector('div').textContent = '날짜를 선택해 주세요.';
         document.getElementById('dateListArea').style.display = 'none';
         return;
     }
@@ -124,7 +220,7 @@ function filterExamsByDate(dateString) {
         
     if (filteredExams.length === 0) {
         document.getElementById('noDataMessage').style.display = 'block';
-        document.getElementById('noDataMessage').textContent = '해당 날짜에 응시한 학생 기록이 없습니다.';
+        document.getElementById('noDataMessage').querySelector('div').textContent = '해당 날짜에 응시한 학생 기록이 없습니다.';
         document.getElementById('dateListArea').style.display = 'none';
         return;
     }
@@ -161,6 +257,21 @@ function backToList() {
     
     // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function backToCalendar() {
+    document.getElementById('reportContainer').style.display = 'none';
+    document.getElementById('dateListArea').style.display = 'none';
+    document.getElementById('noDataMessage').style.display = 'none';
+    document.getElementById('calendarSection').style.display = 'block';
+    
+    // Update the calendar rendering to reflect the month we came back from
+    const dateSelect = document.getElementById('examDateSelect');
+    if (dateSelect.value) {
+        const [y, m, d] = dateSelect.value.split('-');
+        currentCalDate = new Date(parseInt(y), parseInt(m) - 1, 1);
+    }
+    renderCalendar();
 }
 
 function getSectionName(index, examKey) {
