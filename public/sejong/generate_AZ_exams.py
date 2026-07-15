@@ -1,54 +1,125 @@
 import json
+import os
 import random
-import string
+
+os.chdir('/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejk 4/sejongcook-next/Sejong/SejongAttendance/public')
 
 with open('questions_data.json', 'r', encoding='utf-8') as f:
     q_data = json.load(f)
 
-# Categories
-categories = ['한식', '양식', '일식', '중식', '제빵', '제과']
+# Collect all original questions from 제과제빵은행
+j_questions = []
+b_questions = []
 
-pools = {cat: [] for cat in categories}
-
-# Collect all valid questions
 for key, questions in q_data.items():
-    if not isinstance(questions, list):
+    if not key.startswith('제과제빵은행_'):
         continue
+        
+    # Check if this exam is 제과 or 제빵
+    name = key.replace('제과제빵은행_', '')
+    if '제과' in name and '제빵' not in name:
+        for q in questions:
+            # We don't want to modify the original dictionary, just reference it or copy
+            j_questions.append(q)
+    elif '제빵' in name and '제과' not in name:
+        for q in questions:
+            b_questions.append(q)
+
+print(f"Found {len(j_questions)} 제과 questions and {len(b_questions)} 제빵 questions.")
+
+# Shuffle questions
+random.seed(42)
+random.shuffle(j_questions)
+random.shuffle(b_questions)
+
+# Create A~Z exams
+chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+j_generated_exams = []
+b_generated_exams = []
+
+# For 제과
+idx = 0
+char_idx = 0
+while idx + 60 <= len(j_questions) and char_idx < len(chars):
+    char = chars[char_idx]
+    exam_key = f"제과기능사_시험지_{char}"
+    exam_name = f"제과기능사 시험지 {char} (60문항)"
     
-    # Exclude subjective
-    if '주관식' in key:
-        continue
+    # Take 60 questions
+    exam_qs = j_questions[idx:idx+60]
+    
+    # Fix q_num
+    new_exam_qs = []
+    for i, q in enumerate(exam_qs):
+        new_q = q.copy()
+        new_q['q_num'] = i + 1
+        new_exam_qs.append(new_q)
         
-    for cat in categories:
-        if cat in key:
-            pools[cat].extend(questions)
-            break
+    q_data[exam_key] = new_exam_qs
+    
+    j_generated_exams.append({
+        "name": exam_name,
+        "key": exam_key
+    })
+    
+    idx += 60
+    char_idx += 1
 
-# Also, there's '제과제빵' which should be a mix of 제과 and 제빵
-pools['제과제빵'] = pools['제과'] + pools['제빵']
-categories.append('제과제빵')
+print(f"Generated {len(j_generated_exams)} 제과 exams (A to {chars[char_idx-1] if char_idx > 0 else 'None'}).")
 
-# Generate A~Z (26 exams) for each category
-letters = list(string.ascii_uppercase)
-
-for cat in categories:
-    pool = pools[cat]
-    if not pool:
-        continue
+# For 제빵
+idx = 0
+char_idx = 0
+while idx + 60 <= len(b_questions) and char_idx < len(chars):
+    char = chars[char_idx]
+    exam_key = f"제빵기능사_시험지_{char}"
+    exam_name = f"제빵기능사 시험지 {char} (60문항)"
+    
+    exam_qs = b_questions[idx:idx+60]
+    
+    new_exam_qs = []
+    for i, q in enumerate(exam_qs):
+        new_q = q.copy()
+        new_q['q_num'] = i + 1
+        new_exam_qs.append(new_q)
         
-    for letter in letters:
-        new_key = f"{cat}기능사_A_Z_{letter}"
-        
-        # We need 60 questions. If pool is larger, sample without replacement.
-        # If pool is smaller, sample with replacement.
-        if len(pool) >= 60:
-            sampled = random.sample(pool, 60)
-        else:
-            sampled = random.choices(pool, k=60)
-            
-        q_data[new_key] = sampled
+    q_data[exam_key] = new_exam_qs
+    
+    b_generated_exams.append({
+        "name": exam_name,
+        "key": exam_key
+    })
+    
+    idx += 60
+    char_idx += 1
 
-with open("questions_data.json", "w", encoding="utf-8") as f:
+print(f"Generated {len(b_generated_exams)} 제빵 exams (A to {chars[char_idx-1] if char_idx > 0 else 'None'}).")
+
+# Write questions_data.json
+with open('questions_data.json', 'w', encoding='utf-8') as f:
     json.dump(q_data, f, ensure_ascii=False, indent=2)
 
-print("Generated A~Z exams successfully!")
+with open('questions_data.js', 'w', encoding='utf-8') as f:
+    f.write("const questionsData = " + json.dumps(q_data, ensure_ascii=False, indent=2) + ";")
+
+# Update exam_courses.json
+with open('exam_courses.json', 'r', encoding='utf-8') as f:
+    courses_data = json.load(f)
+
+for cat in courses_data:
+    for course in cat.get('courses', []):
+        # First, remove any generated exams we might have previously added just in case
+        # (Though we cleaned them, let's be sure)
+        course['exams'] = [e for e in course.get('exams', []) if '시험지' not in e['name']]
+        
+        if course['name'] == '제과기능사':
+            # Append generated exams at the top
+            course['exams'] = j_generated_exams + course['exams']
+        elif course['name'] == '제빵기능사':
+            course['exams'] = b_generated_exams + course['exams']
+
+with open('exam_courses.json', 'w', encoding='utf-8') as f:
+    json.dump(courses_data, f, ensure_ascii=False, indent=4)
+
+print("Updated exam_courses.json")

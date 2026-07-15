@@ -18,25 +18,23 @@ def is_generated(exam):
             return True
     return False
 
+# First, let's load original exam_courses to restore
+with open('/Users/ojaeeul/Downloads/세종요리제과학원/무제 폴더/수정전/sejk 4/sejongcook-next/exam_courses_original.json', 'r', encoding='utf-8') as f:
+    orig_data = json.load(f)
+
 j_course = None
 b_course = None
-for cat in courses_data:
+# Find original courses
+for cat in orig_data:
     for course in cat.get('courses', []):
         if course['name'] == '제과기능사':
             j_course = course
         elif course['name'] == '제빵기능사':
             b_course = course
 
-if not j_course or not b_course:
-    print("Could not find 제과기능사 or 제빵기능사")
-    exit(1)
-
-j_course['exams'] = [e for e in j_course.get('exams', []) if not is_generated(e)]
-b_course['exams'] = [e for e in b_course.get('exams', []) if not is_generated(e)]
-
 new_courses_data = []
 
-for cat in courses_data:
+for cat in orig_data:
     new_cat = {'category': cat['category'], 'courses': []}
     for course in cat.get('courses', []):
         if '과거기출' in course['name']:
@@ -44,16 +42,16 @@ for cat in courses_data:
 
         if course['name'] == '제과제빵은행':
             for exam in course.get('exams', []):
-                if is_generated(exam):
-                    continue
-
+                name = exam.get('name', '')
                 j_keys = [e['key'] for e in j_course['exams']]
                 b_keys = [e['key'] for e in b_course['exams']]
                 
-                if '제과' in exam['name'] or '제과' in exam['key']:
+                # The name is like '2003년도_제과1회' or '2009년_2회제빵'
+                # Check the name ONLY
+                if '제과' in name and '제빵' not in name:
                     if exam['key'] not in j_keys:
                         j_course['exams'].append(exam)
-                elif '제빵' in exam['name'] or '제빵' in exam['key']:
+                elif '제빵' in name and '제과' not in name:
                     if exam['key'] not in b_keys:
                         b_course['exams'].append(exam)
                 else:
@@ -62,8 +60,6 @@ for cat in courses_data:
                     if exam['key'] not in b_keys:
                         b_course['exams'].append(exam)
             continue
-
-        course['exams'] = [e for e in course.get('exams', []) if not is_generated(e)]
 
         if course['name'] == '제과기능사':
             new_cat['courses'].append(j_course)
@@ -80,4 +76,4 @@ for cat in courses_data:
 with open('exam_courses.json', 'w', encoding='utf-8') as f:
     json.dump(new_courses_data, f, ensure_ascii=False, indent=4)
 
-print("Updated exam_courses.json")
+print("Updated exam_courses.json from original and filtered correctly")
