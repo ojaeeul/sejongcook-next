@@ -320,8 +320,8 @@ function selectCourse(courseName) {
         if (completedRecord) {
             item.classList.add('completed');
             item.innerHTML = `
-                <span class="material-icons" style="color: #cbd5e1; font-size: 8px; margin-bottom: 8px;">check_circle</span>
-                <h4 style="font-size: 1.1rem; font-weight: 700; color: #64748b; line-height: 1.2; word-break: keep-all;">${displayTitle}</h4>
+                <span class="material-icons" style="color: #cbd5e1; font-size: 8px; margin-bottom: 2px;">check_circle</span>
+                <h4 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: #64748b; line-height: 1.2; word-break: keep-all;">${displayTitle}</h4>
                 <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 6px;">${completedRecord.score}점</p>
             `;
             item.onclick = () => {
@@ -331,8 +331,8 @@ function selectCourse(courseName) {
             };
         } else {
             item.innerHTML = `
-                <span class="material-icons" style="color: var(--primary-light); font-size: 8px; margin-bottom: 8px;">play_circle</span>
-                <h4 style="font-size: 1.1rem; font-weight: 700; line-height: 1.2; word-break: keep-all;">${displayTitle}</h4>
+                <span class="material-icons" style="color: var(--primary-light); font-size: 8px; margin-bottom: 2px;">play_circle</span>
+                <h4 style="margin: 0; font-size: 1.1rem; font-weight: 700; line-height: 1.2; word-break: keep-all;">${displayTitle}</h4>
                 <p style="font-size: 0.8rem; color: var(--text-sub); margin-top: 6px;">${questionsData[examKey].length}문항</p>
             `;
             item.onclick = () => startExam(examKey);
