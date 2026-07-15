@@ -1946,9 +1946,33 @@ async function saveStudent(id) {
         if (!Array.isArray(members)) members = [];
 
         // Check if exists
-        let exists = members.find(m => m.name === studentData.name && m.phone === studentData.phone);
+        const cleanPhone = p => (p || '').replace(/[^0-9]/g, '');
+        const currentPhoneClean = cleanPhone(studentData.phone);
+        
+        let exists = members.find(m => {
+            let matchCount = 0;
+            let matchReasons = [];
+            
+            if (m.name && studentData.name && m.name === studentData.name) { matchCount++; matchReasons.push('이름'); }
+            if (currentPhoneClean && cleanPhone(m.phone) === currentPhoneClean) { matchCount++; matchReasons.push('전화번호'); }
+            if (m.course && studentData.course && m.course === studentData.course) { matchCount++; matchReasons.push('과정명'); }
+            
+            if (matchCount >= 2) {
+                m._matchCount = matchCount;
+                m._matchReasons = matchReasons;
+                return true;
+            }
+            return false;
+        });
+
         if (exists) {
-            alert('이미 등록된 수강생입니다.');
+            let reasonStr = exists._matchReasons.join(', ');
+            let detailStr = '';
+            if (exists._matchReasons.includes('이름')) detailStr += `\n- 이름: ${exists.name}`;
+            if (exists._matchReasons.includes('전화번호')) detailStr += `\n- 전화번호: ${exists.phone}`;
+            if (exists._matchReasons.includes('과정명')) detailStr += `\n- 과정명: ${exists.course}`;
+            
+            alert(`🚨 [중복 등록 알림]\n\n기존 수강생 대장에 ${exists._matchCount}가지 정보(${reasonStr})가 동일한 데이터가 이미 존재합니다.${detailStr}\n\n등록이 취소되었습니다. 대장을 먼저 확인해주세요.`);
             btn.innerHTML = '<i class="fas fa-save"></i> 수강생 대장등록';
             btn.disabled = false;
             return;
