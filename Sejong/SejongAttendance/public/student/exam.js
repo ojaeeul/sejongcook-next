@@ -841,7 +841,13 @@ function reviewQuestion(index) {
     document.getElementById('backBtn').onclick = () => {
         showScreen('result');
     };
-    document.getElementById('headerTitle').textContent = '오답 노트';
+    document.getElementById('headerTitle').textContent = '응시 완료된 시험지 (오답 노트)';
+}
+
+function retakeCurrentExam() {
+    if (confirm('재시험을 보시겠습니까? 기존 오답 노트는 초기화되며 처음부터 다시 풉니다.')) {
+        startExam(currentExamKey);
+    }
 }
 
 function goBackToExamList() {

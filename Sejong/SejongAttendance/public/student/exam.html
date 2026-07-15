@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>모의고사 - 세종요리학원</title>
-    <link rel="stylesheet" href="exam.css?v=20260716-1">
+    <link rel="stylesheet" href="exam.css?v=20260716-2">
     <!-- Chart.js for Result Analysis -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Canvas Confetti for Pass Celebration -->
@@ -217,13 +217,21 @@
                 </table>
             </div>
 
-            <button class="nav-btn next" style="width: 100%; justify-content: center; padding: 15px; margin-top: 10px;" onclick="goBackToExamList()">
-                다른 시험지 풀기
-            </button>
+            <div style="display: flex; gap: 10px; margin-top: 20px; flex-direction: column;">
+                <button class="nav-btn" style="width: 100%; justify-content: center; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 1.05rem; cursor: pointer;" onclick="reviewQuestion(0)">
+                    <span class="material-icons" style="font-size:1.2rem; margin-right:5px;">search</span> 응시 완료된 시험지 (오답 노트)
+                </button>
+                <button class="nav-btn" style="width: 100%; justify-content: center; padding: 15px; background: #ef4444; color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 1.05rem; cursor: pointer;" onclick="retakeCurrentExam()">
+                    <span class="material-icons" style="font-size:1.2rem; margin-right:5px;">refresh</span> 재시험 풀기
+                </button>
+                <button class="nav-btn" style="width: 100%; justify-content: center; padding: 15px; background: rgba(255,255,255,0.05); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 12px; font-weight: bold; font-size: 1.05rem; cursor: pointer;" onclick="goBackToExamList()">
+                    <span class="material-icons" style="font-size:1.2rem; margin-right:5px;">list</span> 다른 시험지 풀기
+                </button>
+            </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-    <script src="exam.js?v=20260716-1"></script>
+    <script src="exam.js?v=20260716-2"></script>
 </body>
 </html>
