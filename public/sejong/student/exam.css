@@ -646,4 +646,20 @@ body {
         padding: 15px;
         font-size: 1rem;
     }
+    .numpad {
+        gap: 10px;
+        max-width: 240px;
+        margin-top: 15px;
+    }
+    .num-btn {
+        font-size: 1.2rem;
+    }
+    .icon-circle {
+        width: 60px !important;
+        height: 60px !important;
+        margin-bottom: 10px !important;
+    }
+    .icon-circle .material-icons {
+        font-size: 30px !important;
+    }
 }
