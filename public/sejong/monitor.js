@@ -88,7 +88,7 @@ function switchMode(mode) {
         }
 
         if (mode === 'number') {
-            setupUI("번호 출석", "휴대폰 뒷번호 8자리를 입력하세요", true, false, false);
+            setupUI("번호 출석", "휴대폰 뒷번호 4자리를 입력하세요", true, false, false);
             if (mirrorSection) mirrorSection.style.opacity = '0.2';
             stopCamera();
         }
@@ -101,7 +101,7 @@ function switchMode(mode) {
             loadFaceModels(); // 안전을 위해 버튼 클릭 시에도 호출
         }
         else if (mode === 'register') {
-            setupUI("신규 얼굴 등록", "번호 8자리 입력 후 스캔 시작을 누르세요", true, false, true);
+            setupUI("신규 얼굴 등록", "번호 4자리 입력 후 스캔 시작을 누르세요", true, false, true);
             if (mirrorSection) mirrorSection.style.opacity = '1';
             if (faceSubmitBtn) faceSubmitBtn.style.display = 'block';
             if (mainSubmitBtn) mainSubmitBtn.style.display = 'none';
@@ -168,8 +168,8 @@ function setupUI(title, sub, showKeypad, showFacePanel, showMirror) {
 // ---------------------------------------------------------
 
 async function submitAttendance() {
-    if (currentInput.length !== 8) {
-        showStatus("번호 8자리를 입력해주세요.", "red");
+    if (currentInput.length !== 4) {
+        showStatus("번호 4자리를 입력해주세요.", "red");
         return;
     }
     if (mainSubmitBtn) { mainSubmitBtn.disabled = true; mainSubmitBtn.textContent = "처리중..."; mainSubmitBtn.style.opacity = "0.7"; }
@@ -553,8 +553,8 @@ async function processAutoAttendance() {
 
         if (bestMatch) {
             const phoneStr = bestMatch.phone.replace(/-/g, '');
-            const phone8 = phoneStr.length >= 8 ? phoneStr.slice(-8) : phoneStr;
-            await processAttendance(phone8, captureData);
+            const phone4 = phoneStr.length >= 4 ? phoneStr.slice(-4) : phoneStr;
+            await processAttendance(phone4, captureData);
             // 성공 시 연속 출석 방지를 위한 3초 쿨다운
             setTimeout(() => { isAuthenticating = false; }, 3000);
         } else {
@@ -616,8 +616,8 @@ function capturePrettyFrame() {
 }
 
 async function capturePhoto() {
-    if (currentInput.length !== 8) {
-        showStatus("먼저 뒷번호 8자리를 입력해주세요.", "red");
+    if (currentInput.length !== 4) {
+        showStatus("먼저 뒷번호 4자리를 입력해주세요.", "red");
         return;
     }
 
@@ -652,7 +652,7 @@ async function capturePhoto() {
         const member = members.find(m => m.phone && m.phone.replace(/-/g, '').endsWith(currentInput));
 
         if (!member) {
-            showStatus("뒷번호 8자리와 일치하는 수강생 대장 회원이 없습니다.", "red");
+            showStatus("뒷번호 4자리와 일치하는 수강생 대장 회원이 없습니다.", "red");
             return;
         }
 
@@ -1074,10 +1074,10 @@ async function processAttendance(inputNumOrObj, overridePhoto = null) {
 }
 
 function addNum(num) {
-    if (currentInput.length < 8) {
+    if (currentInput.length < 4) {
         currentInput += num;
         updateDisplay();
-        if (currentInput.length === 8 && currentMode === 'number') {
+        if (currentInput.length === 4 && currentMode === 'number') {
             submitAttendance();
         }
     }
@@ -1489,8 +1489,8 @@ let isRegistering = false;
 let registeringPhone = "";
 
 async function startFaceScan() {
-    if (currentInput.length !== 8) {
-        showStatus("먼저 뒷번호 8자리를 입력해주세요.", "red");
+    if (currentInput.length !== 4) {
+        showStatus("먼저 뒷번호 4자리를 입력해주세요.", "red");
         return;
     }
     if (!modelsLoaded) {
@@ -1581,7 +1581,7 @@ async function autoRegisterFace() {
         const member = members.find(m => m.phone && m.phone.replace(/-/g, '').endsWith(registeringPhone));
 
         if (!member) {
-            showStatus("뒷번호 8자리와 일치하는 수강생 대장 회원이 없습니다.", "red");
+            showStatus("뒷번호 4자리와 일치하는 수강생 대장 회원이 없습니다.", "red");
             setTimeout(() => switchMode('home'), 3000);
             return;
         }
