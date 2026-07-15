@@ -2,14 +2,24 @@ const puppeteer = require('puppeteer');
 (async () => {
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
-  
-  page.on('console', msg => console.log('PAGE LOG:', msg.text()));
-  page.on('pageerror', err => console.log('PAGE ERROR:', err.toString()));
-  
   await page.setCookie({ name: 'admin_auth', value: 'true', domain: 'localhost', path: '/' });
   await page.goto('http://localhost:3000/sejong/exam_admin.html', { waitUntil: 'networkidle0' });
-  
   await new Promise(r => setTimeout(r, 2000));
+  
+  await page.evaluate(() => {
+      if (typeof examsData !== 'undefined' && examsData.length > 0) {
+          openAnalysis(0);
+      }
+  });
+  
+  await new Promise(r => setTimeout(r, 1000));
+  
+  const reportContainerHTML = await page.evaluate(() => {
+      const el = document.getElementById('reportContainer');
+      return el ? el.outerHTML : 'NOT FOUND';
+  });
+  
+  console.log(reportContainerHTML);
   await browser.close();
   process.exit(0);
 })();

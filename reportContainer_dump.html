@@ -1,0 +1,508 @@
+<div id="reportContainer" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+            <button onclick="backToList()" class="print-send-btn" style="margin-bottom: 20px; background: #64748b; color: white; width: auto; padding: 10px 30px; border: none;"><span class="material-icons" style="vertical-align: middle; margin-right: 5px;">list</span>명단으로 돌아가기</button>
+            
+            <div class="report-a4" id="reportArea" style="display: flex; border-width: medium; border-style: none; border-color: currentcolor; border-image: initial; box-shadow: none; border-radius: 0px;">
+            
+            <div class="report-columns">
+                <!-- Left Column -->
+                <div class="report-left">
+                    <div class="report-header">
+                        <div class="report-title-box">
+                            <h2 id="reportExamName">양식_2026</h2>
+                            <h1>모의고사 결과분석</h1>
+                        </div>
+                        <div class="report-info-box">
+                            <div class="info-row"><span class="info-label">Date :</span> <span class="info-val" id="reportDate">07/13 15:13</span></div>
+                            <div class="info-row"><span class="info-label">Level :</span> <span class="info-val" id="reportTime">기본</span></div>
+                            <div class="info-row"><span class="info-label">Name :</span> <span class="info-val" id="reportStudent">오재을6 (9073)</span></div>
+                        </div>
+                    </div>
+
+                    <div class="section-title">&lt; 평가 내용 및 문항 결과 &gt;</div>
+                    
+                    <div class="q-table-wrapper">
+                        <!-- Left half (1~30) -->
+                        <table class="q-table" id="qTable1">
+                            <thead>
+                                <tr>
+                                    <th>문항</th>
+                                    <th>정답</th>
+                                    <th>학생답</th>
+                                    <th>여부</th>
+                                    <th>내용영역</th>
+                                </tr>
+                            </thead>
+                            <tbody><tr>
+            <td>1</td>
+            <td>4</td>
+            <td>2</td>
+            <td><span class="q-wrong">X</span></td>
+            <td>위생 및 관련법규</td>
+        </tr><tr>
+            <td>2</td>
+            <td>1</td>
+            <td>3</td>
+            <td><span class="q-wrong">X</span></td>
+            <td>위생 및 관련법규</td>
+        </tr><tr>
+            <td>3</td>
+            <td>3</td>
+            <td>4</td>
+            <td><span class="q-wrong">X</span></td>
+            <td>위생 및 관련법규</td>
+        </tr><tr>
+            <td>4</td>
+            <td>1</td>
+            <td>4</td>
+            <td><span class="q-wrong">X</span></td>
+            <td>위생 및 관련법규</td>
+        </tr><tr>
+            <td>5</td>
+            <td>4</td>
+            <td>4</td>
+            <td><span class="q-correct">O</span></td>
+            <td>위생 및 관련법규</td>
+        </tr><tr>
+            <td>6</td>
+            <td>2</td>
+            <td>2</td>
+            <td><span class="q-correct">O</span></td>
+            <td>위생 및 관련법규</td>
+        </tr><tr>
+            <td>7</td>
+            <td>2</td>
+            <td>4</td>
+            <td><span class="q-wrong">X</span></td>
+            <td>위생 및 관련법규</td>
+        </tr><tr>
+            <td>8</td>
+            <td>3</td>
+            <td>4</td>
+            <td><span class="q-wrong">X</span></td>
+            <td>위생 및 관련법규</td>
+        </tr><tr>
+            <td>9</td>
+            <td>2</td>
+            <td>4</td>
+            <td><span class="q-wrong">X</span></td>
+            <td>위생 및 관련법규</td>
+        </tr><tr>
+            <td>10</td>
+            <td>4</td>
+            <td>3</td>
+            <td><span class="q-wrong">X</span></td>
+            <td>위생 및 관련법규</td>
+        </tr><tr>
+            <td>11</td>
+            <td>4</td>
+            <td>3</td>
+            <td><span class="q-wrong">X</span></td>
+            <td>위생 및 관련법규</td>
+        </tr><tr>
+            <td>12</td>
+            <td>1</td>
+            <td>3</td>
+            <td><span class="q-wrong">X</span></td>
+            <td>위생 및 관련법규</td>
+        </tr><tr>
+            <td>13</td>
+            <td>2</td>
+            <td>2</td>
+            <td><span class="q-correct">O</span></td>
+            <td>위생 및 관련법규</td>
+        </tr><tr>
+            <td>14</td>
+            <td>3</td>
+            <td>3</td>
+            <td><span class="q-correct">O</span></td>
+            <td>위생 및 관련법규</td>
+        </tr><tr>
+            <td>15</td>
+            <td>2</td>
+            <td>3</td>
+            <td><span class="q-wrong">X</span></td>
+            <td>위생 및 관련법규</td>
+        </tr><tr>
+            <td>16</td>
+            <td>3</td>
+            <td>-</td>
+            <td><span class="q-wrong">X</span></td>
+            <td>공중보건학</td>
+        </tr><tr>
+            <td>17</td>
+            <td>3</td>
+            <td>2</td>
+            <td><span class="q-wrong">X</span></td>
+            <td>공중보건학</td>
+        </tr><tr>
+            <td>18</td>
+            <td>4</td>
+            <td>-</td>
+            <td><span class="q-wrong">X</span></td>
+            <td>공중보건학</td>
+        </tr><tr>
+            <td>19</td>
+            <td>1</td>
+            <td>1</td>
+            <td><span class="q-correct">O</span></td>
+            <td>공중보건학</td>
+        </tr><tr>
+            <td>20</td>
+            <td>1</td>
+            <td>1</td>
+            <td><span class="q-correct">O</span></td>
+            <td>공중보건학</td>
+        </tr><tr>
+            <td>21</td>
+            <td>4</td>
+            <td>1</td>
+            <td><span class="q-wrong">X</span></td>
+            <td>공중보건학</td>
+        </tr><tr>
+            <td>22</td>
+            <td>2</td>
+            <td>2</td>
+            <td><span class="q-correct">O</span></td>
+            <td>공중보건학</td>
+        </tr><tr>
+            <td>23</td>
+            <td>3</td>
+            <td>1</td>
+            <td><span class="q-wrong">X</span></td>
+            <td>공중보건학</td>
+        </tr><tr>
+            <td>24</td>
+            <td>1</td>
+            <td>-</td>
+            <td><span class="q-wrong">X</span></td>
+            <td>공중보건학</td>
+        </tr><tr>
+            <td>25</td>
+            <td>3</td>
+            <td>1</td>
+            <td><span class="q-wrong">X</span></td>
+            <td>공중보건학</td>
+        </tr><tr>
+            <td>26</td>
+            <td>3</td>
+            <td>-</td>
+            <td><span class="q-wrong">X</span></td>
+            <td>공중보건학</td>
+        </tr><tr>
+            <td>27</td>
+            <td>3</td>
+            <td>1</td>
+            <td><span class="q-wrong">X</span></td>
+            <td>공중보건학</td>
+        </tr><tr>
+            <td>28</td>
+            <td>2</td>
+            <td>4</td>
+            <td><span class="q-wrong">X</span></td>
+            <td>공중보건학</td>
+        </tr><tr>
+            <td>29</td>
+            <td>3</td>
+            <td>1</td>
+            <td><span class="q-wrong">X</span></td>
+            <td>공중보건학</td>
+        </tr><tr>
+            <td>30</td>
+            <td>4</td>
+            <td>-</td>
+            <td><span class="q-wrong">X</span></td>
+            <td>공중보건학</td>
+        </tr></tbody>
+                        </table>
+                        
+                        <!-- Right half (31~60) -->
+                        <table class="q-table" id="qTable2">
+                            <thead>
+                                <tr>
+                                    <th>문항</th>
+                                    <th>정답</th>
+                                    <th>학생답</th>
+                                    <th>여부</th>
+                                    <th>내용영역</th>
+                                </tr>
+                            </thead>
+                            <tbody><tr>
+            <td>31</td>
+            <td>3</td>
+            <td>1</td>
+            <td><span class="q-wrong">X</span></td>
+            <td>식품학</td>
+        </tr><tr>
+            <td>32</td>
+            <td>1</td>
+            <td>-</td>
+            <td><span class="q-wrong">X</span></td>
+            <td>식품학</td>
+        </tr><tr>
+            <td>33</td>
+            <td>3</td>
+            <td>1</td>
+            <td><span class="q-wrong">X</span></td>
+            <td>식품학</td>
+        </tr><tr>
+            <td>34</td>
+            <td>1</td>
+            <td>3</td>
+            <td><span class="q-wrong">X</span></td>
+            <td>식품학</td>
+        </tr><tr>
+            <td>35</td>
+            <td>2</td>
+            <td>1</td>
+            <td><span class="q-wrong">X</span></td>
+            <td>식품학</td>
+        </tr><tr>
+            <td>36</td>
+            <td>4</td>
+            <td>3</td>
+            <td><span class="q-wrong">X</span></td>
+            <td>식품학</td>
+        </tr><tr>
+            <td>37</td>
+            <td>1</td>
+            <td>4</td>
+            <td><span class="q-wrong">X</span></td>
+            <td>식품학</td>
+        </tr><tr>
+            <td>38</td>
+            <td>4</td>
+            <td>4</td>
+            <td><span class="q-correct">O</span></td>
+            <td>식품학</td>
+        </tr><tr>
+            <td>39</td>
+            <td>3</td>
+            <td>1</td>
+            <td><span class="q-wrong">X</span></td>
+            <td>식품학</td>
+        </tr><tr>
+            <td>40</td>
+            <td>2</td>
+            <td>2</td>
+            <td><span class="q-correct">O</span></td>
+            <td>식품학</td>
+        </tr><tr>
+            <td>41</td>
+            <td>3</td>
+            <td>1</td>
+            <td><span class="q-wrong">X</span></td>
+            <td>식품학</td>
+        </tr><tr>
+            <td>42</td>
+            <td>4</td>
+            <td>2</td>
+            <td><span class="q-wrong">X</span></td>
+            <td>식품학</td>
+        </tr><tr>
+            <td>43</td>
+            <td>3</td>
+            <td>3</td>
+            <td><span class="q-correct">O</span></td>
+            <td>식품학</td>
+        </tr><tr>
+            <td>44</td>
+            <td>3</td>
+            <td>3</td>
+            <td><span class="q-correct">O</span></td>
+            <td>식품학</td>
+        </tr><tr>
+            <td>45</td>
+            <td>2</td>
+            <td>4</td>
+            <td><span class="q-wrong">X</span></td>
+            <td>식품학</td>
+        </tr><tr>
+            <td>46</td>
+            <td>2</td>
+            <td>2</td>
+            <td><span class="q-correct">O</span></td>
+            <td>조리이론 및 원가</td>
+        </tr><tr>
+            <td>47</td>
+            <td>1</td>
+            <td>-</td>
+            <td><span class="q-wrong">X</span></td>
+            <td>조리이론 및 원가</td>
+        </tr><tr>
+            <td>48</td>
+            <td>1</td>
+            <td>1</td>
+            <td><span class="q-correct">O</span></td>
+            <td>조리이론 및 원가</td>
+        </tr><tr>
+            <td>49</td>
+            <td>1</td>
+            <td>2</td>
+            <td><span class="q-wrong">X</span></td>
+            <td>조리이론 및 원가</td>
+        </tr><tr>
+            <td>50</td>
+            <td>4</td>
+            <td>2</td>
+            <td><span class="q-wrong">X</span></td>
+            <td>조리이론 및 원가</td>
+        </tr><tr>
+            <td>51</td>
+            <td>4</td>
+            <td>3</td>
+            <td><span class="q-wrong">X</span></td>
+            <td>조리이론 및 원가</td>
+        </tr><tr>
+            <td>52</td>
+            <td>3</td>
+            <td>3</td>
+            <td><span class="q-correct">O</span></td>
+            <td>조리이론 및 원가</td>
+        </tr><tr>
+            <td>53</td>
+            <td>3</td>
+            <td>3</td>
+            <td><span class="q-correct">O</span></td>
+            <td>조리이론 및 원가</td>
+        </tr><tr>
+            <td>54</td>
+            <td>4</td>
+            <td>3</td>
+            <td><span class="q-wrong">X</span></td>
+            <td>조리이론 및 원가</td>
+        </tr><tr>
+            <td>55</td>
+            <td>2</td>
+            <td>3</td>
+            <td><span class="q-wrong">X</span></td>
+            <td>조리이론 및 원가</td>
+        </tr><tr>
+            <td>56</td>
+            <td>1</td>
+            <td>-</td>
+            <td><span class="q-wrong">X</span></td>
+            <td>조리이론 및 원가</td>
+        </tr><tr>
+            <td>57</td>
+            <td>1</td>
+            <td>3</td>
+            <td><span class="q-wrong">X</span></td>
+            <td>조리이론 및 원가</td>
+        </tr><tr>
+            <td>58</td>
+            <td>1</td>
+            <td>3</td>
+            <td><span class="q-wrong">X</span></td>
+            <td>조리이론 및 원가</td>
+        </tr><tr>
+            <td>59</td>
+            <td>3</td>
+            <td>2</td>
+            <td><span class="q-wrong">X</span></td>
+            <td>조리이론 및 원가</td>
+        </tr><tr>
+            <td>60</td>
+            <td>4</td>
+            <td>4</td>
+            <td><span class="q-correct">O</span></td>
+            <td>조리이론 및 원가</td>
+        </tr></tbody>
+                        </table>
+                    </div>
+
+                    <!-- Footer placed inside Left Column as in the image -->
+                    <div class="report-footer">
+                        <div class="footer-left-content">
+                            <div class="academy-name">세종요리제과기술학원</div>
+                            <div class="academy-info">
+                                044-862-2303 / 010-3882-6272<br>
+                                www.sejongcook.co.kr
+                            </div>
+                            <div class="footer-slogan">Freedom From The Cooking</div>
+                        </div>
+                        <div class="stamp-box">
+                            <div class="stamp-headers">
+                                <div class="stamp-title">결재</div>
+                                <div class="stamp-title">담당자</div>
+                                <div class="stamp-title">원장</div>
+                            </div>
+                            <div class="stamp-spaces">
+                                <div class="stamp-space"></div>
+                                <div class="stamp-space"></div>
+                                <div class="stamp-space"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="report-right">
+                    
+                    <div class="section-title">&lt; 영역별 정답률 분석 &gt;</div>
+                    <div class="chart-box">
+                        <div class="canvas-wrapper">
+                            <canvas id="barChart" width="307" height="180" style="display: block; box-sizing: border-box; height: 180px; width: 307.6px;"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="section-title">&lt; 학생 학습 밸런스 분석 &gt;</div>
+                    <div class="chart-box">
+                        <div class="canvas-wrapper large">
+                            <canvas id="radarChart" width="307" height="250" style="display: block; box-sizing: border-box; height: 250px; width: 307.6px;"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="section-title">&lt; 내용영역 상세 &gt;</div>
+                    <div class="analysis-table-wrapper">
+                        <table class="analysis-table" id="analysisTable">
+                            <thead>
+                                <tr>
+                                    <th>영역</th>
+                                    <th>문항수</th>
+                                    <th>정답수</th>
+                                    <th>정답률</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+            <tr>
+                <td><b>위생 및 관련법규</b></td>
+                <td>15</td>
+                <td>4</td>
+                <td>27%</td>
+            </tr>
+        
+            <tr>
+                <td><b>공중보건학</b></td>
+                <td>15</td>
+                <td>3</td>
+                <td>20%</td>
+            </tr>
+        
+            <tr>
+                <td><b>식품학</b></td>
+                <td>15</td>
+                <td>4</td>
+                <td>27%</td>
+            </tr>
+        
+            <tr>
+                <td><b>조리이론 및 원가</b></td>
+                <td>15</td>
+                <td>5</td>
+                <td>33%</td>
+            </tr>
+        </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+        
+        <div class="report-bottom-action" style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">
+            <button class="print-send-btn" onclick="sendToKakao()" style="background: #fee500; color: #3c1e1e; border-color: #fada0a;"><span class="material-icons" style="vertical-align: middle; margin-right: 5px;">chat_bubble</span>카톡으로 보내기</button>
+            <button class="print-send-btn" onclick="downloadImage()" style="background: #4ade80; color: #1e3c1e; border-color: #38c16b;"><span class="material-icons" style="vertical-align: middle; margin-right: 5px;">download</span>이미지 저장</button>
+            <button class="print-send-btn" onclick="window.print()"><span class="material-icons" style="vertical-align: middle; margin-right: 5px;">print</span>평가지 출력</button>
+        </div>
+        </div>
