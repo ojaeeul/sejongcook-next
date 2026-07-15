@@ -469,22 +469,25 @@ function renderQuestion() {
                     </div>
                 `;
             } else {
-                // Only attach click handler in solving mode
                 btn.onclick = () => {
                     userAnswers[currentQuestionIndex] = optNum;
+                    const clickedIndex = currentQuestionIndex;
                     renderQuestion();
-    if(window.updatePaperPreviewSwiper) window.updatePaperPreviewSwiper(); // re-render to update selection
+                    if(window.updatePaperPreviewSwiper) window.updatePaperPreviewSwiper(); // re-render to update selection
                     
                     // Auto next after 0.3s or check submit status on last question
-                    setTimeout(() => {
-                        if (currentQuestionIndex < currentQuestions.length - 1) {
-                            nextQuestion();
-                        } else {
-                            const unansweredCount = userAnswers.filter(ans => ans === null).length;
-                            if (unansweredCount === 0) {
-                                alert("모든 문제를 풀었습니다. 화면 하단의 '제출하기' 버튼을 눌러 제출해주세요.");
+                    if (window.autoNextTimeout) clearTimeout(window.autoNextTimeout);
+                    window.autoNextTimeout = setTimeout(() => {
+                        if (currentQuestionIndex === clickedIndex) {
+                            if (currentQuestionIndex < currentQuestions.length - 1) {
+                                nextQuestion();
                             } else {
-                                alert(`아직 못 푼 문항이 ${unansweredCount}개 있습니다. 하단의 OMR 버튼을 눌러 확인해주세요.`);
+                                const unansweredCount = userAnswers.filter(ans => ans === null).length;
+                                if (unansweredCount === 0) {
+                                    alert("모든 문제를 풀었습니다. 화면 하단의 '제출하기' 버튼을 눌러 제출해주세요.");
+                                } else {
+                                    alert(`아직 못 푼 문항이 ${unansweredCount}개 있습니다. 하단의 OMR 버튼을 눌러 확인해주세요.`);
+                                }
                             }
                         }
                     }, 300);
