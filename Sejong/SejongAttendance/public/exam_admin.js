@@ -25,12 +25,20 @@ function getSections(examKey) {
     return SECTIONS_COOK;
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
-    await fetchData();
+async function initAdminApp() {
+    console.log("initAdminApp CALLED");
+    await loadExamAdminData();
     initCalendar();
-});
+}
 
-async function fetchData() {
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAdminApp);
+} else {
+    initAdminApp();
+}
+
+async function loadExamAdminData() {
+    console.log("loadExamAdminData CALLED");
     try {
         const [examsRes, membersRes, qRes] = await Promise.all([
             fetch('/api/sejong/exams?t=' + Date.now()),
