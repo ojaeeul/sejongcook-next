@@ -268,6 +268,7 @@ function filterExamsByDate(dateString) {
 
 function backToList() {
     document.getElementById('reportContainer').style.display = 'none';
+    document.querySelector('.container').style.display = 'flex';
     document.getElementById('dateListArea').style.display = 'block';
     
     // Scroll to top
@@ -444,8 +445,7 @@ function downloadImage() {
 }
 
 function openAnalysis(index) {
-    document.getElementById('dateListArea').style.display = 'none';
-    document.getElementById('calendarSection').style.display = 'none';
+    document.querySelector('.container').style.display = 'none';
     document.getElementById('reportContainer').style.display = 'flex';
     document.getElementById('reportArea').style.display = 'flex';
     
