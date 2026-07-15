@@ -188,7 +188,18 @@ function renderCalendar() {
         
         if (recordsByDay[ds] && recordsByDay[ds].length > 0) {
             const count = recordsByDay[ds].length;
+            let namesHtml = '';
+            const MAX_NAMES = 3;
+            const shownRecords = recordsByDay[ds].slice(0, MAX_NAMES);
+            shownRecords.forEach(r => {
+                const studentName = getStudentName(r.phone) || (r.name ? r.name : r.phone);
+                namesHtml += `<div style="font-size:0.7rem; color:#1e293b; margin-top:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding:0 2px;">${studentName}</div>`;
+            });
+            if (count > MAX_NAMES) {
+                namesHtml += `<div style="font-size:0.7rem; color:#64748b; margin-top:2px;">외 ${count - MAX_NAMES}명</div>`;
+            }
             html += `<div style="margin-top:8px; background:#10b981; color:white; font-size:0.75rem; border-radius:12px; padding:2px 0; font-weight:bold; box-shadow:0 1px 2px rgba(0,0,0,0.1);">${count}명 응시</div>`;
+            html += namesHtml;
             if (ds !== todayStr) {
                 dayCell.style.backgroundColor = '#f0fdf4';
                 dayCell.style.borderColor = '#bbf7d0';
