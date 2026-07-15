@@ -214,10 +214,25 @@ body {
     align-items: center;
     text-align: center;
     cursor: pointer;
-    transition: transform 0.1s;
+    transition: all 0.3s ease;
     background: var(--bg-card);
     border: 1px solid var(--border-color);
     border-radius: 12px;
+}
+
+.exam-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+    background: linear-gradient(135deg, rgba(52, 211, 153, 0.1), rgba(59, 130, 246, 0.15), rgba(52, 211, 153, 0.1));
+    background-size: 200% 200%;
+    animation: gradientShift 2s ease infinite;
+    border-color: var(--primary-light);
+}
+
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
 
 .exam-item.completed {
@@ -225,8 +240,10 @@ body {
     opacity: 0.8;
 }
 
-.exam-item:active {
-    transform: scale(0.98);
+.exam-item.completed:hover {
+    background: linear-gradient(135deg, #e2e8f0, #cbd5e1, #e2e8f0);
+    background-size: 200% 200%;
+    border-color: #94a3b8;
 }
 
 /* Question Screen */

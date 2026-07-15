@@ -249,7 +249,14 @@ function selectCourse(courseName) {
     const list = document.getElementById('examList');
     list.innerHTML = '';
 
-    const sortedExams = courses[courseName].sort((a,b) => b.localeCompare(a));
+    const sortedExams = courses[courseName].sort((a, b) => {
+        const isA = a.includes('_시험지_');
+        const isB = b.includes('_시험지_');
+        if (isA && !isB) return -1;
+        if (!isA && isB) return 1;
+        if (isA && isB) return a.localeCompare(b);
+        return b.localeCompare(a);
+    });
 
     sortedExams.forEach(examKey => {
         let examTitle = examKey;
