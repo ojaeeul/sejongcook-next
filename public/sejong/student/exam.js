@@ -208,13 +208,19 @@ function renderCourses() {
     let visibleCount = 0;
 
     for (const course in courses) {
-        // Check if currentStudent's courses array includes this course (allow '과거기출' for everyone)
-        if (course !== "과거기출" && loggedInStudentCourse && !loggedInStudentCourse.includes(course)) {
-            continue; // Skip courses they are not enrolled in
+        if (course.includes('과거기출')) continue;
+        if (course.includes('제과제빵')) continue;
+
+        let coreName = course.replace('기능사', '');
+
+        if (loggedInStudentCourse) {
+            if (!loggedInStudentCourse.includes(coreName)) {
+                continue; // Skip courses they are not enrolled in
+            }
         }
 
         visibleCount++;
-        const icon = icons[course] || 'menu_book';
+        const icon = icons[coreName] || 'menu_book';
         const count = courses[course].length;
         
         const card = document.createElement('div');
@@ -224,8 +230,8 @@ function renderCourses() {
             <div class="course-icon" style="background: var(--primary);">
                 <span class="material-icons">${icon}</span>
             </div>
-            <h3>${course.includes('오재을') ? course : course + '조리기능사'}</h3>
-            <p>${count}개의 기출문제</p>
+            <h3>${course}</h3>
+            <p>${count}개의 모의고사</p>
         `;
         grid.appendChild(card);
     }
@@ -244,9 +250,15 @@ function selectCourse(courseName) {
     const sortedExams = courses[courseName].sort((a,b) => b.localeCompare(a));
 
     sortedExams.forEach(examKey => {
-        const parts = examKey.split('_');
-        let examTitle = parts.pop() || examKey;
-        examTitle = examTitle.replace('.hwp', '').replace('.pdf', '').replace('(교사용)', '').normalize('NFC');
+        let examTitle = examKey;
+        if (examKey.includes('_A_Z_')) {
+            const letter = examKey.split('_A_Z_')[1];
+            examTitle = `모의고사 ${letter}`;
+        } else {
+            const parts = examKey.split('_');
+            examTitle = parts.pop() || examKey;
+            examTitle = examTitle.replace('.hwp', '').replace('.pdf', '').replace('(교사용)', '').normalize('NFC');
+        }
         
         const dateMap = {
   "2004년제과1회": "2004.3.7", "2004년제과2회": "2004.5.9", "2004년제과4회": "2004.8.8", "2004년제과5회": "2004.10.10",
