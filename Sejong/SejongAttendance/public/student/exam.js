@@ -300,17 +300,22 @@ function selectCourse(courseName) {
 
         const item = document.createElement('div');
         item.className = 'exam-item';
-        item.style.borderBottom = '1px solid var(--border-color)';
         
+        let displayTitle = examTitle;
+        if (displayTitle.includes('시험지 ')) {
+            displayTitle = displayTitle.split('시험지 ')[1].replace(' (60문항)', '');
+        } else if (displayTitle.includes('제과기능사 ')) {
+            displayTitle = displayTitle.replace('제과기능사 ', '');
+        } else if (displayTitle.includes('제빵기능사 ')) {
+            displayTitle = displayTitle.replace('제빵기능사 ', '');
+        }
+
         if (completedRecord) {
-            item.style.backgroundColor = '#f1f5f9';
-            item.style.opacity = '0.8';
+            item.classList.add('completed');
             item.innerHTML = `
-                <div>
-                    <h4 style="font-size: 1.1rem; font-weight: 700; color: #64748b;">${examTitle}</h4>
-                    <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 5px;">총 ${questionsData[examKey].length}문항 (응시 완료 - ${completedRecord.score}점)</p>
-                </div>
-                <span class="material-icons" style="color: #cbd5e1;">check_circle</span>
+                <span class="material-icons" style="color: #cbd5e1; font-size: 32px; margin-bottom: 8px;">check_circle</span>
+                <h4 style="font-size: 1.1rem; font-weight: 700; color: #64748b; line-height: 1.2; word-break: keep-all;">${displayTitle}</h4>
+                <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 6px;">${completedRecord.score}점</p>
             `;
             item.onclick = () => {
                 if(confirm('이미 응시하여 제출을 완료한 시험입니다.\n확인을 누르시면 오답노트(확인) 모드로 진입합니다.')) {
@@ -319,11 +324,9 @@ function selectCourse(courseName) {
             };
         } else {
             item.innerHTML = `
-                <div>
-                    <h4 style="font-size: 1.1rem; font-weight: 700;">${examTitle}</h4>
-                    <p style="font-size: 0.8rem; color: var(--text-sub); margin-top: 5px;">총 ${questionsData[examKey].length}문항</p>
-                </div>
-                <span class="material-icons" style="color: var(--primary-light);">play_circle</span>
+                <span class="material-icons" style="color: var(--primary-light); font-size: 32px; margin-bottom: 8px;">play_circle</span>
+                <h4 style="font-size: 1.1rem; font-weight: 700; line-height: 1.2; word-break: keep-all;">${displayTitle}</h4>
+                <p style="font-size: 0.8rem; color: var(--text-sub); margin-top: 6px;">${questionsData[examKey].length}문항</p>
             `;
             item.onclick = () => startExam(examKey);
         }

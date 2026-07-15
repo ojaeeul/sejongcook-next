@@ -200,19 +200,29 @@ body {
 
 /* Exam Selection List */
 .exam-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 15px;
     margin-top: 20px;
 }
 
 .exam-item {
-    padding: 20px;
+    padding: 20px 10px;
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
+    justify-content: center;
     align-items: center;
+    text-align: center;
     cursor: pointer;
     transition: transform 0.1s;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+}
+
+.exam-item.completed {
+    background: #f1f5f9;
+    opacity: 0.8;
 }
 
 .exam-item:active {
