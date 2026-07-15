@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>모의고사 - 세종요리학원</title>
-    <link rel="stylesheet" href="exam.css?v=20260716-3">
+    <link rel="stylesheet" href="exam.css?v=20260716-4">
     <!-- Chart.js for Result Analysis -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Canvas Confetti for Pass Celebration -->
@@ -28,11 +28,11 @@
 
     <!-- Screen 0: Login -->
     <div id="loginScreen" class="screen active">
-        <div style="text-align: center; margin-top: 20px;">
-            <div class="icon-circle" style="width: 80px; height: 80px; background: rgba(52, 211, 153, 0.1); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px;">
-                <span class="material-icons" style="color: var(--primary-light); font-size: 40px;">person_search</span>
+        <div style="text-align: center; margin-top: 10px;">
+            <div class="icon-circle" style="width: 40px; height: 40px; background: rgba(52, 211, 153, 0.1); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 15px;">
+                <span class="material-icons" style="color: var(--primary-light); font-size: 20px;">person_search</span>
             </div>
-            <h2 style="font-size: 1.5rem; font-weight: 900;">수강생 인증</h2>
+            <h2 style="font-size: 1.3rem; font-weight: 900;">수강생 인증</h2>
             <p style="color: var(--text-sub); margin-top: 10px;">휴대폰 번호 뒷자리 4자리를 입력해주세요.</p>
             
             <div class="pin-dots" id="pinDots">
@@ -97,8 +97,8 @@
             </div>
         </div>
         
-        <div style="padding: 20px; display: flex; flex-direction: row; flex: 1; gap: 20px; overflow: hidden; justify-content: center; width: 100%;">
-            <div class="question-container" id="questionContainer" style="flex: 1; max-width: 800px;">
+        <div style="padding: 20px; display: flex; flex-direction: row; flex: 1; gap: 20px; overflow: hidden; min-height: 0; justify-content: center; width: 100%;">
+            <div class="question-container" id="questionContainer" style="flex: 1; max-width: 800px; overflow-y: auto; padding-bottom: 80px; margin-bottom: 0;">
                 <div class="question-text" id="qText">Q. 문제를 불러오는 중입니다...</div>
                 <div class="options-list" id="optionsList">
                     <!-- Populated by JS -->
@@ -232,6 +232,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-    <script src="exam.js?v=20260716-3"></script>
+    <script src="exam.js?v=20260716-4"></script>
 </body>
 </html>

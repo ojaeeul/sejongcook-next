@@ -265,7 +265,7 @@ body {
     display: flex;
     flex-direction: column;
     margin-top: 20px;
-    margin-bottom: 80px; /* Space for bottom nav */
+    /* padding-bottom is now set inline to 80px */
 }
 
 .question-text {
@@ -648,18 +648,18 @@ body {
     }
     .numpad {
         gap: 10px;
-        max-width: 240px;
+        max-width: 200px;
         margin-top: 15px;
     }
     .num-btn {
-        font-size: 1.2rem;
+        font-size: 1.1rem;
     }
     .icon-circle {
-        width: 60px !important;
-        height: 60px !important;
+        width: 30px !important;
+        height: 30px !important;
         margin-bottom: 10px !important;
     }
     .icon-circle .material-icons {
-        font-size: 30px !important;
+        font-size: 16px !important;
     }
 }
