@@ -325,9 +325,7 @@ function selectCourse(courseName) {
                 <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 6px;">${completedRecord.score}점</p>
             `;
             item.onclick = () => {
-                if(confirm('이미 응시하여 제출을 완료한 시험입니다.\n확인을 누르시면 오답노트(확인) 모드로 진입합니다.')) {
-                    startExam(examKey, completedRecord);
-                }
+                showCompletedExamResult(examKey, completedRecord);
             };
         } else {
             item.innerHTML = `
@@ -730,7 +728,9 @@ function calculateResult() {
     fetch('/api/sejong/exams')
         .then(res => res.json())
         .then(existingExams => {
-            const examsArray = Array.isArray(existingExams) ? existingExams : [];
+            let examsArray = Array.isArray(existingExams) ? existingExams : [];
+            // Remove previous record for same student & examKey (overwrite on retake)
+            examsArray = examsArray.filter(e => !(e.phone === resultData.phone && e.examKey === resultData.examKey));
             examsArray.push(resultData);
             return fetch('/api/sejong/exams', {
                 method: 'POST',
@@ -755,6 +755,31 @@ function calculateResult() {
     }
 
     renderChart(correctCount, total - correctCount);
+    renderAnalysisTable();
+    showScreen('result');
+}
+
+function showCompletedExamResult(examKey, record) {
+    currentExamKey = examKey;
+    currentQuestions = questionsData[examKey];
+    userAnswers = [...record.answers];
+    isReviewMode = true;
+
+    document.getElementById('resultScore').textContent = `${record.score}점`;
+    document.getElementById('correctCount').textContent = record.correctCount;
+    document.getElementById('totalCountDisplay').textContent = record.total;
+    
+    const passed = record.score >= 60;
+    const statusEl = document.getElementById('resultStatus');
+    if (passed) {
+        statusEl.textContent = '합격입니다! 🎉';
+        statusEl.className = 'result-status status-pass';
+    } else {
+        statusEl.textContent = '불합격입니다. 😢';
+        statusEl.className = 'result-status status-fail';
+    }
+
+    renderChart(record.correctCount, record.total - record.correctCount);
     renderAnalysisTable();
     showScreen('result');
 }

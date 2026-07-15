@@ -14969,7 +14969,7 @@ const questionsData = {
       "a": 1
     },
     {
-      "q": "다음의 조건에서 물 온도를 계산하면? <표>",
+      "q": "다음의 조건에서 물 온도를 계산하면? <div style=\"margin-top: 10px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9; border-radius: 5px; color: #333; font-size: 0.9em; text-align: left;\">\n희망 반죽 온도: 27℃<br>실내 온도: 25℃<br>밀가루 온도: 25℃<br>마찰 계수: 28<br>수돗물 온도: 20℃\n</div>",
       "o": [
         "0℃",
         "3℃",
@@ -19112,7 +19112,7 @@ const questionsData = {
       "a": 1
     },
     {
-      "q": "다음은 어떤 공정의 목적인가? <표>",
+      "q": "다음은 어떤 공정의 목적인가? <div style=\"margin-top: 10px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9; border-radius: 5px; color: #333; font-size: 0.9em; text-align: left;\">\n자른 면의 점착성을 감소시키고 표피를 형성하여 탄력을 유지시킨다.\n</div>",
       "o": [
         "분활",
         "둥굴리기",
@@ -22615,7 +22615,7 @@ const questionsData = {
       "a": 1
     },
     {
-      "q": "아래와 같은 조건일 때 스펀지 법에서 사용할 도우의 적당한 물 온도는? <표>",
+      "q": "아래와 같은 조건일 때 스펀지 법에서 사용할 도우의 적당한 물 온도는? <div style=\"margin-top: 10px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9; border-radius: 5px; color: #333; font-size: 0.9em; text-align: left;\">\n희망 반죽 온도: 27℃<br>실내 온도: 25℃<br>밀가루 온도: 26℃<br>스펀지 온도: 24℃<br>마찰 계수: 16\n</div>",
       "o": [
         "13℃",
         "17℃",
@@ -25003,7 +25003,7 @@ const questionsData = {
       "a": 4
     },
     {
-      "q": "아래와 같은 조건일 때 스펀지 법에서 도우의 물 온도는 몇 도가 적당한가? <표>",
+      "q": "아래와 같은 조건일 때 스펀지 법에서 도우의 물 온도는 몇 도가 적당한가? <div style=\"margin-top: 10px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9; border-radius: 5px; color: #333; font-size: 0.9em; text-align: left;\">\n희망 반죽 온도: 27℃<br>실내 온도: 25℃<br>밀가루 온도: 26℃<br>스펀지 온도: 24℃<br>마찰 계수: 20\n</div>",
       "o": [
         "13℃",
         "17℃",
@@ -25073,7 +25073,7 @@ const questionsData = {
       "a": 1
     },
     {
-      "q": "다음과 같은 조건상 스펀지반죽법(Sponge and dough method)에서 사용할 물의 온도는?\n\n<표>",
+      "q": "다음과 같은 조건상 스펀지반죽법(Sponge and dough method)에서 사용할 물의 온도는?\n\n<div style=\"margin-top: 10px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9; border-radius: 5px; color: #333; font-size: 0.9em; text-align: left;\">\n희망 반죽 온도: 26℃<br>실내 온도: 20℃<br>밀가루 온도: 26℃<br>스펀지 온도: 28℃<br>마찰 계수: 11\n</div>",
       "o": [
         "19℃",
         "9℃",
@@ -39351,7 +39351,7 @@ const questionsData = {
       "a": 4
     },
     {
-      "q": "다음은 단체급식의 영양관리에 대한 절차들이다. 순서대로 나열한 것은?\n\n<표>\n\n가. ㉠-㉡-㉢-㉣나. ㉡-㉢-㉣-㉠ \n다. ㉢-㉠-㉡-라. ㉢-㉡-㉠-㉣",
+      "q": "다음은 단체급식의 영양관리에 대한 절차들이다. 순서대로 나열한 것은?\n\n<div style=\"margin-top: 10px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9; border-radius: 5px; color: #333; font-size: 0.9em; text-align: left;\">\n㉠ 영양진단(Nutrition Diagnosis)<br>㉡ 영양중재(Nutrition Intervention)<br>㉢ 영양사정(Nutrition Assessment)<br>㉣ 영양모니터링 및 평가(Nutrition Monitoring and Evaluation)\n</div>\n\n가. ㉠-㉡-㉢-㉣나. ㉡-㉢-㉣-㉠ \n다. ㉢-㉠-㉡-라. ㉢-㉡-㉠-㉣",
       "o": [
         "㉠-㉡-㉢-㉣",
         "㉡-㉢-㉣-㉠",
@@ -71180,7 +71180,7 @@ const questionsData = {
       "a": 4
     },
     {
-      "q": "우유의 살균처리방법 중 다음과 같은 살균처리는? <표>",
+      "q": "우유의 살균처리방법 중 다음과 같은 살균처리는? <div style=\"margin-top: 10px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9; border-radius: 5px; color: #333; font-size: 0.9em; text-align: left;\">\n가열온도: 72~75℃<br>처리시간: 15~20초\n</div>",
       "o": [
         "저온살균법",
         "초저온살균법",
@@ -71240,7 +71240,7 @@ const questionsData = {
       "a": 1
     },
     {
-      "q": "다음의 식단 구성 중 편중되어 있는 영양가의 식품군은? <표>",
+      "q": "다음의 식단 구성 중 편중되어 있는 영양가의 식품군은? <div style=\"margin-top: 10px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9; border-radius: 5px; color: #333; font-size: 0.9em; text-align: left;\">\n쌀밥, 라면, 감자조림, 빵, 고구마튀김\n</div>",
       "o": [
         "탄수화물군",
         "단백질군",
@@ -71260,7 +71260,7 @@ const questionsData = {
       "a": 3
     },
     {
-      "q": "다음 원가요소에 따라 산출한 총원가로 옳은 것은? <표>",
+      "q": "다음 원가요소에 따라 산출한 총원가로 옳은 것은? <div style=\"margin-top: 10px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9; border-radius: 5px; color: #333; font-size: 0.9em; text-align: left;\">\n직접재료비: 250,000원<br>직접노무비: 140,000원<br>직접경비: 40,000원<br>제조간접비: 120,000원<br>판매관리비: 60,000원\n</div>",
       "o": [
         "390000원",
         "510000원",
@@ -80210,7 +80210,7 @@ const questionsData = {
       "a": 4
     },
     {
-      "q": "우유의 살균처리방법 중 다음과 같은 살균처리는? <표>",
+      "q": "우유의 살균처리방법 중 다음과 같은 살균처리는? <div style=\"margin-top: 10px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9; border-radius: 5px; color: #333; font-size: 0.9em; text-align: left;\">\n가열온도: 72~75℃<br>처리시간: 15~20초\n</div>",
       "o": [
         "저온살균법",
         "초저온살균법",
@@ -80270,7 +80270,7 @@ const questionsData = {
       "a": 1
     },
     {
-      "q": "다음의 식단 구성 중 편중되어 있는 영양가의 식품군은? <표>",
+      "q": "다음의 식단 구성 중 편중되어 있는 영양가의 식품군은? <div style=\"margin-top: 10px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9; border-radius: 5px; color: #333; font-size: 0.9em; text-align: left;\">\n쌀밥, 라면, 감자조림, 빵, 고구마튀김\n</div>",
       "o": [
         "탄수화물군",
         "단백질군",
@@ -80290,7 +80290,7 @@ const questionsData = {
       "a": 3
     },
     {
-      "q": "다음 원가요소에 따라 산출한 총원가로 옳은 것은? <표>",
+      "q": "다음 원가요소에 따라 산출한 총원가로 옳은 것은? <div style=\"margin-top: 10px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9; border-radius: 5px; color: #333; font-size: 0.9em; text-align: left;\">\n직접재료비: 250,000원<br>직접노무비: 140,000원<br>직접경비: 40,000원<br>제조간접비: 120,000원<br>판매관리비: 60,000원\n</div>",
       "o": [
         "390000원",
         "510000원",
