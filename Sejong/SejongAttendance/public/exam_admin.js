@@ -206,7 +206,6 @@ function filterExamsByDate(dateString) {
     tbody.innerHTML = '';
     
     document.getElementById('reportContainer').style.display = 'none';
-    document.getElementById('calendarSection').style.display = 'none';
     
     if (!dateString) {
         document.getElementById('noDataMessage').style.display = 'block';
@@ -228,14 +227,14 @@ function filterExamsByDate(dateString) {
         
     if (filteredExams.length === 0) {
         document.getElementById('noDataMessage').style.display = 'block';
-        document.getElementById('noDataMessage').querySelector('div').textContent = '해당 날짜에 응시한 학생 기록이 없습니다.';
+        document.getElementById('noDataMessage').querySelector('div').textContent = '해당 일자에 응시 내역이 없습니다.';
         document.getElementById('dateListArea').style.display = 'none';
         return;
     }
     
     document.getElementById('noDataMessage').style.display = 'none';
     document.getElementById('dateListArea').style.display = 'block';
-    document.getElementById('dateListHeader').textContent = `총 ${filteredExams.length}명이 응시했습니다.`;
+    document.getElementById('dateListHeader').innerHTML = `<i class="far fa-calendar-check" style="margin-right:8px; color:#10b981;"></i>${dateString} 응시 내역 (총 ${filteredExams.length}명)`;
     
     filteredExams.forEach(item => {
         const exam = item.exam;
@@ -438,6 +437,7 @@ function downloadImage() {
 
 function openAnalysis(index) {
     document.getElementById('dateListArea').style.display = 'none';
+    document.getElementById('calendarSection').style.display = 'none';
     document.getElementById('reportContainer').style.display = 'flex';
     document.getElementById('reportArea').style.display = 'flex';
     

@@ -6,9 +6,9 @@
     <title>모의고사 결과 관리</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=20260715-19">
-    <link rel="stylesheet" href="exam_admin.css?v=20260715-19">
-    <script src="script.js?v=20260715-19" defer></script>
+    <link rel="stylesheet" href="style.css?v=20260715-20">
+    <link rel="stylesheet" href="exam_admin.css?v=20260715-20">
+    <script src="script.js?v=20260715-20" defer></script>
 
     <!-- Chart.js, html2canvas & Kakao SDK -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -236,18 +236,10 @@
                 <!-- Days will be generated here -->
             </div>
         </div>
-
-        <div id="noDataMessage" style="display: none; text-align: center; padding: 50px; color: #64748b; font-size: 1.2rem; width: 100%; max-width: 800px; background: white; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-            <button onclick="backToCalendar()" style="margin-bottom: 20px; background: #64748b; color: white; padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer;"><span class="material-icons" style="vertical-align: middle; margin-right: 5px; font-size: 1.1rem;">calendar_month</span>달력으로 돌아가기</button>
-            <div>해당 날짜에 응시한 학생 기록이 없습니다.</div>
-        </div>
-
-        <!-- 날짜 선택 시 나타나는 목록 영역 -->
-        <div id="dateListArea" style="display: none; width: 100%; max-width: 800px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
-                <div id="dateListHeader" style="font-size: 1.1rem; font-weight: bold; color: #1e293b;">해당 날짜에 응시한 학생 목록</div>
-                <button onclick="backToCalendar()" style="background: #3b82f6; color: white; padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem;"><span class="material-icons" style="vertical-align: middle; margin-right: 4px; font-size: 1.1rem;">calendar_month</span>달력으로 가기</button>
-            </div>
+        
+        <!-- 날짜 선택 시 나타나는 목록 영역 (달력 아래에 표시) -->
+        <div id="dateListArea" style="display: none; width: 100%; max-width: 800px; margin-top: 20px; border-top: 2px solid #e2e8f0; padding-top: 20px;">
+            <h4 id="dateListHeader" style="font-size: 1.1rem; color: #1e293b; margin-top: 0; margin-bottom: 15px;">해당 날짜에 응시한 학생 목록</h4>
             <div class="card" style="width: 100%; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); overflow: hidden;">
                 <table class="admin-table" style="width: 100%; border-collapse: collapse;">
                     <thead>
@@ -262,6 +254,13 @@
                     </tbody>
                 </table>
             </div>
+        </div>
+
+        <div id="noDataMessage" style="display: none; text-align: center; padding: 20px; color: #94a3b8; width: 100%; max-width: 800px; margin-top: 20px; border-top: 2px solid #e2e8f0; padding-top: 20px;">
+            해당 일자에 응시 내역이 없습니다.
+        </div>
+        
+        <!-- End of calendarSection -->
         </div>
 
         <div id="reportContainer" style="display: none; width: 100%; display: flex; flex-direction: column; align-items: center;">
@@ -386,7 +385,7 @@
         </div> <!-- End of reportContainer -->
     </div>
 
-    <script src="exam_admin.js?v=20260715-19"></script>
+    <script src="exam_admin.js?v=20260715-20"></script>
 
         </main>
     </div>
