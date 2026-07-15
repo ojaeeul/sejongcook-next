@@ -35,9 +35,11 @@ async function loadData() {
         const res = await fetch(`../questions_data.json?v=${Date.now()}`);
         questionsData = await res.json();
         
-        // Process courses
         for (const key in questionsData) {
-            const courseName = key.split('_')[0];
+            let courseName = key.split('_')[0];
+            if (['한식', '양식', '일식', '중식', '제과', '제빵', '복어', '제과제빵'].includes(courseName)) {
+                courseName = courseName + '기능사';
+            }
             if (!courses[courseName]) {
                 courses[courseName] = [];
             }
@@ -242,7 +244,7 @@ function renderCourses() {
 }
 
 function selectCourse(courseName) {
-    document.getElementById('selectedCourseName').textContent = courseName.includes('오재을') ? courseName : `${courseName}조리기능사`;
+    document.getElementById('selectedCourseName').textContent = courseName;
     
     const list = document.getElementById('examList');
     list.innerHTML = '';
