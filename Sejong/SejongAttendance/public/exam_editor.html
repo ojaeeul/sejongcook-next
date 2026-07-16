@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>시험지 문제 수정</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Pretendard', sans-serif; background: #f8fafc; margin: 0; padding: 0; color: #334155; }
+        .header { background: white; padding: 15px 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+        .header-title { font-size: 1.2rem; font-weight: bold; color: #1e293b; display: flex; align-items: center; gap: 10px; }
+        .btn-back { background: none; border: none; font-size: 1.2rem; color: #64748b; cursor: pointer; padding: 5px; }
+        .btn-save { background: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 4px rgba(59,130,246,0.3); transition: background 0.2s; }
+        .btn-save:hover { background: #2563eb; }
+        .container { max-width: 800px; margin: 30px auto; padding: 0 20px; }
+        
+        .q-card { background: white; border-radius: 10px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
+        .q-header { display: flex; justify-content: space-between; margin-bottom: 15px; font-weight: bold; color: #3b82f6; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; }
+        
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.9rem; color: #475569; }
+        .form-group textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.95rem; font-family: inherit; resize: vertical; min-height: 80px; box-sizing: border-box; }
+        .form-group input[type="text"], .form-group input[type="number"] { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.95rem; box-sizing: border-box; }
+        
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .opt-item { display: flex; align-items: center; gap: 10px; }
+        .opt-item span { font-weight: bold; color: #64748b; width: 25px; text-align: center; }
+        
+        .ans-group { display: flex; align-items: center; gap: 10px; margin-top: 15px; background: #f0fdf4; padding: 10px; border-radius: 6px; border: 1px solid #bbf7d0; }
+        .ans-group label { margin: 0; color: #166534; }
+        .ans-group input { width: 80px; }
+        
+        @media (max-width: 600px) {
+            .options-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div style="display:flex; align-items:center; gap:15px;">
+        <button class="btn-back" onclick="history.back()"><i class="fas fa-arrow-left"></i></button>
+        <div class="header-title" id="pageTitle"><i class="fas fa-edit"></i> 시험지 수정</div>
+    </div>
+    <button class="btn-save" onclick="saveExam()" id="saveBtn"><i class="fas fa-save"></i> 저장하기</button>
+</header>
+
+<div class="container" id="editorContainer">
+    <div style="text-align:center; padding:50px;">
+        <i class="fas fa-spinner fa-spin fa-3x" style="color:#cbd5e1;"></i>
+        <p style="margin-top:15px; color:#64748b;">데이터를 불러오는 중입니다...</p>
+    </div>
+</div>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const examKey = urlParams.get('key');
+    const examName = urlParams.get('name') || '시험지';
+    
+    let currentQuestions = [];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        if (!examKey) {
+            alert('잘못된 접근입니다. (시험지 키 없음)');
+            history.back();
+            return;
+        }
+        
+        document.getElementById('pageTitle').innerHTML = `<i class="fas fa-edit"></i> ${examName} 수정`;
+        
+        try {
+            const res = await fetch('questions_data.json?v=' + Date.now());
+            const data = await res.json();
+            
+            if (data[examKey]) {
+                currentQuestions = data[examKey];
+                renderEditor();
+            } else {
+                alert('해당 시험지 데이터를 찾을 수 없습니다.');
+                history.back();
+            }
+        } catch (e) {
+            console.error(e);
+            alert('데이터 로드 실패');
+        }
+    });
+
+    function renderEditor() {
+        const container = document.getElementById('editorContainer');
+        container.innerHTML = '';
+        
+        if (currentQuestions.length === 0) {
+            container.innerHTML = '<div style="text-align:center; padding:30px;">문항이 없습니다.</div>';
+            return;
+        }
+
+        currentQuestions.forEach((q, idx) => {
+            const card = document.createElement('div');
+            card.className = 'q-card';
+            
+            let optsHtml = '';
+            for (let i=0; i<4; i++) {
+                const optText = (q.o && q.o[i]) ? q.o[i].replace(/"/g, '&quot;') : '';
+                const optLabel = ['가', '나', '다', '라'][i];
+                optsHtml += `
+                    <div class="opt-item">
+                        <span>${optLabel}.</span>
+                        <input type="text" id="q${idx}_o${i}" value="${optText}" placeholder="보기 ${i+1} 입력">
+                    </div>
+                `;
+            }
+
+            card.innerHTML = `
+                <div class="q-header">
+                    <span>문제 ${idx + 1}</span>
+                </div>
+                
+                <div class="form-group">
+                    <label>문제 지문</label>
+                    <textarea id="q${idx}_text" placeholder="문제를 입력하세요">${q.q ? q.q.replace(/</g, '&lt;').replace(/>/g, '&gt;') : ''}</textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>보기</label>
+                    <div class="options-grid">
+                        ${optsHtml}
+                    </div>
+                </div>
+                
+                <div class="ans-group">
+                    <label><i class="fas fa-check-circle"></i> 정답 (1~4):</label>
+                    <input type="number" id="q${idx}_ans" min="1" max="4" value="${q.a || 1}">
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    async function saveExam() {
+        const btn = document.getElementById('saveBtn');
+        
+        // 폼에서 데이터 수집
+        const updatedQuestions = [];
+        for (let idx = 0; idx < currentQuestions.length; idx++) {
+            const qText = document.getElementById(`q${idx}_text`).value;
+            const o1 = document.getElementById(`q${idx}_o0`).value;
+            const o2 = document.getElementById(`q${idx}_o1`).value;
+            const o3 = document.getElementById(`q${idx}_o2`).value;
+            const o4 = document.getElementById(`q${idx}_o3`).value;
+            const ans = parseInt(document.getElementById(`q${idx}_ans`).value) || 1;
+            
+            const newQ = {
+                q: qText,
+                o: [o1, o2, o3, o4],
+                a: ans
+            };
+            
+            // 기존 속성 보존 (이미지 등)
+            if(currentQuestions[idx].img) newQ.img = currentQuestions[idx].img;
+            
+            updatedQuestions.push(newQ);
+        }
+
+        try {
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 저장 중...';
+            btn.disabled = true;
+            
+            const res = await fetch('/api/sejong/questions-data', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    key: examKey,
+                    questions: updatedQuestions
+                })
+            });
+            
+            const result = await res.json();
+            if (result.success) {
+                alert('시험지 수정 내용이 성공적으로 저장되었습니다!');
+                window.location.reload();
+            } else {
+                throw new Error(result.error || '저장 실패');
+            }
+        } catch (e) {
+            console.error(e);
+            alert('저장 중 오류가 발생했습니다: ' + e.message);
+        } finally {
+            btn.innerHTML = '<i class="fas fa-save"></i> 저장하기';
+            btn.disabled = false;
+        }
+    }
+</script>
+
+</body>
+</html>
