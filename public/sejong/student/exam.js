@@ -1039,7 +1039,7 @@ window.initPaperPreviewSwiper = function() {
                 highlightStyle = 'color: #2563eb; font-weight: bold;'; // User marked an answer
             }
 
-            html += `<div class="card-q-item" id="card-q-${j}" style="margin-bottom: 10px;">
+            html += `<div class="card-q-item" id="card-q-${j}" style="margin-bottom: 10px; cursor: pointer;" onclick="currentQuestionIndex = ${j}; renderQuestion();">
                         <div style="${highlightStyle}"><strong>Q${j + 1}.</strong> ${q.q}</div>`;
             
             // Add Options
