@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>시험지 조립소 - 세종요리제과학원</title>
-    <link rel="stylesheet" href="style.css?v=20260717-20">
+    <link rel="stylesheet" href="style.css?v=20260717-21">
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -71,6 +71,20 @@
         }
         .paper-card.swiper-slide {
             height: 100%;
+        }
+        .paper-card::-webkit-scrollbar {
+            width: 8px;
+        }
+        .paper-card::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+        .paper-card::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .paper-card::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
         }
         .paper-card::after {
             content: '';
@@ -676,7 +690,7 @@
                 effect: "cards",
                 grabCursor: true,
                 keyboard: { enabled: true },
-                mousewheel: { invert: false },
+                mousewheel: false,
                 cardsEffect: {
                     perSlideOffset: 8,
                     perSlideRotate: 2,

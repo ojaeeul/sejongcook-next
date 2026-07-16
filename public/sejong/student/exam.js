@@ -1144,9 +1144,7 @@ window.initPaperPreviewSwiper = function() {
         keyboard: {
             enabled: true,
         },
-        mousewheel: {
-            invert: false,
-        },
+        mousewheel: false,
         cardsEffect: {
             perSlideOffset: 8,
             perSlideRotate: 2,
