@@ -48,12 +48,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }, { passive: true });
 
         function handleSwipe() {
-            const SWIPE_THRESHOLD = 120; // Increased to 120px to prevent accidental swipes
+            const SWIPE_THRESHOLD = 40; // Decreased to 40px for easier swiping
             const diffX = touchStartX - touchEndX;
             const diffY = Math.abs(touchStartY - touchEndY);
             
-            // Trigger horizontal swipe only if X movement is greater than Y movement (to allow vertical scrolling)
-            if (Math.abs(diffX) > diffY && Math.abs(diffX) > SWIPE_THRESHOLD) {
+            // Trigger horizontal swipe only if X movement is greater than Y movement * 0.7
+            if (Math.abs(diffX) > diffY * 0.7 && Math.abs(diffX) > SWIPE_THRESHOLD) {
                 // If it's a valid swipe and the exam screen is active
                 if (diffX > 0) {
                     // Swiped left -> Next Question
