@@ -80,17 +80,27 @@ async function saveAdminAccount() {
 function togglePasswordVisibility() {
     const pwInput = document.getElementById('adminPw');
     const checkbox = document.getElementById('showPwCheckbox');
-    const currentPwDisplay = document.getElementById('currentPwDisplay');
     
     if (checkbox.checked) {
         pwInput.type = 'text';
-        if (currentPwDisplay && currentStoredPw) {
-            currentPwDisplay.textContent = currentStoredPw;
-        }
     } else {
         pwInput.type = 'password';
+    }
+}
+
+function toggleCurrentPasswordVisibility() {
+    const checkbox = document.getElementById('showCurrentPwCheckbox');
+    const currentPwDisplay = document.getElementById('currentPwDisplay');
+    
+    if (checkbox.checked) {
+        if (currentPwDisplay && currentStoredPw) {
+            currentPwDisplay.textContent = currentStoredPw;
+            currentPwDisplay.style.letterSpacing = 'normal';
+        }
+    } else {
         if (currentPwDisplay && currentStoredPw) {
             currentPwDisplay.textContent = '•'.repeat(currentStoredPw.length);
+            currentPwDisplay.style.letterSpacing = '2px';
         }
     }
 }
