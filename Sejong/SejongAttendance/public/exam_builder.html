@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>시험지 조립소 - 세종요리제과학원</title>
-    <link rel="stylesheet" href="style.css?v=20260717-14">
+    <link rel="stylesheet" href="style.css?v=20260717-15">
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -52,6 +52,57 @@
         /* Table Styles within editor */
         .q-text-editor table, .q-text-readonly table { border-collapse: collapse; width: 100%; margin: 10px 0; }
         .q-text-editor td, .q-text-editor th, .q-text-readonly td, .q-text-readonly th { border: 1px solid #cbd5e1; padding: 8px; }
+        
+        /* Preview Modal Styles */
+        .paper-card {
+            background-color: #fff;
+            border-radius: 12px;
+            padding: 20px 25px 20px 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            position: relative;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            border: 1px solid #e2e8f0;
+        }
+        .paper-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 15px;
+            width: 2px;
+            height: 100%;
+            background: linear-gradient(to right, #e2e8f0, #f8fafc, #e2e8f0);
+            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+        }
+        .q-text-preview {
+            font-weight: 700;
+            color: #1e293b;
+            font-size: 1.05rem;
+            margin-bottom: 12px;
+            line-height: 1.5;
+            word-break: break-all;
+        }
+        .options-list-preview {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        .option-item-preview {
+            display: flex;
+            align-items: flex-start;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            color: #475569;
+            line-height: 1.4;
+        }
+        .option-item-preview.correct {
+            color: #16a34a;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -64,6 +115,7 @@
                 </div>
                 <div style="display:flex; gap:10px;">
                     <button onclick="addBlankQuestion()" style="background:#8b5cf6; color:white; border:none; padding:8px 16px; border-radius:6px; font-weight:bold; cursor:pointer;"><i class="fas fa-plus"></i> 빈 문제 추가</button>
+                    <button onclick="openPreviewModal()" style="background:#10b981; color:white; border:none; padding:8px 16px; border-radius:6px; font-weight:bold; cursor:pointer;"><i class="fas fa-eye"></i> 미리보기</button>
                     <button onclick="saveTargetExam()" style="background:#3b82f6; color:white; border:none; padding:8px 16px; border-radius:6px; font-weight:bold; cursor:pointer;" id="saveBtn"><i class="fas fa-save"></i> 완성된 시험지 저장</button>
                 </div>
             </header>
@@ -585,6 +637,94 @@
                 btn.disabled = false;
             }
         }
+        
+        let previewSwiperInstance = null;
+
+        function openPreviewModal() {
+            syncTargetFromDOM();
+            if(targetQuestions.length === 0) {
+                alert("조립된 문제가 없습니다.");
+                return;
+            }
+            
+            renderPreviewCards();
+            
+            document.getElementById('previewModal').style.display = 'flex';
+            
+            if(previewSwiperInstance) {
+                previewSwiperInstance.destroy(true, false);
+            }
+            
+            previewSwiperInstance = new Swiper("#previewSwiper", {
+                effect: "cards",
+                grabCursor: true,
+                keyboard: { enabled: true },
+                mousewheel: { invert: false },
+                cardsEffect: {
+                    perSlideOffset: 8,
+                    perSlideRotate: 2,
+                    rotate: true,
+                    slideShadows: true,
+                },
+            });
+        }
+        
+        function closePreviewModal() {
+            document.getElementById('previewModal').style.display = 'none';
+        }
+        
+        function renderPreviewCards() {
+            const wrapper = document.getElementById('previewSwiperWrapper');
+            wrapper.innerHTML = '';
+            
+            const questionsPerCard = 5;
+            const totalPages = Math.ceil(targetQuestions.length / questionsPerCard);
+            
+            for(let p=0; p<totalPages; p++) {
+                const slide = document.createElement('div');
+                slide.className = 'swiper-slide paper-card';
+                
+                let html = `<div style="font-weight:bold; text-align:center; margin-bottom:15px; padding-bottom:10px; border-bottom:1px solid #e2e8f0; color:#1e293b; font-size:1.1rem;">시험지 - ${p+1}페이지 (${p*questionsPerCard+1}~${Math.min((p+1)*questionsPerCard, targetQuestions.length)}번)</div>`;
+                
+                for(let i=0; i<questionsPerCard; i++) {
+                    const qIdx = p * questionsPerCard + i;
+                    if(qIdx >= targetQuestions.length) break;
+                    
+                    const q = targetQuestions[qIdx];
+                    
+                    html += `<div class="q-text-preview"><span style="color:#ef4444;">Q${qIdx+1}.</span> ${q.q || ''}</div>`;
+                    html += `<div class="options-list-preview">`;
+                    for(let o=0; o<4; o++) {
+                        const isCorrect = (q.a === (o+1));
+                        const optClass = isCorrect ? 'option-item-preview correct' : 'option-item-preview';
+                        const circledNum = ['①','②','③','④'][o];
+                        html += `<div class="${optClass}"><span style="flex-shrink:0;">${circledNum}</span> <span style="margin-left:5px;">${q.o && q.o[o] ? q.o[o] : ''}</span></div>`;
+                    }
+                    html += `</div>`;
+                }
+                
+                slide.innerHTML = html;
+                wrapper.appendChild(slide);
+            }
+        }
     </script>
+    
+    <!-- Preview Modal -->
+    <div id="previewModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.9); z-index:9999; justify-content:center; align-items:center;">
+        <button onclick="closePreviewModal()" style="position:absolute; top:20px; right:20px; background:none; border:none; color:white; font-size:2.5rem; cursor:pointer; padding:10px;"><i class="fas fa-times"></i></button>
+        
+        <div class="paper-preview-wrapper" style="display:flex; flex-direction:column; align-items:center;">
+            <div class="swiper mySwiperCards" id="previewSwiper" style="width: 380px; height: 500px; padding: 10px; background:transparent;">
+                <div class="swiper-wrapper" id="previewSwiperWrapper">
+                    <!-- Cards will go here -->
+                </div>
+            </div>
+            <div style="color:white; margin-top:20px; text-align:center; font-size:1.1rem; display:flex; align-items:center; gap:8px;">
+                <span class="material-icons">swipe</span>마우스로 넘겨보기
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 </body>
 </html>
