@@ -55,6 +55,10 @@
                 </div>
                 <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">기타</div>
                 <div class="nav-sub-menu show">
+                    <a href="exam_builder.html" id="navExamBuilder" class="nav-item">
+                        <span class="material-icons" style="font-size: 1.2rem; margin-right: 8px;">construction</span>
+                        시험지 조립소(재구성)
+                    </a>
                     <a href="exam_settings.html" id="navExamSettings" class="nav-item">
                         <span class="material-icons" style="font-size: 1.2rem; margin-right: 8px;">fact_check</span>
                         시험지 설정
@@ -409,8 +413,8 @@
 
     <!-- Load Chart.js from CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="shared_calc.js?v=20260717-10"></script>
-    <script src="stats.js?v=20260717-10"></script>
+    <script src="shared_calc.js?v=20260717-11"></script>
+    <script src="stats.js?v=20260717-11"></script>
     <script>
         // Set Date to today
         const d = new Date();
@@ -486,6 +490,6 @@
         
         @keyframes spin { 100% { transform: rotate(360deg); } }
     </style>
-    <script src="sidebar_sync.js?v=20260717-10"></script>
+    <script src="sidebar_sync.js?v=20260717-11"></script>
 </body>
 </html>
