@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>시험지 조립소 - 세종요리제과학원</title>
-    <link rel="stylesheet" href="style.css?v=20260717-22">
+    <link rel="stylesheet" href="style.css?v=20260717-23">
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -371,6 +371,11 @@
             syncTargetFromDOM();
             const q = allQuestionsData[srcKey][idx];
             if(q) {
+                const isDuplicate = targetQuestions.some(tq => tq.q === q.q);
+                if (isDuplicate) {
+                    alert('이미 대상 시험지에 추가된 문제입니다.');
+                    return;
+                }
                 targetQuestions.push(JSON.parse(JSON.stringify(q)));
                 renderTarget();
                 const tgtList = document.getElementById('tgtList');
