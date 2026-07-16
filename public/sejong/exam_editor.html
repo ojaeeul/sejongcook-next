@@ -120,6 +120,7 @@
                     <div style="display:flex; gap:5px;">
                         <button onclick="moveQuestionUp(${idx})" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; padding:4px 8px; border-radius:4px; font-size:0.8rem; cursor:pointer;" title="위로 이동" ${idx === 0 ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}><i class="fas fa-arrow-up"></i></button>
                         <button onclick="moveQuestionDown(${idx})" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; padding:4px 8px; border-radius:4px; font-size:0.8rem; cursor:pointer;" title="아래로 이동" ${idx === currentQuestions.length - 1 ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}><i class="fas fa-arrow-down"></i></button>
+                        <button onclick="openMoveModal(${idx})" style="background:#8b5cf6; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:0.8rem; cursor:pointer;" title="다른 시험지로 이동"><i class="fas fa-exchange-alt"></i> 타 시험지 이동</button>
                         <button onclick="deleteQuestion(${idx})" style="background:#ef4444; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:0.8rem; cursor:pointer;"><i class="fas fa-trash"></i> 삭제</button>
                     </div>
                 </div>
@@ -250,7 +251,178 @@
             btn.disabled = false;
         }
     }
+
+    let moveSourceIdx = -1;
+    let allCoursesData = null;
+
+    async function openMoveModal(idx) {
+        moveSourceIdx = idx;
+        syncStateFromDOM();
+
+        document.getElementById('moveModal').style.display = 'flex';
+        document.getElementById('movePosition').value = 1;
+        
+        if (!allCoursesData) {
+            try {
+                const res = await fetch('exam_courses.json?v=' + Date.now());
+                allCoursesData = await res.json();
+            } catch (e) {
+                console.error(e);
+                alert('과정 목록을 불러올 수 없습니다.');
+                closeMoveModal();
+                return;
+            }
+        }
+        
+        const catSelect = document.getElementById('moveCategory');
+        catSelect.innerHTML = '';
+        allCoursesData.forEach((cat, i) => {
+            catSelect.innerHTML += `<option value="${i}">${cat.category}</option>`;
+        });
+        
+        updateCourseOptions();
+    }
+
+    function updateCourseOptions() {
+        const catIdx = document.getElementById('moveCategory').value;
+        const courseSelect = document.getElementById('moveCourse');
+        courseSelect.innerHTML = '';
+        
+        if (catIdx !== "" && allCoursesData[catIdx]) {
+            allCoursesData[catIdx].courses.forEach((c, i) => {
+                courseSelect.innerHTML += `<option value="${i}">${c.name}</option>`;
+            });
+        }
+        updateExamOptions();
+    }
+
+    function updateExamOptions() {
+        const catIdx = document.getElementById('moveCategory').value;
+        const courseIdx = document.getElementById('moveCourse').value;
+        const examSelect = document.getElementById('moveExam');
+        examSelect.innerHTML = '';
+        
+        if (catIdx !== "" && courseIdx !== "" && allCoursesData[catIdx]) {
+            const exams = allCoursesData[catIdx].courses[courseIdx].exams;
+            exams.forEach(e => {
+                if (e.key !== examKey) { // 본인 시험지는 제외
+                    examSelect.innerHTML += `<option value="${e.key}">${e.name}</option>`;
+                }
+            });
+        }
+    }
+
+    function closeMoveModal() {
+        document.getElementById('moveModal').style.display = 'none';
+        moveSourceIdx = -1;
+    }
+
+    async function executeMoveQuestion() {
+        const targetExamKey = document.getElementById('moveExam').value;
+        let targetPos = parseInt(document.getElementById('movePosition').value);
+        
+        if (!targetExamKey) {
+            alert('대상 시험지를 선택해주세요.');
+            return;
+        }
+        
+        if (isNaN(targetPos) || targetPos < 1) {
+            alert('올바른 위치를 입력해주세요.');
+            return;
+        }
+        
+        if (!confirm('현재 문항을 선택하신 시험지로 이동하시겠습니까?\\n(이 작업은 즉시 저장되며, 현재 화면도 함께 저장됩니다.)')) return;
+
+        const btn = document.getElementById('execMoveBtn');
+        const oldText = btn.innerHTML;
+        btn.innerHTML = '이동 중...';
+        btn.disabled = true;
+        
+        try {
+            // 1. Fetch the target exam data
+            const res = await fetch('questions_data.json?v=' + Date.now());
+            const allQuestions = await res.json();
+            
+            let targetQuestions = allQuestions[targetExamKey] || [];
+            
+            // 2. Adjust target position (1-based to 0-based index)
+            let insertIndex = targetPos - 1;
+            if (insertIndex > targetQuestions.length) {
+                insertIndex = targetQuestions.length;
+            }
+            
+            // 3. Get the question to move
+            const questionToMove = JSON.parse(JSON.stringify(currentQuestions[moveSourceIdx])); // Deep copy
+            
+            // 4. Insert into target
+            targetQuestions.splice(insertIndex, 0, questionToMove);
+            
+            // 5. Remove from current
+            currentQuestions.splice(moveSourceIdx, 1);
+            
+            // 6. Save target exam
+            const saveTargetRes = await fetch('/api/sejong/questions-data', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    key: targetExamKey,
+                    questions: targetQuestions
+                })
+            });
+            if(!saveTargetRes.ok) throw new Error('대상 시험지 업데이트 실패');
+            
+            // 7. Save current exam
+            const saveCurrentRes = await fetch('/api/sejong/questions-data', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    key: examKey,
+                    questions: currentQuestions
+                })
+            });
+            if(!saveCurrentRes.ok) throw new Error('현재 시험지 업데이트 실패');
+            
+            alert('성공적으로 이동되었습니다!');
+            window.location.reload();
+            
+        } catch (e) {
+            console.error(e);
+            alert('이동 중 오류가 발생했습니다: ' + e.message);
+            btn.innerHTML = oldText;
+            btn.disabled = false;
+        }
+    }
 </script>
+
+<div id="moveModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:white; padding:20px; border-radius:8px; width:400px; max-width:90%;">
+        <h3 style="margin-top:0; color:#1e293b;"><i class="fas fa-exchange-alt" style="color:#8b5cf6;"></i> 다른 시험지로 문항 이동</h3>
+        <p style="font-size:0.9rem; color:#64748b; margin-bottom:20px;">이동할 대상 시험지와 삽입할 위치(문항 번호)를 선택하세요.</p>
+        
+        <div class="form-group">
+            <label>과정 카테고리</label>
+            <select id="moveCategory" onchange="updateCourseOptions()" style="width:100%; padding:8px; border-radius:4px; border:1px solid #cbd5e1;"></select>
+        </div>
+        <div class="form-group">
+            <label>세부 과정</label>
+            <select id="moveCourse" onchange="updateExamOptions()" style="width:100%; padding:8px; border-radius:4px; border:1px solid #cbd5e1;"></select>
+        </div>
+        <div class="form-group">
+            <label>대상 시험지</label>
+            <select id="moveExam" style="width:100%; padding:8px; border-radius:4px; border:1px solid #cbd5e1;"></select>
+        </div>
+        <div class="form-group">
+            <label>삽입할 문항 위치 (예: 37)</label>
+            <input type="number" id="movePosition" min="1" value="1" style="width:100%; padding:8px; border-radius:4px; border:1px solid #cbd5e1;">
+            <small style="color:#64748b; margin-top:5px; display:block;">* 대상 시험지의 문항 수보다 큰 번호를 입력하면 맨 끝에 추가됩니다.</small>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:25px;">
+            <button onclick="closeMoveModal()" style="padding:8px 16px; background:#e2e8f0; color:#334155; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">취소</button>
+            <button onclick="executeMoveQuestion()" id="execMoveBtn" style="padding:8px 16px; background:#3b82f6; color:white; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">이동 실행</button>
+        </div>
+    </div>
+</div>
 
 </body>
 </html>
