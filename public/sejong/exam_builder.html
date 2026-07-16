@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>시험지 조립소 - 세종요리제과학원</title>
-    <link rel="stylesheet" href="style.css?v=20260717-11">
+    <link rel="stylesheet" href="style.css?v=20260717-12">
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -94,9 +94,23 @@
                             <select id="tgtCat" onchange="updateTgtCourses()"><option value="">저장할 카테고리</option></select>
                             <select id="tgtCourse" onchange="updateTgtExams()"><option value="">저장할 과정</option></select>
                         </div>
-                        <div class="form-group">
-                            <select id="tgtExam" onchange="loadTgtQuestions()"><option value="">기존 시험지 덮어쓰기 (선택)</option></select>
-                            <input type="text" id="tgtNewExamName" placeholder="새 시험지 이름 입력 (기존 덮어쓰기시 비워둠)" style="flex:1;">
+                        <div style="background:#f1f5f9; padding:12px; border-radius:8px; border:1px solid #cbd5e1;">
+                            <div style="margin-bottom:8px; font-weight:bold; color:#475569; font-size:0.95rem;">저장 방식 선택</div>
+                            <div style="display:flex; flex-direction:column; gap:10px;">
+                                <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                                    <input type="radio" name="saveType" value="new" checked onchange="toggleSaveType()">
+                                    <span style="font-weight:600; color:#1e293b;">새 시험지로 저장</span>
+                                </label>
+                                <input type="text" id="tgtNewExamName" placeholder="새 시험지 이름 입력 (예: 제과기능사 모의고사 1회)" style="padding:8px 12px; border:1px solid #3b82f6; border-radius:6px; font-size:0.95rem; margin-left:24px;">
+                                
+                                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; margin-top:5px;">
+                                    <input type="radio" name="saveType" value="overwrite" onchange="toggleSaveType()">
+                                    <span style="font-weight:600; color:#1e293b;">기존 시험지 덮어쓰기</span>
+                                </label>
+                                <select id="tgtExam" onchange="loadTgtQuestions()" style="padding:8px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.95rem; margin-left:24px; display:none; background:white;">
+                                    <option value="">기존 시험지 선택</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                     <div class="panel-content" id="tgtList">
@@ -228,6 +242,21 @@
                 });
             }
             document.getElementById('tgtExam').innerHTML = html;
+        }
+
+        function toggleSaveType() {
+            const saveType = document.querySelector('input[name="saveType"]:checked').value;
+            const newNameInput = document.getElementById('tgtNewExamName');
+            const examSelect = document.getElementById('tgtExam');
+            
+            if (saveType === 'new') {
+                newNameInput.style.display = 'block';
+                examSelect.style.display = 'none';
+                examSelect.value = ""; // Clear selection to prevent accidental overwrite
+            } else {
+                newNameInput.style.display = 'none';
+                examSelect.style.display = 'block';
+            }
         }
 
         function loadTgtQuestions() {
@@ -393,7 +422,8 @@
             
             const catIdx = document.getElementById('tgtCat').value;
             const courseIdx = document.getElementById('tgtCourse').value;
-            let examKey = document.getElementById('tgtExam').value;
+            const saveType = document.querySelector('input[name="saveType"]:checked').value;
+            let examKey = saveType === 'overwrite' ? document.getElementById('tgtExam').value : "";
             const newName = document.getElementById('tgtNewExamName').value.trim();
             
             if(catIdx === "" || courseIdx === "") {
@@ -419,6 +449,12 @@
             try {
                 // If creating a new exam (i.e. no existing exam selected to overwrite)
                 if (!examKey) {
+                    if(saveType === 'overwrite') {
+                        alert("덮어쓸 기존 시험지를 선택해주세요.");
+                        btn.innerHTML = '<i class="fas fa-save"></i> 완성된 시험지 저장';
+                        btn.disabled = false;
+                        return;
+                    }
                     if(!newName) {
                         alert("새 시험지로 저장하려면 이름을 입력해주세요. (예: 제과기능사 모의고사 1회)");
                         throw new Error("이름 누락");
