@@ -309,6 +309,9 @@
                     examSelect.innerHTML += `<option value="${e.key}">${e.name}</option>`;
                 }
             });
+            fetchTargetExamQuestions(); // Auto fetch when options update
+        } else {
+            document.getElementById('targetQuestionsList').innerHTML = '<div style="text-align:center; color:#94a3b8; padding:30px;">시험지를 선택해주세요.</div>';
         }
     }
 
@@ -317,26 +320,69 @@
         moveSourceIdx = -1;
     }
 
-    async function executeMoveQuestion() {
+    async function fetchTargetExamQuestions() {
         const targetExamKey = document.getElementById('moveExam').value;
-        let targetPos = parseInt(document.getElementById('movePosition').value);
+        const listDiv = document.getElementById('targetQuestionsList');
+        if(!targetExamKey) {
+            listDiv.innerHTML = '<div style="text-align:center; color:#94a3b8; padding:30px;">시험지를 선택해주세요.</div>';
+            return;
+        }
         
+        listDiv.innerHTML = '<div style="text-align:center; color:#94a3b8; padding:30px;"><i class="fas fa-spinner fa-spin"></i> 불러오는 중...</div>';
+        
+        try {
+            const res = await fetch('questions_data.json?v=' + Date.now());
+            const data = await res.json();
+            const qs = data[targetExamKey] || [];
+            
+            if (qs.length === 0) {
+                listDiv.innerHTML = `
+                    <div style="text-align:center; padding:30px;">
+                        <p style="color:#64748b; margin-bottom:10px;">문항이 없습니다.</p>
+                        <button onclick="executeMoveQuestion(${targetExamKey}, 1)" style="background:#3b82f6; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer;">이곳 첫 번째로 이동</button>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            qs.forEach((q, idx) => {
+                const qText = q.q ? q.q.substring(0, 30) + '...' : '내용 없음';
+                html += `
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:8px; border-bottom:1px solid #e2e8f0; background:white; margin-bottom:4px; border-radius:4px;">
+                        <div style="font-size:0.85rem; color:#475569;">
+                            <strong>${idx + 1}번.</strong> ${qText}
+                        </div>
+                        <button onclick="executeMoveQuestion('${targetExamKey}', ${idx + 1})" style="background:#10b981; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:0.8rem; cursor:pointer; min-width:80px;">이 자리로</button>
+                    </div>
+                `;
+            });
+            
+            // Add one more at the very end
+            html += `
+                <div style="display:flex; justify-content:center; padding:8px; margin-top:5px;">
+                    <button onclick="executeMoveQuestion('${targetExamKey}', ${qs.length + 1})" style="background:#3b82f6; color:white; border:none; padding:6px 12px; border-radius:4px; font-size:0.85rem; cursor:pointer;"><i class="fas fa-plus"></i> 맨 끝에 추가</button>
+                </div>
+            `;
+            
+            listDiv.innerHTML = html;
+            
+        } catch(e) {
+            listDiv.innerHTML = '<div style="color:red; text-align:center;">오류 발생</div>';
+        }
+    }
+
+    async function executeMoveQuestion(targetExamKey, targetPos) {
         if (!targetExamKey) {
             alert('대상 시험지를 선택해주세요.');
             return;
         }
         
-        if (isNaN(targetPos) || targetPos < 1) {
-            alert('올바른 위치를 입력해주세요.');
-            return;
-        }
-        
-        if (!confirm('현재 문항을 선택하신 시험지로 이동하시겠습니까?\\n(이 작업은 즉시 저장되며, 현재 화면도 함께 저장됩니다.)')) return;
+        if (!confirm(`현재 문항을 선택하신 시험지의 ${targetPos}번 위치로 이동하시겠습니까?\\n(이 작업은 즉시 반영되어 저장됩니다.)`)) return;
 
-        const btn = document.getElementById('execMoveBtn');
-        const oldText = btn.innerHTML;
-        btn.innerHTML = '이동 중...';
-        btn.disabled = true;
+        // Change the button text (since there are multiple buttons now, we can just block the UI)
+        document.getElementById('moveModal').style.pointerEvents = 'none';
+        document.getElementById('moveModal').style.opacity = '0.7';
         
         try {
             // 1. Fetch the target exam data
@@ -388,38 +434,39 @@
         } catch (e) {
             console.error(e);
             alert('이동 중 오류가 발생했습니다: ' + e.message);
-            btn.innerHTML = oldText;
-            btn.disabled = false;
+            document.getElementById('moveModal').style.pointerEvents = 'auto';
+            document.getElementById('moveModal').style.opacity = '1';
         }
     }
 </script>
 
 <div id="moveModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
-    <div style="background:white; padding:20px; border-radius:8px; width:400px; max-width:90%;">
-        <h3 style="margin-top:0; color:#1e293b;"><i class="fas fa-exchange-alt" style="color:#8b5cf6;"></i> 다른 시험지로 문항 이동</h3>
-        <p style="font-size:0.9rem; color:#64748b; margin-bottom:20px;">이동할 대상 시험지와 삽입할 위치(문항 번호)를 선택하세요.</p>
+    <div style="background:white; padding:20px; border-radius:8px; width:500px; max-width:95%; max-height:90vh; display:flex; flex-direction:column;">
+        <h3 style="margin-top:0; color:#1e293b; flex-shrink:0;"><i class="fas fa-exchange-alt" style="color:#8b5cf6;"></i> 다른 시험지로 문항 이동</h3>
+        <p style="font-size:0.9rem; color:#64748b; margin-bottom:15px; flex-shrink:0;">이동할 대상 시험지를 선택한 후, 리스트에서 원하는 위치의 <b>[이 자리로]</b> 버튼을 누르세요.</p>
         
-        <div class="form-group">
-            <label>과정 카테고리</label>
-            <select id="moveCategory" onchange="updateCourseOptions()" style="width:100%; padding:8px; border-radius:4px; border:1px solid #cbd5e1;"></select>
+        <div style="display:flex; gap:10px; margin-bottom:10px; flex-shrink:0;">
+            <div style="flex:1;">
+                <label style="font-size:0.8rem; font-weight:bold; color:#475569;">과정 카테고리</label>
+                <select id="moveCategory" onchange="updateCourseOptions()" style="width:100%; padding:6px; border-radius:4px; border:1px solid #cbd5e1;"></select>
+            </div>
+            <div style="flex:1;">
+                <label style="font-size:0.8rem; font-weight:bold; color:#475569;">세부 과정</label>
+                <select id="moveCourse" onchange="updateExamOptions()" style="width:100%; padding:6px; border-radius:4px; border:1px solid #cbd5e1;"></select>
+            </div>
         </div>
-        <div class="form-group">
-            <label>세부 과정</label>
-            <select id="moveCourse" onchange="updateExamOptions()" style="width:100%; padding:8px; border-radius:4px; border:1px solid #cbd5e1;"></select>
-        </div>
-        <div class="form-group">
-            <label>대상 시험지</label>
-            <select id="moveExam" style="width:100%; padding:8px; border-radius:4px; border:1px solid #cbd5e1;"></select>
-        </div>
-        <div class="form-group">
-            <label>삽입할 문항 위치 (예: 37)</label>
-            <input type="number" id="movePosition" min="1" value="1" style="width:100%; padding:8px; border-radius:4px; border:1px solid #cbd5e1;">
-            <small style="color:#64748b; margin-top:5px; display:block;">* 대상 시험지의 문항 수보다 큰 번호를 입력하면 맨 끝에 추가됩니다.</small>
+        
+        <div class="form-group" style="margin-bottom:10px; flex-shrink:0;">
+            <label style="font-size:0.8rem; font-weight:bold; color:#475569;">대상 시험지</label>
+            <select id="moveExam" onchange="fetchTargetExamQuestions()" style="width:100%; padding:8px; border-radius:4px; border:1px solid #cbd5e1;"></select>
         </div>
 
-        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:25px;">
-            <button onclick="closeMoveModal()" style="padding:8px 16px; background:#e2e8f0; color:#334155; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">취소</button>
-            <button onclick="executeMoveQuestion()" id="execMoveBtn" style="padding:8px 16px; background:#3b82f6; color:white; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">이동 실행</button>
+        <div id="targetQuestionsList" style="flex:1; overflow-y:auto; border:1px solid #e2e8f0; border-radius:4px; background:#f8fafc; padding:10px; min-height:200px;">
+            <div style="text-align:center; color:#94a3b8; padding:30px;">시험지를 선택해주세요.</div>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:15px; flex-shrink:0;">
+            <button onclick="closeMoveModal()" style="padding:8px 16px; background:#e2e8f0; color:#334155; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">취소 / 닫기</button>
         </div>
     </div>
 </div>
