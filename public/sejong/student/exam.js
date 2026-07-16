@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }, { passive: true });
 
         function handleSwipe() {
-            const SWIPE_THRESHOLD = 50;
+            const SWIPE_THRESHOLD = 120; // Increased to 120px to prevent accidental swipes
             const diffX = touchStartX - touchEndX;
             const diffY = Math.abs(touchStartY - touchEndY);
             
