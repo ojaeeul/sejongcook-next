@@ -27,6 +27,44 @@ const screens = {
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
     loadData();
+
+    // Add touch swipe listeners for exam screen
+    const solvingScreen = document.getElementById('solvingScreen');
+    if (solvingScreen) {
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let touchEndX = 0;
+        let touchEndY = 0;
+
+        solvingScreen.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+            touchStartY = e.changedTouches[0].screenY;
+        }, { passive: true });
+
+        solvingScreen.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            touchEndY = e.changedTouches[0].screenY;
+            handleSwipe();
+        }, { passive: true });
+
+        function handleSwipe() {
+            const SWIPE_THRESHOLD = 50;
+            const diffX = touchStartX - touchEndX;
+            const diffY = Math.abs(touchStartY - touchEndY);
+            
+            // Trigger horizontal swipe only if X movement is greater than Y movement (to allow vertical scrolling)
+            if (Math.abs(diffX) > diffY && Math.abs(diffX) > SWIPE_THRESHOLD) {
+                // If it's a valid swipe and the exam screen is active
+                if (diffX > 0) {
+                    // Swiped left -> Next Question
+                    nextQuestion();
+                } else {
+                    // Swiped right -> Previous Question
+                    prevQuestion();
+                }
+            }
+        }
+    }
 });
 
 async function loadData() {
