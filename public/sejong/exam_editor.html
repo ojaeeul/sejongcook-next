@@ -42,7 +42,10 @@
         <button class="btn-back" onclick="history.back()"><i class="fas fa-arrow-left"></i></button>
         <div class="header-title" id="pageTitle"><i class="fas fa-edit"></i> 시험지 수정</div>
     </div>
-    <button class="btn-save" onclick="saveExam()" id="saveBtn"><i class="fas fa-save"></i> 저장하기</button>
+    <div style="display:flex; gap:10px;">
+        <button class="btn-save" style="background:#10b981;" onclick="addEmptyQuestion()"><i class="fas fa-plus"></i> 문항 추가</button>
+        <button class="btn-save" onclick="saveExam()" id="saveBtn"><i class="fas fa-save"></i> 저장하기</button>
+    </div>
 </header>
 
 <div class="container" id="editorContainer">
@@ -97,6 +100,7 @@
         currentQuestions.forEach((q, idx) => {
             const card = document.createElement('div');
             card.className = 'q-card';
+            card.id = `q_card_${idx}`;
             
             let optsHtml = '';
             for (let i=0; i<4; i++) {
@@ -113,6 +117,7 @@
             card.innerHTML = `
                 <div class="q-header">
                     <span>문제 ${idx + 1}</span>
+                    <button onclick="deleteQuestion(${idx})" style="background:#ef4444; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:0.8rem; cursor:pointer;"><i class="fas fa-trash"></i> 삭제</button>
                 </div>
                 
                 <div class="form-group">
@@ -134,6 +139,25 @@
             `;
             container.appendChild(card);
         });
+    }
+
+    function deleteQuestion(idx) {
+        if(!confirm('이 문항을 삭제하시겠습니까?')) return;
+        currentQuestions.splice(idx, 1);
+        renderEditor();
+    }
+
+    function addEmptyQuestion() {
+        currentQuestions.push({
+            q: "",
+            o: ["", "", "", ""],
+            a: 1
+        });
+        renderEditor();
+        // Scroll to bottom
+        setTimeout(() => {
+            window.scrollTo(0, document.body.scrollHeight);
+        }, 100);
     }
 
     async function saveExam() {
