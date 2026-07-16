@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>시험지 조립소 - 세종요리제과학원</title>
-    <link rel="stylesheet" href="style.css?v=20260717-12">
+    <link rel="stylesheet" href="style.css?v=20260717-13">
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -345,6 +345,88 @@
             document.execCommand('insertHTML', false, html);
         }
 
+        function addRow() {
+            const sel = window.getSelection();
+            if (!sel.rangeCount) { alert("표 안의 칸을 먼저 클릭해주세요."); return; }
+            const node = sel.anchorNode;
+            const tr = node.nodeType === 3 ? node.parentNode.closest('tr') : node?.closest?.('tr');
+            if (tr) {
+                const newRow = tr.cloneNode(true);
+                newRow.querySelectorAll('td, th').forEach(td => td.innerHTML = '<br>');
+                tr.parentNode.insertBefore(newRow, tr.nextSibling);
+            } else {
+                alert("표 안의 칸을 먼저 클릭해주세요.");
+            }
+        }
+
+        function addCol() {
+            const sel = window.getSelection();
+            if (!sel.rangeCount) { alert("표 안의 칸을 먼저 클릭해주세요."); return; }
+            const node = sel.anchorNode;
+            const td = node.nodeType === 3 ? node.parentNode.closest('td, th') : node?.closest?.('td, th');
+            if (td) {
+                const tr = td.closest('tr');
+                const index = Array.from(tr.children).indexOf(td);
+                const table = td.closest('table');
+                table.querySelectorAll('tr').forEach(row => {
+                    const newCell = document.createElement(td.tagName);
+                    newCell.innerHTML = '<br>';
+                    newCell.style.border = "1px solid #cbd5e1";
+                    newCell.style.padding = "8px";
+                    if (row.children[index]) {
+                        row.insertBefore(newCell, row.children[index].nextSibling);
+                    } else {
+                        row.appendChild(newCell);
+                    }
+                });
+            } else {
+                alert("표 안의 칸을 먼저 클릭해주세요.");
+            }
+        }
+
+        function deleteRow() {
+            const sel = window.getSelection();
+            if (!sel.rangeCount) { alert("표 안의 칸을 먼저 클릭해주세요."); return; }
+            const node = sel.anchorNode;
+            const tr = node.nodeType === 3 ? node.parentNode.closest('tr') : node?.closest?.('tr');
+            if (tr) {
+                tr.remove();
+            } else {
+                alert("표 안의 칸을 먼저 클릭해주세요.");
+            }
+        }
+
+        function deleteCol() {
+            const sel = window.getSelection();
+            if (!sel.rangeCount) { alert("표 안의 칸을 먼저 클릭해주세요."); return; }
+            const node = sel.anchorNode;
+            const td = node.nodeType === 3 ? node.parentNode.closest('td, th') : node?.closest?.('td, th');
+            if (td) {
+                const tr = td.closest('tr');
+                const index = Array.from(tr.children).indexOf(td);
+                const table = td.closest('table');
+                table.querySelectorAll('tr').forEach(row => {
+                    if (row.children[index]) {
+                        row.children[index].remove();
+                    }
+                });
+            } else {
+                alert("표 안의 칸을 먼저 클릭해주세요.");
+            }
+        }
+
+        function deleteTable() {
+            const sel = window.getSelection();
+            if (!sel.rangeCount) { alert("표 안의 칸을 먼저 클릭해주세요."); return; }
+            const node = sel.anchorNode;
+            const table = node.nodeType === 3 ? node.parentNode.closest('table') : node?.closest?.('table');
+            if (table) {
+                table.remove();
+            } else {
+                alert("표 안의 칸을 먼저 클릭해주세요.");
+            }
+        }
+
         // Sync inputs back to object array
         function syncTargetFromDOM() {
             targetQuestions.forEach((q, idx) => {
@@ -392,6 +474,13 @@
                         <div class="toolbar">
                             <button onclick="document.getElementById('tgt_q_${idx}').focus(); document.execCommand('bold',false,null);" title="굵게"><i class="fas fa-bold"></i></button>
                             <button onclick="insertTable(${idx});" title="표 삽입"><i class="fas fa-table"></i> 표 삽입</button>
+                            <span style="border-left:1px solid #cbd5e1; margin:0 5px;"></span>
+                            <button onclick="addRow()" title="행(세로) 추가"><i class="fas fa-grip-lines"></i> 행 추가</button>
+                            <button onclick="addCol()" title="열(가로) 추가"><i class="fas fa-grip-lines-vertical"></i> 열 추가</button>
+                            <span style="border-left:1px solid #cbd5e1; margin:0 5px;"></span>
+                            <button onclick="deleteRow()" title="현재 행 삭제" style="color:#ef4444;"><i class="fas fa-minus"></i> 행 삭제</button>
+                            <button onclick="deleteCol()" title="현재 열 삭제" style="color:#ef4444;"><i class="fas fa-minus"></i> 열 삭제</button>
+                            <button onclick="deleteTable()" title="표 전체 삭제" style="color:#ef4444;"><i class="fas fa-trash-alt"></i> 표 삭제</button>
                         </div>
                         <div class="q-text-editor" id="tgt_q_${idx}" contenteditable="true" style="overflow-x: auto;">${q.q || ''}</div>
                         
