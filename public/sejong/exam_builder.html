@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>시험지 조립소 - 세종요리제과학원</title>
-    <link rel="stylesheet" href="style.css?v=20260717-13">
+    <link rel="stylesheet" href="style.css?v=20260717-14">
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -471,8 +471,8 @@
                             </div>
                         </div>
                         
-                        <div class="toolbar">
-                            <button onclick="document.getElementById('tgt_q_${idx}').focus(); document.execCommand('bold',false,null);" title="굵게"><i class="fas fa-bold"></i></button>
+                        <div class="toolbar" onmousedown="event.preventDefault();">
+                            <button onclick="document.execCommand('bold',false,null);" title="굵게"><i class="fas fa-bold"></i></button>
                             <button onclick="insertTable(${idx});" title="표 삽입"><i class="fas fa-table"></i> 표 삽입</button>
                             <span style="border-left:1px solid #cbd5e1; margin:0 5px;"></span>
                             <button onclick="addRow()" title="행(세로) 추가"><i class="fas fa-grip-lines"></i> 행 추가</button>
