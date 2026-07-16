@@ -84,9 +84,13 @@ window.renderCourseSettingsList = function() {
                         </div>
                         <div style="display:none; margin-left: 28px; background: #f1f5f9; padding: 8px; border-radius: 4px; border-left: 2px solid #cbd5e1; margin-top: 4px;">
                             ${examsHtml}
-                            <div style="display:flex; gap:6px; margin-top: 8px; padding: 0 10px;">
+                            <div style="display:flex; gap:6px; margin-top: 8px; padding: 0 10px; align-items:center;">
                                 <input type="text" id="newExamInput_${catIndex}_${courseIndex}" placeholder="새 시험지 추가 (예: 모의고사 1회)" style="flex:1; padding:4px 8px; border:1px solid #cbd5e1; border-radius:4px; font-size: 0.8rem;">
                                 <button onclick="addExamToCourse(${catIndex}, ${courseIndex})" style="background:#3b82f6; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:0.8rem;"><i class="fas fa-plus"></i> 추가</button>
+                                <label for="uploadExam_${catIndex}_${courseIndex}" style="background:#10b981; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:0.8rem; display:flex; align-items:center; gap:4px; margin:0;">
+                                    <i class="fas fa-file-upload"></i> 파일 업로드로 추가
+                                </label>
+                                <input type="file" id="uploadExam_${catIndex}_${courseIndex}" accept=".hwp,.pdf,.jpg,.jpeg,.png" style="display:none;" onchange="uploadExamFile(event, ${catIndex}, ${courseIndex})">
                             </div>
                         </div>
                     </div>
@@ -263,4 +267,116 @@ window.moveCourseDown = function(catIndex, courseIndex) {
     cat.courses[courseIndex] = cat.courses[courseIndex + 1];
     cat.courses[courseIndex + 1] = temp;
     saveExamCoursesToAPI();
+};
+
+window.uploadExamFile = async function(event, catIndex, courseIndex) {
+    const file = event.target.files[0];
+    if(!file) return;
+    
+    // UI Feedback
+    const label = event.target.previousElementSibling;
+    const originalText = label.innerHTML;
+    label.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 분석 중...';
+    label.style.pointerEvents = 'none';
+
+    try {
+        let extractedTextForGemini = '';
+        let inlineData = null;
+
+        if (file.name.toLowerCase().endsWith('.hwp')) {
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            const res = await fetch('/api/sejong/hwp-extract', {
+                method: 'POST',
+                body: formData
+            });
+            
+            if(!res.ok) throw new Error('HWP 추출 실패');
+            const data = await res.json();
+            extractedTextForGemini = data.html;
+        } else if (file.type === 'application/pdf' || file.type.startsWith('image/')) {
+            // Read as base64
+            const base64 = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result.split(',')[1]);
+                reader.onerror = error => reject(error);
+                reader.readAsDataURL(file);
+            });
+            inlineData = {
+                mimeType: file.type,
+                data: base64
+            };
+        } else {
+            throw new Error('지원하지 않는 파일 형식입니다. (HWP, PDF, JPG, PNG만 가능)');
+        }
+
+        // 2. Send to Gemini API
+        const prompt = "첨부된 문서(또는 이미지)에서 60개의 객관식 문제를 누락 없이 모두 추출하세요. 반드시 JSON 배열(Array) 형태로, 객체는 {\"q\": \"문제내용\", \"o\": [\"보기1\", \"보기2\", \"보기3\", \"보기4\"], \"a\": 정답번호(1~4)} 구조여야 합니다. 불필요한 설명 없이 JSON 배열만 출력하세요.";
+        
+        let parts = [{ text: prompt }];
+        if (extractedTextForGemini) {
+            parts.push({ text: extractedTextForGemini.substring(0, 80000) });
+        } else if (inlineData) {
+            parts.push({ inlineData });
+        }
+
+        const aiRes = await fetch('/api/sejong/ai_analyze', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{ parts }],
+                generationConfig: {
+                    responseMimeType: "application/json"
+                }
+            })
+        });
+
+        if(!aiRes.ok) throw new Error('AI 분석 실패');
+        const aiData = await aiRes.json();
+        
+        let questions = null;
+        if(aiData.candidates && aiData.candidates[0].content.parts[0].text) {
+            try {
+                questions = JSON.parse(aiData.candidates[0].content.parts[0].text);
+            } catch(e) {
+                console.error("Parse Error:", aiData.candidates[0].content.parts[0].text);
+            }
+        }
+
+        if(!questions || !Array.isArray(questions) || questions.length === 0) {
+            throw new Error('문제 추출에 실패했습니다. (AI가 유효한 문항을 반환하지 않음)');
+        }
+
+        // 3. Save Questions
+        const courseObj = window.allExamCourses[catIndex].courses[courseIndex];
+        const newKey = `${courseObj.name}_${Date.now()}`;
+        const newName = `${file.name.split('.')[0]} (업로드)`;
+
+        const saveRes = await fetch('/api/sejong/questions-data', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                key: newKey,
+                questions: questions
+            })
+        });
+
+        if(!saveRes.ok) throw new Error('추출된 데이터 저장 실패');
+
+        // 4. Update Course Config
+        courseObj.exams.push({ name: newName, key: newKey });
+        await saveExamCoursesToAPI();
+
+        // 5. Open Editor
+        window.location.href = `exam_editor.html?key=${newKey}&name=${encodeURIComponent(newName)}`;
+
+    } catch (e) {
+        console.error(e);
+        alert(e.message || '업로드 중 오류가 발생했습니다.');
+    } finally {
+        label.innerHTML = originalText;
+        label.style.pointerEvents = 'auto';
+        event.target.value = ''; // Reset file input
+    }
 };
