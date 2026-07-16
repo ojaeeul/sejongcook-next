@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>시험지 조립소 - 세종요리제과학원</title>
-    <link rel="stylesheet" href="style.css?v=20260717-17">
+    <link rel="stylesheet" href="style.css?v=20260717-18">
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -398,6 +398,17 @@
 
         function insertTable(idx) {
             const html = `<table style="width:100%; border-collapse:collapse; border:1px solid #cbd5e1;"><tbody><tr><td style="border:1px solid #cbd5e1; padding:8px;">내용</td><td style="border:1px solid #cbd5e1; padding:8px;">내용</td></tr></tbody></table><br>`;
+            
+            const sel = window.getSelection();
+            if(sel.rangeCount > 0) {
+                const node = sel.anchorNode;
+                // Check if current focus is inside the current question card
+                if(node && (node.nodeType === 3 ? node.parentNode : node).closest('.q-card')) {
+                    document.execCommand('insertHTML', false, html);
+                    return;
+                }
+            }
+            // Fallback: focus question text
             document.getElementById(`tgt_q_${idx}`).focus();
             document.execCommand('insertHTML', false, html);
         }
@@ -494,7 +505,7 @@
                     const opt = document.getElementById(`tgt_o_${idx}_${i}`);
                     if(opt) {
                         if(!q.o) q.o = [];
-                        q.o[i] = opt.value;
+                        q.o[i] = opt.innerHTML;
                     }
                 }
                 const ans = document.getElementById(`tgt_a_${idx}`);
@@ -542,10 +553,10 @@
                         <div class="q-text-editor" id="tgt_q_${idx}" contenteditable="true" style="overflow-x: auto;">${q.q || ''}</div>
                         
                         <div class="options-grid">
-                            <div class="opt-item"><span>1.</span><input type="text" id="tgt_o_${idx}_0" value="${(q.o && q.o[0]) ? q.o[0].replace(/"/g, '&quot;') : ''}"></div>
-                            <div class="opt-item"><span>2.</span><input type="text" id="tgt_o_${idx}_1" value="${(q.o && q.o[1]) ? q.o[1].replace(/"/g, '&quot;') : ''}"></div>
-                            <div class="opt-item"><span>3.</span><input type="text" id="tgt_o_${idx}_2" value="${(q.o && q.o[2]) ? q.o[2].replace(/"/g, '&quot;') : ''}"></div>
-                            <div class="opt-item"><span>4.</span><input type="text" id="tgt_o_${idx}_3" value="${(q.o && q.o[3]) ? q.o[3].replace(/"/g, '&quot;') : ''}"></div>
+                            <div class="opt-item"><span>1.</span><div class="opt-text-editor" id="tgt_o_${idx}_0" contenteditable="true" style="flex:1; padding:4px 8px; border:1px solid #cbd5e1; border-radius:4px; min-height:28px; background:white;">${(q.o && q.o[0]) ? q.o[0] : ''}</div></div>
+                            <div class="opt-item"><span>2.</span><div class="opt-text-editor" id="tgt_o_${idx}_1" contenteditable="true" style="flex:1; padding:4px 8px; border:1px solid #cbd5e1; border-radius:4px; min-height:28px; background:white;">${(q.o && q.o[1]) ? q.o[1] : ''}</div></div>
+                            <div class="opt-item"><span>3.</span><div class="opt-text-editor" id="tgt_o_${idx}_2" contenteditable="true" style="flex:1; padding:4px 8px; border:1px solid #cbd5e1; border-radius:4px; min-height:28px; background:white;">${(q.o && q.o[2]) ? q.o[2] : ''}</div></div>
+                            <div class="opt-item"><span>4.</span><div class="opt-text-editor" id="tgt_o_${idx}_3" contenteditable="true" style="flex:1; padding:4px 8px; border:1px solid #cbd5e1; border-radius:4px; min-height:28px; background:white;">${(q.o && q.o[3]) ? q.o[3] : ''}</div></div>
                         </div>
                         
                         <div class="ans-group">
