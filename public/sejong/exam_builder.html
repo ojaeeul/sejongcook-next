@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>시험지 조립소 - 세종요리제과학원</title>
-    <link rel="stylesheet" href="style.css?v=20260717-15">
+    <link rel="stylesheet" href="style.css?v=20260717-16">
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -677,7 +677,7 @@
             const wrapper = document.getElementById('previewSwiperWrapper');
             wrapper.innerHTML = '';
             
-            const questionsPerCard = 5;
+            const questionsPerCard = 3;
             const totalPages = Math.ceil(targetQuestions.length / questionsPerCard);
             
             for(let p=0; p<totalPages; p++) {
@@ -714,13 +714,13 @@
         <button onclick="closePreviewModal()" style="position:absolute; top:20px; right:20px; background:none; border:none; color:white; font-size:2.5rem; cursor:pointer; padding:10px;"><i class="fas fa-times"></i></button>
         
         <div class="paper-preview-wrapper" style="display:flex; flex-direction:column; align-items:center;">
-            <div class="swiper mySwiperCards" id="previewSwiper" style="width: 380px; height: 500px; padding: 10px; background:transparent;">
+            <div class="swiper mySwiperCards" id="previewSwiper" style="width: 420px; height: 80vh; max-height: 850px; min-height: 600px; padding: 10px; background:transparent;">
                 <div class="swiper-wrapper" id="previewSwiperWrapper">
                     <!-- Cards will go here -->
                 </div>
             </div>
             <div style="color:white; margin-top:20px; text-align:center; font-size:1.1rem; display:flex; align-items:center; gap:8px;">
-                <span class="material-icons">swipe</span>마우스로 넘겨보기
+                <span class="material-icons">swipe</span>마우스로 드래그하여 넘기기 (또는 휠 스크롤)
             </div>
         </div>
     </div>
