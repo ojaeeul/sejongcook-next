@@ -1193,3 +1193,19 @@ window.updatePaperPreviewSwiper = function() {
     }
 };
 
+window.toggleAnalysisTable = function() {
+    const wrapper = document.getElementById('analysisTableWrapper');
+    const helpText = document.getElementById('analysisHelpText');
+    const icon = document.getElementById('analysisToggleIcon');
+    
+    if (wrapper.style.display === 'none') {
+        wrapper.style.display = 'block';
+        helpText.style.display = 'block';
+        icon.style.transform = 'rotate(180deg)';
+    } else {
+        wrapper.style.display = 'none';
+        helpText.style.display = 'none';
+        icon.style.transform = 'rotate(0deg)';
+    }
+};
+

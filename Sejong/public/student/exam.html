@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>모의고사 - 세종요리학원</title>
-    <link rel="stylesheet" href="exam.css?v=20260716-18">
+    <link rel="stylesheet" href="exam.css?v=20260716-19">
     <!-- Chart.js for Result Analysis -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Canvas Confetti for Pass Celebration -->
@@ -200,13 +200,15 @@
             </div>
 
             <!-- O/X Analysis Table -->
-            <h3 style="margin-bottom: 15px; font-weight: 900; display: flex; align-items: center; gap: 8px;">
+            <h3 onclick="toggleAnalysisTable()" style="margin-bottom: 15px; font-weight: 900; display: flex; align-items: center; gap: 8px; cursor: pointer;">
                 <span class="material-icons" style="color: var(--primary-light);">analytics</span>
                 문항별 진단 분석표
+                <span id="analysisToggleIcon" class="material-icons" style="margin-left: auto; transition: transform 0.3s;">expand_more</span>
             </h3>
-            <p style="font-size: 0.8rem; color: var(--text-sub); margin-bottom: 10px;">* 붉은색 오답 문항을 터치하면 오답노트를 확인할 수 있습니다.</p>
+            <p id="analysisHelpText" style="font-size: 0.8rem; color: var(--text-sub); margin-bottom: 10px; display: none;">* 붉은색 오답 문항을 터치하면 오답노트를 확인할 수 있습니다.</p>
             
-            <div class="analysis-table-container">
+            <div id="analysisTableWrapper" style="display: none;">
+                <div class="analysis-table-container">
                 <table class="analysis-table">
                     <thead>
                         <tr>
@@ -220,6 +222,7 @@
                         <!-- Populated by JS -->
                     </tbody>
                 </table>
+            </div>
             </div>
 
             <div style="display: flex; gap: 10px; margin-top: 20px; flex-direction: column;">
@@ -237,6 +240,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-    <script src="exam.js?v=20260716-18"></script>
+    <script src="exam.js?v=20260716-19"></script>
 </body>
 </html>
