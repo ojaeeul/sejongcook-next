@@ -663,3 +663,22 @@ body {
         font-size: 16px !important;
     }
 }
+
+/* Question Transition Animations */
+.slide-in-right {
+    animation: slideInRight 0.3s ease-out forwards;
+}
+
+.slide-in-left {
+    animation: slideInLeft 0.3s ease-out forwards;
+}
+
+@keyframes slideInRight {
+    from { transform: translateX(30px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideInLeft {
+    from { transform: translateX(-30px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}

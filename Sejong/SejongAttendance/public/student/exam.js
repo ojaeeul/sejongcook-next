@@ -426,6 +426,22 @@ function renderQuestion() {
     const optsEl = document.getElementById('optionsList');
     optsEl.innerHTML = '';
 
+    // Apply Transition Animation
+    textEl.classList.remove('slide-in-right', 'slide-in-left');
+    optsEl.classList.remove('slide-in-right', 'slide-in-left');
+    
+    // trigger reflow
+    void textEl.offsetWidth;
+    void optsEl.offsetWidth;
+    
+    const direction = window.slideDirection || 'right';
+    const animClass = direction === 'right' ? 'slide-in-right' : 'slide-in-left';
+    
+    textEl.classList.add(animClass);
+    optsEl.classList.add(animClass);
+    
+    window.slideDirection = null; // reset for next time
+
     if (qInfo.is_subjective) {
         const ansContainer = document.createElement('div');
         ansContainer.className = 'subjective-container';
@@ -562,6 +578,7 @@ function renderQuestion() {
 
 function prevQuestion() {
     if (currentQuestionIndex > 0) {
+        window.slideDirection = 'left';
         currentQuestionIndex--;
         renderQuestion();
     if(window.updatePaperPreviewSwiper) window.updatePaperPreviewSwiper();
@@ -570,6 +587,7 @@ function prevQuestion() {
 
 function nextQuestion() {
     if (currentQuestionIndex < currentQuestions.length - 1) {
+        window.slideDirection = 'right';
         currentQuestionIndex++;
         renderQuestion();
     if(window.updatePaperPreviewSwiper) window.updatePaperPreviewSwiper();
