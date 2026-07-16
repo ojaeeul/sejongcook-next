@@ -1088,7 +1088,8 @@ window.initPaperPreviewSwiper = function() {
         const startQ = i * questionsPerCard;
         const endQ = Math.min(startQ + questionsPerCard, currentQuestions.length);
         
-        let html = `<div class="card-title" style="position: sticky; top: 0; background: white; z-index: 10;">시험지 - ${i + 1}페이지 (${startQ + 1}~${endQ}번)</div>`;
+        let html = `<div class="card-scroll-content">`;
+        html += `<div class="card-title" style="position: sticky; top: 0; background: #f8fafc; z-index: 10;">시험지 - ${i + 1}페이지 (${startQ + 1}~${endQ}번)</div>`;
         html += `<div class="card-questions">`;
         
         for (let j = startQ; j < endQ; j++) {
@@ -1129,6 +1130,7 @@ window.initPaperPreviewSwiper = function() {
             html += `</div>`;
         }
         
+        html += `</div>`;
         html += `</div>`;
         slide.innerHTML = html;
         wrapper.appendChild(slide);

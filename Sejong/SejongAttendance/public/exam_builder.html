@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>시험지 조립소 - 세종요리제과학원</title>
-    <link rel="stylesheet" href="style.css?v=20260717-21">
+    <link rel="stylesheet" href="style.css?v=20260717-22">
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -71,19 +71,26 @@
         }
         .paper-card.swiper-slide {
             height: 100%;
+            overflow: hidden;
         }
-        .paper-card::-webkit-scrollbar {
+        .card-scroll-content {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 10px;
+            height: 100%;
+        }
+        .card-scroll-content::-webkit-scrollbar {
             width: 8px;
         }
-        .paper-card::-webkit-scrollbar-track {
+        .card-scroll-content::-webkit-scrollbar-track {
             background: #f1f5f9;
             border-radius: 4px;
         }
-        .paper-card::-webkit-scrollbar-thumb {
+        .card-scroll-content::-webkit-scrollbar-thumb {
             background: #cbd5e1;
             border-radius: 4px;
         }
-        .paper-card::-webkit-scrollbar-thumb:hover {
+        .card-scroll-content::-webkit-scrollbar-thumb:hover {
             background: #94a3b8;
         }
         .paper-card::after {
@@ -724,7 +731,8 @@
                 const slide = document.createElement('div');
                 slide.className = 'swiper-slide paper-card';
                 
-                let html = `<div style="font-weight:bold; text-align:center; margin-bottom:15px; padding-bottom:10px; border-bottom:1px solid #e2e8f0; color:#1e293b; font-size:1.1rem;">시험지 - ${p+1}페이지 (${p*previewQuestionsPerCard+1}~${Math.min((p+1)*previewQuestionsPerCard, targetQuestions.length)}번)</div>`;
+                let html = `<div class="card-scroll-content">`;
+                html += `<div style="font-weight:bold; text-align:center; margin-bottom:15px; padding-bottom:10px; border-bottom:1px solid #e2e8f0; color:#1e293b; font-size:1.1rem;">시험지 - ${p+1}페이지 (${p*previewQuestionsPerCard+1}~${Math.min((p+1)*previewQuestionsPerCard, targetQuestions.length)}번)</div>`;
                 
                 for(let i=0; i<previewQuestionsPerCard; i++) {
                     const qIdx = p * previewQuestionsPerCard + i;
@@ -743,6 +751,7 @@
                     html += `</div>`;
                 }
                 
+                html += `</div>`;
                 slide.innerHTML = html;
                 wrapper.appendChild(slide);
             }
