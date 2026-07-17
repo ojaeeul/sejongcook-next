@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>시험지 관리 - 세종요리제과학원</title>
-    <link rel="stylesheet" href="style.css?v=20260717-26">
+    <link rel="stylesheet" href="style.css?v=20260717-27">
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -86,6 +86,18 @@
         .exam-count.error {
             background: #fee2e2;
             color: #ef4444;
+        }
+        .status-badge.error { background: #fee2e2; color: #ef4444; border-color: #fca5a5; }
+        
+        @media (max-width: 600px) {
+            .detail-table th, .detail-table td {
+                padding: 8px 4px !important;
+                font-size: 0.8rem !important;
+            }
+            .detail-table th { white-space: normal !important; word-break: keep-all; }
+            .mobile-wrap-text { white-space: normal !important; word-break: keep-all; }
+            .manage-btn { padding: 4px 8px !important; font-size: 0.75rem !important; }
+            #calendarGrid { gap: 2px !important; }
         }
     </style>
     <!-- Swiper CSS -->
@@ -386,7 +398,7 @@
         </div>
     </div>
 
-    <script src="questions_data.js?v=20260717-26"></script>
+    <script src="questions_data.js?v=20260717-27"></script>
     <script>
         let currentCalDate = new Date();
         let examRecords = [];
@@ -467,12 +479,14 @@
                 const ds = `${yStr}-${mStr}-${dStr}`;
                 
                 const dayCell = document.createElement('div');
-                dayCell.style.padding = '15px 5px';
+                dayCell.style.padding = '15px 2px';
                 dayCell.style.border = '1px solid #f1f5f9';
                 dayCell.style.borderRadius = '6px';
                 dayCell.style.position = 'relative';
                 dayCell.style.cursor = 'pointer';
                 dayCell.style.minHeight = '70px';
+                dayCell.style.minWidth = '0';
+                dayCell.style.overflow = 'hidden';
                 
                 if (ds === todayStr) {
                     dayCell.style.backgroundColor = '#eff6ff';
@@ -531,10 +545,10 @@
             
             let html = `
                 <div style="overflow-x:auto;">
-                <table style="width:100%; border-collapse:collapse; background:white; border-radius:8px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+                <table class="detail-table" style="width:100%; border-collapse:collapse; background:white; border-radius:8px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
                     <thead>
                         <tr style="background:#f1f5f9; color:#475569; text-align:left;">
-                            <th style="padding:12px; border-bottom:1px solid #e2e8f0; white-space:nowrap;">이름(전화번호)</th>
+                            <th style="padding:12px; border-bottom:1px solid #e2e8f0;">이름(전화번호)</th>
                             <th style="padding:12px; border-bottom:1px solid #e2e8f0;">과정명</th>
                             <th style="padding:12px; border-bottom:1px solid #e2e8f0;">점수</th>
                             <th style="padding:12px; border-bottom:1px solid #e2e8f0;">제출시간</th>
@@ -554,12 +568,12 @@
                 
                 html += `
                     <tr style="border-bottom:1px solid #e2e8f0;">
-                        <td style="padding:12px; color:#1e293b; font-weight:500;">${displayName}</td>
-                        <td style="padding:12px; color:#3b82f6; white-space:nowrap;">${r.examKey}</td>
-                        <td style="padding:12px; color:#ef4444; font-weight:bold; white-space:nowrap;">${scoreText}</td>
-                        <td style="padding:12px; color:#64748b; font-size:0.9rem; white-space:nowrap;">${timeText}</td>
+                        <td class="mobile-wrap-text" style="padding:12px; color:#1e293b; font-weight:500;">${displayName}</td>
+                        <td class="mobile-wrap-text" style="padding:12px; color:#3b82f6;">${r.examKey}</td>
+                        <td class="mobile-wrap-text" style="padding:12px; color:#ef4444; font-weight:bold;">${scoreText}</td>
+                        <td class="mobile-wrap-text" style="padding:12px; color:#64748b; font-size:0.9rem;">${timeText}</td>
                         <td style="padding:12px; text-align:center;">
-                            <button onclick="unlockExam(this, '${rJson}')" style="background:#ef4444; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:0.85rem; font-weight:600; box-shadow:0 1px 2px rgba(0,0,0,0.1); white-space:nowrap; transition: background 0.2s;">
+                            <button class="manage-btn" onclick="unlockExam(this, '${rJson}')" style="background:#ef4444; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:0.85rem; font-weight:600; box-shadow:0 1px 2px rgba(0,0,0,0.1); white-space:nowrap; transition: background 0.2s;">
                                 <i class="fas fa-unlock-alt" style="margin-right:5px;"></i>해제
                             </button>
                         </td>
@@ -952,7 +966,7 @@
 
         </main>
     </div>
-    <script src="sidebar_sync.js?v=20260717-26"></script>
+    <script src="sidebar_sync.js?v=20260717-27"></script>
     <script>
         function toggleSidebar() {
             document.querySelector('.sidebar').classList.toggle('active');
