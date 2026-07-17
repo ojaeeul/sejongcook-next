@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>시험지 관리 - 세종요리제과학원</title>
-    <link rel="stylesheet" href="style.css?v=20260717-27">
+    <link rel="stylesheet" href="style.css?v=20260717-28">
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -90,13 +90,36 @@
         .status-badge.error { background: #fee2e2; color: #ef4444; border-color: #fca5a5; }
         
         @media (max-width: 600px) {
-            .detail-table th, .detail-table td {
-                padding: 8px 4px !important;
-                font-size: 0.8rem !important;
+            .detail-table thead { display: none; }
+            .detail-table, .detail-table tbody, .detail-table tr, .detail-table td { 
+                display: block; 
+                width: 100%; 
+                box-sizing: border-box;
             }
-            .detail-table th { white-space: normal !important; word-break: keep-all; }
-            .mobile-wrap-text { white-space: normal !important; word-break: keep-all; }
-            .manage-btn { padding: 4px 8px !important; font-size: 0.75rem !important; }
+            .detail-table tr { 
+                margin-bottom: 10px; 
+                border: 1px solid #e2e8f0; 
+                border-radius: 8px; 
+                padding: 10px; 
+                box-shadow: 0 1px 2px rgba(0,0,0,0.05); 
+            }
+            .detail-table td { 
+                text-align: left !important; 
+                padding: 4px 0 !important; 
+                border: none !important; 
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                font-size: 0.85rem !important;
+            }
+            .detail-table td::before { 
+                content: attr(data-label); 
+                font-weight: bold; 
+                color: #64748b; 
+                font-size: 0.8rem; 
+                margin-right: 10px;
+            }
+            .manage-btn { padding: 4px 12px !important; font-size: 0.8rem !important; margin-left: auto; display: block; }
             #calendarGrid { gap: 2px !important; }
         }
     </style>
@@ -398,7 +421,7 @@
         </div>
     </div>
 
-    <script src="questions_data.js?v=20260717-27"></script>
+    <script src="questions_data.js?v=20260717-28"></script>
     <script>
         let currentCalDate = new Date();
         let examRecords = [];
@@ -568,11 +591,11 @@
                 
                 html += `
                     <tr style="border-bottom:1px solid #e2e8f0;">
-                        <td class="mobile-wrap-text" style="padding:12px; color:#1e293b; font-weight:500;">${displayName}</td>
-                        <td class="mobile-wrap-text" style="padding:12px; color:#3b82f6;">${r.examKey}</td>
-                        <td class="mobile-wrap-text" style="padding:12px; color:#ef4444; font-weight:bold;">${scoreText}</td>
-                        <td class="mobile-wrap-text" style="padding:12px; color:#64748b; font-size:0.9rem;">${timeText}</td>
-                        <td style="padding:12px; text-align:center;">
+                        <td data-label="이름(번호)" class="mobile-wrap-text" style="padding:12px; color:#1e293b; font-weight:500;">${displayName}</td>
+                        <td data-label="과정명" class="mobile-wrap-text" style="padding:12px; color:#3b82f6;">${r.examKey}</td>
+                        <td data-label="점수" class="mobile-wrap-text" style="padding:12px; color:#ef4444; font-weight:bold;">${scoreText}</td>
+                        <td data-label="제출시간" class="mobile-wrap-text" style="padding:12px; color:#64748b; font-size:0.9rem;">${timeText}</td>
+                        <td data-label="관리" style="padding:12px; text-align:center;">
                             <button class="manage-btn" onclick="unlockExam(this, '${rJson}')" style="background:#ef4444; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:0.85rem; font-weight:600; box-shadow:0 1px 2px rgba(0,0,0,0.1); white-space:nowrap; transition: background 0.2s;">
                                 <i class="fas fa-unlock-alt" style="margin-right:5px;"></i>해제
                             </button>
@@ -966,7 +989,7 @@
 
         </main>
     </div>
-    <script src="sidebar_sync.js?v=20260717-27"></script>
+    <script src="sidebar_sync.js?v=20260717-28"></script>
     <script>
         function toggleSidebar() {
             document.querySelector('.sidebar').classList.toggle('active');
