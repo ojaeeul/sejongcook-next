@@ -12,12 +12,12 @@
     <meta name="keywords" content="세종요리, 김포요리, 세종요리학원, 김포요리학원, 요리학원, 출석관리, 수강생관리, 요리자격증">
     <meta property="og:title" content="세종요리제과학원 월간 출석부">
     <meta property="og:description" content="수강생들의 출석 현황을 한눈에 확인하세요.">
-    <link rel="stylesheet" href="style.css?v=20260720-1">
+    <link rel="stylesheet" href="style.css?v=20260720-2">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="shared_calc.js?v=20260720-1"></script>
-    <script src="script.js?v=20260720-1" defer></script>
+    <script src="shared_calc.js?v=20260720-2"></script>
+    <script src="script.js?v=20260720-2" defer></script>
     <style>
         .sheet-container {
             background: white;
@@ -35,11 +35,14 @@
             display: block;
             width: 100%;
             max-width: 100%;
+            max-height: calc(100vh - 200px); /* Add max height to enable vertical scroll */
             overflow-x: auto !important;
+            overflow-y: auto !important;
             -webkit-overflow-scrolling: touch;
             padding-bottom: 25px; /* Significant padding for scrollbar */
             margin-bottom: 1.5rem;
             scrollbar-width: auto; /* Force standard scrollbar visibility */
+            border: 1px solid #cbd5e1; /* Add border around the scrollable area */
         }
 
         .table-responsive::-webkit-scrollbar {
@@ -139,9 +142,9 @@
             min-width: 1200px;
             margin: 0 auto;
             margin-bottom: 10px;
-            border-collapse: collapse;
+            border-collapse: separate; /* Changed from collapse to separate for sticky borders */
+            border-spacing: 0;
             font-size: 0.75rem;
-            border: 1px solid #cbd5e1;
             border-bottom: 2px solid #cbd5e1; /* 확실하게 바닥선 추가 */
         }
 
@@ -152,11 +155,24 @@
         table.attendance-table th,
         table.attendance-table td {
             border: 1px solid #e2e8f0;
+            border-top: none;
+            border-left: none;
             text-align: center;
             padding: 0;
             height: 28px;
             vertical-align: middle;
             color: #334155;
+            background-color: #fff; /* Ensure cells have background for sticky overlap */
+            box-sizing: border-box;
+        }
+        
+        table.attendance-table tr:first-child th {
+            border-top: 1px solid #cbd5e1;
+        }
+        
+        table.attendance-table th:first-child,
+        table.attendance-table td:first-child {
+            border-left: 1px solid #cbd5e1;
         }
 
         table.attendance-table th {
@@ -166,6 +182,39 @@
             height: 38px;
             line-height: 1.2;
             border-bottom: 1px solid #cbd5e1;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        /* Sticky Columns */
+        table.attendance-table th:nth-child(1),
+        table.attendance-table td:nth-child(1) {
+            position: sticky;
+            left: 0;
+            z-index: 5;
+        }
+        table.attendance-table th:nth-child(2),
+        table.attendance-table td:nth-child(2) {
+            position: sticky;
+            left: 120px;
+            z-index: 5;
+        }
+        table.attendance-table th:nth-child(3),
+        table.attendance-table td:nth-child(3) {
+            position: sticky;
+            left: 200px;
+            z-index: 5;
+            /* A subtle shadow to separate fixed columns from scrolling ones */
+            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+        }
+
+        /* Top-Left Corner Header Cells need higher z-index to stay above scrolling rows and columns */
+        table.attendance-table th:nth-child(1),
+        table.attendance-table th:nth-child(2),
+        table.attendance-table th:nth-child(3) {
+            z-index: 15;
+            background-color: #f8fafc;
         }
 
         /* Column Widths Compact */
@@ -3583,8 +3632,8 @@
             }
         });
     </script>
-    <script src="ui_arrows.js?v=20260720-1"></script>
-    <script src="sidebar_sync.js?v=20260720-1"></script>
+    <script src="ui_arrows.js?v=20260720-2"></script>
+    <script src="sidebar_sync.js?v=20260720-2"></script>
 </body>
 
 </html>
