@@ -134,7 +134,34 @@ function renderCourseList() {
     let activeCourseHasMembers = false;
     let validCourseCount = 0;
 
-    const selectMobile = document.getElementById('courseSelectMobile');
+    let selectMobile = document.getElementById('courseSelectMobile');
+    if (!selectMobile) {
+        // HTML이 캐시되어서 select가 없는 경우 동적 생성
+        const header = document.querySelector('.course-list-header');
+        if (header) {
+            const wrapper = document.createElement('div');
+            wrapper.style.padding = '0 15px';
+            wrapper.innerHTML = `<select id="courseSelectMobile" class="mobile-course-select" style="display: none;" onchange="selectCourseFromMobile(this.value)"></select>`;
+            header.parentNode.insertBefore(wrapper, header.nextSibling);
+            selectMobile = document.getElementById('courseSelectMobile');
+            
+            // 동적 CSS 주입
+            const style = document.createElement('style');
+            style.innerHTML = `
+                @media (max-width: 1024px) {
+                    .daily-container { flex-direction: column; height: auto; padding: 10px; }
+                    .daily-panel-left { width: 100%; margin-bottom: 10px; }
+                    .course-list { display: none !important; }
+                    .mobile-course-select { display: block !important; width: 100%; padding: 12px; font-size: 1.1rem; font-weight: bold; border: 1px solid #cbd5e1; border-radius: 8px; background-color: #f8fafc; margin: 10px 0; color: #1e3a8a; }
+                    .top-action-bar { flex-direction: column; gap: 10px; }
+                    .action-buttons { width: 100%; justify-content: center; flex-wrap: wrap; }
+                    .stats-box { flex-wrap: wrap; gap: 10px; justify-content: center; padding: 10px; }
+                    .stat-item { width: calc(33% - 10px); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+    }
     if (selectMobile) selectMobile.innerHTML = '';
 
     courseNames.forEach(cName => {
