@@ -273,9 +273,12 @@ function filterExamsByDate(dateString) {
         tr.onclick = () => openAnalysis(item.index);
         
         tr.innerHTML = `
-            <td data-label="학생명 (과목)" style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: left;"><b>${name}</b> <span style="color:#64748b; font-size:0.9em;">(${exam.examKey})</span></td>
-            <td data-label="응시 일시" style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: center; color: #475569;">${timeStr}</td>
-            <td data-label="점수" style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: center; font-weight: bold; color: var(--primary);">${exam.score}점</td>
+            <td data-label="학생명 (과목)" style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: left; line-height: 1.4;">
+                <b style="font-size: 1.1rem; color: #1e293b;">${name}</b><br>
+                <span style="color:#64748b; font-size:0.8rem;">(${exam.examKey})</span>
+            </td>
+            <td data-label="응시 일시" style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: center; color: #475569; font-size: 0.85rem;">${timeStr}</td>
+            <td data-label="점수" style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: center; font-weight: bold; color: var(--primary); font-size: 1.2rem;">${exam.score}점</td>
         `;
         
         tbody.appendChild(tr);
