@@ -168,12 +168,14 @@ function renderCalendar() {
         const ds = `${yStr}-${mStr}-${dStr}`;
         
         const dayCell = document.createElement('div');
-        dayCell.style.padding = '15px 5px';
+        dayCell.style.padding = '15px 2px';
         dayCell.style.border = '1px solid #f1f5f9';
         dayCell.style.borderRadius = '6px';
         dayCell.style.position = 'relative';
         dayCell.style.cursor = 'pointer';
         dayCell.style.minHeight = '70px';
+        dayCell.style.minWidth = '0';
+        dayCell.style.overflow = 'hidden';
         
         if (ds === todayStr) {
             dayCell.style.backgroundColor = '#eff6ff';
@@ -268,9 +270,9 @@ function filterExamsByDate(dateString) {
         tr.onclick = () => openAnalysis(item.index);
         
         tr.innerHTML = `
-            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: left;"><b>${name}</b> <span style="color:#64748b; font-size:0.9em;">(${exam.examKey})</span></td>
-            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: center; color: #475569;">${timeStr}</td>
-            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: center; font-weight: bold; color: var(--primary);">${exam.score}점</td>
+            <td data-label="학생명 (과목)" style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: left;"><b>${name}</b> <span style="color:#64748b; font-size:0.9em;">(${exam.examKey})</span></td>
+            <td data-label="응시 일시" style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: center; color: #475569;">${timeStr}</td>
+            <td data-label="점수" style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: center; font-weight: bold; color: var(--primary);">${exam.score}점</td>
         `;
         
         tbody.appendChild(tr);
