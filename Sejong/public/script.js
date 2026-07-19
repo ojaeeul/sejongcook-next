@@ -344,6 +344,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const overlay = document.querySelector('.sidebar-overlay');
     if (overlay) {
         overlay.addEventListener('click', toggleSidebar);
+        overlay.addEventListener('touchstart', toggleSidebar, {passive: true});
     }
 
     // Close sidebar when clicking a nav item on mobile
