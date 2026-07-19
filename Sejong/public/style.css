@@ -3569,4 +3569,13 @@ label {
     .sheet-container {
         padding: 10px;
     }
+    
+    /* 스마트폰에서 이름과 출석 달력만 보이도록 나머지 숨김 처리 */
+    #monthlyRedBoxPanel,
+    .col-course,
+    .col-no,
+    .col-stat-sum,
+    .col-note {
+        display: none !important;
+    }
 }
