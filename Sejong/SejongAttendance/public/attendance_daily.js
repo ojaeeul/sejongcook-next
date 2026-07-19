@@ -159,9 +159,10 @@ function renderCourseList() {
                     .stat-item { flex: 1; text-align: center; }
                     .stat-label { font-size: 0.7rem; margin-bottom: 2px; }
                     .stat-value { font-size: 1.1rem; }
-                    th, td { padding: 8px 4px !important; font-size: 0.9rem; }
-                    .student-cell { min-width: auto; }
-                    .status-btn { padding: 6px 2px; font-size: 0.8rem; letter-spacing: -0.5px; }
+                    th, td { padding: 6px 2px !important; font-size: 0.85rem; }
+                    .student-cell { min-width: auto; white-space: nowrap; font-size: 0.85rem; }
+                    .status-btn-group { gap: 1px; }
+                    .status-btn { padding: 4px 1px; font-size: 0.75rem; letter-spacing: -1px; white-space: nowrap; }
                 }
             `;
             document.head.appendChild(style);
