@@ -1404,7 +1404,11 @@ input:checked+.slider:before {
     .sidebar {
         transform: translateX(-100%);
         position: fixed;
+        top: 0;
+        bottom: 0;
+        height: 100vh;
         z-index: 1000;
+        padding-bottom: 50px; /* Extra padding for mobile browsers */
     }
 
     .sidebar.active {
@@ -1417,6 +1421,8 @@ input:checked+.slider:before {
         inset: 0;
         background: rgba(0, 0, 0, 0.5);
         z-index: 999;
+        cursor: pointer; /* Fix for iOS Safari click event */
+        -webkit-tap-highlight-color: transparent;
     }
 
     .sidebar-overlay.active {
