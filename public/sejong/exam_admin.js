@@ -168,9 +168,9 @@ function renderCalendar() {
         const ds = `${yStr}-${mStr}-${dStr}`;
         
         const dayCell = document.createElement('div');
-        dayCell.style.padding = '15px 2px';
+        dayCell.style.padding = '8px 1px';
         dayCell.style.border = '1px solid #f1f5f9';
-        dayCell.style.borderRadius = '6px';
+        dayCell.style.borderRadius = '4px';
         dayCell.style.position = 'relative';
         dayCell.style.cursor = 'pointer';
         dayCell.style.minHeight = '70px';
@@ -195,12 +195,12 @@ function renderCalendar() {
             const shownRecords = recordsByDay[ds].slice(0, MAX_NAMES);
             shownRecords.forEach(r => {
                 const studentName = getStudentName(r.phone) || (r.name ? r.name : r.phone);
-                namesHtml += `<div style="font-size:0.7rem; color:#1e293b; margin-top:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding:0 2px;">${studentName}</div>`;
+                namesHtml += `<div style="font-size:0.65rem; color:#1e293b; margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding:0 1px; letter-spacing:-0.5px;">${studentName}</div>`;
             });
             if (count > MAX_NAMES) {
-                namesHtml += `<div style="font-size:0.7rem; color:#64748b; margin-top:2px;">외 ${count - MAX_NAMES}명</div>`;
+                namesHtml += `<div style="font-size:0.65rem; color:#64748b; margin-top:2px;">외 ${count - MAX_NAMES}명</div>`;
             }
-            html += `<div style="margin-top:8px; background:#10b981; color:white; font-size:0.75rem; border-radius:12px; padding:2px 0; font-weight:bold; box-shadow:0 1px 2px rgba(0,0,0,0.1);">${count}명 응시</div>`;
+            html += `<div style="margin-top:6px; background:#10b981; color:white; font-size:0.65rem; border-radius:12px; padding:2px 0; font-weight:bold; box-shadow:0 1px 2px rgba(0,0,0,0.1); letter-spacing:-0.5px;">${count}명 응시</div>`;
             html += namesHtml;
             if (ds !== todayStr) {
                 dayCell.style.backgroundColor = '#f0fdf4';

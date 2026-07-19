@@ -440,6 +440,12 @@ table.admin-table {
 /* Mobile Responsive */
 /* ------------------------------------- */
 @media (max-width: 600px) {
+    .container {
+        padding: 10px !important;
+    }
+    #calendarSection {
+        padding: 10px 5px !important;
+    }
     .page-title h1 {
         font-size: 1.3rem !important;
         margin-top: 5px;
