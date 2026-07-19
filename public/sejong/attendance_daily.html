@@ -7,17 +7,18 @@
     <meta http-equiv="Expires" content="0">    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title>일일 출석부 - 세종요리</title>
-    <link rel="stylesheet" href="style.css?v=20260720-24">
+    <link rel="stylesheet" href="style.css?v=20260720-25">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="shared_calc.js?v=20260720-24"></script>
-    <script src="attendance_daily.js?v=20260720-24" defer></script>
+    <script src="shared_calc.js?v=20260720-25"></script>
+    <script src="attendance_daily.js?v=20260720-25" defer></script>
     <style>
         .daily-container {
             display: flex;
             gap: 20px;
-            height: calc(100vh - 120px);
+            flex: 1;
+            min-height: 0;
             padding: 20px 0;
             box-sizing: border-box;
             background: #f1f5f9;
@@ -97,6 +98,7 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
+            min-height: 0;
             overflow: hidden;
         }
 
@@ -245,6 +247,7 @@
             border: 1px solid #e2e8f0;
             overflow-y: auto;
             position: relative;
+            min-height: 0;
         }
 
         table {
@@ -472,7 +475,6 @@
         @media (max-width: 768px) {
             .daily-container {
                 flex-direction: column;
-                height: auto;
                 padding: 10px;
             }
             .daily-panel-left {
@@ -841,7 +843,7 @@
             el.nextElementSibling.classList.toggle('show');
         }
     </script>
-    <script src="sidebar_sync.js?v=20260720-24"></script>
+    <script src="sidebar_sync.js?v=20260720-25"></script>
 </body>
 
 </html>
