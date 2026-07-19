@@ -180,9 +180,12 @@ function renderCourseList() {
 
         if (cName === activeCourse) activeCourseHasMembers = true;
 
+        const displayName = `${cName} (${membersInCourse.length}명)`;
+
         const cDiv = document.createElement('div');
         cDiv.className = `course-item ${cName === activeCourse ? 'active' : ''}`;
-        cDiv.innerHTML = `<span>${cName}</span><i class="material-icons" style="font-size:1rem;">chevron_right</i>`;
+        cDiv.setAttribute('data-course', cName);
+        cDiv.innerHTML = `<span>${displayName}</span><i class="material-icons" style="font-size:1rem;">chevron_right</i>`;
 
         cDiv.onclick = () => {
             if (activeCourse !== cName) {
@@ -198,7 +201,7 @@ function renderCourseList() {
         if (selectMobile) {
             const option = document.createElement('option');
             option.value = cName;
-            option.textContent = cName;
+            option.textContent = displayName;
             if (cName === activeCourse) option.selected = true;
             selectMobile.appendChild(option);
         }
@@ -206,7 +209,7 @@ function renderCourseList() {
 
     // If the active course became empty due to filtering, switch to the first available
     if (!activeCourseHasMembers && listDiv.children.length > 0) {
-        activeCourse = listDiv.children[0].querySelector('span').textContent;
+        activeCourse = listDiv.children[0].getAttribute('data-course');
         listDiv.children[0].classList.add('active');
         renderAttendanceTbody();
     } else if (listDiv.children.length === 0) {
