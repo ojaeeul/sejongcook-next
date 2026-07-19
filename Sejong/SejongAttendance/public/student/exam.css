@@ -28,7 +28,6 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    overflow-x: hidden;
 }
 
 /* Login Screen */
@@ -646,7 +645,7 @@ body {
         display: none !important;
     }
     .question-container {
-        overflow-y: auto;
+        overflow-y: visible;
         padding-right: 5px;
         max-width: 100% !important;
     }

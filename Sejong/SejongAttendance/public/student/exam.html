@@ -2,9 +2,9 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title>모의고사 - 세종요리학원</title>
-    <link rel="stylesheet" href="exam.css?v=20260719-21">
+    <link rel="stylesheet" href="exam.css?v=20260719-22">
     <!-- Chart.js for Result Analysis -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Canvas Confetti for Pass Celebration -->
@@ -80,7 +80,7 @@
             <h2 id="selectedCourseName" style="font-size: 1.5rem; font-weight: 900;">한식조리기능사</h2>
             <p style="color: var(--text-sub); margin-top: 5px;">풀어볼 기출회차를 선택해주세요.</p>
         </div>
-        <div class="glass-container" style="flex: 1; overflow-y: auto;">
+        <div class="glass-container" style="flex: 1;">
             <div class="exam-list" id="examList">
                 <!-- Populated by JS -->
             </div>
@@ -97,8 +97,8 @@
             </div>
         </div>
         
-        <div style="padding: 20px; display: flex; flex-direction: row; flex: 1; gap: 20px; overflow: hidden; min-height: 0; justify-content: center; width: 100%;">
-            <div class="question-container" id="questionContainer" style="flex: 1; max-width: 800px; overflow-y: auto; padding-bottom: 80px; margin-bottom: 0;">
+        <div style="padding: 20px; display: flex; flex-direction: row; flex: 1; gap: 20px; justify-content: center; width: 100%;">
+            <div class="question-container" id="questionContainer" style="flex: 1; max-width: 800px; padding-bottom: 80px; margin-bottom: 0;">
                 <div class="question-text" id="qText">Q. 문제를 불러오는 중입니다...</div>
                 <div class="options-list" id="optionsList">
                     <!-- Populated by JS -->
@@ -187,7 +187,7 @@
 
     <!-- Screen 4: Result Screen -->
     <div id="resultScreen" class="screen">
-        <div class="glass-container" style="padding: 20px; flex: 1; overflow-y: auto;">
+        <div class="glass-container" style="padding: 20px; flex: 1;">
             <div class="result-header">
                 <div id="resultStatus" class="result-status">채점 중...</div>
                 <div id="resultScore" class="result-score">0</div>
@@ -240,6 +240,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-    <script src="exam.js?v=20260719-21"></script>
+    <script src="exam.js?v=20260719-22"></script>
 </body>
 </html>
