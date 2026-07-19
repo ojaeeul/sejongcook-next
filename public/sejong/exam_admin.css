@@ -462,4 +462,10 @@ table.admin-table {
         font-size: 0.8rem !important;
         white-space: nowrap;
     }
+    .admin-table td:first-child, .admin-table td:first-child b {
+        font-size: 0.95rem !important;
+    }
+    .admin-table td:last-child {
+        font-size: 1rem !important;
+    }
 }
