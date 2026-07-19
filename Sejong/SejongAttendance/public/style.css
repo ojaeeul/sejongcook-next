@@ -3548,3 +3548,25 @@ label {
     transition: .4s;
 }
 .dark-table input[type="text"], .dark-table input[type="tel"], .dark-table input[type="date"], .dark-table select { padding: 2px 4px !important; margin: 0 !important; min-height: unset !important; }
+
+/* 모바일 전용 여백 최적화 및 가로 스크롤 방지 */
+@media (max-width: 768px) {
+    .top-header {
+        flex-wrap: wrap;
+        padding: 10px;
+        gap: 10px;
+    }
+    .page-title {
+        padding-right: 0 !important;
+    }
+    .page-title h1 {
+        white-space: normal !important;
+        font-size: 1.3rem !important;
+    }
+    .content-scroll {
+        padding: 10px;
+    }
+    .sheet-container {
+        padding: 10px;
+    }
+}
