@@ -132,6 +132,10 @@ function renderCourseList() {
     }
 
     let activeCourseHasMembers = false;
+    let validCourseCount = 0;
+
+    const selectMobile = document.getElementById('courseSelectMobile');
+    if (selectMobile) selectMobile.innerHTML = '';
 
     courseNames.forEach(cName => {
         let membersInCourse = groupedCourses[cName];
@@ -140,6 +144,7 @@ function renderCourseList() {
         }
 
         if (membersInCourse.length === 0) return;
+        validCourseCount++;
 
         if (cName === activeCourse) activeCourseHasMembers = true;
 
@@ -157,6 +162,14 @@ function renderCourseList() {
         };
 
         listDiv.appendChild(cDiv);
+
+        if (selectMobile) {
+            const option = document.createElement('option');
+            option.value = cName;
+            option.textContent = cName;
+            if (cName === activeCourse) option.selected = true;
+            selectMobile.appendChild(option);
+        }
     });
 
     // If the active course became empty due to filtering, switch to the first available
@@ -170,8 +183,22 @@ function renderCourseList() {
     } else {
         renderAttendanceTbody(); // Initial render for active course
     }
+    
+    // update selectMobile again just in case activeCourse changed dynamically
+    if (selectMobile && activeCourse) {
+        selectMobile.value = activeCourse;
+    }
 
-    document.getElementById('courseCount').textContent = `${listDiv.children.length}개`;
+    document.getElementById('courseCount').textContent = `${validCourseCount}개`;
+}
+
+function selectCourseFromMobile(cName) {
+    if (activeCourse !== cName) {
+        activeCourse = cName;
+        currentAttendanceState = {}; // Clear state when switching tabs
+        renderCourseList(); // Re-render to update active styling
+        renderAttendanceTbody(); // Re-render table
+    }
 }
 
 // Temporary store for UI changes before saving
