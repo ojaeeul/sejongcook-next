@@ -264,17 +264,17 @@
                 <div class="icon-wrapper"><span class="material-icons">event_note</span></div>
                 <span class="label">출석부</span>
             </div>
-            <div class="menu-item highlight" onclick="location.href='exam.html'">
+            <div class="menu-item highlight" onclick="location.href='exam.html?v=' + Date.now()">
                 <div class="red-dot"></div>
                 <div class="icon-wrapper"><span class="material-icons">edit_note</span></div>
                 <span class="label">제과제빵시험</span>
             </div>
-            <div class="menu-item highlight" onclick="location.href='practical_exam.html'">
+            <div class="menu-item highlight" onclick="location.href='practical_exam.html?v=' + Date.now()">
                 <div class="red-dot"></div>
                 <div class="icon-wrapper"><span class="material-icons">restaurant_menu</span></div>
                 <span class="label">조리시험</span>
             </div>
-            <div class="menu-item highlight" onclick="location.href='exam_admin.html'">
+            <div class="menu-item highlight" onclick="location.href='exam_admin.html?v=' + Date.now()">
                 <div class="icon-wrapper"><span class="material-icons">analytics</span></div>
                 <span class="label">모의고사 관리</span>
             </div>
@@ -322,7 +322,7 @@
                 <div class="icon-wrapper"><span class="material-icons">checklist</span></div>
                 <span class="label">진도처리</span>
             </div>
-            <div class="menu-item highlight" onclick="location.href='exam_settings.html'">
+            <div class="menu-item highlight" onclick="location.href='exam_settings.html?v=' + Date.now()">
                 <div class="icon-wrapper"><span class="material-icons">settings</span></div>
                 <span class="label">설정</span>
             </div>
@@ -654,6 +654,6 @@ function showToast(msg) {
     setTimeout(() => { t.style.opacity = '0'; }, 2000);
 }
 </script>
-    <script src="sidebar_sync.js?v=20260719-8"></script>
+    <script src="sidebar_sync.js?v=20260719-9"></script>
 </body>
 </html>
