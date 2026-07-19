@@ -211,11 +211,16 @@ function renderCalendar() {
         dayCell.onclick = () => {
             document.getElementById('examDateSelect').value = ds;
             filterExamsByDate(ds);
+            
+            // Scroll to the list area on mobile to show the result
+            if (window.innerWidth <= 600) {
+                setTimeout(() => {
+                    document.getElementById('dateListArea').scrollIntoView({ behavior: 'smooth' });
+                }, 100);
+            }
         };
         
         dayCell.innerHTML = html;
-        dayCell.onmouseover = () => dayCell.style.transform = 'translateY(-2px)';
-        dayCell.onmouseout = () => dayCell.style.transform = 'none';
         
         grid.appendChild(dayCell);
     }
@@ -265,8 +270,6 @@ function filterExamsByDate(dateString) {
         const tr = document.createElement('tr');
         tr.style.cursor = 'pointer';
         tr.style.transition = 'background 0.2s';
-        tr.onmouseover = () => tr.style.background = '#f1f5f9';
-        tr.onmouseout = () => tr.style.background = 'transparent';
         tr.onclick = () => openAnalysis(item.index);
         
         tr.innerHTML = `
