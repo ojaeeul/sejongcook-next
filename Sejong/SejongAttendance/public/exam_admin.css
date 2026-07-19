@@ -453,6 +453,7 @@ table.admin-table {
         display: block; 
         width: 100%; 
         box-sizing: border-box;
+        min-width: 0 !important;
     }
     .admin-table tr { 
         margin-bottom: 10px; 
