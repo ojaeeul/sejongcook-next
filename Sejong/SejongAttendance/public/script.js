@@ -342,10 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     // --- Responsive Sidebar Logic ---
     const overlay = document.querySelector('.sidebar-overlay');
-    if (overlay) {
-        overlay.addEventListener('click', toggleSidebar);
-        overlay.addEventListener('touchstart', toggleSidebar, {passive: true});
-    }
+    // Events are handled by inline onclick in HTML
 
     // Close sidebar when clicking a nav item on mobile
     const navItems = document.querySelectorAll('.nav-item');
