@@ -159,6 +159,9 @@ function renderCourseList() {
                     .stat-item { flex: 1; text-align: center; }
                     .stat-label { font-size: 0.7rem; margin-bottom: 2px; }
                     .stat-value { font-size: 1.1rem; }
+                    th, td { padding: 8px 4px !important; font-size: 0.9rem; }
+                    .student-cell { min-width: auto; }
+                    .status-btn { padding: 6px 2px; font-size: 0.8rem; letter-spacing: -0.5px; }
                 }
             `;
             document.head.appendChild(style);
