@@ -3564,16 +3564,22 @@ label {
         font-size: 1.3rem !important;
     }
     .content-scroll {
-        padding: 0;
+        padding: 0 !important;
     }
     .sheet-container {
-        padding: 0;
+        padding: 0 !important;
         border: none !important;
         border-radius: 0 !important;
         box-shadow: none !important;
     }
     .sheet-header {
-        padding: 10px 10px 0 10px;
+        padding: 10px 10px 0 10px !important;
+    }
+    
+    .table-responsive {
+        border-left: none !important;
+        border-right: none !important;
+        border-radius: 0 !important;
     }
     
     /* 스마트폰에서 이름과 출석 달력만 보이도록 나머지 숨김 처리 */
