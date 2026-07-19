@@ -3578,4 +3578,11 @@ label {
     .col-note {
         display: none !important;
     }
+    
+    /* 숨겨진 컬럼들로 인해 '성명' 컬럼의 sticky 위치(left)가 0이 되도록 보정 */
+    table.attendance-table th.col-name,
+    table.attendance-table td.col-name {
+        left: 0 !important;
+        box-shadow: 2px 0 5px rgba(0,0,0,0.05) !important;
+    }
 }
