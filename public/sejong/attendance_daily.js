@@ -155,8 +155,10 @@ function renderCourseList() {
                     .mobile-course-select { display: block !important; width: 100%; padding: 12px; font-size: 1.1rem; font-weight: bold; border: 1px solid #cbd5e1; border-radius: 8px; background-color: #f8fafc; margin: 10px 0; color: #1e3a8a; }
                     .top-action-bar { flex-direction: column; gap: 10px; }
                     .action-buttons { width: 100%; justify-content: center; flex-wrap: wrap; }
-                    .stats-box { flex-wrap: wrap; gap: 10px; justify-content: center; padding: 10px; }
-                    .stat-item { width: calc(33% - 10px); }
+                    .stats-box { flex-wrap: nowrap; gap: 2px; justify-content: space-between; padding: 10px 5px; overflow-x: auto; }
+                    .stat-item { flex: 1; text-align: center; }
+                    .stat-label { font-size: 0.7rem; margin-bottom: 2px; }
+                    .stat-value { font-size: 1.1rem; }
                 }
             `;
             document.head.appendChild(style);
