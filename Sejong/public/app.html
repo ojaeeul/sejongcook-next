@@ -196,15 +196,15 @@
         .status-toggles {
             flex: 1;
             display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
+            gap: 3px;
+            flex-wrap: nowrap;
         }
         
         .toggle-btn {
-            flex: 1 1 auto;
-            padding: 6px 8px;
+            flex: 1 1 0;
+            padding: 6px 2px;
             border-radius: 4px;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: 600;
             background: white;
             border: 1px solid #e2e8f0;
@@ -212,6 +212,7 @@
             transition: all 0.2s;
             text-align: center;
             white-space: nowrap;
+            letter-spacing: -0.5px;
         }
         /* Active colors matching the screenshot */
         .toggle-btn.active[data-val="present"] { background: #22c55e; border-color: #22c55e; color: white; }
@@ -653,6 +654,6 @@ function showToast(msg) {
     setTimeout(() => { t.style.opacity = '0'; }, 2000);
 }
 </script>
-    <script src="sidebar_sync.js?v=20260719-1"></script>
+    <script src="sidebar_sync.js?v=20260719-2"></script>
 </body>
 </html>
