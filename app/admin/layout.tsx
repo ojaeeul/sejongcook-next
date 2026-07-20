@@ -113,6 +113,8 @@ export default function AdminLayout({
         { name: '수강후기', href: '/admin/review', icon: MessageSquare }, // Using MessageSquare for reviews
         { name: '구인구직', href: '/admin/job-openings', icon: Briefcase },
         { name: '문의사항', href: '/admin/qna', icon: MessageSquare },
+        { name: '상담/수강신청 관리', href: '/admin/inquiry', icon: MessageSquare }, // Adding inquiry admin
+        { name: '수강신청 설정', href: '/admin/inquiry-settings', icon: Settings }, // Adding inquiry settings
         { name: '팝업 관리', href: '/admin/popups', icon: Layers }, // Using Layers icon for popups
         { name: '갤러리', href: '/admin/gallery', icon: ImageIcon },
         { name: '명예의 전당', href: '/admin/honor', icon: ImageIcon }, // Re-using ImageIcon or similar
