@@ -1,13 +1,19 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import InfoSidebar from "@/components/InfoSidebar";
-// import Link from 'next/link'; // Unused
 import { useRouter } from 'next/navigation';
 
+interface Category {
+  category: string;
+  icon: string;
+  courses: string[];
+}
+
 export default function InquiryPage() {
-    // const [activeTab, setActiveTab] = useState('cert'); // Unused
     const [selectedCourses, setSelectedCourses] = useState<string[]>([]);
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [isLoadingCourses, setIsLoadingCourses] = useState(true);
 
     // Form state
     const [name, setName] = useState('');
@@ -22,7 +28,25 @@ export default function InquiryPage() {
     const [showModal, setShowModal] = useState(false);
     const [modalMessage, setModalMessage] = useState('');
     const [isSuccess, setIsSuccess] = useState(false);
-    const router = useRouter(); // Ensure useRouter is imported from 'next/navigation'
+    const router = useRouter();
+
+    useEffect(() => {
+        // Fetch courses dynamically
+        const fetchCourses = async () => {
+            try {
+                const res = await fetch('/api/admin/data/inquiry-courses?_t=' + Date.now());
+                if (res.ok) {
+                    const data = await res.json();
+                    setCategories(data);
+                }
+            } catch (error) {
+                console.error('Failed to fetch courses', error);
+            } finally {
+                setIsLoadingCourses(false);
+            }
+        };
+        fetchCourses();
+    }, []);
 
     const toggleCourse = (course: string) => {
         setSelectedCourses(prev =>
@@ -137,67 +161,47 @@ export default function InquiryPage() {
                             <div className="mb-8">
                                 <h3 className="text-xl font-bold border-l-4 border-orange-500 pl-3 mb-4">희망 과정 선택</h3>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {/* Baking */}
-                                    <div className="bg-white border rounded-lg p-4 shadow-sm">
-                                        <h4 className="font-bold text-lg mb-3 text-orange-600 bg-orange-50 p-2 rounded">🥐 제과제빵 과정</h4>
-                                        <ul className="space-y-2">
-                                            {['제과제빵기능사', '제과기능사', '제빵기능사', '떡기능사', '케이크디자인', '디저트'].map(course => (
-                                                <li key={course}
-                                                    onClick={() => toggleCourse(course)}
-                                                    className={`cursor-pointer p-3 rounded-lg border-2 transition-all flex items-center gap-3 ${selectedCourses.includes(course)
-                                                        ? 'bg-orange-50 border-orange-500 text-orange-900 shadow-sm'
-                                                        : 'bg-white border-gray-200 hover:border-orange-300 hover:shadow-sm'
-                                                        }`}
-                                                >
-                                                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${selectedCourses.includes(course)
-                                                        ? 'bg-orange-500 border-orange-500'
-                                                        : 'bg-white border-gray-300'
-                                                        }`}>
-                                                        {selectedCourses.includes(course) && (
-                                                            <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                                            </svg>
-                                                        )}
-                                                    </div>
-                                                    <span className={`font-medium ${selectedCourses.includes(course) ? 'font-bold' : ''}`}>
-                                                        {course}
-                                                    </span>
-                                                </li>
-                                            ))}
-                                        </ul>
+                                {isLoadingCourses ? (
+                                    <div className="py-8 text-center text-gray-500">과정 목록을 불러오는 중입니다...</div>
+                                ) : (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        {categories.map((cat, index) => (
+                                            <div key={index} className="bg-white border rounded-lg p-4 shadow-sm">
+                                                <h4 className="font-bold text-lg mb-3 text-orange-600 bg-orange-50 p-2 rounded">
+                                                    {cat.icon} {cat.category}
+                                                </h4>
+                                                <ul className="space-y-2">
+                                                    {cat.courses.map(course => (
+                                                        <li key={course}
+                                                            onClick={() => toggleCourse(course)}
+                                                            className={`cursor-pointer p-3 rounded-lg border-2 transition-all flex items-center gap-3 ${selectedCourses.includes(course)
+                                                                ? 'bg-orange-50 border-orange-500 text-orange-900 shadow-sm'
+                                                                : 'bg-white border-gray-200 hover:border-orange-300 hover:shadow-sm'
+                                                                }`}
+                                                        >
+                                                            <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${selectedCourses.includes(course)
+                                                                ? 'bg-orange-500 border-orange-500'
+                                                                : 'bg-white border-gray-300'
+                                                                }`}>
+                                                                {selectedCourses.includes(course) && (
+                                                                    <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                                                    </svg>
+                                                                )}
+                                                            </div>
+                                                            <span className={`font-medium ${selectedCourses.includes(course) ? 'font-bold' : ''}`}>
+                                                                {course}
+                                                            </span>
+                                                        </li>
+                                                    ))}
+                                                    {cat.courses.length === 0 && (
+                                                        <li className="text-sm text-gray-400 p-2 text-center">등록된 과정이 없습니다.</li>
+                                                    )}
+                                                </ul>
+                                            </div>
+                                        ))}
                                     </div>
-
-                                    {/* Cooking */}
-                                    <div className="bg-white border rounded-lg p-4 shadow-sm">
-                                        <h4 className="font-bold text-lg mb-3 text-orange-600 bg-orange-50 p-2 rounded">🍳 조리 과정</h4>
-                                        <ul className="space-y-2">
-                                            {['한식조리', '양식조리', '중식조리', '일식조리', '복어조리', '가정요리', '브런치'].map(course => (
-                                                <li key={course}
-                                                    onClick={() => toggleCourse(course)}
-                                                    className={`cursor-pointer p-3 rounded-lg border-2 transition-all flex items-center gap-3 ${selectedCourses.includes(course)
-                                                        ? 'bg-orange-50 border-orange-500 text-orange-900 shadow-sm'
-                                                        : 'bg-white border-gray-200 hover:border-orange-300 hover:shadow-sm'
-                                                        }`}
-                                                >
-                                                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${selectedCourses.includes(course)
-                                                        ? 'bg-orange-500 border-orange-500'
-                                                        : 'bg-white border-gray-300'
-                                                        }`}>
-                                                        {selectedCourses.includes(course) && (
-                                                            <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                                            </svg>
-                                                        )}
-                                                    </div>
-                                                    <span className={`font-medium ${selectedCourses.includes(course) ? 'font-bold' : ''}`}>
-                                                        {course}
-                                                    </span>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                </div>
+                                )}
                             </div>
 
                             {/* Step 3: User Info */}
