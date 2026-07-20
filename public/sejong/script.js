@@ -3367,3 +3367,25 @@ window.updateRegistrationCount = async function(dateStr) {
         countEl.textContent = `등록 수강생: 오류`;
     }
 };
+
+// 자동 결석 처리 (백그라운드 실행)
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(async () => {
+        try {
+            console.log('[Auto-Absent] Checking for missing attendances...');
+            const res = await fetch('/api/sejong/attendance/auto-absent', { method: 'POST' });
+            if (res.ok) {
+                const data = await res.json();
+                if (data.insertedCount > 0) {
+                    console.log(`[Auto-Absent] Inserted ${data.insertedCount} absent records.`);
+                    if (typeof fetchData === 'function') fetchData();
+                    else if (typeof window.notifyMemberUpdate === 'function') window.notifyMemberUpdate();
+                } else {
+                    console.log('[Auto-Absent] No missing attendances found.');
+                }
+            }
+        } catch (e) {
+            console.error('[Auto-Absent] Error:', e);
+        }
+    }, 3000); // 페이지 로드 3초 후 실행
+});
