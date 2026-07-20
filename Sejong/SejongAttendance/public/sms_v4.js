@@ -410,38 +410,30 @@ function getMemberScheduledDate(memberId, courseFilter) {
 }
 
 function processCourses() {
-    groupedCourses = { '미지정': [] };
+    groupedCourses = {};
     
-    const normalizeCourse = (c) => (!c || c === 'null') ? null : String(c).trim();
-
     allMembers.forEach(m => {
-        const rawCourse = (m.course || '').trim();
-        if (rawCourse === '') {
-            groupedCourses['미지정'].push(m);
-        } else {
-            let courses = rawCourse.split(',').map(c => c.trim()).filter(c => c !== '');
-            const hasJeggwa = courses.some(c => c.includes('제과') && !c.includes('제과제빵'));
-            const hasJeppang = courses.some(c => c.includes('제빵') && !c.includes('제과제빵'));
-            if (hasJeggwa && hasJeppang) {
-                courses = courses.filter(c => !c.includes('제과') && !c.includes('제빵'));
-                courses.push('제과제빵기능사');
-            }
-            courses.forEach(c => {
-                const trimmedC = c.trim();
-                // Strip class times/times in parentheses like (19:00)
-                const subjectName = trimmedC.replace(/\([^)]*\)/g, '').trim() || '미지정';
-                if (!groupedCourses[subjectName]) groupedCourses[subjectName] = [];
-                // Prevent duplicate entries of the same student in the same merged group
-                if (!groupedCourses[subjectName].some(em => em.id === m.id)) {
-                    groupedCourses[subjectName].push(m);
-                }
-            });
-        }
+        if (!m.course) return;
 
+        let courses = String(m.course).split(',').map(c => c.trim()).filter(c => c && !c.includes('[삭제]')).map(c => c.split('(')[0]);
+        const hasJeggwa = courses.some(c => c.includes('제과') && !c.includes('제과제빵'));
+        const hasJeppang = courses.some(c => c.includes('제빵') && !c.includes('제과제빵'));
+        if (hasJeggwa && hasJeppang) {
+            courses = courses.filter(c => !c.includes('제과') && !c.includes('제빵'));
+            courses.push('제과제빵기능사');
+        }
+        
+        courses = [...new Set(courses)];
+
+        courses.forEach(subjectName => {
+            if (!groupedCourses[subjectName]) groupedCourses[subjectName] = [];
+            if (!groupedCourses[subjectName].some(em => em.id === m.id)) {
+                groupedCourses[subjectName].push(m);
+            }
+        });
     });
 
-    // Cleanup: Remove "미지정" group if it's empty
-    if (groupedCourses['미지정'].length === 0) {
+    if (groupedCourses['미지정'] && groupedCourses['미지정'].length === 0) {
         delete groupedCourses['미지정'];
     }
 }
