@@ -114,8 +114,8 @@ export default function InquiryPage() {
         [방문예약] ${visitDate ? `${visitDate} ${visitTime}` : '미지정'}
         [관심과정] ${selectedCourses.join(', ')}
         
-        관리자 페이지에서 확인할 수 있습니다.
-        (담당자가 확인 후 연락드립니다)
+        아래 [카카오톡 상담하기]를 누르시면
+        원장님과 바로 1:1 상담을 시작하실 수 있습니다.
         `;
 
         setModalMessage(message);
@@ -410,13 +410,27 @@ export default function InquiryPage() {
                                     {modalMessage}
                                 </p>
                             </div>
-                            <div className="mt-4">
+                            <div className="mt-4 space-y-2">
+                                {isSuccess && (
+                                    <a
+                                        href="https://open.kakao.com/o/gw4q3s9h"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        onClick={handleCloseModal}
+                                        className="w-full flex items-center justify-center gap-2 bg-[#FEE500] hover:bg-[#F4DC00] text-[#191919] text-sm font-bold py-3 px-4 rounded focus:outline-none focus:shadow-outline transition-colors"
+                                    >
+                                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M12 3c-4.97 0-9 3.185-9 7.115 0 2.533 1.706 4.764 4.254 5.922-.162.61-1.042 3.948-1.077 4.095-.044.186.064.181.135.132.056-.039 3.424-2.28 4.793-3.195a9.638 9.638 9.638 0 0 0 .895.04c4.97 0 9-3.184 9-7.109C21 6.185 16.97 3 12 3z"/>
+                                        </svg>
+                                        카카오톡 1:1 상담하기
+                                    </a>
+                                )}
                                 <button
                                     onClick={handleCloseModal}
-                                    className={`w-full text-white text-sm font-bold py-2.5 px-4 rounded focus:outline-none focus:shadow-outline transition-colors ${isSuccess ? 'bg-orange-500 hover:bg-orange-600' : 'bg-gray-600 hover:bg-gray-700'
+                                    className={`w-full text-sm font-bold py-2.5 px-4 rounded focus:outline-none focus:shadow-outline transition-colors ${isSuccess ? 'bg-gray-200 hover:bg-gray-300 text-gray-700' : 'bg-gray-600 hover:bg-gray-700 text-white'
                                         }`}
                                 >
-                                    {isSuccess ? '확인 (홈으로 이동)' : '확인'}
+                                    {isSuccess ? '닫기 (홈으로 이동)' : '확인'}
                                 </button>
                             </div>
                         </div>
