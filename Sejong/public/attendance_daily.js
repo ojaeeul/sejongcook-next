@@ -101,6 +101,25 @@ setInterval(async () => {
     const modals = document.querySelectorAll('.modal-overlay:not(.hidden)');
     if (modals.length > 0) return;
 
+    // --- Auto Absent Check ---
+    const now = new Date();
+    if (now.getHours() >= 20) {
+        const todayStr = now.toISOString().split('T')[0];
+        if (!localStorage.getItem('sejong_auto_absent_' + todayStr)) {
+            try {
+                const res = await fetch('/api/sejong/attendance/auto-absent', { method: 'POST' });
+                if (res.ok) {
+                    const data = await res.json();
+                    localStorage.setItem('sejong_auto_absent_' + todayStr, 'true');
+                    if (data.insertedCount > 0) {
+                        console.log(`[Auto-Absent] Inserted ${data.insertedCount} absent records.`);
+                        localStorage.setItem('sejong_attendance_sync', Date.now().toString()); // notify sheet.html
+                    }
+                }
+            } catch(e) { console.error('[Auto-Absent]', e); }
+        }
+    }
+
     await fetchAttendance();
 }, 5000);
 
@@ -556,23 +575,5 @@ window.addEventListener('storage', async (e) => {
     }
 });
 
-// 자동 결석 처리 (백그라운드 실행)
-document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(async () => {
-        try {
-            console.log('[Auto-Absent] Checking for missing attendances...');
-            const res = await fetch('/api/sejong/attendance/auto-absent', { method: 'POST' });
-            if (res.ok) {
-                const data = await res.json();
-                if (data.insertedCount > 0) {
-                    console.log(`[Auto-Absent] Inserted ${data.insertedCount} absent records.`);
-                    if (typeof fetchAttendance === 'function') fetchAttendance();
-                } else {
-                    console.log('[Auto-Absent] No missing attendances found.');
-                }
-            }
-        } catch (e) {
-            console.error('[Auto-Absent] Error:', e);
-        }
-    }, 3000); // 페이지 로드 3초 후 실행
-});
+// 백그라운드 실행 (제거됨 - setInterval에서 처리)
+

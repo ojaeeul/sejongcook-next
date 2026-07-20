@@ -36,6 +36,12 @@ export async function GET(req: NextRequest) {
         from += step;
     }
 
+    allLogs.sort((a, b) => {
+        if (a.date !== b.date) return (a.date || '').localeCompare(b.date || '');
+        if (a.memberId !== b.memberId) return (a.memberId || '').localeCompare(b.memberId || '');
+        return (a.course || '').localeCompare(b.course || '');
+    });
+
     return NextResponse.json(allLogs);
 }
 

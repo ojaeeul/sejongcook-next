@@ -12,12 +12,12 @@
     <meta name="keywords" content="세종요리, 김포요리, 세종요리학원, 김포요리학원, 요리학원, 출석관리, 수강생관리, 요리자격증">
     <meta property="og:title" content="세종요리제과학원 월간 출석부">
     <meta property="og:description" content="수강생들의 출석 현황을 한눈에 확인하세요.">
-    <link rel="stylesheet" href="style.css?v=20260720-41">
+    <link rel="stylesheet" href="style.css?v=20260720-42">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="shared_calc.js?v=20260720-41"></script>
-    <script src="script.js?v=20260720-41" defer></script>
+    <script src="shared_calc.js?v=20260720-42"></script>
+    <script src="script.js?v=20260720-42" defer></script>
     <style>
         .sheet-container {
             background: white;
@@ -2026,6 +2026,24 @@
             const modals = document.querySelectorAll('.modal-overlay:not(.hidden)');
             if (modals.length > 0) return;
 
+            // --- Auto Absent Check ---
+            const now = new Date();
+            if (now.getHours() >= 20) {
+                const todayStr = now.toISOString().split('T')[0];
+                if (!localStorage.getItem('sejong_auto_absent_' + todayStr)) {
+                    try {
+                        const res = await fetch('/api/sejong/attendance/auto-absent', { method: 'POST' });
+                        if (res.ok) {
+                            const data = await res.json();
+                            localStorage.setItem('sejong_auto_absent_' + todayStr, 'true');
+                            if (data.insertedCount > 0) {
+                                localStorage.setItem('sejong_attendance_sync', Date.now().toString());
+                            }
+                        }
+                    } catch(e) { console.error('[Auto-Absent]', e); }
+                }
+            }
+
             try {
                 const changed = await fetchAttendance();
                 if (changed) {
@@ -3723,8 +3741,8 @@
             }, true);
         });
     </script>
-    <script src="ui_arrows.js?v=20260720-41"></script>
-    <script src="sidebar_sync.js?v=20260720-41"></script>
+    <script src="ui_arrows.js?v=20260720-42"></script>
+    <script src="sidebar_sync.js?v=20260720-42"></script>
 </body>
 
 </html>
