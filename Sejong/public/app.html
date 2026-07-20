@@ -767,16 +767,18 @@ function populateCourseSelect() {
 
 function getStatusForMember(phone) {
     if (localState[phone]) return localState[phone];
-    const rec = attendanceData.find(a => a.phone === phone);
+    const m = allMembers.find(mem => mem.phone === phone);
+    if (!m) return '';
+    const rec = attendanceData.find(a => String(a.memberId) === String(m.id));
     if (!rec) return '';
     let st = String(rec.status).trim();
-    if (['10','12','2','3','5','7','9','출석','present'].includes(st) || st.includes('출석')) return 'present';
+    if (['O','[',']','10','12','2','3','5','7','9','출석','present'].includes(st) || st.includes('출석')) return 'present';
     if (st === 'absent' || st.includes('결석') || st === 'X') return 'absent';
-    if (st === 'late' || st.includes('지각') || st === '△') return 'late';
-    if (st === 'early' || st.includes('조퇴') || st.includes('퇴실')) return 'early';
+    if (st === 'late' || st.includes('지각') || st === 'L' || st === '△') return 'late';
+    if (st === 'early' || st.includes('조퇴') || st === 'E') return 'early';
     if (st === 'outing' || st.includes('외출')) return 'outing';
     if (st === 'return' || st.includes('복귀')) return 'return';
-    if (st === 'extension' || st.includes('연장') || st === 'E') return 'extension';
+    if (st === 'extension' || st.includes('연장') || st === '연') return 'extension';
     return '';
 }
 
@@ -863,42 +865,49 @@ async function saveAttendance() {
     const date = document.getElementById('attDate').value;
     const membersToSave = groupedCourses[cName];
     
-    let updates = [];
+    const statusMap = {
+        'present': 'O',
+        'absent': 'X',
+        'late': 'L',
+        'early': 'E',
+        'outing': '외출',
+        'return': '복귀',
+        'extension': '연'
+    };
+    
+    let promises = [];
     membersToSave.forEach(m => {
         if (localState[m.phone] !== undefined) {
-            updates.push({
-                phone: m.phone,
-                name: m.name,
-                course: m.course,
-                status: localState[m.phone],
-                timestamp: new Date().toISOString()
-            });
+            let appStatus = localState[m.phone];
+            let dbStatus = statusMap[appStatus] || (appStatus === '' ? 'unchecked' : appStatus);
+            
+            promises.push(
+                fetch(`${API_BASE}/attendance`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        memberId: m.id,
+                        date: date,
+                        status: dbStatus,
+                        course: m.course
+                    })
+                })
+            );
         }
     });
     
-    if (updates.length === 0) {
+    if (promises.length === 0) {
         showToast('변경된 내용이 없습니다.');
         return;
     }
 
     showLoading(true);
     try {
-        const res = await fetch(`${API_BASE}/attendance`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                date: date,
-                records: updates
-            })
-        });
-        
-        if (res.ok) {
-            showToast('성공적으로 저장되었습니다.');
-            localState = {};
-            await fetchAttendance();
-        } else {
-            showToast('저장 중 오류가 발생했습니다.');
-        }
+        await Promise.all(promises);
+        showToast('성공적으로 저장되었습니다.');
+        localState = {};
+        localStorage.setItem('sejong_attendance_sync', Date.now().toString());
+        await fetchAttendance();
     } catch(e) {
         showToast('통신 오류');
     }
@@ -932,7 +941,15 @@ function toggleNavSub(element) {
     }
 }
 
+window.addEventListener('storage', async (e) => {
+    if (e.key === 'sejong_attendance_sync') {
+        if (document.getElementById('viewAttendance').classList.contains('active')) {
+            await fetchAttendance();
+        }
+    }
+});
+
 </script>
-    <script src="sidebar_sync.js?v=20260720-40"></script>
+    <script src="sidebar_sync.js?v=20260720-41"></script>
 </body>
 </html>
