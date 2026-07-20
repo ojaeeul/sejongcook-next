@@ -148,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Default settings for first load
     const pf = document.getElementById('usePaymentFilter');
-    if (pf) pf.checked = false;
+    if (pf) pf.checked = true; // Changed to true by default to match badge count
     const ii = document.getElementById('includeInactive');
     if (ii) ii.checked = true; // Show all by default
 
@@ -156,8 +156,8 @@ document.addEventListener('DOMContentLoaded', () => {
     renderTemplates();
     filterTemplates();
 
-    // Default: uncheck payment filter to show all students on load
-    if (pf) pf.checked = false;
+    // Default: check payment filter to show only unpaid students on load to match the badge count
+    if (pf) pf.checked = true;
 
     // Event listeners
     document.querySelectorAll('input[name="targetType"]').forEach(radio => {
