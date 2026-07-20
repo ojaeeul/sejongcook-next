@@ -709,6 +709,16 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
 
     const daysInMonth = new Date(tYear, tMonth, 0).getDate();
 
+    const nowForVis = new Date();
+    const currentYear = nowForVis.getFullYear();
+    const currentMonth = nowForVis.getMonth() + 1;
+    let isCurrentOrNextMonth = false;
+    if (tYear === currentYear && (tMonth === currentMonth || tMonth === currentMonth + 1)) {
+        isCurrentOrNextMonth = true;
+    } else if (tYear === currentYear + 1 && currentMonth === 12 && tMonth === 1) {
+        isCurrentOrNextMonth = true;
+    }
+
     const dayRedCounts = Array(daysInMonth + 1).fill(0);
     const dayBlueCounts = Array(daysInMonth + 1).fill(0);
 
@@ -729,7 +739,9 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
 
                     if (!isPaid) {
                         if (s.isSimulated) {
-                            dayBlueCounts[day]++;
+                            if (isCurrentOrNextMonth) {
+                                dayBlueCounts[day]++;
+                            }
                         } else {
                             dayRedCounts[day]++;
                         }
@@ -751,10 +763,12 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
                         <span class="material-icons" style="font-size: 1.1rem; margin-right: 4px;">event_available</span> 
                         진짜결제일 건수 (${totalRedCount}건)
                     </span>
+                    ${isCurrentOrNextMonth ? `
                     <span style="color: #2563eb; font-weight: 900; background: #eff6ff; padding: 4px 12px; border-radius: 20px; border: 2px solid #3b82f6; font-size: 0.95rem; display: inline-flex; align-items: center; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);">
                         <span class="material-icons" style="font-size: 1.1rem; margin-right: 4px;">event_available</span> 
                         예정결재일 건수 (${totalBlueCount}건)
                     </span>
+                    ` : ''}
                 </h2>
             </div>
             <table style="width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; font-family: 'Noto Sans KR', sans-serif; min-width: 980px;">
@@ -772,7 +786,7 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
                         ${Array.from({ length: daysInMonth }, (_, i) => {
                             const day = i + 1;
                             const rC = dayRedCounts[day];
-                            const bC = dayBlueCounts[day];
+                            const bC = isCurrentOrNextMonth ? dayBlueCounts[day] : 0;
                             const dateObj = new Date(tYear, tMonth - 1, day);
                             const dayOfWeek = dateObj.getDay();
                             const dateStr = `${tYear}-${String(tMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
