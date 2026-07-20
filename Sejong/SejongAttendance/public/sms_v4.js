@@ -1583,23 +1583,11 @@ function toggleRangeCalendar() {
     }
 }
 
-window.jumpToRangeMonth = function(targetYear, targetMonth, type) {
+window.jumpToRangeMonth = function(targetYear, targetMonth) {
     calendarYear = targetYear;
     calendarMonth = targetMonth - 1; // 0-indexed
     localStorage.setItem('sejongSmsCalYear', calendarYear);
     localStorage.setItem('sejongSmsCalMonth', calendarMonth);
-    
-    if (type === 'sim') {
-        const simCb = document.getElementById('filterSimPayment');
-        const realCb = document.getElementById('filterRealPayment');
-        if (simCb) simCb.checked = true;
-        if (realCb) realCb.checked = false;
-    } else if (type === 'real') {
-        const simCb = document.getElementById('filterSimPayment');
-        const realCb = document.getElementById('filterRealPayment');
-        if (simCb) simCb.checked = false;
-        if (realCb) realCb.checked = true;
-    }
     
     // Ensure the calendar body is open
     const body = document.getElementById('rangeFilterBody');
