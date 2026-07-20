@@ -37,9 +37,9 @@ export async function GET(req: NextRequest) {
     }
 
     allLogs.sort((a, b) => {
-        if (a.date !== b.date) return (a.date || '').localeCompare(b.date || '');
-        if (a.memberId !== b.memberId) return (a.memberId || '').localeCompare(b.memberId || '');
-        return (a.course || '').localeCompare(b.course || '');
+        if (a.date !== b.date) return String(a.date || '').localeCompare(String(b.date || ''));
+        if (a.memberId !== b.memberId) return String(a.memberId || '').localeCompare(String(b.memberId || ''));
+        return String(a.course || '').localeCompare(String(b.course || ''));
     });
 
     return NextResponse.json(allLogs);
