@@ -140,11 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Default dates (will be overridden if saved data exists)
     document.getElementById('paymentRangeStart').value = todayStr;
-    let daysUntilNextSat = 6 - today.getDay();
-    if (daysUntilNextSat < 0) daysUntilNextSat += 7;
-    const nextSat = new Date(today);
-    nextSat.setDate(today.getDate() + daysUntilNextSat + 7);
-    document.getElementById('paymentRangeEnd').value = nextSat.toISOString().split('T')[0];
+    document.getElementById('paymentRangeEnd').value = todayStr;
 
     // Default settings for first load
     const pf = document.getElementById('usePaymentFilter');
@@ -233,11 +229,7 @@ function restoreAllDrafts() {
     }
 
     // Restore Filters
-    const rStart = localStorage.getItem('sejongSmsRangeStart');
-    const rEnd = localStorage.getItem('sejongSmsRangeEnd');
     const uFilter = localStorage.getItem('sejongSmsUseFilter');
-    if (rStart) document.getElementById('paymentRangeStart').value = rStart;
-    if (rEnd) document.getElementById('paymentRangeEnd').value = rEnd;
     if (uFilter !== null) document.getElementById('usePaymentFilter').checked = (uFilter === 'true');
 
     // Restore Search
@@ -1587,8 +1579,8 @@ window.confirmSmsSend = async function() {
 }
 
 /* --- Range Selection Calendar Logic (Interactive Drag Support) --- */
-let calendarYear = localStorage.getItem('sejongSmsCalYear') !== null && !isNaN(parseInt(localStorage.getItem('sejongSmsCalYear'))) ? parseInt(localStorage.getItem('sejongSmsCalYear')) : new Date().getFullYear();
-let calendarMonth = localStorage.getItem('sejongSmsCalMonth') !== null && !isNaN(parseInt(localStorage.getItem('sejongSmsCalMonth'))) ? parseInt(localStorage.getItem('sejongSmsCalMonth')) : new Date().getMonth();
+let calendarYear = new Date().getFullYear();
+let calendarMonth = new Date().getMonth();
 let isDragging = false;
 let dragStartDay = null;
 
