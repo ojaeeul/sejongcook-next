@@ -271,7 +271,17 @@ window.applyFixedExpensesToNotebook = async function(auto = false) {
             const item = toAdd[addIndex];
             if (dateCol) dateCol.textContent = item.dateStr;
             if (descCol) descCol.textContent = item.exp.desc;
-            if (amountCol) amountCol.textContent = item.exp.amount + '.—';
+            if (amountCol) {
+                let rawAmt = String(item.exp.amount);
+                let numStr = rawAmt.replace(/\.—/g, '000').replace(/\.-/g, '000').replace(/,/g, '');
+                if (!isNaN(numStr) && numStr !== '') {
+                    let num = Number(numStr);
+                    let formatted = num.toLocaleString('en-US');
+                    amountCol.textContent = formatted.replace(/,000$/, '.—');
+                } else {
+                    amountCol.textContent = rawAmt + '.—';
+                }
+            }
             if (methodCol) methodCol.textContent = '(계)';
             
             // 시각적 강조 효과
@@ -287,10 +297,22 @@ window.applyFixedExpensesToNotebook = async function(auto = false) {
         const item = toAdd[addIndex];
         const newRow = document.createElement('div');
         newRow.className = 'entry-line';
+        
+        let formattedAmt = item.exp.amount;
+        let rawAmt = String(item.exp.amount);
+        let numStr = rawAmt.replace(/\.—/g, '000').replace(/\.-/g, '000').replace(/,/g, '');
+        if (!isNaN(numStr) && numStr !== '') {
+            let num = Number(numStr);
+            let formatted = num.toLocaleString('en-US');
+            formattedAmt = formatted.replace(/,000$/, '.—');
+        } else {
+            formattedAmt = rawAmt + '.—';
+        }
+
         newRow.innerHTML = `
             <div class="date-col" contenteditable="true" spellcheck="false">${item.dateStr}</div>
             <div class="desc-col" contenteditable="true" spellcheck="false">${item.exp.desc}</div>
-            <div class="amount-col" contenteditable="true" spellcheck="false">${item.exp.amount}.—</div>
+            <div class="amount-col" contenteditable="true" spellcheck="false">${formattedAmt}</div>
             <div class="method-col" contenteditable="true" spellcheck="false">(계)</div>
         `;
         newRow.style.backgroundColor = '#e0f2fe';
