@@ -308,7 +308,16 @@ function processNewPayments() {
         }
     };
 
-    // 1. 취소된 항목(unpaid로 변경된 항목) 내용 지우기
+    // 1. Build lookup tables for instant O(1) access
+    const paidIds = new Set(paidPayments.map(p => `${p.memberId}_${p.year}_${p.month}`));
+    
+    const membersMap = new Map();
+    membersData.forEach(m => membersMap.set(String(m.id), m));
+
+    // Gather existing auto items and map them to avoid slow querySelector loops
+    const cookNodes = new Map();
+    const bakeNodes = new Map();
+    
     const existingAutoItems = Array.from(document.querySelectorAll('.tuition-auto'));
     existingAutoItems.forEach(el => {
         const pIdCook = el.getAttribute('data-payment-id-cook');
@@ -317,8 +326,7 @@ function processNewPayments() {
         const pId = pIdCook || pIdBake || pIdLegacy;
         
         if (pId) {
-            const stillPaid = paidPayments.some(p => `${p.memberId}_${p.year}_${p.month}` === pId);
-            if (!stillPaid) {
+            if (!paidIds.has(pId)) {
                 if (el.querySelector('.desc-col')) el.querySelector('.desc-col').textContent = '';
                 if (el.querySelector('.amount-col')) el.querySelector('.amount-col').textContent = '';
                 if (el.querySelector('.method-col')) el.querySelector('.method-col').textContent = '';
@@ -327,47 +335,63 @@ function processNewPayments() {
                 el.removeAttribute('data-payment-id');
                 el.classList.remove('tuition-auto');
                 hasChanges = true;
+            } else {
+                if (el.closest('#sales-cooking-container')) cookNodes.set(pId, el);
+                if (el.closest('#sales-baking-container')) bakeNodes.set(pId, el);
             }
         }
     });
 
-        // 2. Track lastUsedIndex and lastUsedDate OUTSIDE the forEach to optimize performance (O(N^2) -> O(N))
-        const initialCookRows = cookingContainer.children;
-        const initialBakeRows = bakingContainer.children;
-        const initialMaxLen = Math.max(initialCookRows.length, initialBakeRows.length);
+    // 2. Track indices OUTSIDE the forEach to optimize performance (O(N^2) -> O(1))
+    const initialCookRows = cookingContainer.children;
+    const initialBakeRows = bakingContainer.children;
+    const initialMaxLen = Math.max(initialCookRows.length, initialBakeRows.length);
+    
+    let lastUsedIndex = -1;
+    let lastUsedDate = '';
+    let currentBlockStartIndex = 0;
+    
+    for (let i = 0; i < initialMaxLen; i++) {
+        const cRow = initialCookRows[i];
+        const bRow = initialBakeRows[i];
         
-        let lastUsedIndex = -1;
-        let lastUsedDate = '';
+        const dateVal = getText(cRow, '.date-col');
+        const cDesc = getText(cRow, '.desc-col');
+        const cAmt = getText(cRow, '.amount-col');
+        const bDesc = getText(bRow, '.desc-col');
+        const bAmt = getText(bRow, '.amount-col');
         
-        for (let i = 0; i < initialMaxLen; i++) {
-            const cRow = initialCookRows[i];
-            const bRow = initialBakeRows[i];
-            
-            const dateVal = getText(cRow, '.date-col');
-            const cDesc = getText(cRow, '.desc-col');
-            const cAmt = getText(cRow, '.amount-col');
-            const bDesc = getText(bRow, '.desc-col');
-            const bAmt = getText(bRow, '.amount-col');
-            
-            if (dateVal) lastUsedDate = dateVal;
-            if (dateVal || cDesc || cAmt || bDesc || bAmt) {
-                lastUsedIndex = i;
-                if (dateVal) lastUsedDate = dateVal;
-            }
+        if (dateVal) {
+            lastUsedDate = dateVal;
+            currentBlockStartIndex = i;
         }
+        if (dateVal || cDesc || cAmt || bDesc || bAmt) {
+            lastUsedIndex = i;
+            if (dateVal) lastUsedDate = dateVal;
+        }
+    }
+    
+    let cookEmptyIndex = currentBlockStartIndex;
+    while (cookEmptyIndex <= lastUsedIndex) {
+        const cRow = initialCookRows[cookEmptyIndex];
+        if (!cRow || (!getText(cRow, '.desc-col') && !getText(cRow, '.amount-col'))) break;
+        cookEmptyIndex++;
+    }
+    
+    let bakeEmptyIndex = currentBlockStartIndex;
+    while (bakeEmptyIndex <= lastUsedIndex) {
+        const bRow = initialBakeRows[bakeEmptyIndex];
+        if (!bRow || (!getText(bRow, '.desc-col') && !getText(bRow, '.amount-col'))) break;
+        bakeEmptyIndex++;
+    }
 
     paidPayments.forEach(p => {
         const pId = `${p.memberId}_${p.year}_${p.month}`;
         
-        let existingCook = cookingContainer.querySelector(`[data-payment-id-cook="${pId}"]`);
-        let existingBake = bakingContainer.querySelector(`[data-payment-id-bake="${pId}"]`);
-        if (!existingCook) existingCook = cookingContainer.querySelector(`[data-payment-id="${pId}"]`);
-        if (!existingBake) existingBake = bakingContainer.querySelector(`[data-payment-id="${pId}"]`);
+        let existingCook = cookNodes.get(pId) || null;
+        let existingBake = bakeNodes.get(pId) || null;
         
-        if (existingCook && !existingCook.closest('#sales-cooking-container')) existingCook = null;
-        if (existingBake && !existingBake.closest('#sales-baking-container')) existingBake = null;
-        
-        const member = membersData.find(m => String(m.id) === String(p.memberId));
+        const member = membersMap.get(String(p.memberId));
         const memberName = member ? member.name : '알수없음';
         const courseName = p.course || (member ? member.course : '');
         
@@ -392,34 +416,13 @@ function processNewPayments() {
         const isBaking = BAKING_COURSES.some(bc => courseName.includes(bc));
         const descHtml = memberName;
         
-        const currentCookRows = cookingContainer.children;
-        const currentBakeRows = bakingContainer.children;
-        
         let targetIndex = -1;
         let isNewDay = false;
         
         if (lastUsedDate === dateStr) {
-            let blockStartIndex = lastUsedIndex;
-            while (blockStartIndex > 0 && currentCookRows[blockStartIndex] && !getText(currentCookRows[blockStartIndex], '.date-col')) {
-                blockStartIndex--;
-            }
-            
-            for (let i = blockStartIndex; i <= lastUsedIndex; i++) {
-                const cRow = currentCookRows[i];
-                const bRow = currentBakeRows[i];
-                const isMySideEmpty = isBaking ? 
-                    (bRow && !getText(bRow, '.desc-col') && !getText(bRow, '.amount-col')) :
-                    (cRow && !getText(cRow, '.desc-col') && !getText(cRow, '.amount-col'));
-                    
-                if (isMySideEmpty) {
-                    targetIndex = i;
-                    break;
-                }
-            }
-            
-            if (targetIndex === -1) {
-                targetIndex = lastUsedIndex + 1;
-            }
+            targetIndex = isBaking ? bakeEmptyIndex : cookEmptyIndex;
+            if (isBaking) bakeEmptyIndex++;
+            else cookEmptyIndex++;
         } else {
             if (lastUsedIndex >= 0) {
                 targetIndex = lastUsedIndex + 1;
@@ -427,6 +430,12 @@ function processNewPayments() {
                 targetIndex = 0;
             }
             isNewDay = true;
+            currentBlockStartIndex = targetIndex;
+            cookEmptyIndex = targetIndex;
+            bakeEmptyIndex = targetIndex;
+            
+            if (isBaking) bakeEmptyIndex++;
+            else cookEmptyIndex++;
         }
         
         while (cookingContainer.children.length <= targetIndex) {
