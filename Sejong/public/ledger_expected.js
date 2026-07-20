@@ -471,13 +471,26 @@ function renderExpectedMonthlyPanel() {
     `;
     const selectedMonth = parseInt(document.getElementById('monthSelect').value);
     
+    const nowForVis = new Date();
+    const curY = nowForVis.getFullYear();
+    const curM = nowForVis.getMonth() + 1;
+
     for (let month = 1; month <= 12; month++) {
+        let isCurOrNext = false;
+        if (tYear === curY && (month === curM || month === curM + 1)) {
+            isCurOrNext = true;
+        } else if (tYear === curY + 1 && curM === 12 && month === 1) {
+            isCurOrNext = true;
+        }
+
         const count = monthCountsSim[month];
-        const displayCount = count > 0 ? `<span style="background:#2563eb; color:white; border-radius:12px; padding:2px 7px; font-size:0.7rem; font-weight:bold; margin-left:4px;">${count}</span>` : '';
+        const showPreview = count > 0 && isCurOrNext;
+        
+        const displayCount = showPreview ? `<span style="background:#2563eb; color:white; border-radius:12px; padding:2px 7px; font-size:0.7rem; font-weight:bold; margin-left:4px;">${count}</span>` : '';
         
         const isSelected = month === selectedMonth;
-        const borderStyle = isSelected ? 'border:2px solid #2563eb; background:#eff6ff;' : (count > 0 ? 'border:1px solid #93c5fd; background:#eff6ff;' : 'border:1px solid #cbd5e1; background:#fff;');
-        const textStyle = count > 0 ? 'color:#1e3a8a;' : 'color:#475569;';
+        const borderStyle = isSelected ? 'border:2px solid #2563eb; background:#eff6ff;' : (showPreview ? 'border:1px solid #93c5fd; background:#eff6ff;' : 'border:1px solid #cbd5e1; background:#fff;');
+        const textStyle = showPreview ? 'color:#1e3a8a;' : 'color:#475569;';
         const shadowStyle = isSelected ? 'box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);' : '';
         
         badgesSimHtml += `
@@ -850,6 +863,7 @@ function generateMonthTableHTML(title, members, id, tYear, tMonth) {
         schedules = schedules.filter(s => {
             if (!s.eighthDay || isNaN(parseInt(s.eighthDay)) || Number(s.eighthDay) <= 0) return false;
             if (s.isSimulated) {
+                if (!isCurrentOrNextMonth) return false;
                 if (coursesFoundSimulated.has(s.course)) return false;
                 coursesFoundSimulated.add(s.course);
             }
