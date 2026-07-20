@@ -331,6 +331,31 @@ function processNewPayments() {
         }
     });
 
+        // 2. Track lastUsedIndex and lastUsedDate OUTSIDE the forEach to optimize performance (O(N^2) -> O(N))
+        const initialCookRows = cookingContainer.children;
+        const initialBakeRows = bakingContainer.children;
+        const initialMaxLen = Math.max(initialCookRows.length, initialBakeRows.length);
+        
+        let lastUsedIndex = -1;
+        let lastUsedDate = '';
+        
+        for (let i = 0; i < initialMaxLen; i++) {
+            const cRow = initialCookRows[i];
+            const bRow = initialBakeRows[i];
+            
+            const dateVal = getText(cRow, '.date-col');
+            const cDesc = getText(cRow, '.desc-col');
+            const cAmt = getText(cRow, '.amount-col');
+            const bDesc = getText(bRow, '.desc-col');
+            const bAmt = getText(bRow, '.amount-col');
+            
+            if (dateVal) lastUsedDate = dateVal;
+            if (dateVal || cDesc || cAmt || bDesc || bAmt) {
+                lastUsedIndex = i;
+                if (dateVal) lastUsedDate = dateVal;
+            }
+        }
+
     paidPayments.forEach(p => {
         const pId = `${p.memberId}_${p.year}_${p.month}`;
         
@@ -367,46 +392,24 @@ function processNewPayments() {
         const isBaking = BAKING_COURSES.some(bc => courseName.includes(bc));
         const descHtml = memberName;
         
-        const currentCookRows = Array.from(cookingContainer.children);
-        const currentBakeRows = Array.from(bakingContainer.children);
-        const currentMaxLen = Math.max(currentCookRows.length, currentBakeRows.length);
-        
-        let lastUsedIndex = -1;
-        let lastUsedDate = '';
-        
-        for (let i = 0; i < currentMaxLen; i++) {
-            const cRow = currentCookRows[i];
-            const bRow = currentBakeRows[i];
-            
-            const dateVal = getText(cRow, '.date-col');
-            const cDesc = getText(cRow, '.desc-col');
-            const cAmt = getText(cRow, '.amount-col');
-            const bDesc = getText(bRow, '.desc-col');
-            const bAmt = getText(bRow, '.amount-col');
-            
-            if (dateVal) {
-                lastUsedDate = dateVal;
-            }
-            if (dateVal || cDesc || cAmt || bDesc || bAmt) {
-                lastUsedIndex = i;
-                // Update lastUsedDate specifically for the last used row to know the current block's date
-                if (dateVal) lastUsedDate = dateVal;
-            }
-        }
+        const currentCookRows = cookingContainer.children;
+        const currentBakeRows = bakingContainer.children;
         
         let targetIndex = -1;
         let isNewDay = false;
         
         if (lastUsedDate === dateStr) {
             let blockStartIndex = lastUsedIndex;
-            while (blockStartIndex > 0 && !getText(currentCookRows[blockStartIndex], '.date-col')) {
+            while (blockStartIndex > 0 && currentCookRows[blockStartIndex] && !getText(currentCookRows[blockStartIndex], '.date-col')) {
                 blockStartIndex--;
             }
             
             for (let i = blockStartIndex; i <= lastUsedIndex; i++) {
+                const cRow = currentCookRows[i];
+                const bRow = currentBakeRows[i];
                 const isMySideEmpty = isBaking ? 
-                    (!getText(currentBakeRows[i], '.desc-col') && !getText(currentBakeRows[i], '.amount-col')) :
-                    (!getText(currentCookRows[i], '.desc-col') && !getText(currentCookRows[i], '.amount-col'));
+                    (bRow && !getText(bRow, '.desc-col') && !getText(bRow, '.amount-col')) :
+                    (cRow && !getText(cRow, '.desc-col') && !getText(cRow, '.amount-col'));
                     
                 if (isMySideEmpty) {
                     targetIndex = i;
@@ -418,7 +421,6 @@ function processNewPayments() {
                 targetIndex = lastUsedIndex + 1;
             }
         } else {
-            // 다른 날짜면 1줄 띄우고 새 날짜로 시작 (이전 패치에서 수정됨)
             if (lastUsedIndex >= 0) {
                 targetIndex = lastUsedIndex + 1;
             } else {
@@ -457,6 +459,9 @@ function processNewPayments() {
             cRow.querySelector('.amount-col').textContent = amountStr;
             cRow.querySelector('.method-col').textContent = '(카)';
         }
+        
+        lastUsedIndex = Math.max(lastUsedIndex, targetIndex);
+        lastUsedDate = dateStr;
         
         hasChanges = true;
     });
