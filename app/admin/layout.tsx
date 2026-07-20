@@ -178,7 +178,7 @@ export default function AdminLayout({
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
                 {/* Mobile Header */}
                 <header className="bg-white shadow-sm z-10 p-4 flex items-center md:hidden">
-                    <button onClick={() => setIsSidebarOpen(true)} className="text-gray-600 mr-4">
+                    <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="text-gray-600 mr-4">
                         <Menu size={24} />
                     </button>
                     <span className="font-semibold text-gray-800">메뉴</span>
