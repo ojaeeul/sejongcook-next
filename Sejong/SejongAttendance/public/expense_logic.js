@@ -11,8 +11,13 @@ let membersData = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
     initCardPopup();
-    await loadNotebookData();
-    await fetchTuitionData();
+    
+    // Fetch all required data in parallel to cut loading time in half
+    await Promise.all([
+        loadNotebookData(),
+        fetchTuitionData()
+    ]);
+    
     processNewPayments();
     
     // 이벤트 리스너 등록 (이벤트 위임 사용)
@@ -254,12 +259,15 @@ async function saveNotebookData() {
 // 수강료 데이터 로드
 async function fetchTuitionData() {
     try {
-        const pRes = await fetch('/api/sejong/payments?t=' + Date.now());
-        if (!pRes.ok) throw new Error('Payments fetch failed');
-        paymentsData = await pRes.json();
+        const [pRes, mRes] = await Promise.all([
+            fetch('/api/sejong/payments?t=' + Date.now()),
+            fetch('/api/sejong/members?t=' + Date.now())
+        ]);
         
-        const mRes = await fetch('/api/sejong/members?t=' + Date.now());
+        if (!pRes.ok) throw new Error('Payments fetch failed');
         if (!mRes.ok) throw new Error('Members fetch failed');
+        
+        paymentsData = await pRes.json();
         membersData = await mRes.json();
     } catch (e) {
         console.error("Failed to fetch tuition data:", e);
