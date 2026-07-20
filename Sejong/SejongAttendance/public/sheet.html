@@ -12,12 +12,12 @@
     <meta name="keywords" content="세종요리, 김포요리, 세종요리학원, 김포요리학원, 요리학원, 출석관리, 수강생관리, 요리자격증">
     <meta property="og:title" content="세종요리제과학원 월간 출석부">
     <meta property="og:description" content="수강생들의 출석 현황을 한눈에 확인하세요.">
-    <link rel="stylesheet" href="style.css?v=20260720-37">
+    <link rel="stylesheet" href="style.css?v=20260720-38">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="shared_calc.js?v=20260720-37"></script>
-    <script src="script.js?v=20260720-37" defer></script>
+    <script src="shared_calc.js?v=20260720-38"></script>
+    <script src="script.js?v=20260720-38" defer></script>
     <style>
         .sheet-container {
             background: white;
@@ -1566,6 +1566,10 @@
         // Select Present Type
         window.selectPresentType = function (type, e) {
             e.stopPropagation();
+            
+            // Force type to string just in case it's passed as a number somehow
+            const strType = String(type);
+            
             // Close all dropdowns
             document.querySelectorAll('.dropdown-menu').forEach(d => d.classList.remove('show'));
 
@@ -1573,49 +1577,46 @@
             const symbol = document.getElementById('current-present-symbol');
             const text = document.getElementById('current-present-text');
 
-            // Allow all types as valid brush values
-            // 'present' is standard O
-            // '10', '12', '2', '5', '7' are numeric
-
-            if (type === 'present') {
+            if (strType === 'present') {
                 symbol.className = 'symbol stat-present';
                 symbol.textContent = 'O';
                 text.textContent = '출석';
-            } else if (type === '[' || type === ']') {
+            } else if (strType === '[' || strType === ']') {
                 const mSymbol = document.getElementById('current-makeup-symbol');
                 const mText = document.getElementById('current-makeup-text');
                 if (mSymbol) {
-                    mSymbol.textContent = type;
-                    mText.textContent = type === '[' ? '첫출석' : '종료출석';
+                    mSymbol.textContent = strType;
+                    mText.textContent = strType === '[' ? '첫출석' : '종료출석';
                 }
             } else {
                 symbol.className = 'stat-numeric';
-                symbol.textContent = type;
-                text.textContent = `${type}시`;
+                symbol.textContent = strType;
+                text.textContent = `${strType}시`;
             }
 
-            setBrush(type);
+            setBrush(strType);
         };
 
         async function setBrush(status) {
+            const strStatus = String(status);
             // Add confirmation specifically when enabling the 'extension' (연장) brush
-            if (status === 'extension' && activeStatusBrush !== 'extension') {
+            if (strStatus === 'extension' && activeStatusBrush !== 'extension') {
                 const confirmed = await showCustomConfirm('연장(결제연기) 기능을 활성화하시겠습니까?');
                 if (!confirmed) {
                     return; // Abort changing the brush
                 }
             }
 
-            activeStatusBrush = status;
+            activeStatusBrush = strStatus;
 
             // Update UI
             document.querySelectorAll('.legend-item').forEach(item => item.classList.remove('active'));
-            if (status === 'present' || ['10', '12', '2', '5', '7'].includes(status)) document.getElementById('brush-present').classList.add('active');
-            else if (status === 'absent') document.getElementById('brush-absent').classList.add('active');
-            else if (status === 'extension') document.getElementById('brush-extension').classList.add('active');
-            else if (status === 'arrow') document.getElementById('brush-arrow').classList.add('active');
-            else if (status === '[' || status === ']') document.getElementById('brush-makeup').classList.add('active');
-            else if (status === 'unchecked' && status !== null) document.getElementById('brush-eraser').classList.add('active');
+            if (strStatus === 'present' || ['10', '12', '2', '5', '7'].includes(strStatus)) document.getElementById('brush-present').classList.add('active');
+            else if (strStatus === 'absent') document.getElementById('brush-absent').classList.add('active');
+            else if (strStatus === 'extension') document.getElementById('brush-extension').classList.add('active');
+            else if (strStatus === 'arrow') document.getElementById('brush-arrow').classList.add('active');
+            else if (strStatus === '[' || strStatus === ']') document.getElementById('brush-makeup').classList.add('active');
+            else if (strStatus === 'unchecked' && strStatus !== null) document.getElementById('brush-eraser').classList.add('active');
             else document.getElementById('brush-toggle').classList.add('active');
         }
 
@@ -3722,8 +3723,8 @@
             }, true);
         });
     </script>
-    <script src="ui_arrows.js?v=20260720-37"></script>
-    <script src="sidebar_sync.js?v=20260720-37"></script>
+    <script src="ui_arrows.js?v=20260720-38"></script>
+    <script src="sidebar_sync.js?v=20260720-38"></script>
 </body>
 
 </html>
