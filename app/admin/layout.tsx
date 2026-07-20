@@ -14,8 +14,7 @@ import {
     X,
     Settings,
     Link as LinkIcon,
-    Layers,
-    Users
+    Layers
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import type { SupabaseClient, Session } from '@supabase/supabase-js';
@@ -163,7 +162,7 @@ export default function AdminLayout({
                         </ul>
                     </nav>
 
-                    <div className="p-4 border-t border-gray-100 flex flex-col gap-2">
+                    <div className="p-4 border-t border-gray-100">
                         <button
                             onClick={handleLogout}
                             className="flex items-center gap-3 w-full px-4 py-3 text-red-600 rounded-lg hover:bg-red-50 transition-colors"
@@ -171,13 +170,6 @@ export default function AdminLayout({
                             <LogOut size={20} />
                             <span>로그아웃</span>
                         </button>
-                        <a
-                            href="/sejong/index.html"
-                            className="flex items-center gap-3 w-full px-4 py-3 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-medium"
-                        >
-                            <Users size={20} />
-                            <span>수강생관리</span>
-                        </a>
                     </div>
                 </div>
             </aside>
