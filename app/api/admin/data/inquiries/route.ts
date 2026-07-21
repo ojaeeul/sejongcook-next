@@ -4,29 +4,31 @@ import { handleGet, handlePost, handlePut, handleDelete } from '@/lib/adminApiHa
 export const GET = (req: NextRequest) => handleGet(req, 'inquiries');
 
 export const POST = async (req: NextRequest) => {
-    // Clone the request so we can read the body for the email
-    const reqClone = req.clone();
     let body;
+    let bodyText;
     try {
-        body = await reqClone.json();
+        bodyText = await req.text();
+        body = JSON.parse(bodyText);
     } catch (e) {
         return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
     }
     
-    // Try to save to local JSON file (Will work on localhost, fail on Vercel)
-    // We don't await this if it blocks the response, but we need the response object.
-    // Wait, handlePost needs a fresh request because we consumed reqClone.
-    // We pass req to handlePost.
+    // Create a new request for handlePost to avoid stream already read errors
+    const fakeReq = new NextRequest(req.url, {
+        method: req.method,
+        headers: req.headers,
+        body: bodyText,
+    });
+
     let response;
     try {
-        response = await handlePost(req, 'inquiries');
+        response = await handlePost(fakeReq, 'inquiries');
     } catch (e) {
         console.warn('JSON save failed (expected on Vercel):', e);
-        // Create a fake successful response for Vercel
         response = NextResponse.json({ success: true, warning: 'Saved only via email' });
     }
 
-    // If handlePost internally caught the error and returned 500, we override it for Vercel
+    // If handlePost internally caught the error and returned 500, override it for Vercel
     if (!response.ok) {
         console.warn('JSON save returned non-ok (expected on Vercel)');
         response = NextResponse.json({ success: true, warning: 'Saved only via email' });
