@@ -59,11 +59,9 @@ export default function AdminInquiryPage() {
         if (confirm('정말 삭제하시겠습니까?')) {
             try {
                 const newData = inquiries.filter((item) => String(item.id) !== String(id));
-                const url = '/api/admin/data/inquiries?_t=' + Date.now();
+                const url = '/api/admin/data/inquiries?id=' + id + '&_t=' + Date.now();
                 await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(newData),
+                    method: 'DELETE',
                 });
                 setInquiries(newData);
             } catch {
