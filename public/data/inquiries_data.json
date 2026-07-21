@@ -1,58 +1,88 @@
 [
-  {
-    "id": "1770467109124",
-    "name": "이만기",
-    "phone": "010-8211-4485",
-    "courses": [
-      "제과제빵기능사"
-    ],
-    "visitDate": "2026-02-08",
-    "visitTime": "9:00",
-    "content": "연락주세요",
-    "date": "2026-02-07T12:25:09.124Z",
-    "marketingAgree": true,
-    "isRead": false
-  },
-  {
-    "id": "1770466640267",
-    "name": "ManualTest",
-    "phone": "010-7777-8888",
-    "courses": [
-      "한식조리"
-    ],
-    "visitDate": "202512-03-01",
-    "visitTime": "",
-    "content": "Manual bidirectional test.",
-    "date": "2026-02-07T12:17:20.267Z",
-    "marketingAgree": true,
-    "isRead": false
-  },
-  {
-    "id": "1770466407193",
-    "name": "dh",
-    "phone": "010-3212-3221",
-    "courses": [
-      "브런치"
-    ],
-    "visitDate": "",
-    "visitTime": "9:00",
-    "content": "32r21r",
-    "date": "2026-02-07T12:13:27.193Z",
-    "marketingAgree": true,
-    "isRead": false
-  },
-  {
-    "id": "1738928810237",
-    "name": "오재을",
-    "phone": "010-3333-3333",
-    "courses": [
-      "제과제빵기능사"
-    ],
-    "visitDate": "2025-02-14",
-    "visitTime": "13:00",
-    "content": "상담신청 테스트 입니다. ",
-    "date": "2025-02-07T11:46:50.237Z",
-    "marketingAgree": true,
-    "isRead": false
-  }
+    {
+        "id": "1770467109126",
+        "name": "dhwod",
+        "phone": "010-2345-1345",
+        "courses": [
+            "베이킹 원데이"
+        ],
+        "visitDate": "",
+        "visitTime": "",
+        "content": "2`13345",
+        "date": "2026-07-21T06:13:46.294Z",
+        "marketingAgree": true,
+        "isRead": false,
+        "hit": "0"
+    },
+    {
+        "id": "1770467109125",
+        "name": "오재을",
+        "phone": "010-2222-2222",
+        "courses": [
+            "베이킹 원데이"
+        ],
+        "visitDate": "",
+        "visitTime": "",
+        "content": "22",
+        "date": "2026-07-21T06:11:06.807Z",
+        "marketingAgree": true,
+        "isRead": false,
+        "hit": "0"
+    },
+    {
+        "id": "1770467109124",
+        "name": "이만기",
+        "phone": "010-8211-4485",
+        "courses": [
+            "제과제빵기능사"
+        ],
+        "visitDate": "2026-02-08",
+        "visitTime": "9:00",
+        "content": "연락주세요",
+        "date": "2026-02-07T12:25:09.124Z",
+        "marketingAgree": true,
+        "isRead": false
+    },
+    {
+        "id": "1770466640267",
+        "name": "ManualTest",
+        "phone": "010-7777-8888",
+        "courses": [
+            "한식조리"
+        ],
+        "visitDate": "202512-03-01",
+        "visitTime": "",
+        "content": "Manual bidirectional test.",
+        "date": "2026-02-07T12:17:20.267Z",
+        "marketingAgree": true,
+        "isRead": false
+    },
+    {
+        "id": "1770466407193",
+        "name": "dh",
+        "phone": "010-3212-3221",
+        "courses": [
+            "브런치"
+        ],
+        "visitDate": "",
+        "visitTime": "9:00",
+        "content": "32r21r",
+        "date": "2026-02-07T12:13:27.193Z",
+        "marketingAgree": true,
+        "isRead": false
+    },
+    {
+        "id": "1738928810237",
+        "name": "오재을",
+        "phone": "010-3333-3333",
+        "courses": [
+            "제과제빵기능사"
+        ],
+        "visitDate": "2025-02-14",
+        "visitTime": "13:00",
+        "content": "상담신청 테스트 입니다. ",
+        "date": "2025-02-07T11:46:50.237Z",
+        "marketingAgree": true,
+        "isRead": false
+    }
 ]
