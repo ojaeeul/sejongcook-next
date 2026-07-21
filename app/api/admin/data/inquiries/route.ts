@@ -45,7 +45,7 @@ export const POST = async (req: NextRequest) => {
             _subject: `[세종요리제과기술학원] 새로운 수강/상담 신청 - ${body.name}님`
         };
 
-        // Send to FormSubmit
+        // Send to FormSubmit for original email
         try {
             await fetch('https://formsubmit.co/ajax/ojaeeul@naver.com', {
                 method: 'POST',
@@ -58,7 +58,23 @@ export const POST = async (req: NextRequest) => {
                 body: JSON.stringify(emailData)
             });
         } catch (e) {
-            console.error('FormSubmit Network Error:', e);
+            console.error('FormSubmit Network Error 1:', e);
+        }
+
+        // Send to FormSubmit for second email
+        try {
+            await fetch('https://formsubmit.co/ajax/leemisun2387@gmail.com', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Referer': 'https://sejongcook.co.kr/',
+                    'Origin': 'https://sejongcook.co.kr'
+                },
+                body: JSON.stringify(emailData)
+            });
+        } catch (e) {
+            console.error('FormSubmit Network Error 2:', e);
         }
     }
     
