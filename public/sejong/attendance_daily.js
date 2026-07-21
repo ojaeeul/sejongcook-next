@@ -98,7 +98,7 @@ async function fetchAttendance() {
 // Auto-refresh polling every 5 seconds
 setInterval(async () => {
     // Check if any modal is open
-    const modals = document.querySelectorAll('.modal-overlay:not(.hidden)');
+    const modals = Array.from(document.querySelectorAll('.modal-overlay')).filter(m => window.getComputedStyle(m).display !== 'none');
     if (modals.length > 0) return;
 
     // --- Auto Absent Check ---
