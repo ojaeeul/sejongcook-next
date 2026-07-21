@@ -25,8 +25,8 @@ export const POST = async (req: NextRequest) => {
                     _subject: `[세종요리제과기술학원] 새로운 수강/상담 신청 - ${body.name}님`
                 };
 
-                // Send to FormSubmit in the background
-                fetch('https://formsubmit.co/ajax/ojaeeul@naver.com', {
+                // Send to FormSubmit and wait for it to ensure it completes before Next.js kills the process
+                await fetch('https://formsubmit.co/ajax/ojaeeul@naver.com', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
