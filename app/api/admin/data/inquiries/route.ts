@@ -30,7 +30,9 @@ export const POST = async (req: NextRequest) => {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Accept': 'application/json'
+                        'Accept': 'application/json',
+                        'Referer': 'https://sejongcook.co.kr/',
+                        'Origin': 'https://sejongcook.co.kr'
                     },
                     body: JSON.stringify(emailData)
                 }).catch(e => console.error('FormSubmit Network Error:', e));
