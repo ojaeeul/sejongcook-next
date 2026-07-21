@@ -72,6 +72,27 @@ export default function AdminInquiryPage() {
         }
     };
 
+    const handleDownloadConsent = (item: Inquiry) => {
+        const textContent = `[개인정보 수집 및 이용, 마케팅 활용 동의서]
+
+학원명: 세종요리제과기술학원
+동의자 성명: ${item.name}
+연락처: ${item.phone}
+동의 일시: ${new Date(item.date).toLocaleString()}
+
+본인은 귀 학원의 개인정보 수집 및 이용, 그리고 마케팅 활용 및 광고 수신에 모두 동의합니다.`;
+
+        const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${item.name}_개인정보_마케팅_동의서.txt`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    };
+
     return (
         <div className="min-h-screen bg-gray-100 p-8">
             <div className="max-w-6xl mx-auto">
@@ -121,9 +142,13 @@ export default function AdminInquiryPage() {
                                             </td>
                                             <td className="px-6 py-4 text-center">
                                                 {item.marketingAgree ? (
-                                                    <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded border border-blue-400">
-                                                        동의
-                                                    </span>
+                                                    <button 
+                                                        onClick={() => handleDownloadConsent(item)}
+                                                        className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded border border-blue-400 hover:bg-blue-200 transition-colors"
+                                                        title="클릭하여 동의서 다운로드"
+                                                    >
+                                                        동의 (다운로드)
+                                                    </button>
                                                 ) : (
                                                     <span className="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded border border-gray-500">
                                                         미동의
