@@ -89,7 +89,7 @@ export default function InquiryPage() {
             const newData = [newItem, ...(Array.isArray(currentData) ? currentData : [])];
 
             // 3. Save updated data
-            const url = '/data/inquiries_data.json?_t=' + Date.now();
+            const url = '/api/admin/data/inquiries';
             const saveRes = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
