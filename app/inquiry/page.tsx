@@ -67,14 +67,8 @@ export default function InquiryPage() {
 
         // Submit to Server API
         try {
-            // 1. Get current data
-            const getUrl = '/data/inquiries_data.json?_t=' + Date.now();
-            const res = await fetch(getUrl);
-            const currentData = await res.json();
-
-            // 2. Add new item
+            // 1. Create new item
             const newItem = {
-                id: Date.now().toString(),
                 name,
                 phone: `${phone1}-${phone2}-${phone3}`,
                 courses: selectedCourses,
@@ -86,17 +80,18 @@ export default function InquiryPage() {
                 isRead: false
             };
 
-            const newData = [newItem, ...(Array.isArray(currentData) ? currentData : [])];
-
-            // 3. Save updated data
+            // 2. Save new item
             const url = '/api/admin/data/inquiries';
             const saveRes = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(newData),
+                body: JSON.stringify(newItem),
             });
 
-            if (!saveRes.ok) throw new Error('저장 실패');
+            if (!saveRes.ok) {
+                const errorText = await saveRes.text();
+                throw new Error('저장 실패: ' + errorText);
+            }
 
         } catch (error) {
             console.error('Failed to submit inquiry', error);
