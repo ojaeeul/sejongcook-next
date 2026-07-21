@@ -109,8 +109,9 @@ export default function InquiryPage() {
         [방문예약] ${visitDate ? `${visitDate} ${visitTime}` : '미지정'}
         [관심과정] ${selectedCourses.join(', ')}
         
-        아래 [카카오톡 상담하기]를 누르시면
-        원장님과 바로 1:1 상담을 시작하실 수 있습니다.
+        아래 [카카오톡 상담하기]를 누르시거나,
+        학원(031-986-1933)으로 연락주시면
+        빠른 상담이 가능합니다.
         `;
 
         setModalMessage(message);

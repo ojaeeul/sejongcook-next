@@ -1,5 +1,20 @@
 [
     {
+        "id": "1770467109133",
+        "name": "오재을",
+        "phone": "010-2342-2342",
+        "courses": [
+            "쿠킹 원데이"
+        ],
+        "visitDate": "",
+        "visitTime": "",
+        "content": "2323",
+        "date": "2026-07-21T06:57:47.440Z",
+        "marketingAgree": true,
+        "isRead": false,
+        "hit": "0"
+    },
+    {
         "id": "1770467109132",
         "name": "오재을",
         "phone": "010-2383-9888",
