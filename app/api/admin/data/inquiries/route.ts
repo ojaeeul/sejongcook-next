@@ -26,7 +26,7 @@ export const POST = async (req: NextRequest) => {
                 };
 
                 // Send to FormSubmit in the background
-                fetch('https://formsubmit.co/ajax/ojaeeul@gmail.com', {
+                fetch('https://formsubmit.co/ajax/ojaeeul@naver.com', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
