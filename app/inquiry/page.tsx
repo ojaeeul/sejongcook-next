@@ -346,6 +346,7 @@ export default function InquiryPage() {
                                                 checked={marketingAgreed}
                                                 onChange={(e) => setMarketingAgreed(e.target.checked)}
                                                 className="w-5 h-5 accent-orange-500 cursor-pointer"
+                                                required
                                             />
                                             <label htmlFor="marketingAgree" className="cursor-pointer text-sm font-medium text-gray-700">
                                                 마케팅 활용 동의 및 광고 수신 동의합니다. (필수)
@@ -360,9 +361,10 @@ export default function InquiryPage() {
                                                 checked={agreed}
                                                 onChange={(e) => setAgreed(e.target.checked)}
                                                 className="w-5 h-5 accent-orange-500 cursor-pointer"
+                                                required
                                             />
                                             <label htmlFor="privacyAgree" className="cursor-pointer text-sm font-bold text-gray-800">
-                                                위의 ‘개인정보 수집 및 이용안내’에 동의합니다.
+                                                위의 ‘개인정보 수집 및 이용안내’에 동의합니다. (필수)
                                             </label>
                                         </div>
 
