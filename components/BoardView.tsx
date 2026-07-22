@@ -166,6 +166,23 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
 
     const [replyContent, setReplyContent] = useState("");
 
+    useEffect(() => {
+        setPost(initialPost);
+        let extracted: Reply[] = [];
+        const rawContent = initialPost.content || '';
+        const match = rawContent.match(/<div data-replies='(.*?)' style="display:none"><\/div>$/);
+        if (match) {
+            try {
+                extracted = JSON.parse(match[1].replace(/&#39;/g, "'").replace(/&quot;/g, '"'));
+            } catch (e) {}
+        } else if (String(initialPost.id).startsWith('qna')) {
+             extracted = [{
+                 id: 'r1', author: '관리자', date: '2024-01-24', content: '문의주셔서 감사합니다. 전화로 상담 도와드리겠습니다.'
+             }];
+        }
+        setReplies(extracted);
+    }, [initialPost]);
+
     const handleReplySubmit = async () => {
         if (!replyContent.trim()) {
             setAlertConfig({
