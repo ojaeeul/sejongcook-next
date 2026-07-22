@@ -9,7 +9,6 @@ import ShinyLaurelBanner from "./ShinyLaurelBanner";
 import AlertModal from "./AlertModal";
 
 // Reusing Post interface (should ideally be shared)
-// Reusing Post interface (should ideally be shared)
 export interface Post {
     id: string;
     title: string;
@@ -31,7 +30,17 @@ export interface BoardViewProps {
 
 export default function BoardView({ boardCode, boardName, initialPost, basePath = '/community' }: BoardViewProps) {
     const router = useRouter();
-    const { isAdmin } = useAuth();
+    const { user } = useAuth();
+    const isAdmin = user?.role === 'admin';
+
+    // Mask name for non-admins
+    const maskName = (name: string) => {
+        if (!name) return '게스트';
+        if (name === '관리자') return name;
+        if (name.length <= 2) return name.charAt(0) + '*';
+        return name.charAt(0) + '*'.repeat(name.length - 2) + name.charAt(name.length - 1);
+    };
+
     const [post, setPost] = useState<Post>(initialPost);
     const [isEdit, setIsEdit] = useState(false);
     const [editValues, setEditValues] = useState({
@@ -138,16 +147,26 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
         content: string;
     }
 
-    const [replies, setReplies] = useState<Reply[]>([
-        // Mock initial reply for demo if Q&A
-        String(initialPost.id).startsWith('qna') ? {
-            id: 'r1', author: 'admin', date: '2024-01-24', content: '문의주셔서 감사합니다. 전화로 상담 도와드리겠습니다.'
-        } : null
-    ].filter(Boolean) as Reply[]);
+    const [replies, setReplies] = useState<Reply[]>(() => {
+        let extracted: Reply[] = [];
+        const rawContent = initialPost.content || '';
+        const match = rawContent.match(/<div data-replies='(.*?)' style="display:none"><\/div>$/);
+        if (match) {
+            try {
+                extracted = JSON.parse(match[1].replace(/&#39;/g, "'").replace(/&quot;/g, '"'));
+            } catch (e) {}
+        } else if (String(initialPost.id).startsWith('qna')) {
+             // Mock initial reply for demo if Q&A
+             extracted = [{
+                 id: 'r1', author: '관리자', date: '2024-01-24', content: '문의주셔서 감사합니다. 전화로 상담 도와드리겠습니다.'
+             }];
+        }
+        return extracted;
+    });
 
     const [replyContent, setReplyContent] = useState("");
 
-    const handleReplySubmit = () => {
+    const handleReplySubmit = async () => {
         if (!replyContent.trim()) {
             setAlertConfig({
                 title: '입력 오류',
@@ -160,24 +179,70 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
 
         const newReply: Reply = {
             id: `r${Date.now()}`,
-            author: "admin", // Standardized Author Name
+            author: user?.name || "사용자",
             date: new Date().toISOString().split('T')[0],
             content: replyContent
         };
 
-        setReplies([...replies, newReply]);
-        setReplyContent("");
-        setAlertConfig({
-            title: '등록 완료',
-            message: "답변이 등록되었습니다.",
-            type: 'success'
-        });
-        setShowAlert(true);
+        const newReplies = [...replies, newReply];
+
+        try {
+            let cleanContent = (post.content || '').replace(/<div data-replies=.*?<\/div>$/, '');
+            const encoded = JSON.stringify(newReplies).replace(/'/g, "&#39;");
+            cleanContent += `<div data-replies='${encoded}' style="display:none"></div>`;
+
+            const res = await fetch(`/api/admin/data/${boardCode}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ...post, content: cleanContent })
+            });
+
+            if (!res.ok) throw new Error('Failed to save');
+            
+            setPost({ ...post, content: cleanContent });
+            setReplies(newReplies);
+            setReplyContent("");
+            setAlertConfig({
+                title: '등록 완료',
+                message: "답변이 등록되었습니다.",
+                type: 'success'
+            });
+            setShowAlert(true);
+        } catch (error) {
+            console.error('Reply save error:', error);
+            setAlertConfig({
+                title: '오류',
+                message: "답변 등록에 실패했습니다.",
+                type: 'error'
+            });
+            setShowAlert(true);
+        }
     };
 
-    const handleReplyDelete = (id: string) => {
+    const handleReplyDelete = async (id: string) => {
         if (confirm("정말 삭제하시겠습니까?")) {
-            setReplies(replies.filter(r => r.id !== id));
+            const newReplies = replies.filter(r => r.id !== id);
+            
+            try {
+                let cleanContent = (post.content || '').replace(/<div data-replies=.*?<\/div>$/, '');
+                if (newReplies.length > 0) {
+                    const encoded = JSON.stringify(newReplies).replace(/'/g, "&#39;");
+                    cleanContent += `<div data-replies='${encoded}' style="display:none"></div>`;
+                }
+
+                const res = await fetch(`/api/admin/data/${boardCode}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ...post, content: cleanContent })
+                });
+
+                if (!res.ok) throw new Error('Failed to save');
+
+                setPost({ ...post, content: cleanContent });
+                setReplies(newReplies);
+            } catch (error) {
+                alert("삭제에 실패했습니다.");
+            }
         }
     };
 
@@ -206,7 +271,7 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
                             <h3 className="text-2xl font-bold text-gray-800 break-words">{post.title}</h3>
                             {/* Mobile Minimal Meta */}
                             <div className="lg:hidden flex items-center gap-3 text-xs text-gray-400 mt-2">
-                                <span>{isAdmin ? post.author : (post.author && post.author.length > 1 ? post.author[0] + '**' : post.author)}</span>
+                                <span>{isAdmin ? post.author : maskName(post.author)}</span>
                                 <span className="w-[1px] h-3 bg-gray-300"></span>
                                 <span className="font-sans">{post.date}</span>
                                 <span className="w-[1px] h-3 bg-gray-300"></span>
@@ -252,7 +317,7 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
                     <div
                         className="view-content break-words break-all"
                         style={{ maxWidth: '100%' }}
-                        dangerouslySetInnerHTML={{ __html: isAdmin ? (post.content || '') : (post.content || '').replace(/<p><strong>연락처:<\/strong>.*?<\/p>(<br\/>)?/gi, '') }}
+                        dangerouslySetInnerHTML={{ __html: (isAdmin ? (post.content || '') : (post.content || '').replace(/<p><strong>연락처:<\/strong>.*?<\/p>(<br\/>)?/gi, '')).replace(/<div data-replies=.*?<\/div>$/, '') }}
                     />
                 )}
             </div>

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, useEffect } from 'react';
 import ShinyLaurelBanner from "@/components/ShinyLaurelBanner";
+import { useAuth } from '@/components/AuthProvider';
 import initialHonorData from '../../../public/data/honor_data.json';
 
 interface Post {
@@ -19,12 +20,21 @@ interface Post {
 }
 
 export default function HonorPage() {
+    const { user } = useAuth();
+    const isAdmin = user?.role === 'admin';
     const [posts, setPosts] = useState<Post[]>(initialHonorData as Post[]);
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(20);
 
     const [sortOption, setSortOption] = useState<'date' | 'stars'>('date');
+
+    const maskName = (name: string) => {
+        if (!name) return '게스트';
+        if (name === '관리자') return name;
+        if (name.length <= 2) return name.charAt(0) + '*';
+        return name.charAt(0) + '*'.repeat(name.length - 2) + name.charAt(name.length - 1);
+    };
 
     useEffect(() => {
         const fetchHonorData = async () => {
@@ -148,7 +158,7 @@ export default function HonorPage() {
                                 <div className="p-4">
                                     <h3 className="font-bold text-lg text-gray-800 mb-1 line-clamp-2 min-h-[3.5rem] group-hover:text-blue-600 transition-colors">{post.title}</h3>
                                     <div className="flex justify-between text-xs text-gray-500 mt-2">
-                                        <span>{post.author}</span>
+                                        <span>{isAdmin ? post.author : maskName(post.author)}</span>
                                         <span>{post.date}</span>
                                     </div>
                                 </div>
