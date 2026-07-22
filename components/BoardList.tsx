@@ -76,11 +76,7 @@ export default function BoardList({ boardCode, boardName, posts, basePath = '/co
             if (boardCode === 'seekers') apiBoardName = 'job-seekers';
             if (boardCode === 'openings') apiBoardName = 'job-openings';
 
-            // Production URL
-            const isProd = process.env.NODE_ENV === 'production';
-            const url = isProd
-                ? `/api.php?board=${apiBoardName}&id=${postId}`
-                : `/api/admin/data/${apiBoardName}?id=${postId}`; // Local might need adjustment based on route structure
+            const url = `/api/admin/data/${apiBoardName}?id=${postId}`;
 
             // DELETE request
             const res = await fetch(url, { method: 'DELETE' });
