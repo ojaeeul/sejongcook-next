@@ -30,8 +30,7 @@ export interface BoardViewProps {
 
 export default function BoardView({ boardCode, boardName, initialPost, basePath = '/community' }: BoardViewProps) {
     const router = useRouter();
-    const { user } = useAuth();
-    const isAdmin = user?.role === 'admin';
+    const { isAdmin } = useAuth();
 
     // Mask name for non-admins
     const maskName = (name: string) => {
@@ -196,7 +195,7 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
 
         const newReply: Reply = {
             id: `r${Date.now()}`,
-            author: user?.name || "사용자",
+            author: "관리자",
             date: new Date().toISOString().split('T')[0],
             content: replyContent
         };

@@ -20,8 +20,7 @@ interface Post {
 }
 
 export default function HonorPage() {
-    const { user } = useAuth();
-    const isAdmin = user?.role === 'admin';
+    const { isAdmin } = useAuth();
     const [posts, setPosts] = useState<Post[]>(initialHonorData as Post[]);
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
