@@ -214,14 +214,25 @@ export async function handlePut(request: NextRequest, board: string) {
         if (!body.id) return NextResponse.json({ error: 'Missing item ID' }, { status: 400 });
 
         if (SUPABASE_BOARDS.includes(board)) {
-            const { id, ...updateData } = body;
+            const { id, title, author, date, hit, hits, content } = body;
+            const updateData: any = { title, author, date, content };
+            
+            if (board === 'job-openings' || board === 'job-seekers') {
+                updateData.hits = parseInt(hit || hits, 10) || 0;
+            } else {
+                updateData.hit = String(hit || hits || "0");
+            }
+
             const { data, error } = await supabase
                 .from(getSupabaseTableName(board))
                 .update(updateData)
                 .eq('id', id)
                 .select();
                 
-            if (error) throw error;
+            if (error) {
+                console.error("Supabase update error:", error);
+                return NextResponse.json({ error: 'Failed to update data', details: error.message }, { status: 500 });
+            }
             return NextResponse.json({ success: true, item: data[0] });
         }
 
