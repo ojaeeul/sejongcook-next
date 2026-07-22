@@ -113,7 +113,7 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
             if (!res.ok) throw new Error('Delete failed');
             
             alert('삭제되었습니다.');
-            router.push(`${basePath}/${boardCode}`);
+            window.location.href = `${basePath}/${boardCode}`;
         } catch (error) {
             console.error('Delete Error:', error);
             setAlertConfig({
