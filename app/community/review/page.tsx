@@ -42,7 +42,7 @@ export default function ReviewPage() {
             boardCode="review"
             boardName="수강후기"
             posts={posts}
-            showWriteButton={false}
+            showWriteButton={true}
         />
     );
 }

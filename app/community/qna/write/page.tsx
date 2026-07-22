@@ -15,7 +15,10 @@ function WriteForm() {
 
     const [subject, setSubject] = useState("");
     const [author, setAuthor] = useState("");
+    const [phone, setPhone] = useState("");
     const [content, setContent] = useState("");
+    const [consent1, setConsent1] = useState(false);
+    const [consent2, setConsent2] = useState(false);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [loading, setLoading] = useState(false);
 
@@ -58,11 +61,16 @@ function WriteForm() {
             const endpoint = '/api/admin/data/qna';
             const method = isEdit ? 'PUT' : 'POST';
 
+            let finalContent = content;
+            if (phone) {
+                finalContent = `<p><strong>연락처:</strong> ${phone}</p><br/>` + content;
+            }
+
             const postData = {
                 id: isEdit ? idx : undefined,
                 title: subject,
                 author: author,
-                content: content,
+                content: finalContent,
                 date: new Date().toISOString().split('T')[0],
                 hit: "0",
                 status: "대기중" // Default status for QnA
@@ -118,7 +126,7 @@ function WriteForm() {
                     />
                 </div>
                 <div className="flex gap-4 items-center">
-                    <label className="w-20 font-bold text-gray-700">작성자</label>
+                    <label className="w-20 font-bold text-gray-700">이름(작성자)</label>
                     <input
                         type="text"
                         className="flex-1 border border-gray-300 rounded px-3 py-2 focus:border-amber-500 outline-none"
@@ -128,9 +136,51 @@ function WriteForm() {
                         required
                     />
                 </div>
+                <div className="flex gap-4 items-center">
+                    <label className="w-20 font-bold text-gray-700">전화번호</label>
+                    <input
+                        type="text"
+                        className="flex-1 border border-gray-300 rounded px-3 py-2 focus:border-amber-500 outline-none"
+                        placeholder="예: 010-1234-5678"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        required
+                    />
+                </div>
                 <div className="mt-4">
                     <Editor key={content ? 'loaded' : 'empty'} onChange={setContent} content={content} />
                 </div>
+                
+                {/* Consents */}
+                <div className="mt-6 space-y-4">
+                    <div className="border border-gray-300 rounded p-4 bg-gray-50">
+                        <div className="text-sm text-gray-600 h-24 overflow-y-auto mb-2 border border-gray-200 bg-white p-2">
+                            [개인정보 수집 및 이용 동의]<br/>
+                            1. 수집 목적: 게시판 문의 확인 및 답변, 상담 진행<br/>
+                            2. 수집 항목: 이름, 전화번호<br/>
+                            3. 보유 기간: 목적 달성 시 즉시 파기 (단, 관계법령에 의해 보존할 필요가 있는 경우 해당 기간까지 보존)
+                        </div>
+                        <label className="flex items-center gap-2 cursor-pointer w-fit">
+                            <input type="checkbox" required checked={consent1} onChange={(e) => setConsent1(e.target.checked)} className="w-4 h-4 accent-amber-500" />
+                            <span className="text-sm font-bold text-gray-700">개인정보 수집 및 이용에 동의합니다. (필수)</span>
+                        </label>
+                    </div>
+
+                    <div className="border border-gray-300 rounded p-4 bg-gray-50">
+                        <div className="text-sm text-gray-600 h-24 overflow-y-auto mb-2 border border-gray-200 bg-white p-2">
+                            [개인정보 제3자 제공 동의]<br/>
+                            1. 제공받는 자: 세종요리제과기술학원<br/>
+                            2. 제공 목적: 문의 사항에 대한 전문적인 상담 및 안내<br/>
+                            3. 제공 항목: 이름, 전화번호<br/>
+                            4. 보유 기간: 목적 달성 시 즉시 파기
+                        </div>
+                        <label className="flex items-center gap-2 cursor-pointer w-fit">
+                            <input type="checkbox" required checked={consent2} onChange={(e) => setConsent2(e.target.checked)} className="w-4 h-4 accent-amber-500" />
+                            <span className="text-sm font-bold text-gray-700">개인정보 제3자 제공에 동의합니다. (필수)</span>
+                        </label>
+                    </div>
+                </div>
+
                 <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 mt-6">
                     <Link href="/community/qna" className="px-6 py-2 border border-gray-300 rounded hover:bg-gray-50 text-gray-700">취소</Link>
                     <button
