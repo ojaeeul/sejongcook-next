@@ -50,13 +50,13 @@ async function sendEmailNotification(board: string, item: any) {
     };
 
     try {
-        fetch('https://formsubmit.co/ajax/ojaeeul@naver.com', {
+        await fetch('https://formsubmit.co/ajax/ojaeeul@naver.com', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
             body: JSON.stringify(emailData)
         }).catch(e => console.error("Formsubmit 1 error", e));
         
-        fetch('https://formsubmit.co/ajax/leemisun2387@gmail.com', {
+        await fetch('https://formsubmit.co/ajax/leemisun2387@gmail.com', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
             body: JSON.stringify(emailData)
