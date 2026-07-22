@@ -103,14 +103,26 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
         router.push(`${basePath}/${boardCode}`);
     };
 
-    const handleDelete = () => {
-        // Protection for default/migrated posts as requested
-        setAlertConfig({
-            title: '삭제 불가',
-            message: "기본 공지사항은 삭제할 수 없습니다.\n(데이터 보호됨)",
-            type: 'warning'
-        });
-        setShowAlert(true);
+    const handleDelete = async () => {
+        if (!confirm("정말 삭제하시겠습니까?")) return;
+
+        try {
+            const res = await fetch(`/api/admin/data/${boardCode}?id=${post.id}`, {
+                method: 'DELETE'
+            });
+            if (!res.ok) throw new Error('Delete failed');
+            
+            alert('삭제되었습니다.');
+            router.push(`${basePath}/${boardCode}`);
+        } catch (error) {
+            console.error('Delete Error:', error);
+            setAlertConfig({
+                title: '삭제 실패',
+                message: "삭제에 실패했습니다.",
+                type: 'error'
+            });
+            setShowAlert(true);
+        }
     };
 
     const handlePrint = () => {
