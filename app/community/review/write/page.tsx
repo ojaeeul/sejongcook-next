@@ -43,7 +43,7 @@ function WriteForm() {
                     console.error("Error loading post:", error);
                 }
             } else {
-                setAuthor("학생");
+                setAuthor("");
             }
         }
         loadPost();
@@ -53,8 +53,8 @@ function WriteForm() {
         e.preventDefault();
         setLoading(true);
 
-        if (author.trim() === '학생' || author.trim().length < 3) {
-            alert('이름은 "학생" 이외의 3글자 이상으로 실명을 입력해주세요.');
+        if (author.trim().length < 3) {
+            alert('이름(작성자)은 3글자 이상으로 실명을 입력해주세요.');
             setLoading(false);
             return;
         }
