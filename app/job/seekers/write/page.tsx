@@ -24,6 +24,15 @@ function WriteForm() {
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [loading, setLoading] = useState(false);
 
+    // Email verification states
+    const [email, setEmail] = useState("");
+    const [verifyCode, setVerifyCode] = useState("");
+    const [sentExp, setSentExp] = useState(0);
+    const [sentSignature, setSentSignature] = useState("");
+    const [isVerified, setIsVerified] = useState(false);
+    const [sendingEmail, setSendingEmail] = useState(false);
+    const [verifyingCode, setVerifyingCode] = useState(false);
+
     useEffect(() => {
         const load = async () => {
             if (isEdit && idx) {
@@ -48,7 +57,7 @@ function WriteForm() {
                     console.error("Error loading post:", error);
                 }
             } else {
-                setAuthor("구직자");
+                setAuthor("");
                 if (isEdit) {
                     setSubject("구직 희망합니다 (수정)");
                     setContent(`
@@ -62,12 +71,71 @@ function WriteForm() {
         load();
     }, [isEdit, idx]);
 
+    const handleSendEmail = async () => {
+        if (!email.includes('@')) {
+            alert('유효한 이메일 주소를 입력해주세요.');
+            return;
+        }
+        setSendingEmail(true);
+        try {
+            const res = await fetch('/api/email/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email })
+            });
+            const data = await res.json();
+            if (data.success) {
+                setSentExp(data.exp);
+                setSentSignature(data.signature);
+                alert('인증 번호가 발송되었습니다. 3분 이내에 입력해주세요.');
+            } else {
+                alert(data.error || '발송에 실패했습니다.');
+            }
+        } catch (error) {
+            alert('이메일 발송 중 오류가 발생했습니다.');
+        } finally {
+            setSendingEmail(false);
+        }
+    };
+
+    const handleVerifyCode = async () => {
+        if (!verifyCode) {
+            alert('인증 번호를 입력해주세요.');
+            return;
+        }
+        setVerifyingCode(true);
+        try {
+            const res = await fetch('/api/email/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, code: verifyCode, exp: sentExp, signature: sentSignature })
+            });
+            const data = await res.json();
+            if (data.success) {
+                setIsVerified(true);
+                alert('이메일 인증이 완료되었습니다.');
+            } else {
+                alert(data.error || '인증에 실패했습니다.');
+            }
+        } catch (error) {
+            alert('인증 중 오류가 발생했습니다.');
+        } finally {
+            setVerifyingCode(false);
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
 
-        if (author.trim() === '학생' || author.trim().length < 3) {
-            alert('이름은 "학생" 이외의 3글자 이상으로 실명을 입력해주세요.');
+        if (author.trim().length < 3) {
+            alert('이름(작성자)은 3글자 이상으로 실명을 입력해주세요.');
+            setLoading(false);
+            return;
+        }
+
+        if (!isEdit && !isVerified) {
+            alert('이메일 인증을 진행해주세요.');
             setLoading(false);
             return;
         }
@@ -82,8 +150,11 @@ function WriteForm() {
             const method = isEdit ? 'PUT' : 'POST';
 
             let finalContent = content;
-            if (phone) {
-                finalContent = `<p><strong>연락처:</strong> ${phone}</p><br/>` + content;
+            if (phone || email) {
+                const phoneStr = phone ? `<strong>연락처:</strong> ${phone}` : '';
+                const emailStr = email ? `<strong>이메일:</strong> ${email}` : '';
+                const divider = (phone && email) ? ' | ' : '';
+                finalContent = `<p>${phoneStr}${divider}${emailStr}</p><br/>` + content;
             }
 
             const postData = {
@@ -171,6 +242,57 @@ function WriteForm() {
                         required
                     />
                 </div>
+
+                <div className="flex gap-4 items-center">
+                    <label className="w-20 font-bold text-gray-700">이메일</label>
+                    <div className="flex-1 flex gap-2">
+                        <input
+                            type="email"
+                            className="flex-1 border border-gray-300 rounded px-3 py-2 focus:border-amber-500 outline-none disabled:bg-gray-100"
+                            placeholder="이메일을 입력하세요"
+                            value={email}
+                            onChange={(e) => {
+                                setEmail(e.target.value);
+                                setIsVerified(false);
+                            }}
+                            disabled={isVerified || isEdit}
+                            required
+                        />
+                        {!isVerified && !isEdit && (
+                            <button
+                                type="button"
+                                onClick={handleSendEmail}
+                                disabled={sendingEmail || !email}
+                                className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 disabled:opacity-50 whitespace-nowrap"
+                            >
+                                {sendingEmail ? "발송 중..." : "인증번호 받기"}
+                            </button>
+                        )}
+                    </div>
+                </div>
+
+                {sentSignature && !isVerified && !isEdit && (
+                    <div className="flex gap-4 items-center">
+                        <label className="w-20 font-bold text-gray-700">인증번호</label>
+                        <div className="flex-1 flex gap-2">
+                            <input
+                                type="text"
+                                className="flex-1 border border-gray-300 rounded px-3 py-2 focus:border-amber-500 outline-none"
+                                placeholder="6자리 인증번호 입력"
+                                value={verifyCode}
+                                onChange={(e) => setVerifyCode(e.target.value)}
+                            />
+                            <button
+                                type="button"
+                                onClick={handleVerifyCode}
+                                disabled={verifyingCode || !verifyCode}
+                                className="px-4 py-2 bg-amber-500 text-white rounded hover:bg-amber-600 disabled:opacity-50 whitespace-nowrap"
+                            >
+                                {verifyingCode ? "확인 중..." : "인증 확인"}
+                            </button>
+                        </div>
+                    </div>
+                )}
                 <div className="text-sm text-red-500 ml-24 font-bold">
                     ※ 이름과 전화번호는 관리자 외에는 볼 수 없도록 안전하게 블라인드 처리됩니다.
                 </div>
