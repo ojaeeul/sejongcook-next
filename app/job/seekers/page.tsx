@@ -11,7 +11,7 @@ export default function JobSeekersPage() {
     useEffect(() => {
         const fetchPosts = async () => {
             try {
-                const url = '/data/job_seekers_data.json?_t=' + Date.now();
+                const url = '/api/admin/data/job-seekers?_t=' + Date.now();
                 const res = await fetch(url);
                 const data = await res.json();
 

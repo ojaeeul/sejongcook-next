@@ -27,7 +27,7 @@ function ReviewViewContent() {
                 return;
             }
             try {
-                const res = await fetch('/data/review_data.json');
+                const res = await fetch('/api/admin/data/review?_t=' + Date.now());
                 if (res.ok) {
                     const data: Post[] = await res.json();
                     const found = data.find(p => p.id === id);

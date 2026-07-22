@@ -12,7 +12,7 @@ export default function JobOpeningsPage() {
     useEffect(() => {
         const fetchPosts = async () => {
             try {
-                const url = '/data/job_openings_data.json?_t=' + Date.now();
+                const url = '/api/admin/data/job-openings?_t=' + Date.now();
                 const res = await fetch(url);
                 const data = await res.json();
 

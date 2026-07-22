@@ -19,7 +19,7 @@ function QnaDetailContent() {
             }
 
             try {
-                const url = '/data/qna_data.json?_t=' + Date.now();
+                const url = '/api/admin/data/qna?_t=' + Date.now();
                 const res = await fetch(url);
                 const data = await res.json();
 

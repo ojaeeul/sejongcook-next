@@ -29,7 +29,7 @@ function WriteForm() {
             if (isEdit && idx) {
                 try {
                     // Fetch all data and find the specific post
-                    const url = '/data/job_seekers_data.json?_t=' + Date.now();
+                    const url = '/api/admin/data/job-seekers?_t=' + Date.now();
                     const res = await fetch(url);
                     const data = await res.json();
 
