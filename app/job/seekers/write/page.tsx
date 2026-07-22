@@ -65,7 +65,7 @@ function WriteForm() {
 
         try {
             const isProd = process.env.NODE_ENV === 'production';
-            const endpoint = '/data/job_seekers_data.json';
+            const endpoint = '/api/admin/data/job-seekers';
 
             // For PHP bridge, we use POST for new and PUT for edit if ID exists
             // But DataEditor logic suggests: initialData?.id ? 'PUT' : 'POST'

@@ -51,7 +51,7 @@ function WriteForm() {
 
         try {
             const isProd = process.env.NODE_ENV === 'production';
-            const endpoint = '/data/job_openings_data.json';
+            const endpoint = '/api/admin/data/job-openings';
             const method = isEdit ? 'PUT' : 'POST';
 
             const postData = {

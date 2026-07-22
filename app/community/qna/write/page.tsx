@@ -55,7 +55,7 @@ function WriteForm() {
 
         try {
             const isProd = process.env.NODE_ENV === 'production';
-            const endpoint = '/data/qna_data.json';
+            const endpoint = '/api/admin/data/qna';
             const method = isEdit ? 'PUT' : 'POST';
 
             const postData = {
