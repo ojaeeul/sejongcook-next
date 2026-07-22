@@ -66,38 +66,34 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
     const [showSuccessModal, setShowSuccessModal] = useState(false);
 
     const handleSave = async () => {
-        const isProd = process.env.NODE_ENV === 'production';
-        if (isProd) {
-            try {
-                const res = await fetch(`/api.php?board=${boardCode}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        id: post.id,
-                        title: editValues.title,
-                        content: editValues.content
-                    })
-                });
-                if (!res.ok) throw new Error('Save failed');
-            } catch (error) {
-                console.error('PHP Bridge Save Error:', error);
-                setAlertConfig({
-                    title: '저장 실패',
-                    message: "저장에 실패했습니다.",
-                    type: 'error'
-                });
-                setShowAlert(true);
-                return;
-            }
+        try {
+            const res = await fetch(`/api/admin/data/${boardCode}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id: post.id,
+                    title: editValues.title,
+                    content: editValues.content
+                })
+            });
+            if (!res.ok) throw new Error('Save failed');
+            
+            setPost({
+                ...post,
+                title: editValues.title,
+                content: editValues.content
+            });
+
+            setShowSuccessModal(true);
+        } catch (error) {
+            console.error('Save Error:', error);
+            setAlertConfig({
+                title: '저장 실패',
+                message: "저장에 실패했습니다.",
+                type: 'error'
+            });
+            setShowAlert(true);
         }
-
-        setPost({
-            ...post,
-            title: editValues.title,
-            content: editValues.content
-        });
-
-        setShowSuccessModal(true);
     };
 
     const handleConfirmSuccess = () => {
