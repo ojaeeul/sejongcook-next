@@ -202,7 +202,7 @@ export default function BoardList({ boardCode, boardName, posts, basePath = '/co
                                                 </div>
                                                 {/* Mobile-only Meta Info */}
                                                 <div className="md:hidden text-xs text-gray-400 mt-1 flex gap-2 flex-wrap">
-                                                    <span>{post.author}</span>
+                                                    <span>{isAdmin ? post.author : (post.author && post.author.length > 1 ? post.author[0] + '**' : post.author)}</span>
                                                     <span>|</span>
                                                     <span>{post.date}</span>
                                                     <span>|</span>
@@ -211,7 +211,7 @@ export default function BoardList({ boardCode, boardName, posts, basePath = '/co
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="py-4 text-gray-500 hidden md:table-cell">{post.author}</td>
+                                    <td className="py-4 text-gray-500 hidden md:table-cell">{isAdmin ? post.author : (post.author && post.author.length > 1 ? post.author[0] + '**' : post.author)}</td>
                                     <td className="py-4 text-gray-500 font-sans hidden md:table-cell">{post.date}</td>
                                     <td className="py-4 text-gray-500 font-sans hidden md:table-cell">{post.hit}</td>
                                     {isAdmin && (

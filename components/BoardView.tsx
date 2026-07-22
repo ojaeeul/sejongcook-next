@@ -206,7 +206,7 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
                             <h3 className="text-2xl font-bold text-gray-800 break-words">{post.title}</h3>
                             {/* Mobile Minimal Meta */}
                             <div className="lg:hidden flex items-center gap-3 text-xs text-gray-400 mt-2">
-                                <span>{post.author}</span>
+                                <span>{isAdmin ? post.author : (post.author && post.author.length > 1 ? post.author[0] + '**' : post.author)}</span>
                                 <span className="w-[1px] h-3 bg-gray-300"></span>
                                 <span className="font-sans">{post.date}</span>
                                 <span className="w-[1px] h-3 bg-gray-300"></span>
@@ -221,7 +221,7 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
             <div className="hidden lg:flex border-b border-gray-300 bg-gray-50 text-sm py-3 px-4 text-gray-600 gap-8">
                 <div className="flex gap-2">
                     <span className="font-bold text-gray-700">작성자</span>
-                    <span>{post.author}</span>
+                    <span>{isAdmin ? post.author : (post.author && post.author.length > 1 ? post.author[0] + '**' : post.author)}</span>
                 </div>
                 <div className="flex gap-2">
                     <span className="font-bold text-gray-700">등록일</span>
@@ -252,7 +252,7 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
                     <div
                         className="view-content break-words break-all"
                         style={{ maxWidth: '100%' }}
-                        dangerouslySetInnerHTML={{ __html: post.content || '' }}
+                        dangerouslySetInnerHTML={{ __html: isAdmin ? (post.content || '') : (post.content || '').replace(/<p><strong>연락처:<\/strong>.*?<\/p>(<br\/>)?/gi, '') }}
                     />
                 )}
             </div>

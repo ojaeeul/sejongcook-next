@@ -53,6 +53,12 @@ function WriteForm() {
         e.preventDefault();
         setLoading(true);
 
+        if (author.trim() === '학생' || author.trim().length < 3) {
+            alert('이름은 "학생" 이외의 3글자 이상으로 실명을 입력해주세요.');
+            setLoading(false);
+            return;
+        }
+
         try {
             const isProd = process.env.NODE_ENV === 'production';
             const endpoint = '/api/admin/data/review';
@@ -143,6 +149,9 @@ function WriteForm() {
                         onChange={(e) => setPhone(e.target.value)}
                         required
                     />
+                </div>
+                <div className="text-sm text-red-500 ml-24 font-bold">
+                    ※ 이름과 전화번호는 관리자 외에는 볼 수 없도록 안전하게 블라인드 처리됩니다.
                 </div>
                 <div className="mt-4">
                     <Editor key={content ? 'loaded' : 'empty'} onChange={setContent} content={content} />
