@@ -164,6 +164,8 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
     });
 
     const [replyContent, setReplyContent] = useState("");
+    const [editingReplyId, setEditingReplyId] = useState<string | null>(null);
+    const [editingReplyContent, setEditingReplyContent] = useState("");
 
     useEffect(() => {
         setPost(initialPost);
@@ -259,6 +261,38 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
             } catch (error) {
                 alert("삭제에 실패했습니다.");
             }
+        }
+    };
+
+    const handleReplyUpdate = async (id: string) => {
+        if (!editingReplyContent.trim()) {
+            alert("내용을 입력해주세요.");
+            return;
+        }
+
+        const newReplies = replies.map(r => r.id === id ? { ...r, content: editingReplyContent } : r);
+        
+        try {
+            let cleanContent = (post.content || '').replace(/<div data-replies=.*?<\/div>$/, '');
+            if (newReplies.length > 0) {
+                const encoded = JSON.stringify(newReplies).replace(/'/g, "&#39;");
+                cleanContent += `<div data-replies='${encoded}' style="display:none"></div>`;
+            }
+
+            const res = await fetch(`/api/admin/data/${boardCode}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ...post, content: cleanContent })
+            });
+
+            if (!res.ok) throw new Error('Failed to save');
+
+            setPost({ ...post, content: cleanContent });
+            setReplies(newReplies);
+            setEditingReplyId(null);
+            setEditingReplyContent("");
+        } catch (error) {
+            alert("수정에 실패했습니다.");
         }
     };
 
@@ -363,16 +397,51 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
                                                 <span className="text-gray-400">|</span>
                                                 <span className="text-gray-500 font-sans">{reply.date}</span>
                                             </div>
-                                            <button
-                                                onClick={() => handleReplyDelete(reply.id)}
-                                                className="text-gray-400 hover:text-red-500 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                                            >
-                                                삭제
-                                            </button>
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={() => {
+                                                        setEditingReplyId(reply.id);
+                                                        setEditingReplyContent(reply.content);
+                                                    }}
+                                                    className="text-gray-400 hover:text-blue-500 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                                                >
+                                                    수정
+                                                </button>
+                                                <button
+                                                    onClick={() => handleReplyDelete(reply.id)}
+                                                    className="text-gray-400 hover:text-red-500 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                                                >
+                                                    삭제
+                                                </button>
+                                            </div>
                                         </div>
-                                        <div className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
-                                            {reply.content}
-                                        </div>
+                                        {editingReplyId === reply.id ? (
+                                            <div className="mt-2">
+                                                <textarea
+                                                    className="w-full h-20 p-2 text-sm border border-gray-300 rounded outline-none resize-none focus:border-amber-500"
+                                                    value={editingReplyContent}
+                                                    onChange={(e) => setEditingReplyContent(e.target.value)}
+                                                />
+                                                <div className="flex justify-end gap-2 mt-2">
+                                                    <button
+                                                        onClick={() => setEditingReplyId(null)}
+                                                        className="px-3 py-1 text-xs bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
+                                                    >
+                                                        취소
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleReplyUpdate(reply.id)}
+                                                        className="px-3 py-1 text-xs bg-gray-800 text-white rounded hover:bg-black transition-colors"
+                                                    >
+                                                        저장
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
+                                                {reply.content}
+                                            </div>
+                                        )}
                                     </div>
                                 ))
                             )}
