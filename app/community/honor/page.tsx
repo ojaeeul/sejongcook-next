@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, useEffect } from 'react';
 import ShinyLaurelBanner from "@/components/ShinyLaurelBanner";
-import { useAuth } from '@/components/AuthProvider';
+import { useAuth } from '@/context/AuthContext';
 import initialHonorData from '../../../public/data/honor_data.json';
 
 interface Post {

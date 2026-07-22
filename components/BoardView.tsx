@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Editor from "./Editor";
 import { useAuth } from "@/context/AuthContext";
 import ShinyLaurelBanner from "./ShinyLaurelBanner";
