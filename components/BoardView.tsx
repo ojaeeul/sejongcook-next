@@ -403,13 +403,13 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
                                                         setEditingReplyId(reply.id);
                                                         setEditingReplyContent(reply.content);
                                                     }}
-                                                    className="text-gray-400 hover:text-blue-500 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    className="text-gray-400 hover:text-blue-500 text-xs transition-colors"
                                                 >
                                                     수정
                                                 </button>
                                                 <button
                                                     onClick={() => handleReplyDelete(reply.id)}
-                                                    className="text-gray-400 hover:text-red-500 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    className="text-gray-400 hover:text-red-500 text-xs transition-colors"
                                                 >
                                                     삭제
                                                 </button>
