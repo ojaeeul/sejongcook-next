@@ -274,8 +274,10 @@ function filterExamsByDate(dateString) {
         
         tr.innerHTML = `
             <td data-label="학생명 (과목)" style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: left; line-height: 1.4;">
-                <b style="font-size: 1.1rem; color: #1e293b;">${name}</b><br>
-                <span style="color:#64748b; font-size:0.8rem;">(${exam.examKey})</span>
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                    <b style="font-size: 1.15rem; color: #1e293b; letter-spacing: -0.5px;">${name}</b>
+                    <span style="color: #475569; font-size: 0.85rem; font-weight: 500; background: #f1f5f9; padding: 3px 8px; border-radius: 6px; border: 1px solid #e2e8f0;">${exam.examKey}</span>
+                </div>
             </td>
             <td data-label="응시 일시" style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: center; color: #475569; font-size: 0.85rem;">${timeStr}</td>
             <td data-label="점수" style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: center; font-weight: bold; color: var(--primary); font-size: 1.2rem;">${exam.score}점</td>
