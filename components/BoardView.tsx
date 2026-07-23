@@ -416,7 +416,7 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
                                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                                         </svg>
                                         <p style="font-weight: bold; font-size: 18px; margin-bottom: 8px; color: #374151;">비밀글로 보호된 게시물입니다.</p>
-                                        <p style="font-size: 14px; color: #6b7280; line-height: 1.5;">작성자와 관리자만 내용을 확인할 수 있습니다.<br/>(등록된 관리자/AI 답변은 아래에서 확인하실 수 있습니다)</p>
+                                        <p style="font-size: 14px; color: #6b7280; line-height: 1.5;">작성자와 관리자만 내용을 확인할 수 있습니다.</p>
                                     </div>`;
                                 }
                             }
