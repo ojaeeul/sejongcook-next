@@ -318,7 +318,54 @@ export async function handlePut(request: NextRequest, board: string) {
                 console.error("Supabase update error:", error);
                 return NextResponse.json({ error: 'Failed to update data', details: error.message }, { status: 500 });
             }
-            return NextResponse.json({ success: true, item: data[0] });
+
+            const updatedItem = data[0];
+
+            // --- AI Bot for QnA Comments ---
+            if (board === 'qna' && updatedItem && updatedItem.content) {
+                const match = updatedItem.content.match(/<div data-replies='(.*?)' style="display:none"><\/div>$/);
+                if (match) {
+                    try {
+                        const replies = JSON.parse(match[1].replace(/&#39;/g, "'").replace(/&quot;/g, '"'));
+                        if (replies.length > 0) {
+                            const lastReply = replies[replies.length - 1];
+                            // 작성자가 남긴 댓글에만 AI가 응답 (무한루프 및 관리자 답변 중복 방지)
+                            if (lastReply.author === '작성자') {
+                                const { generateQnaResponse } = await import('@/lib/aiBot');
+                                const replyText = await generateQnaResponse(updatedItem, replies);
+                                
+                                if (replyText) {
+                                    const newAiReply = {
+                                        id: `r${Date.now()}`,
+                                        content: replyText,
+                                        author: 'AI 매니저',
+                                        date: new Date().toISOString().split('T')[0]
+                                    };
+                                    
+                                    const newReplies = [...replies, newAiReply];
+                                    const encoded = JSON.stringify(newReplies).replace(/'/g, "&#39;");
+                                    const cleanContent = updatedItem.content.replace(/<div data-replies=.*?<\/div>$/, '');
+                                    const finalContent = `${cleanContent}<div data-replies='${encoded}' style="display:none"></div>`;
+                                    
+                                    const { data: finalData } = await supabase
+                                        .from(getSupabaseTableName(board))
+                                        .update({ content: finalContent })
+                                        .eq('id', id)
+                                        .select();
+                                        
+                                    if (finalData && finalData.length > 0) {
+                                        return NextResponse.json({ success: true, item: finalData[0] });
+                                    }
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        console.error("AI Bot Comment Error:", e);
+                    }
+                }
+            }
+
+            return NextResponse.json({ success: true, item: updatedItem });
         }
 
         const data = await readData(board);

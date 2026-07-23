@@ -201,7 +201,7 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
 
         const newReply: Reply = {
             id: `r${Date.now()}`,
-            author: "관리자",
+            author: isAdmin ? "관리자" : "작성자",
             date: new Date().toISOString().split('T')[0],
             content: replyContent
         };
