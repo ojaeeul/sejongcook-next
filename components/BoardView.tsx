@@ -341,7 +341,10 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
                         />
                     ) : (
                         <div>
-                            <h3 className="text-2xl font-bold text-gray-800 break-words">{post.title}</h3>
+                            <h3 className="text-2xl font-bold text-gray-800 break-words flex items-center">
+                                {post.title.includes("[비밀글]") && <span className="text-amber-600 mr-2 text-xl" title="비밀글">🔒</span>}
+                                {post.title.replace("[비밀글]", "").trim()}
+                            </h3>
                             {/* Mobile Minimal Meta */}
                             <div className="lg:hidden flex items-center gap-3 text-xs text-gray-400 mt-2">
                                 <span>{isAdmin ? post.author : maskName(post.author)}</span>
@@ -390,7 +393,22 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
                     <div
                         className="view-content break-words break-all"
                         style={{ maxWidth: '100%' }}
-                        dangerouslySetInnerHTML={{ __html: (isAdmin ? (post.content || '') : (post.content || '').replace(/<p><strong>연락처:<\/strong>.*?<\/p>(<br\/>)?/gi, '')).replace(/<div data-replies=.*?<\/div>$/, '') }}
+                        dangerouslySetInnerHTML={{ __html: (() => {
+                            let displayContent = (post.content || '').replace(/<div data-replies=.*?<\/div>$/, '');
+                            if (!isAdmin) {
+                                displayContent = displayContent.replace(/<p><strong>연락처:<\/strong>.*?<\/p>(<br\/>)?/gi, '');
+                                if (post.title.includes("[비밀글]")) {
+                                    displayContent = `<div style="padding: 40px 20px; text-align: center; color: #666; background: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" style="width: 48px; height: 48px; margin: 0 auto 16px; color: #9ca3af;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                        </svg>
+                                        <p style="font-weight: bold; font-size: 18px; margin-bottom: 8px; color: #374151;">비밀글로 보호된 게시물입니다.</p>
+                                        <p style="font-size: 14px; color: #6b7280; line-height: 1.5;">작성자와 관리자만 내용을 확인할 수 있습니다.<br/>(등록된 관리자/AI 답변은 아래에서 확인하실 수 있습니다)</p>
+                                    </div>`;
+                                }
+                            }
+                            return displayContent;
+                        })() }}
                     />
                 )}
             </div>

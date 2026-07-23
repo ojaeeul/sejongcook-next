@@ -198,7 +198,10 @@ export default function BoardList({ boardCode, boardName, posts, basePath = '/co
                                                             {post.category}
                                                         </span>
                                                     )}
-                                                    <span className="text-gray-700 font-medium text-[15px] block break-words">{post.title}</span>
+                                                    <span className="text-gray-700 font-medium text-[15px] block break-words flex items-center">
+                                                        {post.title.includes("[비밀글]") && <span className="text-amber-600 mr-1" title="비밀글">🔒</span>}
+                                                        {post.title.replace("[비밀글]", "").trim()}
+                                                    </span>
                                                 </div>
                                                 {/* Mobile-only Meta Info */}
                                                 <div className="md:hidden text-xs text-gray-400 mt-1 flex gap-2 flex-wrap">

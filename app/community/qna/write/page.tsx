@@ -72,9 +72,15 @@ function WriteForm() {
                 finalContent = `<p><strong>연락처:</strong> ${phone}</p><br/>` + content;
             }
 
+            let finalSubject = subject;
+            const isAttendance = /출석|결석|학원\s*못가|학교에\s*일|아파서|아퍼서|아퍼요|집에\s*일이|부모님이|못\s*가요|지각/i.test(subject) || /출석|결석|학원\s*못가|학교에\s*일|아파서|아퍼서|아퍼요|집에\s*일이|부모님이|못\s*가요|지각/i.test(content);
+            if (isAttendance && !finalSubject.includes("[비밀글]")) {
+                finalSubject = "[비밀글] " + finalSubject;
+            }
+
             const postData = {
                 id: isEdit ? idx : undefined,
-                title: subject,
+                title: finalSubject,
                 author: author,
                 content: finalContent,
                 date: new Date().toISOString().split('T')[0],
