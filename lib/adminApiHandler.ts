@@ -127,6 +127,32 @@ export async function handleGet(request: NextRequest, board: string) {
                 .order('date', { ascending: false });
                 
             if (error) throw error;
+
+            if (board === 'job-openings' || board === 'job-seekers') {
+                const now = Date.now();
+                const oneDayMs = 24 * 60 * 60 * 1000;
+                let needToDelete: string[] = [];
+                
+                const filteredData = data.filter((item: any) => {
+                    if (item.content && item.content.includes("<!-- WARN_TIME:")) {
+                        const match = item.content.match(/<!-- WARN_TIME:(\d+) -->/);
+                        if (match) {
+                            const warnTime = parseInt(match[1], 10);
+                            if (now - warnTime > oneDayMs) {
+                                needToDelete.push(item.id);
+                                return false;
+                            }
+                        }
+                    }
+                    return true;
+                });
+                
+                if (needToDelete.length > 0) {
+                    supabase.from(getSupabaseTableName(board)).delete().in('id', needToDelete).then();
+                }
+                return NextResponse.json(filteredData);
+            }
+
             return NextResponse.json(data);
         } catch (error: any) {
             return NextResponse.json({ error: 'Failed to read from Supabase', details: error.message }, { status: 500 });
@@ -194,6 +220,36 @@ export async function handlePost(request: NextRequest, board: string) {
                     }
                 } catch (e) {
                     console.error("AI Bot Error:", e);
+                }
+            }
+
+            // AI Moderator for Job Boards
+            if (board === 'job-openings' || board === 'job-seekers') {
+                try {
+                    const { moderateContent } = await import('@/lib/aiModerator');
+                    const moderationResult = await moderateContent(newItem.title, newItem.content);
+                    
+                    if (moderationResult === "SEVERE") {
+                        await supabase.from(getSupabaseTableName(board)).delete().eq('id', newItem.id);
+                    } else if (moderationResult === "MILD") {
+                        const warnedTitle = `[경고] ${newItem.title}`;
+                        const warningReplies = [{
+                            id: Date.now(),
+                            content: "[경고] 해당 게시글은 정책 위반 소지가 있어 1일(24시간) 뒤 자동 삭제될 예정입니다. 직접 수정하시거나 삭제해 주세요.",
+                            author: "AI 시스템",
+                            date: new Date().toISOString().split('T')[0]
+                        }];
+                        const encoded = JSON.stringify(warningReplies).replace(/'/g, "&#39;");
+                        const warningMark = `<!-- WARN_TIME:${Date.now()} -->`;
+                        const updatedContent = `${newItem.content || ''}${warningMark}<div data-replies='${encoded}' style="display:none"></div>`;
+                        
+                        await supabase
+                            .from(getSupabaseTableName(board))
+                            .update({ title: warnedTitle, content: updatedContent })
+                            .eq('id', newItem.id);
+                    }
+                } catch (e) {
+                    console.error("AI Moderator Error:", e);
                 }
             }
             
