@@ -323,7 +323,7 @@ export async function handlePut(request: NextRequest, board: string) {
 
             // --- AI Bot for QnA Comments ---
             if (board === 'qna' && updatedItem && updatedItem.content) {
-                const match = updatedItem.content.match(/<div data-replies='(.*?)' style="display:none"><\/div>$/);
+                const match = updatedItem.content.match(/<div data-replies='(.*?)' style="display:none"><\/div>\s*$/);
                 if (match) {
                     try {
                         const replies = JSON.parse(match[1].replace(/&#39;/g, "'").replace(/&quot;/g, '"'));

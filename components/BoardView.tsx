@@ -221,8 +221,27 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
 
             if (!res.ok) throw new Error('Failed to save');
             
-            setPost({ ...post, content: cleanContent });
-            setReplies(newReplies);
+            const result = await res.json();
+            if (result.success && result.item && result.item.content) {
+                const finalContent = result.item.content;
+                setPost({ ...post, content: finalContent });
+                
+                const finalMatch = finalContent.match(/<div data-replies='(.*?)' style="display:none"><\/div>$/);
+                if (finalMatch) {
+                    try {
+                        const finalReplies = JSON.parse(finalMatch[1].replace(/&#39;/g, "'").replace(/&quot;/g, '"'));
+                        setReplies(finalReplies);
+                    } catch (e) {
+                        setReplies(newReplies);
+                    }
+                } else {
+                    setReplies(newReplies);
+                }
+            } else {
+                setPost({ ...post, content: cleanContent });
+                setReplies(newReplies);
+            }
+
             setReplyContent("");
             setAlertConfig({
                 title: '등록 완료',
