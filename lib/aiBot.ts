@@ -19,7 +19,7 @@ export async function generateQnaResponse(post: any, repliesHistory: any[] = [])
         }
 
         // 2. 환경 변수에서 Gemini API 키 가져오기
-        const keysStr = process.env.GEMINI_API_KEYS;
+        const keysStr = process.env.GEMINI_API_KEYS || process.env.GEMINI_API_KEY;
         if (!keysStr) {
             console.error("GEMINI_API_KEYS not found in env");
             return null;
@@ -62,7 +62,7 @@ export async function generateQnaResponse(post: any, repliesHistory: any[] = [])
             }
         };
 
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(requestBody)
