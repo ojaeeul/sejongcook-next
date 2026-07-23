@@ -61,20 +61,35 @@ export async function generateQnaResponse(post: any, repliesHistory: any[] = [])
                 maxOutputTokens: 1024,
             }
         };
+        let response;
+        let responseData;
+        const models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-flash-latest'];
+        
+        for (let i = 0; i < 3; i++) {
+            const currentKey = keys[Math.floor(Math.random() * keys.length)];
+            const currentModel = models[i % models.length];
+            
+            response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${currentModel}:generateContent?key=${currentKey}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestBody)
+            });
 
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(requestBody)
-        });
+            if (response.ok) {
+                responseData = await response.json();
+                break;
+            } else {
+                const err = await response.json();
+                console.error(`Gemini API error (Attempt ${i+1}, Model: ${currentModel}):`, err);
+            }
+        }
 
-        if (!response.ok) {
-            const err = await response.json();
-            console.error("Gemini API error:", err);
+        if (!responseData) {
+            console.error("Gemini API failed after 3 attempts.");
             return null;
         }
 
-        const data = await response.json();
+        const data = responseData;
         const replyText = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
         if (replyText) {

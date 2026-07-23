@@ -206,7 +206,8 @@ export async function handlePost(request: NextRequest, board: string) {
                     moderationResult = await moderateContent(newItem.title, newItem.content, board);
                     
                     if (moderationResult === "SEVERE") {
-                        await supabase.from(getSupabaseTableName(board)).delete().eq('id', newItem.id);
+                        console.log("AI Moderator deleted post:", data[0].id);
+                        await supabase.from(getSupabaseTableName(board)).delete().eq('id', data[0].id);
                         return NextResponse.json({ success: true, item: null, deleted: true }); // Stop processing
                     } else if (moderationResult === "MILD") {
                         const warnedTitle = `[경고] ${newItem.title}`;
@@ -224,7 +225,7 @@ export async function handlePost(request: NextRequest, board: string) {
                         await supabase
                             .from(getSupabaseTableName(board))
                             .update({ title: newItem.title, content: newItem.content })
-                            .eq('id', newItem.id);
+                            .eq('id', data[0].id);
                     }
                 } catch (e) {
                     console.error("AI Moderator Error:", e);
@@ -246,10 +247,13 @@ export async function handlePost(request: NextRequest, board: string) {
                         const encoded = JSON.stringify(newReplies).replace(/'/g, "&#39;");
                         newItem.content = `${newItem.content || ''}<div data-replies='${encoded}' style="display:none"></div>`;
                         
+                        console.log("AI Bot Reply generated successfully for post:", data[0].id);
                         await supabase
                             .from(getSupabaseTableName(board))
                             .update({ content: newItem.content })
-                            .eq('id', newItem.id);
+                            .eq('id', data[0].id);
+                    } else {
+                        console.log("AI Bot generated null reply.");
                     }
                 } catch (e) {
                     console.error("AI Bot Error:", e);
