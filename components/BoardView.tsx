@@ -59,6 +59,17 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
         type: 'warning' as 'success' | 'warning' | 'error' | 'info'
     });
 
+    const [isAuthor, setIsAuthor] = useState(false);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined' && initialPost?.id) {
+            const myPosts = JSON.parse(localStorage.getItem('my_posts') || '[]');
+            if (myPosts.includes(String(initialPost.id))) {
+                setIsAuthor(true);
+            }
+        }
+    }, [initialPost?.id]);
+
     const handleEditToggle = () => {
         if (isEdit) {
             // Cancel Edit
@@ -157,7 +168,7 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
         if (match) {
             try {
                 extracted = JSON.parse(match[1].replace(/&#39;/g, "'").replace(/&quot;/g, '"'));
-            } catch (e) {}
+            } catch {}
         } else if (String(initialPost.id).startsWith('qna')) {
              // Mock initial reply for demo if Q&A
              extracted = [{
@@ -179,7 +190,7 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
         if (match) {
             try {
                 extracted = JSON.parse(match[1].replace(/&#39;/g, "'").replace(/&quot;/g, '"'));
-            } catch (e) {}
+            } catch {}
         } else if (String(initialPost.id).startsWith('qna')) {
              extracted = [{
                  id: 'r1', author: '관리자', date: '2024-01-24', content: '문의주셔서 감사합니다. 전화로 상담 도와드리겠습니다.'
@@ -231,7 +242,7 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
                     try {
                         const finalReplies = JSON.parse(finalMatch[1].replace(/&#39;/g, "'").replace(/&quot;/g, '"'));
                         setReplies(finalReplies);
-                    } catch (e) {
+                    } catch {
                         setReplies(newReplies);
                     }
                 } else {
@@ -281,7 +292,7 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
 
                 setPost({ ...post, content: cleanContent });
                 setReplies(newReplies);
-            } catch (error) {
+            } catch {
                 alert("삭제에 실패했습니다.");
             }
         }
@@ -314,7 +325,7 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
             setReplies(newReplies);
             setEditingReplyId(null);
             setEditingReplyContent("");
-        } catch (error) {
+        } catch {
             alert("수정에 실패했습니다.");
         }
     };
@@ -395,7 +406,7 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
                         style={{ maxWidth: '100%' }}
                         dangerouslySetInnerHTML={{ __html: (() => {
                             let displayContent = (post.content || '').replace(/<div data-replies=.*?<\/div>$/, '');
-                            if (!isAdmin) {
+                            if (!isAdmin && !isAuthor) {
                                 displayContent = displayContent.replace(/<p><strong>연락처:<\/strong>.*?<\/p>(<br\/>)?/gi, '');
                                 if (post.title.includes("[비밀글]")) {
                                     displayContent = `<div style="padding: 40px 20px; text-align: center; color: #666; background: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb;">
@@ -479,9 +490,17 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
                                                 </div>
                                             </div>
                                         ) : (
-                                            <div className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
-                                                {reply.content}
-                                            </div>
+                                            post.title.includes("[비밀글]") && !isAdmin && !isAuthor ? (
+                                                <div className="mt-2 text-gray-500 text-sm whitespace-pre-wrap leading-relaxed flex items-center gap-2 bg-gray-50 p-3 rounded-md border border-gray-100">
+                                                    <span className="text-gray-400">🔒</span>
+                                                    <span>비밀글로 보호된 답변입니다. 작성자와 관리자만 내용을 확인할 수 있습니다.</span>
+                                                </div>
+                                            ) : (
+                                                <div
+                                                    className="mt-2 text-gray-700 text-sm whitespace-pre-wrap leading-relaxed"
+                                                    dangerouslySetInnerHTML={{ __html: reply.content.replace(/\n/g, '<br/>') }}
+                                                />
+                                            )
                                         )}
                                     </div>
                                 ))
