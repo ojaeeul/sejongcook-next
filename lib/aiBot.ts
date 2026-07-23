@@ -25,9 +25,9 @@ export async function generateQnaResponse(post: any, repliesHistory: any[] = [])
             return null;
         }
         
-        // 쉼표로 분리된 키 중 첫 번째 키 사용 (또는 랜덤 선택 가능)
+        // 쉼표로 분리된 키 중 무작위로 선택하여 Rate Limit 우회
         const keys = keysStr.split(',').map(k => k.trim());
-        const apiKey = keys[0];
+        const apiKey = keys[Math.floor(Math.random() * keys.length)];
 
         if (!apiKey) {
             console.error("No valid Gemini API key found");
@@ -62,7 +62,7 @@ export async function generateQnaResponse(post: any, repliesHistory: any[] = [])
             }
         };
 
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(requestBody)
