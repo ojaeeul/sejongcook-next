@@ -32,6 +32,10 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
     const router = useRouter();
     const { isAdmin } = useAuth();
 
+    let apiBoardName = boardCode;
+    if (boardCode === 'seekers') apiBoardName = 'job-seekers';
+    if (boardCode === 'openings') apiBoardName = 'job-openings';
+
     // Mask name for non-admins
     const maskName = (name: string) => {
         if (!name) return '게스트';
@@ -75,7 +79,7 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
 
     const handleSave = async () => {
         try {
-            const res = await fetch(`/api/admin/data/${boardCode}`, {
+            const res = await fetch(`/api/admin/data/${apiBoardName}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -115,7 +119,7 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
         if (!confirm("정말 삭제하시겠습니까?")) return;
 
         try {
-            const res = await fetch(`/api/admin/data/${boardCode}?id=${post.id}`, {
+            const res = await fetch(`/api/admin/data/${apiBoardName}?id=${post.id}`, {
                 method: 'DELETE'
             });
             if (!res.ok) throw new Error('Delete failed');
@@ -209,7 +213,7 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
             const encoded = JSON.stringify(newReplies).replace(/'/g, "&#39;");
             cleanContent += `<div data-replies='${encoded}' style="display:none"></div>`;
 
-            const res = await fetch(`/api/admin/data/${boardCode}`, {
+            const res = await fetch(`/api/admin/data/${apiBoardName}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ...post, content: cleanContent })
@@ -248,7 +252,7 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
                     cleanContent += `<div data-replies='${encoded}' style="display:none"></div>`;
                 }
 
-                const res = await fetch(`/api/admin/data/${boardCode}`, {
+                const res = await fetch(`/api/admin/data/${apiBoardName}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ ...post, content: cleanContent })
@@ -279,7 +283,7 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
                 cleanContent += `<div data-replies='${encoded}' style="display:none"></div>`;
             }
 
-            const res = await fetch(`/api/admin/data/${boardCode}`, {
+            const res = await fetch(`/api/admin/data/${apiBoardName}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ...post, content: cleanContent })
