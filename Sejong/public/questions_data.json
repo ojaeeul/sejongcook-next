@@ -74135,10 +74135,10 @@
     {
       "q": "폐기율이 20%인 식품의 출고계수는 얼마인가?",
       "o": [
-        "0.5",
-        "",
-        "25",
-        "0"
+        "0.8",
+        "1.0",
+        "1.25",
+        "1.5"
       ],
       "a": 3
     },
@@ -81087,7 +81087,7 @@
       "a": 2
     },
     {
-      "q": "다음 식단 작성의 순서를 바르게 나열한 것은?      <그림>",
+      "q": "다음 식단 작성의 순서를 바르게 나열한 것은? <div style=\"margin-top: 10px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9; border-radius: 5px; color: #333; font-size: 0.9em; text-align: left; box-sizing: border-box; width: 100%;\">[보기] a.영양기준량의 산출, b.식품섭취량의 산출, c.3식의 배분, d.식품구성, e.식단작성</div>",
       "o": [
         "a-c-d-b-e",
         "a-b-c-d-e",
@@ -81771,7 +81771,7 @@
       "a": 4
     },
     {
-      "q": "다음의 정의에 해당하는 것은?      <그림>",
+      "q": "다음의 정의에 해당하는 것은? <div style=\"margin-top: 10px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9; border-radius: 5px; color: #333; font-size: 0.9em; text-align: left; box-sizing: border-box; width: 100%;\">[자료 및 그림이 생략된 문제입니다. 정답을 참고해주세요.]</div>",
       "o": [
         "위해요소중점관리기준(HACCP)",
         "식품 Recall 제도",
@@ -81921,7 +81921,7 @@
       "a": 1
     },
     {
-      "q": "100인분의 멸치조림에 소요된 재료의 양이라면 총 재료비는 얼마인가?      <그림>",
+      "q": "100인분의 멸치조림에 소요된 재료의 양이라면 총 재료비는 얼마인가? <div style=\"margin-top: 10px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9; border-radius: 5px; color: #333; font-size: 0.9em; text-align: left; box-sizing: border-box; width: 100%;\">[자료 및 그림이 생략된 문제입니다. 정답을 참고해주세요.]</div>",
       "o": [
         "17900원",
         "24900원",
@@ -82413,7 +82413,7 @@
       "a": 2
     },
     {
-      "q": "다음 자료를 가지고 재고조사법에 의하여 재료의 소비량을 산출하면 얼마인가?      <그림>",
+      "q": "다음 자료를 가지고 재고조사법에 의하여 재료의 소비량을 산출하면 얼마인가? <div style=\"margin-top: 10px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9; border-radius: 5px; color: #333; font-size: 0.9em; text-align: left; box-sizing: border-box; width: 100%;\">[자료 및 그림이 생략된 문제입니다. 정답을 참고해주세요.]</div>",
       "o": [
         "880kg",
         "700kg",
@@ -82453,7 +82453,7 @@
       "a": 3
     },
     {
-      "q": "다음 자료에 의해서 직접원가를 산출하면 얼마인가?      <그림>",
+      "q": "다음 자료에 의해서 직접원가를 산출하면 얼마인가? <div style=\"margin-top: 10px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9; border-radius: 5px; color: #333; font-size: 0.9em; text-align: left; box-sizing: border-box; width: 100%;\">[자료 및 그림이 생략된 문제입니다. 정답을 참고해주세요.]</div>",
       "o": [
         "370,000",
         "320,000",
@@ -82895,7 +82895,7 @@
       "a": 3
     },
     {
-      "q": "다음 자료로 계산한 제조원가는 얼마인가?      <그림>",
+      "q": "다음 자료로 계산한 제조원가는 얼마인가? <div style=\"margin-top: 10px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9; border-radius: 5px; color: #333; font-size: 0.9em; text-align: left; box-sizing: border-box; width: 100%;\">[자료 및 그림이 생략된 문제입니다. 정답을 참고해주세요.]</div>",
       "o": [
         "590000",
         "470000",
@@ -82955,7 +82955,7 @@
       "a": 2
     },
     {
-      "q": "아래의 조건에서 1회에 750명을 수용하는 식당의 면적을 구하면?      <그림>",
+      "q": "아래의 조건에서 1회에 750명을 수용하는 식당의 면적을 구하면? <div style=\"margin-top: 10px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9; border-radius: 5px; color: #333; font-size: 0.9em; text-align: left; box-sizing: border-box; width: 100%;\">[조건] 1인당 소요 면적: 1.0㎡, 주방 등 제외</div>",
       "o": [
         "750㎡",
         "760㎡",
@@ -85697,7 +85697,7 @@
       "a": 1
     },
     {
-      "q": "옥수수의 필수아미노산 조성이 아래와 같을 때 옥수수의 제한아미노산과 단백가는?(mg수 / 100g 단백질)      <그림>",
+      "q": "옥수수의 필수아미노산 조성이 아래와 같을 때 옥수수의 제한아미노산과 단백가는?(mg수 / 100g 단백질) <div style=\"margin-top: 10px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9; border-radius: 5px; color: #333; font-size: 0.9em; text-align: left; box-sizing: border-box; width: 100%;\">[자료 및 그림이 생략된 문제입니다. 정답을 참고해주세요.]</div>",
       "o": [
         "루신, 67",
         "리신, 50",
@@ -87163,7 +87163,7 @@
       "a": 1
     },
     {
-      "q": "작업장에서 발생하는 작업의 흐름에 따라 시설과 기기를 배치할 때 작업의 흐름이 순서대로연결된 것은?      <그림>",
+      "q": "작업장에서 발생하는 작업의 흐름에 따라 시설과 기기를 배치할 때 작업의 흐름이 순서대로연결된 것은? <div style=\"margin-top: 10px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9; border-radius: 5px; color: #333; font-size: 0.9em; text-align: left; box-sizing: border-box; width: 100%;\">[보기] ㄱ.준비대 ㄴ.개수대 ㄷ.배선대 ㄹ.가열대 ㅁ.냉장고</div>",
       "o": [
         "ㅁ-ㄱ-ㄹ-ㄴ-ㄷ",
         "ㄱ-ㄴ-ㄷ-ㄹ-ㅁ",
@@ -87625,7 +87625,7 @@
       "a": 2
     },
     {
-      "q": "다음 원가요소에 따라 산출한 총원가로 옳은 것은?      <그림>",
+      "q": "다음 원가요소에 따라 산출한 총원가로 옳은 것은? <div style=\"margin-top: 10px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9; border-radius: 5px; color: #333; font-size: 0.9em; text-align: left; box-sizing: border-box; width: 100%;\">직접재료비: 250,000원<br>직접노무비: 140,000원<br>직접경비: 40,000원<br>제조간접비: 120,000원<br>판매관리비: 60,000원</div>",
       "o": [
         "390000원",
         "510000원",
@@ -186798,10 +186798,10 @@
     {
       "q": "폐기율이 20%인 식품의 출고계수는 얼마인가?",
       "o": [
-        "0.5",
-        "",
-        "25",
-        "0"
+        "0.8",
+        "1.0",
+        "1.25",
+        "1.5"
       ],
       "a": 3,
       "q_num": 4
