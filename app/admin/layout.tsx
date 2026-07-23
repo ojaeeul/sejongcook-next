@@ -108,6 +108,7 @@ export default function AdminLayout({
 
     const menuItems = [
         { name: '대시보드', href: '/admin', icon: LayoutDashboard },
+        { name: '출석 대시보드(NEW)', href: '/admin/attendance-dashboard', icon: Users },
         { name: '공지사항', href: '/admin/notice', icon: FileText },
         { name: '제과제빵 게시판', href: '/admin/baking-board', icon: FileText },
         { name: '조리 게시판', href: '/admin/cooking-board', icon: FileText },
