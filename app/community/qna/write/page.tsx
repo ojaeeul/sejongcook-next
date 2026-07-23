@@ -103,6 +103,21 @@ function WriteForm() {
                 }
             }
 
+            if (res.ok) {
+                try {
+                    const resData = await res.json();
+                    if (resData && resData.item && resData.item.id) {
+                        const myPosts = JSON.parse(localStorage.getItem('my_posts') || '[]');
+                        if (!myPosts.includes(String(resData.item.id))) {
+                            myPosts.push(String(resData.item.id));
+                            localStorage.setItem('my_posts', JSON.stringify(myPosts));
+                        }
+                    }
+                } catch (e) {
+                    // Ignore JSON parsing errors if any
+                }
+            }
+
             setShowSuccessModal(true);
         } catch (error) {
             console.error(error);
