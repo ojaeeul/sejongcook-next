@@ -213,6 +213,9 @@ export default function AdminDashboard() {
                         <Link href="/admin/links" className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 text-center transition-colors">
                             <span className="font-medium text-gray-700">링크 관리</span>
                         </Link>
+                        <Link href="/admin/settings/bot" className="p-4 bg-amber-50 rounded-lg hover:bg-amber-100 text-center transition-colors">
+                            <span className="font-medium text-amber-700">Q&A 봇 설정</span>
+                        </Link>
                         <Link href="/" target="_blank" className="p-4 bg-indigo-50 rounded-lg hover:bg-indigo-100 text-center transition-colors">
                             <span className="font-medium text-indigo-700">사이트 보기</span>
                         </Link>
