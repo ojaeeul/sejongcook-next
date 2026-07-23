@@ -353,8 +353,10 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
                     ) : (
                         <div>
                             <h3 className="text-2xl font-bold text-gray-800 break-words flex items-center">
-                                {post.title.includes("[비밀글]") && <span className="text-amber-600 mr-2 text-xl" title="비밀글">🔒</span>}
-                                {post.title.replace("[비밀글]", "").trim()}
+                                <div className="flex-1">
+                                    {post.title.includes("[비밀글]") && <span className="text-amber-600 mr-2 text-xl" title="비밀글">🔒</span>}
+                                    {post.title.includes("[비밀글]") && !isAdmin && !isAuthor ? "비밀글로 보호된 게시물입니다." : post.title.replace("[비밀글]", "").trim()}
+                                </div>
                             </h3>
                             {/* Mobile Minimal Meta */}
                             <div className="lg:hidden flex items-center gap-3 text-xs text-gray-400 mt-2">

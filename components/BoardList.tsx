@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 // Mock data type, eventually replaced by API data
@@ -24,6 +24,13 @@ export default function BoardList({ boardCode, boardName, posts, basePath = '/co
     const { isAdmin } = useAuth();
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
+    const [myPosts, setMyPosts] = useState<string[]>([]);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            setMyPosts(JSON.parse(localStorage.getItem('my_posts') || '[]').map(String));
+        }
+    }, []);
 
     // Calculate pagination logic
     const totalPages = Math.ceil(posts.length / itemsPerPage);
@@ -200,7 +207,9 @@ export default function BoardList({ boardCode, boardName, posts, basePath = '/co
                                                     )}
                                                     <span className="text-gray-700 font-medium text-[15px] block break-words flex items-center">
                                                         {post.title.includes("[비밀글]") && <span className="text-amber-600 mr-1" title="비밀글">🔒</span>}
-                                                        {post.title.replace("[비밀글]", "").trim()}
+                                                        {post.title.includes("[비밀글]") && !isAdmin && !myPosts.includes(String(post.id)) 
+                                                            ? "비밀글로 보호된 게시물입니다." 
+                                                            : post.title.replace("[비밀글]", "").trim()}
                                                     </span>
                                                 </div>
                                                 {/* Mobile-only Meta Info */}
