@@ -450,21 +450,25 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
                                                 <span className="text-gray-500 font-sans">{reply.date}</span>
                                             </div>
                                             <div className="flex gap-2">
-                                                <button
-                                                    onClick={() => {
-                                                        setEditingReplyId(reply.id);
-                                                        setEditingReplyContent(reply.content);
-                                                    }}
-                                                    className="text-gray-400 hover:text-blue-500 text-xs transition-colors"
-                                                >
-                                                    수정
-                                                </button>
-                                                <button
-                                                    onClick={() => handleReplyDelete(reply.id)}
-                                                    className="text-gray-400 hover:text-red-500 text-xs transition-colors"
-                                                >
-                                                    삭제
-                                                </button>
+                                                {isAdmin && (
+                                                    <>
+                                                        <button
+                                                            onClick={() => {
+                                                                setEditingReplyId(reply.id);
+                                                                setEditingReplyContent(reply.content);
+                                                            }}
+                                                            className="text-gray-400 hover:text-blue-500 text-xs transition-colors"
+                                                        >
+                                                            수정
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleReplyDelete(reply.id)}
+                                                            className="text-gray-400 hover:text-red-500 text-xs transition-colors"
+                                                        >
+                                                            삭제
+                                                        </button>
+                                                    </>
+                                                )}
                                             </div>
                                         </div>
                                         {editingReplyId === reply.id ? (
