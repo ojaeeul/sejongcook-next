@@ -1,5 +1,18 @@
-export async function moderateContent(title: string, content: string): Promise<"SAFE" | "MILD" | "SEVERE"> {
+import fs from 'fs';
+import path from 'path';
+
+export async function moderateContent(title: string, content: string, boardType: string): Promise<"SAFE" | "MILD" | "SEVERE"> {
     try {
+        const settingsPath = path.join(process.cwd(), 'public', 'data', 'moderator_settings.json');
+        let settings = { enabled: true, systemPrompt: '' };
+        if (fs.existsSync(settingsPath)) {
+            settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+        }
+
+        if (!settings.enabled) {
+            return "SAFE";
+        }
+
         const keysStr = process.env.GEMINI_API_KEYS;
         if (!keysStr) {
             console.error("GEMINI_API_KEYS not found in env");
@@ -13,7 +26,7 @@ export async function moderateContent(title: string, content: string): Promise<"
             return "SAFE";
         }
 
-        const systemInstruction = `당신은 구인구직 게시판의 AI 검열관입니다. 
+        const systemInstruction = settings.systemPrompt || `당신은 구인구직 게시판의 AI 검열관입니다. 
 주어진 게시글을 읽고 아래 3가지 카테고리 중 하나를 선택해 오직 단어 하나만 대문자로 출력하세요. (설명 금지)
 
 [분류 기준]

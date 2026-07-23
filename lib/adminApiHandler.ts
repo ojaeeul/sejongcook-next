@@ -128,7 +128,7 @@ export async function handleGet(request: NextRequest, board: string) {
                 
             if (error) throw error;
 
-            if (board === 'job-openings' || board === 'job-seekers') {
+            if (['job-openings', 'job-seekers', 'qna', 'review'].includes(board)) {
                 const now = Date.now();
                 const oneDayMs = 24 * 60 * 60 * 1000;
                 let needToDelete: string[] = [];
@@ -198,8 +198,41 @@ export async function handlePost(request: NextRequest, board: string) {
             // SEND EMAIL NOTIFICATION
             await sendEmailNotification(board, newItem);
             
-            // AI Bot for QnA
-            if (board === 'qna') {
+            // AI Moderator for specific boards
+            let moderationResult = "SAFE";
+            if (['job-openings', 'job-seekers', 'qna', 'review'].includes(board)) {
+                try {
+                    const { moderateContent } = await import('@/lib/aiModerator');
+                    moderationResult = await moderateContent(newItem.title, newItem.content, board);
+                    
+                    if (moderationResult === "SEVERE") {
+                        await supabase.from(getSupabaseTableName(board)).delete().eq('id', newItem.id);
+                        return NextResponse.json({ success: true, item: null, deleted: true }); // Stop processing
+                    } else if (moderationResult === "MILD") {
+                        const warnedTitle = `[경고] ${newItem.title}`;
+                        const warningReplies = [{
+                            id: Date.now(),
+                            content: "[경고] 해당 게시글은 정책 위반 소지가 있어 1일(24시간) 뒤 자동 삭제될 예정입니다. 직접 수정하시거나 삭제해 주세요.",
+                            author: "AI 시스템",
+                            date: new Date().toISOString().split('T')[0]
+                        }];
+                        const encoded = JSON.stringify(warningReplies).replace(/'/g, "&#39;");
+                        const warningMark = `<!-- WARN_TIME:${Date.now()} -->`;
+                        newItem.title = warnedTitle;
+                        newItem.content = `${newItem.content || ''}${warningMark}<div data-replies='${encoded}' style="display:none"></div>`;
+                        
+                        await supabase
+                            .from(getSupabaseTableName(board))
+                            .update({ title: newItem.title, content: newItem.content })
+                            .eq('id', newItem.id);
+                    }
+                } catch (e) {
+                    console.error("AI Moderator Error:", e);
+                }
+            }
+
+            // AI Bot for QnA (only runs if SAFE)
+            if (board === 'qna' && moderationResult === "SAFE") {
                 try {
                     const { generateQnaResponse } = await import('@/lib/aiBot');
                     const replyText = await generateQnaResponse(newItem);
@@ -220,36 +253,6 @@ export async function handlePost(request: NextRequest, board: string) {
                     }
                 } catch (e) {
                     console.error("AI Bot Error:", e);
-                }
-            }
-
-            // AI Moderator for Job Boards
-            if (board === 'job-openings' || board === 'job-seekers') {
-                try {
-                    const { moderateContent } = await import('@/lib/aiModerator');
-                    const moderationResult = await moderateContent(newItem.title, newItem.content);
-                    
-                    if (moderationResult === "SEVERE") {
-                        await supabase.from(getSupabaseTableName(board)).delete().eq('id', newItem.id);
-                    } else if (moderationResult === "MILD") {
-                        const warnedTitle = `[경고] ${newItem.title}`;
-                        const warningReplies = [{
-                            id: Date.now(),
-                            content: "[경고] 해당 게시글은 정책 위반 소지가 있어 1일(24시간) 뒤 자동 삭제될 예정입니다. 직접 수정하시거나 삭제해 주세요.",
-                            author: "AI 시스템",
-                            date: new Date().toISOString().split('T')[0]
-                        }];
-                        const encoded = JSON.stringify(warningReplies).replace(/'/g, "&#39;");
-                        const warningMark = `<!-- WARN_TIME:${Date.now()} -->`;
-                        const updatedContent = `${newItem.content || ''}${warningMark}<div data-replies='${encoded}' style="display:none"></div>`;
-                        
-                        await supabase
-                            .from(getSupabaseTableName(board))
-                            .update({ title: warnedTitle, content: updatedContent })
-                            .eq('id', newItem.id);
-                    }
-                } catch (e) {
-                    console.error("AI Moderator Error:", e);
                 }
             }
             
