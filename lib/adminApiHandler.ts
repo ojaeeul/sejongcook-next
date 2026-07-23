@@ -16,7 +16,8 @@ const boardToFileMap: Record<string, string> = {
     'payments': 'payments.json',
     'holidays': 'holidays.json',
     'settings': 'settings.json',
-    'timetable': 'timetable_page.json'
+    'timetable': 'timetable_page.json',
+    'bot-settings': 'bot_settings.json'
 };
 
 const SUPABASE_BOARDS = ['qna', 'review', 'job-openings', 'job-seekers'];
@@ -170,6 +171,31 @@ export async function handlePost(request: NextRequest, board: string) {
             
             // SEND EMAIL NOTIFICATION
             await sendEmailNotification(board, newItem);
+            
+            // AI Bot for QnA
+            if (board === 'qna') {
+                try {
+                    const { generateQnaResponse } = await import('@/lib/aiBot');
+                    const replyText = await generateQnaResponse(newItem);
+                    if (replyText) {
+                        const newReplies = [{
+                            id: Date.now(),
+                            content: replyText,
+                            author: 'AI 매니저',
+                            date: new Date().toISOString().split('T')[0]
+                        }];
+                        const encoded = JSON.stringify(newReplies).replace(/'/g, "&#39;");
+                        newItem.content = `${newItem.content || ''}<div data-replies='${encoded}' style="display:none"></div>`;
+                        
+                        await supabase
+                            .from(getSupabaseTableName(board))
+                            .update({ content: newItem.content })
+                            .eq('id', newItem.id);
+                    }
+                } catch (e) {
+                    console.error("AI Bot Error:", e);
+                }
+            }
             
             return NextResponse.json({ success: true, item: data[0] });
         }
