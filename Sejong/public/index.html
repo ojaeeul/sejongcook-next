@@ -7,16 +7,16 @@
     <meta http-equiv="Expires" content="0">    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title>세종요리 출결관리</title>
-    <link rel="stylesheet" href="style.css?v=20260724-44">
-    <link rel="stylesheet" href="exam_view.css?v=20260724-44">
+    <link rel="stylesheet" href="style.css?v=20260724-45">
+    <link rel="stylesheet" href="exam_view.css?v=20260724-45">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
         rel="stylesheet">
     <!-- Google Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <!-- Swiper CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-    <script src="script.js?v=20260724-44" defer></script>
-    <script src="questions_data.js?v=20260724-44" defer></script>
+    <script src="script.js?v=20260724-45" defer></script>
+    <script src="questions_data.js?v=20260724-45" defer></script>
     <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#ffffff">
@@ -386,8 +386,8 @@
                         <td colspan="4" style="text-align: center; padding: 0;">
                             <div style="display: flex; align-items: center; justify-content: center; gap: 5px; height: 100%; min-height: 35px;">
                                 <span style="color: #94a3b8; font-weight: 500;">010 - </span>
-                                <input type="tel" id="edit_phone_body" maxlength="9" placeholder="0000-0000" style="width: 120px; text-align: center;" 
-                                    oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/^(\d{4})(\d{1,4})$/, '$1-$2'); document.getElementById('edit_phone').value = this.value ? '010-' + this.value : '';">
+                                <input type="tel" id="edit_phone_body" placeholder="0000-0000" style="width: 120px; text-align: center;" 
+                                    oninput="window.handlePhoneInput(this, 'edit_phone', '010-')">
                                 <input type="hidden" id="edit_phone" name="phone">
                             </div>
                         </td>
@@ -398,8 +398,8 @@
                             <div style="display: flex; align-items: center; justify-content: center; gap: 5px; height: 100%; min-height: 35px;">
                                 <span style="color: #94a3b8; font-weight: 500; font-size: 12px; margin-right: 5px; white-space: nowrap;">보호자</span>
                                 <span style="color: #94a3b8; font-weight: 500; white-space: nowrap;">010 - </span>
-                                <input type="tel" id="edit_phone_guardian_body" maxlength="9" placeholder="0000-0000" style="width: 100px; text-align: center;" 
-                                    oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/^(\d{4})(\d{1,4})$/, '$1-$2'); document.getElementById('edit_phone_guardian').value = this.value ? '010-' + this.value : '';">
+                                <input type="tel" id="edit_phone_guardian_body" placeholder="0000-0000" style="width: 100px; text-align: center;" 
+                                    oninput="window.handlePhoneInput(this, 'edit_phone_guardian', '010-')">
                                 <input type="hidden" id="edit_phone_guardian" name="phone_guardian">
                             </div>
                         </td>
@@ -407,8 +407,8 @@
                             <div style="display: flex; align-items: center; justify-content: center; gap: 5px; height: 100%; min-height: 35px;">
                                 <span style="color: #94a3b8; font-weight: 500; font-size: 12px; margin-right: 5px; white-space: nowrap;">자택</span>
                                 <span style="color: #94a3b8; font-weight: 500; white-space: nowrap;">02 - </span>
-                                <input type="tel" id="edit_phone_home_body" maxlength="9" placeholder="0000-0000" style="width: 100px; text-align: center;" 
-                                    oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/^(\d{4})(\d{1,4})$/, '$1-$2'); document.getElementById('edit_phone_home').value = this.value ? '02-' + this.value : '';">
+                                <input type="tel" id="edit_phone_home_body" placeholder="0000-0000" style="width: 100px; text-align: center;" 
+                                    oninput="window.handlePhoneInput(this, 'edit_phone_home', '02-')">
                                 <input type="hidden" id="edit_phone_home" name="phone_home">
                             </div>
                         </td>
@@ -733,6 +733,6 @@
 
     <!-- Swiper JS -->
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-    <script src="sidebar_sync.js?v=20260724-44"></script>
+    <script src="sidebar_sync.js?v=20260724-45"></script>
 </body>
 </html>
