@@ -10,7 +10,7 @@ export default function NoticePage() {
     useEffect(() => {
         const fetchNotices = async () => {
             try {
-                const url = '/data/notice_data.json?_t=' + Date.now();
+                const url = '/api/admin/data/notice?_t=' + Date.now();
                 const res = await fetch(url);
                 const data = await res.json();
 

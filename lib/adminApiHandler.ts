@@ -20,7 +20,7 @@ const boardToFileMap: Record<string, string> = {
     'bot-settings': 'bot_settings.json'
 };
 
-const SUPABASE_BOARDS = ['qna', 'review', 'job-openings', 'job-seekers'];
+const SUPABASE_BOARDS = ['qna', 'review', 'job-openings', 'job-seekers', 'notice'];
 
 function getSupabaseTableName(board: string) {
     return board.replace(/-/g, '_');

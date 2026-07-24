@@ -93,7 +93,7 @@ export default function Home() {
     const fetchDashboardData = async () => {
       const endpoints = [
         { url: '/data/qna_data.json', setter: setLatestQna },
-        { url: '/data/notice_data.json', setter: setNoticeData },
+        { url: '/api/admin/data/notice', setter: setNoticeData },
         { url: '/data/job_openings_data.json', setter: setJobData },
         { url: '/data/popups.json', setter: setPreviewData }
       ];
