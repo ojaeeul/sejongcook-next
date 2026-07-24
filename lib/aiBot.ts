@@ -58,7 +58,7 @@ export async function generateQnaResponse(post: any, repliesHistory: any[] = [])
                 temperature: 0.2,
                 topK: 40,
                 topP: 0.95,
-                maxOutputTokens: 1024,
+                maxOutputTokens: 4096,
             }
         };
         let response;
