@@ -139,8 +139,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Default dates (will be overridden if saved data exists)
-    document.getElementById('paymentRangeStart').value = todayStr;
-    document.getElementById('paymentRangeEnd').value = todayStr;
+    const startOfCurrentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const endOfNextMonth = new Date(today.getFullYear(), today.getMonth() + 2, 0);
+
+    const startStr = startOfCurrentMonth.getFullYear() + '-' + String(startOfCurrentMonth.getMonth() + 1).padStart(2, '0') + '-' + String(startOfCurrentMonth.getDate()).padStart(2, '0');
+    const endStr = endOfNextMonth.getFullYear() + '-' + String(endOfNextMonth.getMonth() + 1).padStart(2, '0') + '-' + String(endOfNextMonth.getDate()).padStart(2, '0');
+
+    document.getElementById('paymentRangeStart').value = startStr;
+    document.getElementById('paymentRangeEnd').value = endStr;
 
     // Default settings for first load
     const pf = document.getElementById('usePaymentFilter');
