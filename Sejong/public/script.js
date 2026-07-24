@@ -1648,9 +1648,55 @@ window.toggleRrnDisplayMode = function(el) {
     window.renderRrnDisplay(el);
 };
 
+window.parseSmartDate = function(val) {
+    if (val.length < 6 || val.length > 8) return null;
+    const yyyy = val.substring(0, 4);
+    if (!yyyy.startsWith('19') && !yyyy.startsWith('20')) return null;
+    
+    const rest = val.substring(4);
+    let mm, dd;
+    
+    if (rest.length === 4) {
+        mm = rest.substring(0, 2);
+        dd = rest.substring(2, 4);
+    } else if (rest.length === 2) {
+        mm = '0' + rest[0];
+        dd = '0' + rest[1];
+    } else if (rest.length === 3) {
+        if (rest[0] === '0') {
+            mm = rest.substring(0, 2);
+            dd = '0' + rest[2];
+        } else if (parseInt(rest[0]) > 1) {
+            mm = '0' + rest[0];
+            dd = rest.substring(1, 3);
+        } else {
+            const possibleDD = parseInt(rest.substring(1, 3));
+            if (possibleDD >= 10 && possibleDD <= 31) {
+                mm = '0' + rest[0];
+                dd = rest.substring(1, 3);
+            } else {
+                mm = rest.substring(0, 2);
+                dd = '0' + rest[2];
+            }
+        }
+    } else {
+        return null;
+    }
+    
+    const mInt = parseInt(mm);
+    const dInt = parseInt(dd);
+    if (mInt < 1 || mInt > 12) return null;
+    if (dInt < 1 || dInt > 31) return null;
+    
+    return `${yyyy}.${mm}.${dd}`;
+};
+
 window.formatBirthDateInput = function(el) {
     let val = el.value.replace(/[^0-9]/g, '');
-    if (val.length === 8) {
+    let parsed = window.parseSmartDate(val);
+    if (parsed) {
+        el.value = parsed;
+    } else if (val.length === 8) {
         el.value = val.substring(0, 4) + '.' + val.substring(4, 6) + '.' + val.substring(6, 8);
     }
 };
@@ -1669,21 +1715,37 @@ window.renderRrnDisplay = function(el) {
     
     let val = hiddenInput.value.replace(/[^0-9]/g, '');
     
-    // Auto-convert 8 digit YYYYMMDD to YYYY.MM.DD on blur
-    if (el.dataset.focused === 'false' && val.length === 8) {
-        const yyyy = val.substring(0, 4);
-        if (yyyy.startsWith('19') || yyyy.startsWith('20')) {
-            const formatted = val.substring(0, 4) + '.' + val.substring(4, 6) + '.' + val.substring(6, 8);
-            hiddenInput.value = formatted;
-            el.value = formatted;
+    // Auto-convert smart date (6-8 digits) to YYYY.MM.DD on blur
+    if (el.dataset.focused === 'false') {
+        let isPossibleRrn = false;
+        if (val.length >= 6) {
+            const rrnMm = parseInt(val.substring(2, 4), 10);
+            const rrnDd = parseInt(val.substring(4, 6), 10);
+            if (rrnMm >= 1 && rrnMm <= 12 && rrnDd >= 1 && rrnDd <= 31) {
+                isPossibleRrn = true;
+            }
+        }
+        
+        // Convert if it's 8 digits, OR if it's a smart date that CANNOT be an RRN
+        if (val.length === 8 || (!isPossibleRrn && val.length >= 6)) {
+            let parsedDate = window.parseSmartDate(val);
+            if (!parsedDate && val.length === 8) {
+                // Fallback for 8 digits even if parseSmartDate fails
+                parsedDate = val.substring(0, 4) + '.' + val.substring(4, 6) + '.' + val.substring(6, 8);
+            }
             
-            const birthInputRegister = document.getElementById('birth_date');
-            const editForm = document.getElementById('editStudentForm');
-            const birthInputEdit = editForm ? editForm.elements['birth_date'] : null;
-            if (birthInputRegister) birthInputRegister.value = formatted;
-            if (birthInputEdit) birthInputEdit.value = formatted;
-            
-            return;
+            if (parsedDate) {
+                hiddenInput.value = parsedDate;
+                el.value = parsedDate;
+                
+                const birthInputRegister = document.getElementById('birth_date');
+                const editForm = document.getElementById('editStudentForm');
+                const birthInputEdit = editForm ? editForm.elements['birth_date'] : null;
+                if (birthInputRegister) birthInputRegister.value = parsedDate;
+                if (birthInputEdit) birthInputEdit.value = parsedDate;
+                
+                return;
+            }
         }
     }
     
