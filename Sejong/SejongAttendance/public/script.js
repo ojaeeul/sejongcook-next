@@ -2800,8 +2800,15 @@ function renderMembers() {
                         let yy = originalRrn.substring(0, 2);
                         let mm = originalRrn.substring(2, 4);
                         let dd = originalRrn.substring(4, 6);
-                        let genderDigit = originalRrn.includes('-') ? originalRrn.split('-')[1][0] : (originalRrn.length > 6 ? originalRrn[6] : '1');
-                        let prefix = (genderDigit === '3' || genderDigit === '4' || genderDigit === '7' || genderDigit === '8') ? '20' : '19';
+                        let genderDigit = originalRrn.includes('-') ? originalRrn.split('-')[1][0] : (originalRrn.length > 6 ? originalRrn[6] : null);
+                        let prefix = '19';
+                        if (genderDigit === '3' || genderDigit === '4' || genderDigit === '7' || genderDigit === '8') {
+                            prefix = '20';
+                        } else if (!genderDigit) {
+                            const currentYear2Digit = parseInt(String(new Date().getFullYear()).slice(-2));
+                            const yyInt = parseInt(yy);
+                            prefix = (yyInt <= currentYear2Digit) ? '20' : '19';
+                        }
                         dob = `${prefix}${yy}-${mm}-${dd}`;
                     }
                 }
