@@ -1130,7 +1130,7 @@ function initAdmin() {
     }
 
     if (!siteContent.heroButtons) {
-        siteContent.heroButtons = { primary: { text: "과정리뷰하기", link: "page/sub0201.html" }, secondary: { text: "상담문의", link: "bbs/sub0602.html" } };
+        siteContent.heroButtons = { primary: { text: "질문오토봇", link: "page_view.html?id=sub0603" }, secondary: { text: "상담문의", link: "page_view.html?id=sub0602" } };
     }
 
     if (!siteContent.sectionHeaders) {

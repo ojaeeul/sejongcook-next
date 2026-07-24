@@ -203,8 +203,8 @@ export default function Home() {
             {heroData?.longDesc || "최고의 강사진이 여러분의 꿈을 현실로 만들어드립니다.\n김포요리학원은 자격증, 창업까지, 전문가가 함께합니다."}
           </p>
           <div className="hero-buttons pointer-events-auto">
-            <Link href={heroData?.btn1Link || "/course/baking"} className="btn-hero btn-primary" id="hero-btn-primary">
-              {heroData?.btn1Text || "과정리뷰하기"}
+            <Link href={heroData?.btn1Link || "/community/qna"} className="btn-hero btn-primary" id="hero-btn-primary">
+              {heroData?.btn1Text || "질문오토봇"}
             </Link>
             <Link href={heroData?.btn2Link || "/inquiry"} className="btn-hero btn-outline" id="hero-btn-secondary">
               {heroData?.btn2Text || "상담문의"}
