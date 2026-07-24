@@ -514,7 +514,13 @@ function renderTargetList() {
                     const syncKey = `${m.id}_${year}_${month}_${cName}`;
                     let resultCache = null;
                     if (typeof window.calculateRedBoxesForMonth === 'function') {
+                        const tempHolidays = window.holidaysData;
+                        const tempMap = window.KOREAN_HOLIDAYS_MAP;
+                        window.holidaysData = undefined;
+                        window.KOREAN_HOLIDAYS_MAP = undefined;
                         resultCache = window.calculateRedBoxesForMonth(m, year, month, typeof attendanceData !== 'undefined' ? attendanceData : [], cName, typeof window.GLOBAL_DATA_ADJUSTMENTS !== 'undefined' ? window.GLOBAL_DATA_ADJUSTMENTS : {}, typeof paymentsData !== 'undefined' ? paymentsData : []);
+                        window.holidaysData = tempHolidays;
+                        window.KOREAN_HOLIDAYS_MAP = tempMap;
                     }
 
                     let monthMilestones = [];
@@ -1681,7 +1687,13 @@ function renderRangeCalendar() {
                     const syncKey = `${m.id}_${calendarYear}_${calendarMonth + 1}_${cName}`;
                     let resultCache = null;
                     if (typeof window.calculateRedBoxesForMonth === 'function') {
+                        const tempHolidays = window.holidaysData;
+                        const tempMap = window.KOREAN_HOLIDAYS_MAP;
+                        window.holidaysData = undefined;
+                        window.KOREAN_HOLIDAYS_MAP = undefined;
                         resultCache = window.calculateRedBoxesForMonth(m, calendarYear, calendarMonth + 1, typeof attendanceData !== 'undefined' ? attendanceData : [], cName, typeof window.GLOBAL_DATA_ADJUSTMENTS !== 'undefined' ? window.GLOBAL_DATA_ADJUSTMENTS : {}, typeof paymentsData !== 'undefined' ? paymentsData : []);
+                        window.holidaysData = tempHolidays;
+                        window.KOREAN_HOLIDAYS_MAP = tempMap;
                     }
 
                     let monthMilestones = [];
@@ -2037,7 +2049,13 @@ function getAllMilestonesForRange(memberId, courseFilter, startRange, endRange) 
             const syncKey = `${m.id}_${year}_${month}_${cName}`;
             let resultCache = null;
             if (typeof window.calculateRedBoxesForMonth === 'function') {
+                const tempHolidays = window.holidaysData;
+                const tempMap = window.KOREAN_HOLIDAYS_MAP;
+                window.holidaysData = undefined;
+                window.KOREAN_HOLIDAYS_MAP = undefined;
                 resultCache = window.calculateRedBoxesForMonth(m, year, month, typeof attendanceData !== 'undefined' ? attendanceData : [], cName, typeof window.GLOBAL_DATA_ADJUSTMENTS !== 'undefined' ? window.GLOBAL_DATA_ADJUSTMENTS : {}, typeof paymentsData !== 'undefined' ? paymentsData : []);
+                window.holidaysData = tempHolidays;
+                window.KOREAN_HOLIDAYS_MAP = tempMap;
             }
 
             let monthMilestones = [];
