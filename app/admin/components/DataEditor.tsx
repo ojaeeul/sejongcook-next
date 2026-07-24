@@ -312,21 +312,7 @@ export default function DataEditor({ title, initialData, type, backLink }: DataE
                         )}
                     </div>
 
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-700">게시물 제목 (리스트 및 상세페이지 노출)</label>
-                        <input
-                            type="text"
-                            required
-                            value={formData.title}
-                            onChange={(e) => {
-                                const val = e.target.value;
-                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                setFormData((prev: any) => ({ ...prev, title: val }));
-                            }}
-                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            placeholder="제목을 입력하세요"
-                        />
-                    </div>
+
 
                     <div className="space-y-2">
                         <label className="text-sm font-medium text-gray-700">내용</label>
