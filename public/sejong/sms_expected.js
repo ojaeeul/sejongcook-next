@@ -929,6 +929,7 @@ function selectFilteredCourses() {
 
 
     let missingPhoneCount = 0;
+    let missingPhoneNames = [];
 
     Object.keys(groupedCourses).sort().forEach(cName => {
         let membersInCourse = groupedCourses[cName];
@@ -976,6 +977,8 @@ function selectFilteredCourses() {
                 }
             } else {
                 missingPhoneCount++;
+                const d = m.specificMilestone ? `${m.specificMilestone.month}월 ${m.specificMilestone.day}일` : '날짜미정';
+                missingPhoneNames.push(`${m.name} (${cName}, ${d})`);
             }
         });
     });
@@ -998,7 +1001,12 @@ function selectFilteredCourses() {
         detailMsg = '<br><br><div style="font-size:0.9rem; color:#64748b;">(인원이 너무 많아 전체 명단은 생략합니다.)</div>';
     }
 
-    let missingMsg = missingPhoneCount > 0 ? `<br><span style="color:#ef4444; font-size:0.85rem;">(※ 연락처가 없는 ${missingPhoneCount}명은 제외되었습니다. 전송 대상을 확인해주세요.)</span>` : '';
+    let missingMsg = '';
+    if (missingPhoneCount > 0) {
+        let nameList = missingPhoneNames.map(n => `<div>- ${n}</div>`).join('');
+        missingMsg = `<br><div style="margin-top:10px; padding:10px; background:#fef2f2; border:1px solid #f87171; border-radius:5px;"><span style="color:#ef4444; font-weight:bold; font-size:0.85rem;">※ 연락처가 없는 ${missingPhoneCount}명은 제외되었습니다:</span><div style="font-size:0.8rem; color:#b91c1c; margin-top:5px; max-height:150px; overflow-y:auto;">${nameList}</div></div>`;
+    }
+    
     showModalAlert(`필터링 구간에 해당하는 수강생 <b>${totalSelectedNow}</b>명이 선택되었습니다.${missingMsg}${detailMsg}`);
 }
 
