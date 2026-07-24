@@ -232,11 +232,11 @@ export async function handlePost(request: NextRequest, board: string) {
                 }
             }
 
-            // AI Bot for QnA (only runs if SAFE)
-            if (board === 'qna' && moderationResult === "SAFE") {
+            // AI Bot for QnA & Review (only runs if SAFE)
+            if ((board === 'qna' || board === 'review') && moderationResult === "SAFE") {
                 try {
                     const { generateQnaResponse } = await import('@/lib/aiBot');
-                    const replyText = await generateQnaResponse(newItem);
+                    const replyText = await generateQnaResponse(newItem, [], board);
                     if (replyText) {
                         const newReplies = [{
                             id: Date.now(),
@@ -325,8 +325,8 @@ export async function handlePut(request: NextRequest, board: string) {
 
             const updatedItem = data[0];
 
-            // --- AI Bot for QnA Comments ---
-            if (board === 'qna' && updatedItem && updatedItem.content) {
+            // --- AI Bot for QnA & Review Comments ---
+            if ((board === 'qna' || board === 'review') && updatedItem && updatedItem.content) {
                 const match = updatedItem.content.match(/<div data-replies='(.*?)' style="display:none"><\/div>\s*$/);
                 if (match) {
                     try {
@@ -336,7 +336,7 @@ export async function handlePut(request: NextRequest, board: string) {
                             // 작성자가 남긴 댓글에만 AI가 응답 (무한루프 및 관리자 답변 중복 방지)
                             if (lastReply.author === '작성자') {
                                 const { generateQnaResponse } = await import('@/lib/aiBot');
-                                const replyText = await generateQnaResponse(updatedItem, replies);
+                                const replyText = await generateQnaResponse(updatedItem, replies, board);
                                 
                                 if (replyText) {
                                     const newAiReply = {

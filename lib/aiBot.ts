@@ -1,7 +1,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 
-export async function generateQnaResponse(post: any, repliesHistory: any[] = []) {
+export async function generateQnaResponse(post: any, repliesHistory: any[] = [], board: string = 'qna') {
     try {
         // 1. 설정 파일 읽기
         let settings = { enabled: false, systemPrompt: '' };
@@ -71,6 +71,14 @@ export async function generateQnaResponse(post: any, repliesHistory: any[] = [])
                `- 다가오는 필기 원서접수일 (매주 목요일): ${writtenDates}\n` +
                `- 다가오는 실기 원서접수일 (격주 목요일): ${practicalDates}\n` +
                `- 답변 작성 시 위 산출된 O월 O일 날짜를 바탕으로 친절하게 대답하세요.`;
+
+        if (board === 'review') {
+            prompt += `\n\n[수강후기(Review) 답변 가이드라인]\n` +
+                   `- 이 게시물은 질문(QnA)이 아니라, 학생이 작성한 '수강후기' 게시판의 글입니다.\n` +
+                   `- 학생이 자격증 취득에 대한 감사글을 올렸다면, 그에 맞춰 진심으로 축하하는 글과 앞으로의 취업, 창업, 또는 전문 요리/제과제빵인으로서의 경력을 진심으로 응원하는 따뜻한 내용의 답글을 달아주세요.\n` +
+                   `- 학원 수강을 통해 성장한 부분을 칭찬해주고, 앞으로도 세종요리제과기술학원이 든든한 지원군이 되겠다는 멘트를 꼭 포함하세요.\n` +
+                   `- QnA 답변의 딱딱한 매뉴얼 어투(수강료 안내 등)는 전부 빼고, 학원 원장님이나 담당 선생님이 직접 제자에게 남겨주는 것처럼 아주 친근하고, 감동적이고, 따뜻한 어투로 작성해 주세요.`;
+        }
 
         const requestBody = {
             system_instruction: {
