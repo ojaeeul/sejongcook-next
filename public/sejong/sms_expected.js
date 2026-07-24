@@ -574,6 +574,18 @@ function renderTargetList() {
                                 
                                 if (dayIsSim && !showSim) return;
                                 if (!dayIsSim && !showReal) return;
+
+                                // MATCH BADGE LOGIC: Only show simulated payments (예정결재일) for the current month and next month
+                                if (dayIsSim) {
+                                    const today = new Date();
+                                    const currentY = today.getFullYear();
+                                    const currentM = today.getMonth() + 1;
+                                    const nextY = currentM === 12 ? currentY + 1 : currentY;
+                                    const nextM = currentM === 12 ? 1 : currentM + 1;
+                                    
+                                    const isCurrentOrNext = (year === currentY && month === currentM) || (year === nextY && month === nextM);
+                                    if (!isCurrentOrNext) return;
+                                }
                                 
                                 foundDates.add(`${year}-${month}-${d}`);
                             }
@@ -1725,6 +1737,19 @@ function renderRangeCalendar() {
                         
                         if (dayIsSim && !showSim) return;
                         if (!dayIsSim && !showReal) return;
+                        
+                        // MATCH BADGE LOGIC: Only show simulated payments (예정결재일) for the current month and next month
+                        if (dayIsSim) {
+                            const today = new Date();
+                            const currentY = today.getFullYear();
+                            const currentM = today.getMonth() + 1;
+                            const nextY = currentM === 12 ? currentY + 1 : currentY;
+                            const nextM = currentM === 12 ? 1 : currentM + 1;
+                            
+                            // Note: renderRangeCalendar uses calendarYear and calendarMonth + 1
+                            const isCurrentOrNext = (calendarYear === currentY && (calendarMonth + 1) === currentM) || (calendarYear === nextY && (calendarMonth + 1) === nextM);
+                            if (!isCurrentOrNext) return;
+                        }
                         
                         if (!paymentNamesByDay[d]) paymentNamesByDay[d] = { real: [], sim: [] };
                         const cClean = c.trim().replace('기능사', '');
