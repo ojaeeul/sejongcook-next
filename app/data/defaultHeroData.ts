@@ -55,8 +55,8 @@ export const DEFAULT_HERO_DATA = {
             "/img/cards/community_4.png"
         ]
     ] as string[][],
-    btn1Text: "과정리뷰하기",
-    btn1Link: "/course/baking",
+    btn1Text: "질문오토봇",
+    btn1Link: "/community/qna",
     btn2Text: "상담문의",
     btn2Link: "/inquiry",
     phoneVisible: true,

@@ -89,8 +89,8 @@ var siteContent = {
   },
   "heroButtons": {
     "primary": {
-      "text": "과정리뷰하기",
-      "link": "page/sub0201.html"
+      "text": "질문오토봇",
+      "link": "page_view.html?id=sub0603"
     },
     "secondary": {
       "text": "상담문의",
