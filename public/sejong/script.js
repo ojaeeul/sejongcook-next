@@ -3474,3 +3474,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, 3000); // 페이지 로드 3초 후 실행
 });
+
+// 신규 등록 시 '등록일' 기본값을 오늘 날짜로 설정
+document.addEventListener('DOMContentLoaded', () => {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    const todayStr = `${yyyy}-${mm}-${dd}`;
+    
+    const paperDateInputs = document.querySelectorAll('input[type="date"][name="paper_date"]');
+    paperDateInputs.forEach(input => {
+        if (!input.value && !input.closest('#editStudentForm')) {
+            input.value = todayStr;
+        }
+    });
+});
