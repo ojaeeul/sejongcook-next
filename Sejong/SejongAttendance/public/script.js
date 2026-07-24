@@ -1497,6 +1497,38 @@ function formatPhoneNumber(val) {
     return val.substring(0, 3) + '-' + val.substring(3, 7) + '-' + val.substring(7);
 }
 
+window.handlePhoneInput = function(el, hiddenId, prefix) {
+    let val = el.value.replace(/[^0-9]/g, '');
+    const prefixNum = prefix.replace(/[^0-9]/g, '');
+    
+    // If the string starts with the prefix AND the total length implies they typed the prefix
+    if (val.startsWith(prefixNum) && val.length >= (prefixNum.length + 7)) {
+        val = val.substring(prefixNum.length);
+    } else if (val === prefixNum) {
+        // If they just typed '010', clear it
+        val = '';
+    }
+    
+    if (val.length > 8) {
+        val = val.substring(0, 8);
+    }
+    
+    if (val.length > 4) {
+        if (val.length === 7) {
+            val = val.substring(0, 3) + '-' + val.substring(3);
+        } else {
+            val = val.substring(0, 4) + '-' + val.substring(4);
+        }
+    }
+    
+    el.value = val;
+    
+    const hiddenEl = document.getElementById(hiddenId);
+    if (hiddenEl) {
+        hiddenEl.value = val.replace(/[^0-9]/g, '').length > 0 ? prefix + val : '';
+    }
+};
+
 // Global scope for onclick
 window.toggleMemberType = function () {
     const type = document.getElementById('type').value;
