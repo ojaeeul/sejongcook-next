@@ -47,6 +47,31 @@ export async function generateQnaResponse(post: any, repliesHistory: any[] = [])
             prompt += `\n위 대화 내역을 참고하여, 마지막 댓글에 대해 'AI 매니저'로서 자연스럽게 이어서 답변해 주세요.`;
         }
 
+        // 실시간 시험 일정 계산 및 주입
+        const today = new Date();
+        const kstOffset = 9 * 60 * 60 * 1000;
+        const now = new Date(today.getTime() + (today.getTimezoneOffset() * 60000) + kstOffset);
+        
+        const thursdays = [];
+        let daysUntilThursday = (4 - now.getDay() + 7) % 7;
+        let current = new Date(now);
+        current.setDate(now.getDate() + daysUntilThursday);
+        
+        for (let i = 0; i < 8; i++) {
+            thursdays.push(new Date(current));
+            current.setDate(current.getDate() + 7);
+        }
+        
+        const format = (d: Date) => `${d.getMonth() + 1}월 ${d.getDate()}일`;
+        const writtenDates = thursdays.slice(0, 4).map(format).join(', ');
+        const practicalDates = thursdays.filter((_, idx) => idx % 2 === 0).slice(0, 3).map(format).join(', ');
+        
+        prompt += `\n\n[오토봇 실시간 데이터 연동: 큐넷 최근 상시검정 접수 일정]\n` +
+               `- 현재 시각 기준, 시스템에서 실시간 달력을 기반으로 산출된 다가오는 시험 접수 일정입니다.\n` +
+               `- 다가오는 필기 원서접수일 (매주 목요일): ${writtenDates}\n` +
+               `- 다가오는 실기 원서접수일 (격주 목요일): ${practicalDates}\n` +
+               `- 답변 작성 시 위 산출된 O월 O일 날짜를 바탕으로 친절하게 대답하세요.`;
+
         const requestBody = {
             system_instruction: {
                 parts: { text: settings.systemPrompt }
