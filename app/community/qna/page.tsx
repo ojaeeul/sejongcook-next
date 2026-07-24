@@ -44,7 +44,7 @@ export default function QnaPage() {
     return (
         <BoardList
             boardCode="qna"
-            boardName="질문게시판"
+            boardName="오토봇게시판"
             posts={posts}
             showWriteButton={true}
         />

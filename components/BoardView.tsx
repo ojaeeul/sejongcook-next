@@ -336,12 +336,12 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
             <div className="border-b-2 border-black mb-0">
                 <div className="py-4 px-2">
                     <span className="text-sm text-gray-500 font-bold block mb-1">
-                        {boardName || (boardCode === 'qna' ? '질문&답변' :
-                            boardCode === 'notice' ? '공지사항' :
-                                boardCode === 'honor' ? '명예의 전당' :
-                                    boardCode === 'sites' ? '관련사이트' :
-                                        boardCode === 'openings' ? '구인정보' :
-                                            boardCode === 'seekers' ? '구직정보' : '게시판')}
+                        {boardName || (boardCode === 'qna' ? '질문오토봇' :
+                            boardCode === 'review' ? '수강후기' :
+                            boardCode === 'honor' ? '명예의 전당' :
+                            boardCode === 'sites' ? '관련사이트' :
+                            boardCode === 'openings' ? '구인정보' :
+                            boardCode === 'seekers' ? '구직정보' : '게시판')}
                     </span>
                     {isEdit ? (
                         <input

@@ -422,7 +422,7 @@ export default function Home() {
             {/* Q&A */}
             <div className="update-column" style={{ background: '#fff', padding: '30px', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
               <div className="column-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #f5a623', paddingBottom: '15px', marginBottom: '20px' }}>
-                <h3 style={{ fontSize: '1.3rem', fontWeight: 700, margin: 0 }}>질문&답변</h3>
+                <h3 style={{ fontSize: '1.3rem', fontWeight: 700, margin: 0 }}>질문오토봇</h3>
                 <Link href="/community/qna" className="more-link" style={{ color: '#f5a623', fontSize: '0.9rem', fontWeight: 600 }}>더보기 +</Link>
               </div>
               <ul className="latest-list space-y-3">

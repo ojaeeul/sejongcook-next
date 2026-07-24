@@ -134,7 +134,7 @@ function WriteForm() {
     return (
         <div className="container_2" style={{ flexGrow: 1 }}>
             <div className="sub_title_381227_">
-                <h1>질문&답변 <span style={{ fontSize: '16px', fontWeight: 'normal', color: '#666' }}>- {isEdit ? "글수정" : "글쓰기"}</span></h1>
+                <h1>질문오토봇 <span style={{ fontSize: '16px', fontWeight: 'normal', color: '#666' }}>- {isEdit ? "글수정" : "글쓰기"}</span></h1>
             </div>
             <div style={{ marginBottom: '20px' }}>
                 <span className="solid_line_381231_" style={{ display: 'block', width: '100%', height: '2px', background: '#000' }}></span>

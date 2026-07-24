@@ -11,7 +11,7 @@ export default function CommunitySidebar() {
     const menuItems = [
         { name: '공지사항', path: '/community/notice' },
         { name: '수강후기', path: '/community/review' },
-        { name: '질문&답변', path: '/community/qna' },
+        { name: '질문오토봇', path: '/community/qna' },
         { name: '관련사이트', path: '/community/sites' },
         { name: '명예의 전당', path: '/community/honor' },
     ];

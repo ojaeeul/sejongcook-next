@@ -14,7 +14,7 @@ export default function Sidebar() {
                         <Link href="/community/notice">공지사항</Link>
                     </li>
                     <li className={pathname.includes('/community/qna') ? "on" : ""}>
-                        <Link href="/community/qna">질문&답변</Link>
+                        <Link href="/community/qna">질문오토봇</Link>
                     </li>
                     <li className={pathname.includes('/community/sites') ? "on" : ""}>
                         <Link href="/community/sites">관련사이트</Link>
