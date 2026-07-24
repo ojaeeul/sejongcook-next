@@ -71,7 +71,7 @@ export default function Home() {
     // Optional: Re-fetch to get any admin updates since build
     const fetchHeroData = async () => {
       try {
-        const url = '/api/hero?_t=' + Date.now();
+        const url = '/api/hero';
         const res = await fetch(url, { cache: 'no-store' });
         if (res.ok) {
           const data = await res.json();
@@ -100,7 +100,7 @@ export default function Home() {
 
       await Promise.allSettled(endpoints.map(async ({ url, setter }) => {
         try {
-          const res = await fetch(url + '?_t=' + Date.now());
+          const res = await fetch(url);
           if (res.ok) {
             const data = await res.json();
             if (Array.isArray(data)) {
