@@ -2764,12 +2764,23 @@ function renderMembers() {
                 rrnHtml = `<span style="cursor: pointer; text-decoration: underline; text-decoration-style: dotted;" data-masked="${maskedRrn}" data-original="${originalRrn}" data-dob="${dob}" onclick="${onclickJs}" title="클릭: 마스킹 -> 생년월일 -> 전체번호">${maskedRrn}</span>`;
             }
 
+            const displayPhoneWithPrefix = (phoneStr) => {
+                if (!phoneStr) return '';
+                let clean = phoneStr.trim();
+                if (clean.startsWith('0')) return clean;
+                let digits = clean.replace(/[^0-9]/g, '');
+                if (digits.length === 8) return '010-' + digits.substring(0,4) + '-' + digits.substring(4);
+                if (digits.length === 7) return '010-' + digits.substring(0,3) + '-' + digits.substring(3);
+                if (clean.includes('-') && clean.length <= 9) return '010-' + clean;
+                return clean;
+            };
+
             tr.innerHTML = `
                 <td>${nameHtml}</td>
                 <td>${rrnHtml}</td>
                 <td>${member.address || ''} ${member.address_detail || ''}</td>
-                <td>${member.phone || ''}</td>
-                <td>${member.phone_guardian || ''}</td>
+                <td>${displayPhoneWithPrefix(member.phone)}</td>
+                <td>${displayPhoneWithPrefix(member.phone_guardian)}</td>
                 <td>${displayCourse}</td>
                 <td>${member.start_date || ''}</td>
                 <td>${remarks}</td>
