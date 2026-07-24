@@ -1613,23 +1613,21 @@ window.handleRrnInput = function(el) {
             const fullMonth = monthStr;
             const fullDay = dayStr;
             
-            const yySelect = document.getElementById('birth_yy');
-            const mmSelect = document.getElementById('birth_mm');
-            const ddSelect = document.getElementById('birth_dd');
+            const birthInputRegister = document.getElementById('birth_date');
+            const editForm = document.getElementById('editStudentForm');
+            const birthInputEdit = editForm ? editForm.elements['birth_date'] : null;
+            
+            const formattedBirth = `${fullYear}.${fullMonth}.${fullDay}`;
             
             // gender might be 'edit_gender' (in index.html) or 'gender' (in register.html)
             const genderSelect = document.getElementById('edit_gender') || document.getElementById('gender');
             
-            if (yySelect) yySelect.value = fullYear;
-            if (mmSelect) mmSelect.value = fullMonth;
-            if (ddSelect) ddSelect.value = fullDay;
+            if (birthInputRegister) birthInputRegister.value = formattedBirth;
+            if (birthInputEdit) birthInputEdit.value = formattedBirth;
             
             if (genderSelect && genderVal) {
                 genderSelect.value = genderVal;
             }
-            
-            if (window.updateBirthDate) window.updateBirthDate();
-            if (window.updateEditBirthDate) window.updateEditBirthDate();
         }
     }
     
@@ -1650,6 +1648,13 @@ window.toggleRrnDisplayMode = function(el) {
     window.renderRrnDisplay(el);
 };
 
+window.formatBirthDateInput = function(el) {
+    let val = el.value.replace(/[^0-9]/g, '');
+    if (val.length === 8) {
+        el.value = val.substring(0, 4) + '.' + val.substring(4, 6) + '.' + val.substring(6, 8);
+    }
+};
+
 window.renderRrnDisplay = function(el) {
     const hiddenInput = document.getElementById('resident_num');
     if (!hiddenInput) return;
@@ -1663,6 +1668,24 @@ window.renderRrnDisplay = function(el) {
     }
     
     let val = hiddenInput.value.replace(/[^0-9]/g, '');
+    
+    // Auto-convert 8 digit YYYYMMDD to YYYY.MM.DD on blur
+    if (el.dataset.focused === 'false' && val.length === 8) {
+        const yyyy = val.substring(0, 4);
+        if (yyyy.startsWith('19') || yyyy.startsWith('20')) {
+            const formatted = val.substring(0, 4) + '.' + val.substring(4, 6) + '.' + val.substring(6, 8);
+            hiddenInput.value = formatted;
+            el.value = formatted;
+            
+            const birthInputRegister = document.getElementById('birth_date');
+            const editForm = document.getElementById('editStudentForm');
+            const birthInputEdit = editForm ? editForm.elements['birth_date'] : null;
+            if (birthInputRegister) birthInputRegister.value = formatted;
+            if (birthInputEdit) birthInputEdit.value = formatted;
+            
+            return;
+        }
+    }
     
     if (el.dataset.displayMode === 'dob' && val.length >= 6) {
         let yy = val.substring(0, 2);
