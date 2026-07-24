@@ -667,14 +667,61 @@ function addCourseInput(value = '') {
     const delBtn = document.createElement('button');
     delBtn.type = 'button';
     delBtn.textContent = '-';
-    delBtn.style.cssText = 'padding: 0 15px; cursor: pointer; background: #ff4444; color: white; border: none; border-radius: 4px; font-weight: bold; font-size: 1.2rem;';
+    delBtn.style.cssText = 'padding: 0 15px; cursor: pointer; background: #ff4444; color: white; border: none; border-radius: 4px; font-weight: bold; font-size: 1.2rem; margin-left: 5px;';
     delBtn.onclick = () => {
         div.remove();
+    };
+
+    const splitBtn = document.createElement('button');
+    splitBtn.type = 'button';
+    splitBtn.textContent = '🎓수료분리';
+    splitBtn.style.cssText = 'padding: 0 10px; cursor: pointer; background: #10b981; color: white; border: none; border-radius: 4px; font-weight: bold; font-size: 0.9rem; margin-left: 5px; white-space: nowrap;';
+    splitBtn.title = '이 과정만 따로 분리하여 수료생 보관함으로 복사/이동합니다.';
+    splitBtn.onclick = async () => {
+        const cName = courseInput.value;
+        const cTime = timeInput.value;
+        if (!cName) return alert('과정명이 없습니다.');
+        
+        if (confirm(`'${cName}' 과정을 분리하여 수료처리하시겠습니까?\n\n이 과정만 '수료생 보관함'으로 복사되며, 현재 편집 중인 창에서는 이 과정이 삭제됩니다.\n\n※주의: 수료분리 후 반드시 모달 하단의 [저장] 버튼을 눌러야 현재 회원 정보에서 완전히 분리됩니다.`)) {
+            const form = document.getElementById('editStudentForm');
+            const memberId = form ? form.elements['id'].value : null;
+            if (!memberId) return alert('회원 정보를 찾을 수 없습니다.');
+            
+            const currentMember = members.find(m => m.id === memberId);
+            if (!currentMember) return alert('회원 정보를 찾을 수 없습니다.');
+            
+            // Create completed member
+            const completedMember = { ...currentMember };
+            completedMember.id = String(Date.now());
+            completedMember.course = cTime ? `${cName}(${cTime})` : cName;
+            completedMember.status = 'completed';
+            
+            // Save the new member to DB
+            try {
+                splitBtn.disabled = true;
+                splitBtn.textContent = '처리중..';
+                const res = await fetch(getFetchUrl('members', true), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify([completedMember])
+                });
+                if(!res.ok) throw new Error('Failed to save');
+                
+                alert('해당 과정이 수료생 보관함으로 복사되었습니다.\n\n(현재 편집창에서는 해당 과정이 자동 삭제되었습니다. 지금 꼭 [저장]을 눌러 분리를 마무리해주세요!)');
+                div.remove(); // Remove from UI
+            } catch (e) {
+                console.error(e);
+                alert('수료 분리 중 오류가 발생했습니다.');
+                splitBtn.disabled = false;
+                splitBtn.textContent = '🎓수료분리';
+            }
+        }
     };
 
     div.appendChild(courseInput);
     div.appendChild(timeInput);
     div.appendChild(delBtn);
+    div.appendChild(splitBtn);
 
     container.appendChild(div);
 }
