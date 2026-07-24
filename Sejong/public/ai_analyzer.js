@@ -2017,10 +2017,26 @@ async function savePhonebook(id, count) {
 
         let added = 0;
         let newItems = [];
+        
+        const formatPhoneForDB = (p) => {
+            if (!p) return '';
+            let val = p.replace(/[^0-9]/g, '');
+            if (val.length >= 7 && val.length <= 8 && !val.startsWith('0')) {
+                val = '010' + val;
+            }
+            if (val.length === 11) return val.substring(0,3)+'-'+val.substring(3,7)+'-'+val.substring(7);
+            if (val.length === 10) {
+                if (val.startsWith('02')) return val.substring(0,2)+'-'+val.substring(2,6)+'-'+val.substring(6);
+                return val.substring(0,3)+'-'+val.substring(3,6)+'-'+val.substring(6);
+            }
+            if (val.length === 9 && val.startsWith('02')) return val.substring(0,2)+'-'+val.substring(2,5)+'-'+val.substring(5);
+            return p;
+        };
+
         for (let i = 0; i < count; i++) {
             const name = document.getElementById(`pb-name-${id}-${i}`)?.value || '';
-            const phone = document.getElementById(`pb-phone-${id}-${i}`)?.value || '';
-            const parentPhone = document.getElementById(`pb-parent-${id}-${i}`)?.value || '';
+            const phone = formatPhoneForDB(document.getElementById(`pb-phone-${id}-${i}`)?.value || '');
+            const parentPhone = formatPhoneForDB(document.getElementById(`pb-parent-${id}-${i}`)?.value || '');
             
             if (name && !members.find(m => m.name === name && m.phone === phone)) {
                 newItems.push({
