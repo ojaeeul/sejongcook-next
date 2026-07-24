@@ -7,16 +7,16 @@
     <meta http-equiv="Expires" content="0">    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title>세종요리 출결관리</title>
-    <link rel="stylesheet" href="style.css?v=20260724-39">
-    <link rel="stylesheet" href="exam_view.css?v=20260724-39">
+    <link rel="stylesheet" href="style.css?v=20260724-40">
+    <link rel="stylesheet" href="exam_view.css?v=20260724-40">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
         rel="stylesheet">
     <!-- Google Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <!-- Swiper CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-    <script src="script.js?v=20260724-39" defer></script>
-    <script src="questions_data.js?v=20260724-39" defer></script>
+    <script src="script.js?v=20260724-40" defer></script>
+    <script src="questions_data.js?v=20260724-40" defer></script>
     <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#ffffff">
@@ -364,17 +364,8 @@
                                     onblur="this.dataset.focused = 'false'; renderRrnDisplay(this);">
                                 <input type="hidden" id="resident_num" name="resident_num">
                             </div>
-                            <div id="edit_birth_container" style="display: none; width: 100%; gap: 5px; justify-content: center; align-items: center;">
-                                <select id="birth_yy" style="text-align: center; flex: 1.2; padding: 2px 0; box-sizing: border-box; font-family: inherit; font-size: 13px; appearance: none; -webkit-appearance: none; background-color: transparent;" onchange="updateEditBirthDate()">
-                                    <option value="">년도</option>
-                                </select>
-                                <select id="birth_mm" style="text-align: center; flex: 1; padding: 2px 0; box-sizing: border-box; font-family: inherit; font-size: 13px; appearance: none; -webkit-appearance: none; background-color: transparent;" onchange="updateEditBirthDate()">
-                                    <option value="">월</option>
-                                </select>
-                                <select id="birth_dd" style="text-align: center; flex: 1; padding: 2px 0; box-sizing: border-box; font-family: inherit; font-size: 13px; appearance: none; -webkit-appearance: none; background-color: transparent;" onchange="updateEditBirthDate()">
-                                    <option value="">일</option>
-                                </select>
-                                <input type="hidden" id="birth_date" name="birth_date">
+                            <div id="edit_birth_container" style="display: none; width: 100%;">
+                                <input type="text" name="birth_date" placeholder="예: 2026.01.01" style="text-align: center; width: 100%;">
                             </div>
                         </td>
                     </tr>
@@ -742,6 +733,6 @@
 
     <!-- Swiper JS -->
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-    <script src="sidebar_sync.js?v=20260724-39"></script>
+    <script src="sidebar_sync.js?v=20260724-40"></script>
 </body>
 </html>
