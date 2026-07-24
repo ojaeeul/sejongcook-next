@@ -37,7 +37,8 @@ export async function generateQnaResponse(post: any, repliesHistory: any[] = [],
         // 3. Gemini API 호출
         // 질문 내용에서 data-replies HTML은 제외하고 순수 내용만 추출
         const cleanContent = (post.content || '').replace(/<div data-replies=.*?<\/div>$/g, '');
-        let prompt = `사용자의 다음 질문에 친절하고 정확하게 답변해 주세요.\n\n질문 제목: ${post.title}\n질문 내용: ${cleanContent}`;
+        const authorName = post.author && post.author !== '작성자' ? post.author : '수강생';
+        let prompt = `사용자의 다음 질문/게시글에 친절하고 정확하게 답변해 주세요.\n\n작성자 이름: ${authorName}\n게시글 제목: ${post.title}\n게시글 내용: ${cleanContent}\n\n[강력한 호칭 통제 규칙]: 글을 쓴 사람을 부를 때 **절대로 "쌤" 또는 "선생님"이라고 부르지 마세요.** 반드시 "${authorName}님"이라고만 호칭해야 합니다!`;
 
         if (repliesHistory && repliesHistory.length > 0) {
             prompt += `\n\n[이전 대화 내역 (댓글)]\n`;
@@ -78,7 +79,7 @@ export async function generateQnaResponse(post: any, repliesHistory: any[] = [],
                    `- 학생이 자격증 취득에 대한 감사글을 올렸다면, 그에 맞춰 진심으로 축하하는 글과 앞으로의 취업, 창업, 또는 전문 요리/제과제빵인으로서의 경력을 진심으로 응원하는 따뜻한 내용의 답글을 달아주세요.\n` +
                    `- 학원 수강을 통해 성장한 부분을 칭찬해주고, 앞으로도 세종요리제과기술학원이 든든한 지원군이 되겠다는 멘트를 꼭 포함하세요.\n` +
                    `- QnA 답변의 딱딱한 매뉴얼 어투(수강료 안내 등)는 전부 빼고, 학원 원장님이나 담당 선생님이 직접 제자에게 남겨주는 것처럼 아주 친근하고, 감동적이고, 따뜻한 어투로 작성해 주세요.\n` +
-                   `- [호칭 주의]: 글을 쓴 수강생을 부를 때 절대로 "쌤", "선생님"이라고 부르지 마세요! 수강생을 부를 때는 "수강생님" 또는 "OOO님"(이름을 알 경우)이라고 부르세요.`;
+                   `- [호칭 주의]: 글을 쓴 수강생을 부를 때 절대로 "쌤", "선생님"이라고 부르지 마세요! 수강생을 부를 때는 반드시 "${authorName}님"이라고 불러야 합니다.`;
         }
 
         const requestBody = {
