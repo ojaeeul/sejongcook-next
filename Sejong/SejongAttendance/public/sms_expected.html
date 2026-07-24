@@ -1318,21 +1318,6 @@
                             </span>
                     `;
                     for (let month = 1; month <= 12; month++) {
-                        // 예정결재일은 당월과 다음달만 보이도록 (원장님 로컬 설정 복구)
-                        const now = new Date();
-                        const currentY = now.getFullYear();
-                        const currentM = now.getMonth() + 1;
-                        let nextY = currentY;
-                        let nextM = currentM + 1;
-                        if (nextM > 12) {
-                            nextM = 1;
-                            nextY = currentY + 1;
-                        }
-                        
-                        if (!((cy === currentY && month === currentM) || (cy === nextY && month === nextM))) {
-                            continue; // 당월과 다음달이 아니면 배지 렌더링 생략
-                        }
-
                         const count = monthCountsSim[month];
                         const displayCount = count > 0 ? `<span style="background:#2563eb; color:white; border-radius:12px; padding:2px 7px; font-size:0.7rem; font-weight:bold; margin-left:4px;">${count}</span>` : '';
                         
