@@ -2082,6 +2082,18 @@ function getAllMilestonesForRange(memberId, courseFilter, startRange, endRange) 
                 if (dayIsSim && !showSim) return;
                 if (!dayIsSim && !showReal) return;
                 
+                // MATCH BADGE LOGIC: Only show simulated payments (예정결재일) for the current month and next month
+                if (dayIsSim) {
+                    const today = new Date();
+                    const currentY = today.getFullYear();
+                    const currentM = today.getMonth() + 1;
+                    const nextY = currentM === 12 ? currentY + 1 : currentY;
+                    const nextM = currentM === 12 ? 1 : currentM + 1;
+                    
+                    const isCurrentOrNext = (year === currentY && month === currentM) || (year === nextY && month === nextM);
+                    if (!isCurrentOrNext) return;
+                }
+                
                 if (isNaN(d) || d <= 0) return;
                 
                 const exactDate = new Date(year, month - 1, d);
