@@ -1793,7 +1793,7 @@
         };
 
         async function setBrush(status) {
-            const strStatus = String(status);
+            const strStatus = status === null ? null : String(status);
             // Add confirmation specifically when enabling the 'extension' (연장) brush
             if (strStatus === 'extension' && activeStatusBrush !== 'extension') {
                 const confirmed = await showCustomConfirm('연장(결제연기) 기능을 활성화하시겠습니까?');
