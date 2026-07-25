@@ -11,8 +11,6 @@ sejong.db
 *.csv
 *.xlsx
 *.py
-*.mjs
-*.txt
 temp_backup/
 Sejong/
 hwp_env/
