@@ -642,12 +642,13 @@ function renderTargetList() {
         // Header
         const header = document.createElement('div');
         header.className = 'course-item';
+        header.style.padding = '8px 15px'; // Reduce padding
         const usePaymentFilterChecked = document.getElementById('usePaymentFilter')?.checked;
         const hasRangeDates = document.getElementById('paymentRangeStart')?.value && document.getElementById('paymentRangeEnd')?.value;
         const isExpanded = expandedCourses.has(cName) || !!searchVal || (usePaymentFilterChecked && hasRangeDates);
         const cleanCNameHeader = cName.replace(/\(\d{1,2}:\d{2}\)/, '').trim();
         header.innerHTML = `
-            <span><i class="material-icons" style="font-size:1rem; vertical-align:middle; margin-right:5px; color:#cbd5e1;">folder</i> ${cleanCNameHeader} <span style="font-size:0.8rem; color:#94a3b8;">(${membersInCourse.length})</span></span>
+            <span style="font-size:0.9rem;"><i class="material-icons" style="font-size:1rem; vertical-align:middle; margin-right:5px; color:#cbd5e1;">folder</i> ${cleanCNameHeader} <span style="font-size:0.75rem; color:#94a3b8;">(${membersInCourse.length})</span></span>
             <i class="material-icons">${isExpanded ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}</i>
         `;
 
@@ -655,7 +656,7 @@ function renderTargetList() {
         const membersDiv = document.createElement('div');
         membersDiv.style.display = isExpanded ? 'block' : 'none';
         membersDiv.style.background = '#f8fafc';
-        membersDiv.style.padding = '5px 0';
+        membersDiv.style.padding = '0'; // Remove top/bottom padding to reduce gaps
 
         membersInCourse.forEach(m => {
             const mDiv = document.createElement('div');
@@ -668,11 +669,10 @@ function renderTargetList() {
             mDiv.dataset.course = cName;
             mDiv.dataset.day = m.specificMilestone ? m.specificMilestone.day : '';
 
-            mDiv.style.padding = '8px 20px 8px 40px';
-            mDiv.style.fontSize = '0.9rem';
+            mDiv.style.padding = '6px 10px 6px 20px'; // Smaller padding
             mDiv.style.cursor = hasPhone ? 'pointer' : 'not-allowed';
             mDiv.style.display = 'flex';
-            mDiv.style.justifyContent = 'space-between';
+            mDiv.style.alignItems = 'center'; // Center align
             mDiv.style.borderBottom = '1px solid #f1f5f9';
             if (!hasPhone) mDiv.style.opacity = '0.6';
 
@@ -684,20 +684,20 @@ function renderTargetList() {
             if (isSelected) mDiv.style.color = '#3b82f6';
 
             const isInactive = m.status === 'trash' || m.status === 'delete' || m.status === 'completed';
-            const statusLabel = isInactive ? '<span style="color:#ef4444; font-size:0.75rem; margin-left:4px;">(휴원)</span>' : '';
-            const typeLabel = targetType === 'student' ? '<span style="color:#94a3b8; font-size:0.7rem; margin-right:4px;">수강생:</span>' : '<span style="color:#94a3b8; font-size:0.7rem; margin-right:4px;">학부모:</span>';
-            const dateLabel = m.specificMilestone ? `<span style="color:#3b82f6; font-size:0.75rem; margin-left:6px; font-weight:700;">${m.specificMilestone.month}/${m.specificMilestone.day}</span>` : '';
+            const statusLabel = isInactive ? '<span style="color:#ef4444; font-size:0.7rem; margin-left:4px;">(휴원)</span>' : '';
+            const typeLabel = targetType === 'student' ? '<span style="color:#94a3b8; font-size:0.65rem; margin-right:2px;">수강생:</span>' : '<span style="color:#94a3b8; font-size:0.65rem; margin-right:2px;">학부모:</span>';
+            const dateLabel = m.specificMilestone ? `<span style="color:#3b82f6; font-size:0.7rem; margin-left:6px; font-weight:700;">${m.specificMilestone.month}/${m.specificMilestone.day}</span>` : '';
 
             mDiv.innerHTML = `
-                <span style="display:flex; align-items:center;">
-                    <i class="material-icons" style="font-size:1rem; vertical-align:middle; margin-right:8px; color:${isSelected ? '#3b82f6' : '#cbd5e1'};">
+                <span style="display:flex; align-items:center; flex:1; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;">
+                    <i class="material-icons" style="font-size:0.9rem; vertical-align:middle; margin-right:6px; color:${isSelected ? '#3b82f6' : '#cbd5e1'};">
                         ${isSelected ? 'check_circle' : (hasPhone ? 'radio_button_unchecked' : 'error_outline')}
                     </i>
-                    <span style="font-weight:600;">${m.name}</span>
+                    <span style="font-weight:600; font-size:0.8rem;">${m.name}</span>
                     ${dateLabel}
                     ${statusLabel}
                 </span>
-                <span style="font-size:0.8rem; color:${hasPhone ? '#64748b' : '#ef4444'};">
+                <span style="font-size:0.7rem; color:${hasPhone ? '#64748b' : '#ef4444'}; white-space:nowrap; flex-shrink:0; text-align:right;">
                     ${typeLabel}${hasPhone ? phone : '번호 없음'}
                 </span>
             `;
