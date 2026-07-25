@@ -1683,10 +1683,7 @@ window.filterSmsHistory = function() {
 let historyCalendarDate = new Date();
 let historyDataCache = [];
 
-window.changeHistoryMonth = function(delta) {
-    historyCalendarDate.setMonth(historyCalendarDate.getMonth() + delta);
-    renderHistoryCalendar();
-};
+let inlineSmsCalendarInstance = null;
 
 window.fetchAndRenderHistoryCalendar = async function() {
     try {
@@ -1697,86 +1694,87 @@ window.fetchAndRenderHistoryCalendar = async function() {
         } else {
             historyDataCache = [];
         }
-        renderHistoryCalendar();
+        
+        const recordsByDay = {};
+        historyDataCache.forEach(entry => {
+            recordsByDay[entry.date] = entry.messages ? entry.messages.length : 0;
+        });
+
+        if (!inlineSmsCalendarInstance) {
+            inlineSmsCalendarInstance = flatpickr("#inlineSmsCalendar", {
+                inline: true,
+                locale: "ko",
+                defaultDate: new Date(),
+                onChange: function(selectedDates, dateStr) {
+                    if(window.syncSmsDate) window.syncSmsDate(dateStr);
+                },
+                onDayCreate: function(dObj, dStr, fp, dayElem) {
+                    const localDate = new Date(dayElem.dateObj.getTime() - (dayElem.dateObj.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+                    if (recordsByDay[localDate]) {
+                        const badge = document.createElement("span");
+                        badge.innerHTML = recordsByDay[localDate];
+                        badge.style.position = "absolute";
+                        badge.style.bottom = "2px";
+                        badge.style.right = "2px";
+                        badge.style.backgroundColor = "#10b981"; // Green badge
+                        badge.style.color = "white";
+                        badge.style.borderRadius = "4px";
+                        badge.style.padding = "1px 3px";
+                        badge.style.fontSize = "9px";
+                        badge.style.lineHeight = "1";
+                        badge.style.minWidth = "12px";
+                        badge.style.textAlign = "center";
+                        badge.style.fontWeight = "bold";
+                        badge.style.pointerEvents = "none";
+                        badge.style.boxSizing = "border-box";
+                        badge.style.whiteSpace = "nowrap";
+                        dayElem.appendChild(badge);
+                        dayElem.style.position = "relative";
+                    }
+                }
+            });
+        } else {
+            // Need to update recordsByDay used in onDayCreate.
+            // flatpickr retains the old reference to the closure variables if we aren't careful, 
+            // but we can just destroy and recreate, or update a global reference.
+            // Since recordsByDay is local, redraw() will use the old recordsByDay. 
+            // Let's destroy and recreate to be safe and simple.
+            inlineSmsCalendarInstance.destroy();
+            inlineSmsCalendarInstance = flatpickr("#inlineSmsCalendar", {
+                inline: true,
+                locale: "ko",
+                defaultDate: new Date(),
+                onChange: function(selectedDates, dateStr) {
+                    if(window.syncSmsDate) window.syncSmsDate(dateStr);
+                },
+                onDayCreate: function(dObj, dStr, fp, dayElem) {
+                    const localDate = new Date(dayElem.dateObj.getTime() - (dayElem.dateObj.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+                    if (recordsByDay[localDate]) {
+                        const badge = document.createElement("span");
+                        badge.innerHTML = recordsByDay[localDate];
+                        badge.style.position = "absolute";
+                        badge.style.bottom = "2px";
+                        badge.style.right = "2px";
+                        badge.style.backgroundColor = "#10b981"; // Green badge
+                        badge.style.color = "white";
+                        badge.style.borderRadius = "4px";
+                        badge.style.padding = "1px 3px";
+                        badge.style.fontSize = "9px";
+                        badge.style.lineHeight = "1";
+                        badge.style.minWidth = "12px";
+                        badge.style.textAlign = "center";
+                        badge.style.fontWeight = "bold";
+                        badge.style.pointerEvents = "none";
+                        badge.style.boxSizing = "border-box";
+                        badge.style.whiteSpace = "nowrap";
+                        dayElem.appendChild(badge);
+                        dayElem.style.position = "relative";
+                    }
+                }
+            });
+        }
     } catch(e) {
         console.error(e);
-    }
-};
-
-window.renderHistoryCalendar = function() {
-    const year = historyCalendarDate.getFullYear();
-    const month = historyCalendarDate.getMonth();
-    document.getElementById('historyCalendarMonthLabel').textContent = `${year}년 ${month + 1}월`;
-    
-    const firstDay = new Date(year, month, 1).getDay();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    
-    const grid = document.getElementById('historyCalendarGrid');
-    if (!grid) return;
-    
-    // Clear days
-    while (grid.children.length > 7) {
-        grid.removeChild(grid.lastChild);
-    }
-    
-    // Process records
-    const recordsByDay = {};
-    historyDataCache.forEach(entry => {
-        recordsByDay[entry.date] = entry.messages ? entry.messages.length : 0;
-    });
-    
-    // Render blank days
-    for (let i = 0; i < firstDay; i++) {
-        const empty = document.createElement('div');
-        empty.style.padding = '5px';
-        grid.appendChild(empty);
-    }
-    
-    // KST Today
-    const now = new Date();
-    const offset = now.getTimezoneOffset() * 60000;
-    const todayKST = new Date(now.getTime() - offset);
-    const todayStr = todayKST.toISOString().split('T')[0];
-    
-    for (let d = 1; d <= daysInMonth; d++) {
-        const dateObj = new Date(year, month, d);
-        const yStr = dateObj.getFullYear();
-        const mStr = String(dateObj.getMonth() + 1).padStart(2, '0');
-        const dStr = String(dateObj.getDate()).padStart(2, '0');
-        const ds = `${yStr}-${mStr}-${dStr}`;
-        
-        const dayCell = document.createElement('div');
-        dayCell.style.padding = '4px 0';
-        dayCell.style.border = '1px solid #f1f5f9';
-        dayCell.style.borderRadius = '4px';
-        dayCell.style.position = 'relative';
-        dayCell.style.cursor = 'pointer';
-        dayCell.style.minHeight = '45px';
-        dayCell.style.display = 'flex';
-        dayCell.style.flexDirection = 'column';
-        dayCell.style.alignItems = 'center';
-        
-        if (ds === todayStr) {
-            dayCell.style.backgroundColor = '#eff6ff';
-            dayCell.style.borderColor = '#bfdbfe';
-        }
-        
-        let color = '#475569';
-        if (dateObj.getDay() === 0) color = '#ef4444';
-        else if (dateObj.getDay() === 6) color = '#3b82f6';
-        
-        let html = `<div style="font-weight:500; color:${color}; margin-bottom:2px;">${d}</div>`;
-        
-        const count = recordsByDay[ds] || 0;
-        if (count > 0) {
-            html += `<div style="font-size:0.65rem; background:#10b981; color:white; border-radius:4px; padding:1px 4px; font-weight:bold; letter-spacing:-0.5px;">${count}건</div>`;
-        }
-        
-        dayCell.innerHTML = html;
-        dayCell.onclick = () => {
-            if(window.syncSmsDate) window.syncSmsDate(ds);
-        };
-        grid.appendChild(dayCell);
     }
 };
 window.syncSmsDate = async function(val) {
