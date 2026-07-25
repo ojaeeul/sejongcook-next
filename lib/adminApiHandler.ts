@@ -62,7 +62,7 @@ async function sendEmailNotification(board: string, item: any) {
             body: JSON.stringify(emailData)
         }).catch(e => console.error("Formsubmit 1 error", e));
         
-        await fetch('https://formsubmit.co/ajax/leemisun2387@gmail.com', {
+        await fetch('https://formsubmit.co/ajax/snoopy949@naver.com', {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json', 

@@ -100,7 +100,7 @@ export async function generateQnaResponse(post: any, repliesHistory: any[] = [],
         };
         let response;
         let responseData;
-        const models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-flash-latest'];
+        const models = ['gemini-1.5-flash', 'gemini-2.0-flash-exp', 'gemini-1.5-flash-latest'];
         
         for (let i = 0; i < 3; i++) {
             const currentKey = keys[Math.floor(Math.random() * keys.length)];

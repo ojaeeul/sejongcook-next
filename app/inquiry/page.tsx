@@ -113,8 +113,8 @@ export default function InquiryPage() {
                 body: JSON.stringify(emailData)
             }).catch(e => console.error('FormSubmit 1 Error:', e));
 
-            // Send to leemisun2387@gmail.com
-            fetch('https://formsubmit.co/ajax/leemisun2387@gmail.com', {
+            // Send to snoopy949@naver.com
+            fetch('https://formsubmit.co/ajax/snoopy949@naver.com', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
