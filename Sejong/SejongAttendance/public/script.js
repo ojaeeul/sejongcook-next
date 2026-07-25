@@ -513,8 +513,9 @@ async function submitRegistration(data, isModal, formEl) {
             formEl.reset();
             // Refresh data
             fetchData().then(() => {
-                renderMembers();
-                updateSummary();
+                if (typeof renderMembers === 'function') renderMembers();
+                if (typeof updateSummary === 'function') updateSummary();
+                if (window.refreshCalendarBadges) window.refreshCalendarBadges();
             });
         } else {
             alert("등록 실패");

@@ -619,7 +619,28 @@
             <script>
                 document.addEventListener('DOMContentLoaded', () => {
                     const masterInput = document.getElementById('masterDateSelector');
-                    flatpickr("#inlineCalendar", {
+                    let regCountsByDate = {};
+                    let inlineCalendarInstance = null;
+
+                    window.refreshCalendarBadges = async function() {
+                        try {
+                            const res = await fetch(`/api/sejong/members?t=${Date.now()}`);
+                            const allMembers = await res.json();
+                            regCountsByDate = {};
+                            allMembers.forEach(m => {
+                                if (m.registeredDate) {
+                                    regCountsByDate[m.registeredDate] = (regCountsByDate[m.registeredDate] || 0) + 1;
+                                }
+                            });
+                            if (inlineCalendarInstance) {
+                                inlineCalendarInstance.redraw();
+                            }
+                        } catch(e) {
+                            console.error('Failed to refresh calendar badges', e);
+                        }
+                    };
+
+                    inlineCalendarInstance = flatpickr("#inlineCalendar", {
                         inline: true,
                         locale: "ko",
                         defaultDate: "today",
@@ -628,8 +649,31 @@
                                 masterInput.value = dateStr;
                                 syncMasterDateToForm(dateStr);
                             }
+                        },
+                        onDayCreate: function(dObj, dStr, fp, dayElem) {
+                            // Calculate local date string YYYY-MM-DD
+                            const localDate = new Date(dayElem.dateObj.getTime() - (dayElem.dateObj.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+                            if (regCountsByDate[localDate]) {
+                                const badge = document.createElement("span");
+                                badge.innerHTML = regCountsByDate[localDate] + '명';
+                                badge.style.position = "absolute";
+                                badge.style.bottom = "2px";
+                                badge.style.right = "2px";
+                                badge.style.backgroundColor = "#10b981"; // Green badge similar to exam calendar
+                                badge.style.color = "white";
+                                badge.style.borderRadius = "4px";
+                                badge.style.padding = "1px 3px";
+                                badge.style.fontSize = "9px";
+                                badge.style.fontWeight = "bold";
+                                badge.style.pointerEvents = "none";
+                                dayElem.appendChild(badge);
+                                dayElem.style.position = "relative";
+                            }
                         }
                     });
+
+                    // Initial fetch
+                    window.refreshCalendarBadges();
                 });
             </script>
         </main>
