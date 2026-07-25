@@ -14,10 +14,6 @@
             font-family: 'Pretendard', sans-serif;
             margin: 0;
             padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
         }
         .settings-container { 
             width: 100%;
@@ -39,7 +35,192 @@
     </style>
 </head>
 <body>
-    <div class="settings-container">
+    <div class="app-container">
+        <!-- Sidebar Navigation (To be injected via sidebar_sync.js) -->
+        <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+        <aside class="sidebar">
+            <div class="brand-logo">
+                <span class="logo-text">세종요리</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="app.html" id="navMobileApp" class="nav-item" target="_blank" style="color: #4ade80; font-weight: bold; background: rgba(74, 222, 128, 0.1);">📱 모바일 앱 다운로드</a>
+                <a href="student/exam.html" id="navStudentLogin" class="nav-item" target="_blank" style="color: #3b82f6; font-weight: bold; background: rgba(59, 130, 246, 0.1);">🎓 학생용 모바일 시험 열기</a>
+                
+                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">수강 관리</div>
+                <div class="nav-sub-menu show">
+                    <a href="register.html" id="navRegister" class="nav-item">수강생 등록</a>
+                    <a href="index.html" id="navIndex" class="nav-item">수강생 대장</a>
+                    <a href="phonebook.html" id="navPhoneBook" class="nav-item">전화번호부</a>
+                    <a href="sheet.html?v=1781735202" id="navSheet" class="nav-item">월간 출석부</a>
+
+                </div>
+                                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">국가시험</div>
+                <div class="nav-sub-menu show">
+                    <a href="exam.html" id="navExam" class="nav-item">제과제빵시험</a>
+                    <a href="practical_exam.html" id="navPracticalExam" class="nav-item">조리시험</a>
+                </div>
+                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">수강료</div>
+                <div class="nav-sub-menu show">
+                    <a href="tuition.html?v=1780849479" class="nav-item">수강료 관리</a>
+                    <a href="ledger.html" class="nav-item">수강료 납부대장</a>
+                    <a href="paid_list.html" class="nav-item">납부완료 명단</a>
+                </div>
+                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">소통</div>
+                <div class="nav-sub-menu show">
+                    <a href="notice.html" class="nav-item">학원 공지</a>
+                    <a href="feed.html" class="nav-item">피드 관리</a>
+                    <a href="wagashi.html" class="nav-item">학원 홍보</a>
+                </div>
+                <div class="nav-category toggle-category" onclick="toggleNavSub(this)">시험지</div>
+                <div class="nav-sub-menu">
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">한식기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('한식_2021')" class="nav-item">2021년 한식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('한식_2022')" class="nav-item">2022년 한식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('한식_2023')" class="nav-item">2023년 한식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('한식_2024')" class="nav-item">2024년 한식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('한식_2025')" class="nav-item">2025년 한식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('한식_2026')" class="nav-item">2026년 한식</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">양식기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('양식_2021')" class="nav-item">2021년 양식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('양식_2022')" class="nav-item">2022년 양식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('양식_2023')" class="nav-item">2023년 양식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('양식_2024')" class="nav-item">2024년 양식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('양식_2025')" class="nav-item">2025년 양식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('양식_2026')" class="nav-item">2026년 양식</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">일식기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('일식_2021')" class="nav-item">2021년 일식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('일식_2022')" class="nav-item">2022년 일식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('일식_2023')" class="nav-item">2023년 일식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('일식_2024')" class="nav-item">2024년 일식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('일식_2025')" class="nav-item">2025년 일식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('일식_2026')" class="nav-item">2026년 일식</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">중식기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('중식_2021')" class="nav-item">2021년 중식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('중식_2022')" class="nav-item">2022년 중식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('중식_2023')" class="nav-item">2023년 중식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('중식_2024')" class="nav-item">2024년 중식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('중식_2025')" class="nav-item">2025년 중식</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('중식_2026')" class="nav-item">2026년 중식</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">제과기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('제과_2021')" class="nav-item">2021년 제과</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과_2022')" class="nav-item">2022년 제과</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과_2023')" class="nav-item">2023년 제과</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과_2024')" class="nav-item">2024년 제과</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과_2025')" class="nav-item">2025년 제과</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과_2026')" class="nav-item">2026년 제과</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">제빵기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2021')" class="nav-item">2021년 제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2022')" class="nav-item">2022년 제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2023')" class="nav-item">2023년 제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2024')" class="nav-item">2024년 제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2025')" class="nav-item">2025년 제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제빵_2026')" class="nav-item">2026년 제빵</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">제과제빵기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('제과제빵_2021')" class="nav-item">2021년 제과제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과제빵_2022')" class="nav-item">2022년 제과제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과제빵_2023')" class="nav-item">2023년 제과제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과제빵_2024')" class="nav-item">2024년 제과제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과제빵_2025')" class="nav-item">2025년 제과제빵</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('제과제빵_2026')" class="nav-item">2026년 제과제빵</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">복어기능사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" onclick="loadExamView('복어_2021')" class="nav-item">2021년 복어</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('복어_2022')" class="nav-item">2022년 복어</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('복어_2023')" class="nav-item">2023년 복어</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('복어_2024')" class="nav-item">2024년 복어</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('복어_2025')" class="nav-item">2025년 복어</a>
+                        <a href="javascript:void(0)" onclick="loadExamView('복어_2026')" class="nav-item">2026년 복어</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">산업기사</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" class="nav-item">준비중입니다</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">가정요리</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" class="nav-item">준비중입니다</a>
+                    </div>
+
+                    <div class="nav-category toggle-category" onclick="toggleNavSub(this)">브런치</div>
+                    <div class="nav-sub-menu">
+                        <a href="javascript:void(0)" class="nav-item">준비중입니다</a>
+                    </div>
+                </div>
+                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">기타</div>
+                <div class="nav-sub-menu show">
+                    <a href="exam_settings.html" id="navExamSettings" class="nav-item">
+                        <span class="material-icons" style="font-size: 1.2rem; margin-right: 8px;">fact_check</span>
+                        시험지 설정
+                    </a>
+                    <a href="class_days_admin.html" id="navClassDaysAdmin" class="nav-item">
+                        <span class="material-icons" style="font-size: 1.2rem; margin-right: 8px;">settings</span>
+                        수업 요일 설정
+                    </a>
+                    <a href="course_time_admin.html?v=1" id="navCourseTimeAdmin" class="nav-item">
+                        <span class="material-icons" style="font-size: 1.2rem; margin-right: 8px;">list_alt</span>
+                        과목/시간 설정
+                    </a>
+                    <a href="cycle_settings.html" id="navCycleSettings" class="nav-item">
+                        <span class="material-icons" style="font-size: 1.2rem; margin-right: 8px;">tune</span>
+                        결재 주기 설정
+                    </a>
+                    <a href="index.html?filter=archive" id="navArchive" class="nav-item">수료생 보관함</a>
+                    <a href="attendance_manager.html" id="navAttendanceManager" class="nav-item">
+                        <span class="material-icons" style="font-size: 1.2rem; margin-right: 8px;">person_remove</span>
+                        학생별 출석 관리
+                    </a>
+                    <a href="index.html?filter=trash" id="navTrash" class="nav-item">휴지통</a>
+                    <a href="stats.html" class="nav-item">통계 및 납부</a>
+                    <a href="expense.html" class="nav-item">지출현황</a>
+                </div>
+                <div class="nav-category toggle-category active" onclick="toggleNavSub(this)">학원문자</div>
+                <div class="nav-sub-menu show">
+                    <a href="attendance_daily.html" id="navDailyAttendance" class="nav-item">일일 출석부</a>
+                    <a href="sms_expected.html"id="navSms" class="nav-item">문자 발송</a>
+                </div>
+                <a href="monitor.html?v=1780796013_211823" target="_blank" class="nav-item highlight">키오스크 모니터</a>
+                <a href="kiosk_admin.html" id="navKioskAdmin" class="nav-item">키오스크 설정</a>
+                <a href="admin_account.html" id="navAdminAccount" class="nav-item">아이디</a>
+                <a href="#" onclick="logoutAdmin(event)" class="nav-item" style="color: #ef4444;">
+                    <span class="material-icons" style="font-size: 1.2rem; margin-right: 8px;">logout</span>
+                    로그아웃
+                </a>
+                <a href="https://github.com/ojaeeul/sejongcook-next/archive/refs/heads/main.zip" class="nav-item">깃허브 백업 다운로드</a>
+                <a href="/admin" class="nav-item">관리자페이지</a>
+            </nav>
+        </aside>
+
+
+        <!-- Main Content -->
+        <main class="main-content" style="display:flex; justify-content:center; align-items:center; width: 100%;">
+            <div style="position: absolute; top: 15px; left: 15px; z-index: 100;">
+                <button class="menu-toggle" onclick="toggleSidebar()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:#64748b;">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <div class="settings-container">
         <h2 style="margin-top: 0; margin-bottom: 30px; color: #0f172a; text-align: center; display: flex; align-items: center; justify-content: center; gap: 10px;">
             <span class="material-icons" style="font-size: 32px; color: #3b82f6;">manage_accounts</span>
             관리자 아이디/비밀번호
@@ -90,7 +271,23 @@
             </a>
         </div>
     </div>
+        </main>
+    </div>
 
+    <script src="sidebar_sync.js?v=20260726-4"></script>
+    <script>
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('active');
+            document.querySelector('.sidebar-overlay').classList.toggle('active');
+        }
+        function toggleNavSub(element) {
+            const subMenu = element.nextElementSibling;
+            if(subMenu && subMenu.classList.contains('nav-sub-menu')) {
+                subMenu.classList.toggle('show');
+                element.classList.toggle('active');
+            }
+        }
+    </script>
     <script src="admin_account.js?v=20260726-4"></script>
 </body>
 </html>
