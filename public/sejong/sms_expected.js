@@ -1711,13 +1711,31 @@ window.syncSmsDate = async function(val) {
                 const nameStr = m.name || '이름 없음';
                 const phoneStr = m.phone || '번호 없음';
                 const textContent = m.text || m.message || '';
+                const safeName = nameStr.replace(/'/g, "\\'");
+                const safePhone = phoneStr.replace(/'/g, "\\'");
+                const safeMemberId = (m.memberId || '').replace(/'/g, "\\'");
+                // encode text content to safely inject in textarea
+                const safeText = textContent.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
                 html += `
                     <div class="sms-history-item" data-name="${nameStr}" style="background:#f8fafc; border:1px solid #e2e8f0; padding:15px; border-radius:8px; margin-bottom:12px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
                         <div style="display:flex; justify-content:space-between; margin-bottom:8px; border-bottom:1px solid #cbd5e1; padding-bottom:6px; align-items:center;">
                             <span style="font-weight:700; color:#0f172a; font-size:1.05rem;">${nameStr} <span style="font-size:0.85rem; color:#64748b; font-weight:400;">(${phoneStr})</span></span>
-                            <span style="font-size:0.8rem; color:#64748b; background:#e2e8f0; padding:3px 8px; border-radius:12px;">${timeStr}</span>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span style="font-size:0.8rem; color:#64748b; background:#e2e8f0; padding:3px 8px; border-radius:12px;">${timeStr}</span>
+                                <button onclick="toggleHistoryEdit(${idx})" style="padding:4px 8px; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; border-radius:4px; font-size:0.75rem; cursor:pointer; font-weight:bold;">수정 및 재발송</button>
+                            </div>
                         </div>
-                        <div style="font-size:0.95rem; color:#334155; white-space:pre-wrap; line-height:1.5;">${textContent}</div>
+                        
+                        <div id="history_view_${idx}" style="font-size:0.95rem; color:#334155; white-space:pre-wrap; line-height:1.5;">${textContent}</div>
+                        
+                        <div id="history_edit_${idx}" style="display:none; margin-top:10px;">
+                            <textarea id="history_textarea_${idx}" style="width:100%; min-height:100px; padding:10px; background:#fff; border:1px solid #94a3b8; border-radius:6px; font-size:0.95rem; line-height:1.5; color:#334155; box-sizing:border-box; resize:vertical;">${safeText}</textarea>
+                            <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:8px;">
+                                <button onclick="toggleHistoryEdit(${idx})" style="padding:6px 12px; background:#f1f5f9; color:#475569; border:none; border-radius:4px; font-size:0.85rem; cursor:pointer; font-weight:bold;">취소</button>
+                                <button onclick="resendHistoryMessage(${idx}, '${safeName}', '${safePhone}', '${safeMemberId}')" style="padding:6px 12px; background:#2563eb; color:white; border:none; border-radius:4px; font-size:0.85rem; cursor:pointer; font-weight:bold;">오늘 날짜로 재발송</button>
+                            </div>
+                        </div>
                     </div>
                 `;
             });
@@ -1728,6 +1746,59 @@ window.syncSmsDate = async function(val) {
     } catch(e) {
         console.error(e);
         showModalAlert('문자 내역을 불러오는 중 오류가 발생했습니다.', true);
+    }
+};
+
+window.toggleHistoryEdit = function(idx) {
+    const viewDiv = document.getElementById('history_view_' + idx);
+    const editDiv = document.getElementById('history_edit_' + idx);
+    if (!viewDiv || !editDiv) return;
+    
+    if (viewDiv.style.display === 'none') {
+        viewDiv.style.display = 'block';
+        editDiv.style.display = 'none';
+    } else {
+        viewDiv.style.display = 'none';
+        editDiv.style.display = 'block';
+    }
+};
+
+window.resendHistoryMessage = async function(idx, name, phone, memberId) {
+    const textArea = document.getElementById('history_textarea_' + idx);
+    if (!textArea) return;
+    
+    const newText = textArea.value;
+    if (!newText.trim()) {
+        alert('보낼 내용을 입력해주세요.');
+        return;
+    }
+    
+    if (!confirm(`[${name}] 님에게 오늘 날짜로 다시 발송하시겠습니까?`)) return;
+    
+    try {
+        const todayStr = new Date().toISOString().split('T')[0];
+        const fetchUrl = `${API_BASE}/sms_history`;
+        
+        await fetch(fetchUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                date: todayStr,
+                messages: [{
+                    memberId: memberId || '',
+                    name: name,
+                    phone: phone || '',
+                    text: newText,
+                    timestamp: new Date().toISOString()
+                }]
+            })
+        });
+        
+        showModalAlert(`[${name}] 님에게 오늘 날짜(${todayStr})로 발송이 완료되었습니다.`);
+        toggleHistoryEdit(idx);
+    } catch (e) {
+        console.error(e);
+        showModalAlert('재발송 중 오류가 발생했습니다.', true);
     }
 };
 
