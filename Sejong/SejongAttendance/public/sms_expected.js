@@ -128,6 +128,7 @@ localStorage.setItem('sejongSmsTemplates', JSON.stringify(myTemplates));
 
 document.addEventListener('DOMContentLoaded', () => {
     // Restore settings will happen in restoreAllDrafts below
+    if (window.initSmsHistoryCalendarVisibility) window.initSmsHistoryCalendarVisibility();
     const today = new Date();
     const todayStr = today.toISOString().split('T')[0];
 
@@ -1684,6 +1685,32 @@ let historyCalendarDate = new Date();
 let historyDataCache = [];
 
 let inlineSmsCalendarInstance = null;
+
+window.toggleSmsHistoryCalendar = function() {
+    const container = document.getElementById('smsHistoryCalendarContainer');
+    const icon = document.getElementById('smsHistoryToggleIcon');
+    if (!container || !icon) return;
+
+    if (container.style.display === 'none') {
+        container.style.display = 'flex';
+        icon.textContent = 'expand_less';
+        localStorage.setItem('sejong_smsHistoryCalendarVisible', 'true');
+    } else {
+        container.style.display = 'none';
+        icon.textContent = 'expand_more';
+        localStorage.setItem('sejong_smsHistoryCalendarVisible', 'false');
+    }
+};
+
+window.initSmsHistoryCalendarVisibility = function() {
+    const visible = localStorage.getItem('sejong_smsHistoryCalendarVisible');
+    const container = document.getElementById('smsHistoryCalendarContainer');
+    const icon = document.getElementById('smsHistoryToggleIcon');
+    if (visible === 'false' && container && icon) {
+        container.style.display = 'none';
+        icon.textContent = 'expand_more';
+    }
+};
 
 window.fetchAndRenderHistoryCalendar = async function() {
     try {

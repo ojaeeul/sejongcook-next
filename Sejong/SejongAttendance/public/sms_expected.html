@@ -766,8 +766,11 @@
                 <!-- 1. Left Panel -->
                 <div class="sms-panel-left">
                     <div class="panel-header" style="flex-direction: column; align-items: stretch; gap: 10px; background: white; color: #1e293b; padding: 15px 15px 10px 15px; border-bottom: 2px solid #e2e8f0;">
-                        <h3 style="font-size: 1rem; margin: 0; display:flex; align-items:center; gap:5px;"><i class="material-icons" style="color: #3b82f6; font-size:1.1rem;">calendar_month</i> 발송 내역 달력</h3>
-                        <div style="width: 100%; display: flex; justify-content: center; margin-top: 10px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="toggleSmsHistoryCalendar()">
+                            <h3 style="font-size: 1rem; margin: 0; display:flex; align-items:center; gap:5px;"><i class="material-icons" style="color: #3b82f6; font-size:1.1rem;">calendar_month</i> 발송 내역 달력</h3>
+                            <i class="material-icons" id="smsHistoryToggleIcon" style="font-size:1rem; color:#94a3b8;">expand_less</i>
+                        </div>
+                        <div id="smsHistoryCalendarContainer" style="width: 100%; display: flex; justify-content: center; margin-top: 10px;">
                             <input type="text" id="inlineSmsCalendar" style="display:none;">
                         </div>
                     </div>
