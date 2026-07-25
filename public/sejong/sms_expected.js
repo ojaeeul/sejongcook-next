@@ -1593,6 +1593,12 @@ function showFullPreview() {
     document.getElementById('fullPreviewModal').style.display = 'flex';
 }
 
+function openHoldListModal() {
+    currentPreviewTab = 'hold';
+    switchPreviewTab('hold');
+    document.getElementById('fullPreviewModal').style.display = 'flex';
+}
+
 function renderFullPreviewList() {
     const targetList = currentPreviewTab === 'active' ? lastGeneratedPreviews : heldMessages;
     
