@@ -101,7 +101,7 @@ let defaultTemplates = [
     { text: '반갑습니다.', type: 'SMS' },
     { text: '[세종요리제과학원] 안녕하세요! %%% 학생 오늘 수업 안내드립니다.', type: 'SMS' },
     { text: '[세종요리제과학원] 안녕하세요! %%% 학생, 이번 주 수업 일정 및 학원 안내입니다. 항상 저희 학원을 이용해 주셔서 진심으로 감사드리며 편안한 하루 되시길 바랍니다.', type: 'LMS' },
-    { text: '[세종요리제과학원] 안녕하세요! %%% 학생. 현재 수강중이신 [[과정명]] 과정의 결제일은 [[결제일]]이며, 수강료는 [[결제금액]], 도구비는 [[도구비]]로 총결제금액은 [[총결제금액]] 입니다.', type: 'LMS' }
+    { text: '[세종요리제과학원] 안녕하세요! %%% 학생. 현재 수강중이신 [[과정명]] 과정의 결제일은 [[결제일]]이며, 수강료는 [[결제금액]], 도구비는 [[도구비]], 시험접수비는 [[시험접수비]]로 총결제금액은 [[총결제금액]] 입니다.', type: 'LMS' }
 ];
 
 let storedTemplates = localStorage.getItem('sejongSmsTemplates');
@@ -120,7 +120,7 @@ let myTemplates = parsed.map(t => {
 // Ensure the payment info template exists for the user
 const hasPaymentTemplate = myTemplates.some(t => t.text.includes('[[과정명]]') && t.text.includes('[[결제일]]'));
 if (!hasPaymentTemplate) {
-    myTemplates.push({ text: '[세종요리제과학원] 안녕하세요! %%% 학생. 현재 수강중이신 [[과정명]] 과정의 결제일은 [[결제일]]이며, 수강료는 [[결제금액]], 도구비는 [[도구비]]로 총결제금액은 [[총결제금액]] 입니다.', type: 'LMS' });
+    myTemplates.push({ text: '[세종요리제과학원] 안녕하세요! %%% 학생. 현재 수강중이신 [[과정명]] 과정의 결제일은 [[결제일]]이며, 수강료는 [[결제금액]], 도구비는 [[도구비]], 시험접수비는 [[시험접수비]]로 총결제금액은 [[총결제금액]] 입니다.', type: 'LMS' });
 }
 
 localStorage.setItem('sejongSmsTemplates', JSON.stringify(myTemplates));
@@ -1298,7 +1298,8 @@ function updateMockup() {
     previewText = previewText.replace(/\[\[결제일\]\]/g, '3월 15일');
     previewText = previewText.replace(/\[\[결제금액\]\]/g, '500,000원');
     previewText = previewText.replace(/\[\[도구비\]\]/g, '50,000원');
-    previewText = previewText.replace(/\[\[총결제금액\]\]/g, '550,000원');
+    previewText = previewText.replace(/\[\[시험접수비\]\]/g, '30,000원');
+    previewText = previewText.replace(/\[\[총결제금액\]\]/g, '580,000원');
     // Maintain old @@@ for backward compatibility just in case
     previewText = previewText.replace(/@@@/g, '3월 15일');
 
@@ -1398,19 +1399,26 @@ function sendSms() {
         const tuitionAmountStr = tuitionAmount.toLocaleString() + '원';
         
         let toolFee = 0;
+        let examFee = 0;
         if (t.notes) {
             const toolMatch = String(t.notes).match(/도구비\s*[:\-]?\s*([\d,]+)(원)?/);
             if (toolMatch) {
                 toolFee = parseInt(toolMatch[1].replace(/,/g, ''), 10);
             }
+            const examMatch = String(t.notes).match(/(?:시험비|시험접수비|접수비)\s*[:\-]?\s*([\d,]+)(원)?/);
+            if (examMatch) {
+                examFee = parseInt(examMatch[1].replace(/,/g, ''), 10);
+            }
         }
         const toolFeeStr = toolFee.toLocaleString() + '원';
-        const combinedFeeStr = (tuitionAmount + toolFee).toLocaleString() + '원';
+        const examFeeStr = examFee.toLocaleString() + '원';
+        const combinedFeeStr = (tuitionAmount + toolFee + examFee).toLocaleString() + '원';
 
         msg = msg.replace(/\[\[과정명\]\]/g, courseNameStr);
         msg = msg.replace(/\[\[결제일\]\]/g, tuitionDateStr);
         msg = msg.replace(/\[\[결제금액\]\]/g, tuitionAmountStr);
         msg = msg.replace(/\[\[도구비\]\]/g, toolFeeStr);
+        msg = msg.replace(/\[\[시험접수비\]\]/g, examFeeStr);
         msg = msg.replace(/\[\[총결제금액\]\]/g, combinedFeeStr);
         msg = msg.replace(/@@@/g, tuitionDateStr);
 
