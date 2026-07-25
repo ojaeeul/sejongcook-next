@@ -428,7 +428,7 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
 
             {/* Reply Section (Visible only for Q&A/Job Openings or Admins) */}
             {(() => {
-                const isPublicReplyBoard = ['qna', 'openings'].includes(boardCode);
+                const isPublicReplyBoard = ['qna', 'openings', 'review'].includes(boardCode);
                 if (!isPublicReplyBoard && !isAdmin) return null;
 
                 return (
