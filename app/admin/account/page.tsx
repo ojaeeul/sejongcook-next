@@ -9,6 +9,7 @@ export default function AdminAccountPage() {
     const [adminId, setAdminId] = useState('');
     const [adminPw, setAdminPw] = useState('');
     const [showPw, setShowPw] = useState(false);
+    const [showCurrentPw, setShowCurrentPw] = useState(false);
 
     useEffect(() => {
         const fetchSettings = async () => {
@@ -99,9 +100,20 @@ export default function AdminAccountPage() {
                         </div>
                         <div className="flex justify-between items-center">
                             <span className="text-sm text-slate-500">비밀번호</span>
-                            <span className="text-lg font-bold text-slate-900 tracking-wider">
-                                {currentId === '로딩중...' ? '로딩중...' : (currentPw ? (showPw ? currentPw : '•'.repeat(currentPw.length)) : '설정 안됨')}
-                            </span>
+                            <div className="flex items-center gap-3">
+                                <span className="text-lg font-bold text-slate-900 tracking-wider">
+                                    {currentId === '로딩중...' ? '로딩중...' : (currentPw ? (showCurrentPw ? currentPw : '•'.repeat(currentPw.length)) : '설정 안됨')}
+                                </span>
+                                <label className="flex items-center gap-1 font-normal text-slate-500 text-xs cursor-pointer m-0">
+                                    <input 
+                                        type="checkbox" 
+                                        checked={showCurrentPw}
+                                        onChange={(e) => setShowCurrentPw(e.target.checked)}
+                                        className="w-3.5 h-3.5 m-0 p-0 cursor-pointer accent-blue-500"
+                                    />
+                                    보기
+                                </label>
+                            </div>
                         </div>
                     </div>
                 </div>
