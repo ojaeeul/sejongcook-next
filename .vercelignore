@@ -12,8 +12,8 @@ sejong.db
 *.xlsx
 *.py
 temp_backup/
-Sejong/
-hwp_env/
+/Sejong/
+/hwp_env/
 기출문제/
 out/
 *.log
