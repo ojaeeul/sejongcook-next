@@ -129,6 +129,7 @@ localStorage.setItem('sejongSmsTemplates', JSON.stringify(myTemplates));
 document.addEventListener('DOMContentLoaded', () => {
     // Restore settings will happen in restoreAllDrafts below
     if (window.initSmsHistoryCalendarVisibility) window.initSmsHistoryCalendarVisibility();
+    if (window.initPaymentRangeCalendarVisibility) window.initPaymentRangeCalendarVisibility();
     const today = new Date();
     const todayStr = today.toISOString().split('T')[0];
 
@@ -1989,7 +1990,29 @@ function toggleRangeCalendar() {
         icon.textContent = 'expand_less';
         renderRangeCalendar();
         if (window.updateRedBoxes) window.updateRedBoxes(calendarYear, calendarMonth + 1);
+        localStorage.setItem('sejong_paymentRangeCalendarVisible', 'true');
     } else {
+        body.style.display = 'none';
+        icon.textContent = 'expand_more';
+        localStorage.setItem('sejong_paymentRangeCalendarVisible', 'false');
+    }
+}
+
+window.initPaymentRangeCalendarVisibility = function() {
+    const visible = localStorage.getItem('sejong_paymentRangeCalendarVisible');
+    const body = document.getElementById('rangeFilterBody');
+    const icon = document.getElementById('rangeToggleIcon');
+    
+    // By default HTML has display:none.
+    if (visible === 'true' && body && icon) {
+        body.style.display = 'block';
+        icon.textContent = 'expand_less';
+        // Need to render the calendar if it's visible on load
+        setTimeout(() => {
+            if (typeof renderRangeCalendar === 'function') renderRangeCalendar();
+            if (window.updateRedBoxes) window.updateRedBoxes(calendarYear, calendarMonth + 1);
+        }, 100);
+    } else if (visible === 'false' && body && icon) {
         body.style.display = 'none';
         icon.textContent = 'expand_more';
     }
