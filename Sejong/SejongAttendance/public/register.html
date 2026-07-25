@@ -649,6 +649,9 @@
                                 masterInput.value = dateStr;
                                 syncMasterDateToForm(dateStr);
                             }
+                            if (window.open3DSliderForDate) {
+                                open3DSliderForDate(dateStr);
+                            }
                         },
                         onDayCreate: function(dObj, dStr, fp, dayElem) {
                             // Calculate local date string YYYY-MM-DD
