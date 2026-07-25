@@ -1,5 +1,6 @@
 import { promises as fs } from 'fs';
 import path from 'path';
+import fallbackBotSettings from '@/public/data/bot_settings.json';
 
 export async function generateQnaResponse(post: any, repliesHistory: any[] = [], board: string = 'qna') {
     try {
@@ -10,8 +11,8 @@ export async function generateQnaResponse(post: any, repliesHistory: any[] = [],
             const fileContent = await fs.readFile(filePath, 'utf8');
             settings = JSON.parse(fileContent);
         } catch (e) {
-            console.log("Bot settings not found or parse error. Bot disabled.");
-            return null;
+            console.log("Bot settings fs.readFile failed. Using fallback import.");
+            settings = fallbackBotSettings;
         }
 
         if (!settings.enabled || !settings.systemPrompt) {

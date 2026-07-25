@@ -1,10 +1,11 @@
 import fs from 'fs';
 import path from 'path';
+import fallbackModeratorSettings from '@/public/data/moderator_settings.json';
 
 export async function moderateContent(title: string, content: string, boardType: string): Promise<"SAFE" | "MILD" | "SEVERE"> {
     try {
         const settingsPath = path.join(process.cwd(), 'public', 'data', 'moderator_settings.json');
-        let settings = { enabled: true, systemPrompt: '' };
+        let settings = fallbackModeratorSettings;
         if (fs.existsSync(settingsPath)) {
             settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
         }

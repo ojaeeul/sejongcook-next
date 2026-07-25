@@ -241,6 +241,12 @@ export async function handlePost(request: NextRequest, board: string) {
             // AI Bot for QnA & Review (only runs if SAFE)
             if ((board === 'qna' || board === 'review') && moderationResult === "SAFE") {
                 try {
+                    const keysStr = process.env.GEMINI_API_KEYS || process.env.GEMINI_API_KEY;
+                    if (!keysStr) {
+                        console.error("CRITICAL ERROR: GEMINI_API_KEYS and GEMINI_API_KEY are missing from environment variables. AI Bot cannot generate a response.");
+                    } else {
+                        console.log("AI Bot API Keys found. Attempting to generate response...");
+                    }
                     const { generateQnaResponse } = await import('@/lib/aiBot');
                     const replyText = await generateQnaResponse(newItem, [], board);
                     if (replyText) {

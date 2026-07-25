@@ -2,6 +2,11 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   // output: 'export',
+  experimental: {
+    outputFileTracingIncludes: {
+      '/api/**/*': ['./public/data/**/*'],
+    },
+  },
   images: {
     remotePatterns: [
       {
