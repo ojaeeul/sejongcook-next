@@ -3333,6 +3333,14 @@
                 } else if (typeof status === 'string' && status.startsWith('X')) {
                     td.textContent = 'X';
                     td.classList.add('stat-absent');
+                    if (status.includes('|')) {
+                        td.title = status.split('|')[1];
+                        const mIcon = document.createElement('span');
+                        mIcon.textContent = '📝';
+                        mIcon.style.fontSize = '8px';
+                        mIcon.style.marginLeft = '2px';
+                        td.appendChild(mIcon);
+                    }
                 } else {
                     // Map English keys from daily attendance
                     if (status === 'late' || status === '지각') {
@@ -3748,7 +3756,7 @@
             if (isExtension || currentText.startsWith('연')) {
                 initial = '연 ';
             } else if (td.classList.contains('stat-absent') || currentText.startsWith('X')) {
-                initial = 'X ';
+                initial = td.title ? 'X|' + td.title : 'X|';
             } else {
                 initial = ['O', 'X'].includes(currentText) ? '' : currentText;
             }

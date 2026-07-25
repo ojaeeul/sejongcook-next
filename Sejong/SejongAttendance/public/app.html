@@ -773,13 +773,15 @@ function getStatusForMember(phone) {
     const rec = attendanceData.find(a => String(a.memberId) === String(m.id));
     if (!rec) return '';
     let st = String(rec.status).trim();
-    if (['O','[',']','10','12','2','3','5','7','9','출석','present'].includes(st) || st.includes('출석')) return 'present';
-    if (st === 'absent' || st.includes('결석') || st === 'X') return 'absent';
-    if (st === 'late' || st.includes('지각') || st === 'L' || st === '△') return 'late';
-    if (st === 'early' || st.includes('조퇴') || st === 'E') return 'early';
-    if (st === 'outing' || st.includes('외출')) return 'outing';
-    if (st === 'return' || st.includes('복귀')) return 'return';
-    if (st === 'extension' || st.includes('연장') || st === '연') return 'extension';
+    let baseSt = st.split('|')[0].trim();
+    let memo = st.split('|')[1] ? '|' + st.split('|')[1] : '';
+    if (['O','[',']','10','12','2','3','5','7','9','출석','present'].includes(baseSt) || baseSt.includes('출석')) return 'present';
+    if (baseSt === 'absent' || baseSt.includes('결석') || baseSt === 'X') return 'absent' + memo;
+    if (baseSt === 'late' || baseSt.includes('지각') || baseSt === 'L' || baseSt === '△') return 'late';
+    if (baseSt === 'early' || baseSt.includes('조퇴') || baseSt === 'E') return 'early';
+    if (baseSt === 'outing' || baseSt.includes('외출')) return 'outing';
+    if (baseSt === 'return' || baseSt.includes('복귀')) return 'return';
+    if (baseSt === 'extension' || baseSt.includes('연장') || baseSt === '연') return 'extension';
     return '';
 }
 
@@ -808,7 +810,9 @@ function renderStudentList() {
     const membersToRender = getCombinedMembers(cName);
     membersToRender.forEach(m => {
         const curStat = getStatusForMember(m.phone);
-        if (stats[curStat] !== undefined) stats[curStat]++;
+        const baseCurStat = curStat.split('|')[0];
+        const currentMemo = curStat.split('|')[1] || '';
+        if (stats[baseCurStat] !== undefined) stats[baseCurStat]++;
         
         const row = document.createElement('div');
         row.className = 'student-row';
@@ -824,11 +828,33 @@ function renderStudentList() {
         
         statuses.forEach(s => {
             const btn = document.createElement('button');
-            btn.className = `toggle-btn ${curStat === s.val ? 'active' : ''}`;
+            btn.className = `toggle-btn ${baseCurStat === s.val ? 'active' : ''}`;
             btn.dataset.val = s.val;
             btn.textContent = s.label;
+            
+            if (s.val === 'absent' && currentMemo) {
+                const memoSpan = document.createElement('span');
+                memoSpan.textContent = ' 📝';
+                memoSpan.title = currentMemo;
+                btn.appendChild(memoSpan);
+            }
+            
             btn.onclick = () => {
-                localState[m.phone] = (localState[m.phone] === s.val) ? '' : s.val;
+                if (baseCurStat === s.val) {
+                    localState[m.phone] = '';
+                } else {
+                    if (s.val === 'absent') {
+                        let memo = prompt("결석 사유를 입력하세요 (선택사항):", currentMemo);
+                        if (memo !== null) {
+                            localState[m.phone] = 'absent' + (memo.trim() ? '|' + memo.trim() : '');
+                        } else {
+                            // If they cancelled the prompt, do not toggle to absent
+                            return;
+                        }
+                    } else {
+                        localState[m.phone] = s.val;
+                    }
+                }
                 renderStudentList(); // re-render to update UI and stats
             };
             toggles.appendChild(btn);
@@ -879,8 +905,14 @@ async function saveAttendance() {
     let promises = [];
     membersToSave.forEach(m => {
         if (localState[m.phone] !== undefined) {
-            let appStatus = localState[m.phone];
+            let appStatusRaw = localState[m.phone];
+            let appStatus = appStatusRaw.split('|')[0];
+            let memo = appStatusRaw.split('|')[1] || '';
             let dbStatus = statusMap[appStatus] || (appStatus === '' ? 'unchecked' : appStatus);
+            
+            if (appStatus === 'absent' && memo) {
+                dbStatus = dbStatus + '|' + memo;
+            }
             
             promises.push(
                 fetch(`${API_BASE}/attendance`, {

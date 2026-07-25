@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         localStorage.setItem('sejong_daily_date', currentDate);
         currentAttendanceState = {};
+    currentMemoState = {};
         fetchAttendance();
     });
 
@@ -84,7 +85,8 @@ async function fetchAttendance() {
         if (newHash !== lastAttendanceHash) {
             attendanceData = newData;
             lastAttendanceHash = newHash;
-            currentAttendanceState = {}; // Clear local state so new DB records take effect
+            currentAttendanceState = {};
+    currentMemoState = {}; // Clear local state so new DB records take effect
             renderAttendanceTbody();
             return true;
         }
@@ -210,7 +212,8 @@ function renderCourseList() {
         cDiv.onclick = () => {
             if (activeCourse !== cName) {
                 activeCourse = cName;
-                currentAttendanceState = {}; // Clear state when switching tabs
+                currentAttendanceState = {};
+    currentMemoState = {}; // Clear state when switching tabs
                 renderCourseList(); // Re-render to update active styling
                 renderAttendanceTbody(); // Re-render table
             }
@@ -250,14 +253,17 @@ function renderCourseList() {
 function selectCourseFromMobile(cName) {
     if (activeCourse !== cName) {
         activeCourse = cName;
-        currentAttendanceState = {}; // Clear state when switching tabs
+        currentAttendanceState = {};
+    currentMemoState = {}; // Clear state when switching tabs
         renderCourseList(); // Re-render to update active styling
         renderAttendanceTbody(); // Re-render table
     }
 }
 
 // Temporary store for UI changes before saving
-let currentAttendanceState = {}; // { memberId: 'present'|'absent'... }
+let currentAttendanceState = {};
+    currentMemoState = {};
+let currentMemoState = {}; // { memberId: 'present'|'absent'... }
 
 function renderAttendanceTbody() {
     const tbody = document.getElementById('attendanceTbody');
@@ -317,6 +323,13 @@ function renderAttendanceTbody() {
                 return aCoursesList.includes(activeCourseClean);
             });
             let st = dbRecord ? dbRecord.status : null; // null means 'unset'
+            let memo = '';
+            if (st && typeof st === 'string' && st.includes('|')) {
+                let parts = st.split('|');
+                st = parts[0];
+                memo = parts[1];
+            }
+            currentMemoState[m.id] = memo;
             
             if (st) {
                 if (['10', '12', '2', '3', '5', '7', '9', 10, 12, 2, 3, 5, 7, 9, '출석', 'present'].includes(st) || (typeof st === 'string' && st.includes('출석'))) st = 'present';
@@ -348,6 +361,8 @@ function renderAttendanceTbody() {
         // Actions Cell
         const tdActions = document.createElement('td');
         const st = currentAttendanceState[m.id];
+        const memo = currentMemoState[m.id] || '';
+        const memoHtml = (st === 'absent' && memo) ? `<span style="font-size: 0.8rem; color: #ef4444; margin-left: 8px;">📝 ${memo}</span>` : '';
         tdActions.innerHTML = `
             <div class="status-btn-group">
                 <button class="status-btn ${st === 'entry' ? 'active' : ''}" data-type="entry" style="${st === 'entry' ? 'background:#3b82f6;color:white;border-color:#3b82f6;' : ''}" onclick="setStatus(${m.id}, 'entry', this)">첫출석</button>
@@ -357,6 +372,7 @@ function renderAttendanceTbody() {
                 <button class="status-btn ${st === 'early' ? 'active' : ''}" data-type="early" onclick="setStatus(${m.id}, 'early', this)">조퇴</button>
                 <button class="status-btn ${st === 'extension' ? 'active' : ''}" data-type="extension" onclick="setStatus(${m.id}, 'extension', this)">연장</button>
                 <button class="status-btn ${st === 'exit' ? 'active' : ''}" data-type="exit" style="${st === 'exit' ? 'background:#6366f1;color:white;border-color:#6366f1;' : ''}" onclick="setStatus(${m.id}, 'exit', this)">종료출석</button>
+                ${memoHtml}
             </div>
         `;
 
@@ -370,14 +386,26 @@ function renderAttendanceTbody() {
 
 window.setStatus = async function (memberId, statusType, btnElement) {
     const tr = btnElement.closest('tr');
-    tr.querySelectorAll('.status-btn').forEach(b => b.classList.remove('active'));
 
-    // If clicking the already active button, toggle it off (set to null)
     let finalStatus = statusType;
     if (currentAttendanceState[memberId] === statusType) {
         currentAttendanceState[memberId] = null;
+        currentMemoState[memberId] = '';
         finalStatus = 'unchecked';
     } else {
+        if (statusType === 'absent') {
+            let currentMemo = currentMemoState[memberId] || '';
+            let memo = prompt("결석 사유를 입력하세요 (선택사항):", currentMemo);
+            if (memo !== null) {
+                currentMemoState[memberId] = memo.trim();
+            } else {
+                return; // Cancelled
+            }
+        } else {
+            currentMemoState[memberId] = '';
+        }
+        
+        tr.querySelectorAll('.status-btn').forEach(b => b.classList.remove('active'));
         btnElement.classList.add('active');
         if (statusType === 'entry') {
             btnElement.style.background = '#3b82f6';
@@ -437,6 +465,7 @@ window.changeDate = function (offset) {
 
     // Clear temporary state on date change and fetch DB
     currentAttendanceState = {};
+    currentMemoState = {};
     fetchAttendance();
 };
 
@@ -571,6 +600,7 @@ window.sendDismissalSms = function () {
 window.addEventListener('storage', async (e) => {
     if (e.key === 'sejong_attendance_sync') {
         currentAttendanceState = {};
+    currentMemoState = {};
         await fetchAttendance();
     }
 });
