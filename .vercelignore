@@ -8,3 +8,16 @@ hostinger_upload*/
 sejongcook_backup*/
 .DS_Store
 sejong.db
+*.csv
+*.xlsx
+*.py
+*.mjs
+*.txt
+temp_backup/
+Sejong/
+hwp_env/
+기출문제/
+out/
+*.log
+*.zip
+**/*.zip
