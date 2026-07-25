@@ -856,8 +856,14 @@ function renderStudentList() {
         // Add dedicated Memo button
         const memoBtn = document.createElement('button');
         memoBtn.className = 'toggle-btn';
-        memoBtn.style = 'background: #fdf6e3; border-color: #fde047; color: #d97706; padding: 4px; font-size: 1.1rem;';
-        memoBtn.innerHTML = '📝';
+        if (currentMemo) {
+            memoBtn.style = 'background: #fef08a; border-color: #facc15; color: #b45309; padding: 4px; font-size: 1.1rem; font-weight: bold; position: relative;';
+            memoBtn.innerHTML = '📝<span style="position:absolute; top:2px; right:2px; background:#ef4444; width:6px; height:6px; border-radius:50%;"></span>';
+        } else {
+            memoBtn.style = 'background: #fdf6e3; border-color: #fde047; color: #d97706; padding: 4px; font-size: 1.1rem; opacity: 0.7;';
+            memoBtn.innerHTML = '📝';
+        }
+        
         memoBtn.onclick = () => {
             let memo = prompt("학생의 특이사항/결석 사유를 확인 및 수정하세요:", currentMemo);
             if (memo !== null) {
@@ -869,21 +875,8 @@ function renderStudentList() {
         toggles.appendChild(memoBtn);
         
         row.appendChild(nameCol);
+        row.appendChild(toggles);
         
-        // Wrap toggles and memo text in a container
-        const actionContainer = document.createElement('div');
-        actionContainer.style = 'display: flex; flex-direction: column; width: 100%;';
-        actionContainer.appendChild(toggles);
-        
-        if (currentMemo) {
-            const memoDiv = document.createElement('div');
-            memoDiv.style = 'font-size: 0.8rem; color: #ef4444; margin-top: 4px; padding: 4px; background: #fee2e2; border-radius: 4px; cursor: pointer; line-height: 1.2; word-break: break-all;';
-            memoDiv.innerHTML = `📝 ${currentMemo}`;
-            memoDiv.onclick = memoBtn.onclick;
-            actionContainer.appendChild(memoDiv);
-        }
-        
-        row.appendChild(actionContainer);
         list.appendChild(row);
     });
     
@@ -1005,6 +998,6 @@ window.addEventListener('storage', async (e) => {
 });
 
 </script>
-    <script src="sidebar_sync.js?v=20260726-14"></script>
+    <script src="sidebar_sync.js?v=20260726-15"></script>
 </body>
 </html>
