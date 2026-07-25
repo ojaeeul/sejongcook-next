@@ -760,26 +760,30 @@
             <div class="sms-container">
                 <!-- 1. Left Panel -->
                 <div class="sms-panel-left">
-                    <div class="panel-header" style="flex-direction: column; align-items: stretch; gap: 10px;">
-                        <div style="display:flex; align-items:center; gap:10px; justify-content: center;">
-                            <i class="material-icons">calendar_today</i>
-                            <input type="date" id="currentDateHeader" style="background:transparent; color:inherit; border:none; font-size:1.1rem; font-weight:700; font-family:inherit; outline:none; cursor:pointer; padding:5px;" onchange="if(window.syncSmsDate) window.syncSmsDate(this.value)">
+                    <div class="panel-header" style="flex-direction: column; align-items: stretch; gap: 10px; background: white; color: #1e293b; padding: 15px 15px 10px 15px; border-bottom: 2px solid #e2e8f0;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
+                            <h3 style="font-size: 1rem; margin: 0; display:flex; align-items:center; gap:5px;"><i class="material-icons" style="color: #3b82f6; font-size:1.1rem;">calendar_month</i> 발송 내역 달력</h3>
+                            <div style="display:flex; align-items:center; gap: 8px;">
+                                <button onclick="changeHistoryMonth(-1)" style="background:none; border:1px solid #cbd5e1; border-radius:4px; padding:2px 5px; cursor:pointer;"><span class="material-icons" style="font-size:1rem; vertical-align:middle;">chevron_left</span></button>
+                                <span id="historyCalendarMonthLabel" style="font-weight:bold; font-size:0.9rem; min-width: 60px; text-align:center;">-</span>
+                                <button onclick="changeHistoryMonth(1)" style="background:none; border:1px solid #cbd5e1; border-radius:4px; padding:2px 5px; cursor:pointer;"><span class="material-icons" style="font-size:1rem; vertical-align:middle;">chevron_right</span></button>
+                            </div>
                         </div>
-                        <button onclick="if(window.syncSmsDate) window.syncSmsDate(document.getElementById('currentDateHeader').value)" style="background:rgba(255,255,255,0.25); border:1px solid rgba(255,255,255,0.5); color:white; padding:8px 10px; border-radius:6px; cursor:pointer; font-size:0.95rem; display:flex; align-items:center; justify-content: center; gap:6px; font-weight:700; width: 100%; box-sizing: border-box; transition: background 0.2s;">
-                            <i class="material-icons" style="font-size:1.2rem;">history</i> 내가 보낸 문자 발송 내역 보기
-                        </button>
+                        <div id="historyCalendarGrid" style="display:grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align:center; font-size: 0.8rem;">
+                            <!-- Days header -->
+                            <div style="font-weight:bold; color:#ef4444; padding:5px 0;">일</div>
+                            <div style="font-weight:bold; color:#64748b; padding:5px 0;">월</div>
+                            <div style="font-weight:bold; color:#64748b; padding:5px 0;">화</div>
+                            <div style="font-weight:bold; color:#64748b; padding:5px 0;">수</div>
+                            <div style="font-weight:bold; color:#64748b; padding:5px 0;">목</div>
+                            <div style="font-weight:bold; color:#64748b; padding:5px 0;">금</div>
+                            <div style="font-weight:bold; color:#3b82f6; padding:5px 0;">토</div>
+                            <!-- Days will be generated here -->
+                        </div>
                     </div>
-                    <script>
-                        // 무조건 한국 시간(KST) 기준으로 '오늘 날짜' 계산
-                        const now = new Date();
-                        const kstOptions = { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' };
-                        const parts = new Intl.DateTimeFormat('ko-KR', kstOptions).formatToParts(now);
-                        const y = parts.find(p => p.type === 'year').value;
-                        const m = parts.find(p => p.type === 'month').value;
-                        const d = parts.find(p => p.type === 'day').value;
-                        document.getElementById('currentDateHeader').value = `${y}-${m}-${d}`;
-                    </script>
-
+                    
+                    <!-- Hidden field to satisfy existing scripts that look for currentDateHeader -->
+                    <input type="hidden" id="currentDateHeader" value="">
                     <!-- Payment Schedule Filter (@@@ Exclusive) -->
                     <div class="payment-filter-container" style="padding: 15px; border-bottom: 2px solid #e2e8f0; background: #f8fafc; flex-shrink: 0;">
                         <div style="font-size: 0.85rem; font-weight: 700; color: #1e3a8a; margin-bottom: 10px; display: flex; align-items: center; gap: 5px; cursor:pointer;"
