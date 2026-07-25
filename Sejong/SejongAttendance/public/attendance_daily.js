@@ -183,7 +183,7 @@ function renderCourseList() {
                     th, td { padding: 6px 2px !important; font-size: 0.85rem; }
                     .student-cell { min-width: auto; white-space: nowrap; font-size: 0.85rem; }
                     .status-btn-group { gap: 1px; }
-                    .status-btn { padding: 4px 1px; font-size: 0.75rem; letter-spacing: -1px; white-space: nowrap; }
+                    .status-btn { padding: 4px 1px; font-size: 0.75rem; letter-spacing: -1px; white-space: nowrap; touch-action: manipulation; }
                 }
             `;
             document.head.appendChild(style);
@@ -388,8 +388,8 @@ let lastClickedMemberId = null;
 window.setStatus = async function (memberId, statusType, btnElement) {
     const now = Date.now();
     
-    // Check for double click on absent button (within 400ms)
-    if (statusType === 'absent' && lastClickedMemberId === memberId && (now - lastClickTime) < 400) {
+    // Check for double click on absent button (within 500ms)
+    if (statusType === 'absent' && lastClickedMemberId === memberId && (now - lastClickTime) < 500) {
         lastClickTime = 0; // reset
         lastClickedMemberId = null;
         
