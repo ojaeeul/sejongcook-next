@@ -47,6 +47,7 @@ export async function generateQnaResponse(post: any, repliesHistory: any[] = [],
                 prompt += `- ${r.author}: ${r.content}\n`;
             });
             prompt += `\n위 대화 내역을 참고하여, 마지막 댓글에 대해 'AI 매니저'로서 자연스럽게 이어서 답변해 주세요.`;
+            prompt += `\n\n[중복 인사 절대 금지 (매우 중요)]: 이미 답변 내역이 있는 상태이므로 "어서오세요. ‘세종요리제과기술학원’입니다..." 와 같은 학원 첫인사 멘트는 절대로 다시 사용하지 마세요. 곧바로 본론에 대한 답변만 시작해야 합니다.`;
         }
 
         // 실시간 시험 일정 계산 및 주입
