@@ -9,7 +9,7 @@
     <title>수강생 등록 - 세종요리제과학원 (김포/세종 요리 전문)</title>
     <meta name="description" content="세종요리제과학원 신규 수강생 등록 페이지입니다. 김포 및 세종 지역에서 요리사의 꿈을 시작하세요.">
     <meta name="keywords" content="세종요리, 김포요리, 세종요리학원, 김포요리학원, 요리학원 등록, 수강생 모집">
-    <link rel="stylesheet" href="style.css?v=20260725-31">
+    <link rel="stylesheet" href="style.css?v=20260725-32">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -21,8 +21,8 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://npmcdn.com/flatpickr/dist/l10n/ko.js"></script>
 
-    <script src="script.js?v=20260725-31" defer></script>
-    <script src="questions_data.js?v=20260725-31" defer></script>
+    <script src="script.js?v=20260725-32" defer></script>
+    <script src="questions_data.js?v=20260725-32" defer></script>
     <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 </head>
 
@@ -619,7 +619,28 @@
             <script>
                 document.addEventListener('DOMContentLoaded', () => {
                     const masterInput = document.getElementById('masterDateSelector');
-                    flatpickr("#inlineCalendar", {
+                    let regCountsByDate = {};
+                    let inlineCalendarInstance = null;
+
+                    window.refreshCalendarBadges = async function() {
+                        try {
+                            const res = await fetch(`/api/sejong/members?t=${Date.now()}`);
+                            const allMembers = await res.json();
+                            regCountsByDate = {};
+                            allMembers.forEach(m => {
+                                if (m.registeredDate) {
+                                    regCountsByDate[m.registeredDate] = (regCountsByDate[m.registeredDate] || 0) + 1;
+                                }
+                            });
+                            if (inlineCalendarInstance) {
+                                inlineCalendarInstance.redraw();
+                            }
+                        } catch(e) {
+                            console.error('Failed to refresh calendar badges', e);
+                        }
+                    };
+
+                    inlineCalendarInstance = flatpickr("#inlineCalendar", {
                         inline: true,
                         locale: "ko",
                         defaultDate: "today",
@@ -628,8 +649,31 @@
                                 masterInput.value = dateStr;
                                 syncMasterDateToForm(dateStr);
                             }
+                        },
+                        onDayCreate: function(dObj, dStr, fp, dayElem) {
+                            // Calculate local date string YYYY-MM-DD
+                            const localDate = new Date(dayElem.dateObj.getTime() - (dayElem.dateObj.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+                            if (regCountsByDate[localDate]) {
+                                const badge = document.createElement("span");
+                                badge.innerHTML = regCountsByDate[localDate] + '명';
+                                badge.style.position = "absolute";
+                                badge.style.bottom = "2px";
+                                badge.style.right = "2px";
+                                badge.style.backgroundColor = "#10b981"; // Green badge similar to exam calendar
+                                badge.style.color = "white";
+                                badge.style.borderRadius = "4px";
+                                badge.style.padding = "1px 3px";
+                                badge.style.fontSize = "9px";
+                                badge.style.fontWeight = "bold";
+                                badge.style.pointerEvents = "none";
+                                dayElem.appendChild(badge);
+                                dayElem.style.position = "relative";
+                            }
                         }
                     });
+
+                    // Initial fetch
+                    window.refreshCalendarBadges();
                 });
             </script>
         </main>
@@ -959,7 +1003,7 @@
 
     <!-- Swiper JS -->
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-    <script src="sidebar_sync.js?v=20260725-31"></script>
+    <script src="sidebar_sync.js?v=20260725-32"></script>
 </body>
 
 </html>
