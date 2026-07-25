@@ -7,12 +7,12 @@
     <meta http-equiv="Expires" content="0">    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title>문자 발송 - 세종요리</title>
-    <link rel="stylesheet" href="style.css?v=20260725-26">
+    <link rel="stylesheet" href="style.css?v=20260725-27">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="shared_calc.js?v=20260725-26"></script>
-    <script src="sms_expected.js?v=20260725-26" defer></script>
+    <script src="shared_calc.js?v=20260725-27"></script>
+    <script src="sms_expected.js?v=20260725-27" defer></script>
     <style>
         .sms-container {
             display: flex;
@@ -1028,11 +1028,23 @@
     <!-- Full Preview Modal (Larger) -->
     <div class="modal-overlay" id="fullPreviewModal">
         <div class="modal-content large">
-            <div class="modal-header" style="background:#0369a1;">
-                <span>전체 수신인별 미리보기 (최대 100건)</span>
-                <i class="material-icons" style="cursor:pointer;" onclick="closeFullPreviewModal()">close</i>
+            <div class="modal-header" style="background:#0369a1; display:flex; flex-direction:column; padding:15px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+                    <span>전체 수신인별 미리보기 (최대 100건)</span>
+                    <i class="material-icons" style="cursor:pointer;" onclick="closeFullPreviewModal()">close</i>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-top:15px; width:100%; align-items:center;">
+                    <div style="display:flex; gap:10px;">
+                        <button id="tabPreviewActive" onclick="switchPreviewTab('active')" style="padding:6px 12px; background:white; color:#0369a1; border:none; border-radius:4px; font-weight:bold; cursor:pointer;">전송 대상</button>
+                        <button id="tabPreviewHold" onclick="switchPreviewTab('hold')" style="padding:6px 12px; background:rgba(255,255,255,0.3); color:white; border:none; border-radius:4px; font-weight:bold; cursor:pointer;">보류 목록</button>
+                    </div>
+                    <div style="position:relative; width:200px;">
+                        <i class="material-icons" style="position:absolute; left:8px; top:50%; transform:translateY(-50%); font-size:1rem; color:#94a3b8;">search</i>
+                        <input type="text" id="previewSearchInput" placeholder="이름 검색..." oninput="filterPreviewList()" style="width:100%; padding:6px 8px 6px 28px; border-radius:4px; border:none; font-size:0.9rem; box-sizing:border-box;">
+                    </div>
+                </div>
             </div>
-            <div class="modal-body" id="fullPreviewBody" style="background:#f8fafc; overflow-y:auto;">
+            <div class="modal-body" id="fullPreviewBody" style="background:#f8fafc; overflow-y:auto; padding-top:10px;">
                 <!-- Full list goes here -->
             </div>
             <div class="modal-footer">
@@ -1396,7 +1408,7 @@
             }, 500);
         });
     </script>
-    <script src="sidebar_sync.js?v=20260725-26"></script>
+    <script src="sidebar_sync.js?v=20260725-27"></script>
 </body>
 
 </html>

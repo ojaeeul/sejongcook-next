@@ -96,6 +96,7 @@ let currentMsgType = 'SMS';
 let editingTemplateIndex = -1;
 let isAddingNewTemplate = false;
 let lastGeneratedPreviews = []; // Store for full preview modal
+let heldMessages = []; // Store for held messages in full preview modal
 
 let defaultTemplates = [
     { text: '반갑습니다.', type: 'SMS' },
@@ -1422,7 +1423,7 @@ function sendSms() {
         msg = msg.replace(/\[\[총결제금액\]\]/g, combinedFeeStr);
         msg = msg.replace(/@@@/g, tuitionDateStr);
 
-        personalizedMessages.push({ name: t.name, text: msg });
+        personalizedMessages.push({ id: t.id, name: t.name, text: msg, _targetData: t });
     });
 
     lastGeneratedPreviews = personalizedMessages; // Save for full view window
@@ -1449,7 +1450,7 @@ function sendSms() {
 
     const bodyHTML = `
         <div style="margin-bottom:15px; text-align:center;">
-            발송 대상: <strong style="color:#2563eb; font-size:1.2rem;">총 ${selectedTargets.length}명</strong>
+            발송 대상: <strong id="smsModalTargetCount" style="color:#2563eb; font-size:1.2rem;">총 ${selectedTargets.length}명</strong>
         </div>
         
         <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:15px; align-items:center;">
@@ -1484,26 +1485,155 @@ function sendSms() {
     openModal(title, bodyHTML, confirmSmsSend, '발송하기', '#3b82f6');
 }
 
+let currentPreviewTab = 'active';
+
+window.switchPreviewTab = function(tab) {
+    currentPreviewTab = tab;
+    document.getElementById('tabPreviewActive').style.background = tab === 'active' ? 'white' : 'rgba(255,255,255,0.3)';
+    document.getElementById('tabPreviewActive').style.color = tab === 'active' ? '#0369a1' : 'white';
+    document.getElementById('tabPreviewHold').style.background = tab === 'hold' ? 'white' : 'rgba(255,255,255,0.3)';
+    document.getElementById('tabPreviewHold').style.color = tab === 'hold' ? '#0369a1' : 'white';
+    
+    // Reset search
+    const searchInput = document.getElementById('previewSearchInput');
+    if (searchInput) searchInput.value = '';
+    
+    renderFullPreviewList();
+}
+
+window.filterPreviewList = function() {
+    const term = (document.getElementById('previewSearchInput')?.value || '').toLowerCase();
+    const items = document.querySelectorAll('.full-preview-item');
+    items.forEach(el => {
+        const name = (el.dataset.name || '').toLowerCase();
+        if (name.includes(term)) {
+            el.style.display = 'block';
+        } else {
+            el.style.display = 'none';
+        }
+    });
+}
+
+window.holdMessage = function(idx) {
+    const item = lastGeneratedPreviews.splice(idx, 1)[0];
+    heldMessages.push(item);
+    
+    // update count
+    totalSelectedNow = lastGeneratedPreviews.length;
+    // update targets list so confirmSmsSend matches
+    const tIdx = selectedTargets.findIndex(t => t.id === item.id && t.name === item.name);
+    if (tIdx > -1) {
+        item._targetData = selectedTargets.splice(tIdx, 1)[0];
+    }
+    const targetCountEl = document.getElementById('smsModalTargetCount');
+    if (targetCountEl) targetCountEl.textContent = `총 ${selectedTargets.length}명`;
+    
+    showModalAlert(`[${item.name}] 님의 문자가 보류되었습니다. (보류 목록 탭에서 확인 가능)`);
+    renderFullPreviewList();
+}
+
+window.unholdMessage = function(idx) {
+    const item = heldMessages.splice(idx, 1)[0];
+    lastGeneratedPreviews.push(item);
+    if (item._targetData) {
+        selectedTargets.push(item._targetData);
+    }
+    totalSelectedNow = lastGeneratedPreviews.length;
+    
+    const targetCountEl = document.getElementById('smsModalTargetCount');
+    if (targetCountEl) targetCountEl.textContent = `총 ${selectedTargets.length}명`;
+    
+    showModalAlert(`[${item.name}] 님의 문자가 다시 전송 대상에 추가되었습니다.`);
+    renderFullPreviewList();
+}
+
+window.sendSingleHeldMessage = async function(idx) {
+    const item = heldMessages[idx];
+    if (!confirm(`[${item.name}] 님에게 이 내용을 즉시 개별 발송하시겠습니까?`)) return;
+    
+    const dateHeader = document.getElementById('currentDateHeader');
+    const dateStr = (dateHeader && dateHeader.tagName === 'INPUT') ? dateHeader.value : dateHeader.textContent;
+    
+    try {
+        const fetchUrl = `${API_BASE}/sms_history`;
+        await fetch(fetchUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                date: dateStr,
+                messages: [{
+                    memberId: item.id || '',
+                    name: item.name,
+                    phone: item._targetData ? item._targetData.phone : '',
+                    text: item.text,
+                    timestamp: new Date().toISOString()
+                }]
+            })
+        });
+        showModalAlert(`[${item.name}] 님에게 발송 완료되었습니다.`);
+        heldMessages.splice(idx, 1);
+        renderFullPreviewList();
+    } catch(e) {
+        console.error(e);
+        showModalAlert('발송 중 오류가 발생했습니다.', true);
+    }
+}
+
+window.updatePreviewText = function(listType, idx, newText) {
+    if (listType === 'active') {
+        lastGeneratedPreviews[idx].text = newText;
+    } else {
+        heldMessages[idx].text = newText;
+    }
+}
+
 function showFullPreview() {
-    // Show all messages but highlight the ones that don't match the active tab
-    const listHtml = lastGeneratedPreviews.map((item, idx) => {
+    currentPreviewTab = 'active';
+    switchPreviewTab('active');
+    document.getElementById('fullPreviewModal').style.display = 'flex';
+}
+
+function renderFullPreviewList() {
+    const targetList = currentPreviewTab === 'active' ? lastGeneratedPreviews : heldMessages;
+    
+    if (targetList.length === 0) {
+        document.getElementById('fullPreviewBody').innerHTML = `<div style="padding:40px; text-align:center; color:#64748b;">목록이 비어있습니다.</div>`;
+        return;
+    }
+
+    const listHtml = targetList.map((item, idx) => {
         let textBytes = 0;
         for (let i = 0; i < item.text.length; i++) textBytes += item.text.charCodeAt(i) > 128 ? 2 : 1;
         const typeStr = textBytes > 90 ? 'LMS' : 'SMS';
         const isMismatch = currentTab !== 'all' && currentTab.toUpperCase() !== typeStr;
         const headerBg = isMismatch ? '#fff7ed' : 'white';
         const typeColor = typeStr === 'LMS' ? '#ef4444' : '#3b82f6';
+        
+        let actionButtons = '';
+        if (currentPreviewTab === 'active') {
+            actionButtons = `<button onclick="holdMessage(${idx})" style="padding:4px 8px; background:#fef2f2; color:#ef4444; border:1px solid #fca5a5; border-radius:4px; font-size:0.8rem; cursor:pointer; font-weight:bold;">보류하기</button>`;
+        } else {
+            actionButtons = `
+                <button onclick="unholdMessage(${idx})" style="padding:4px 8px; background:#f0fdf4; color:#16a34a; border:1px solid #86efac; border-radius:4px; font-size:0.8rem; cursor:pointer; font-weight:bold; margin-right:5px;">보류 해제</button>
+                <button onclick="sendSingleHeldMessage(${idx})" style="padding:4px 8px; background:#e0f2fe; color:#0284c7; border:1px solid #7dd3fc; border-radius:4px; font-size:0.8rem; cursor:pointer; font-weight:bold;">이 사람만 발송</button>
+            `;
+        }
 
         return `
-        <div style="background:${headerBg}; border:1px solid ${isMismatch ? '#fdba74' : '#e2e8f0'}; padding:15px; border-radius:10px; margin-bottom:15px; box-shadow:0 1px 3px rgba(0,0,0,0.05); position:relative;">
+        <div class="full-preview-item" data-name="${item.name}" style="background:${headerBg}; border:1px solid ${isMismatch ? '#fdba74' : '#e2e8f0'}; padding:15px; border-radius:10px; margin-bottom:15px; box-shadow:0 1px 3px rgba(0,0,0,0.05); position:relative;">
             ${isMismatch ? `<div style="position:absolute; top:10px; right:15px; font-size:0.7rem; background:#f59e0b; color:white; padding:2px 6px; border-radius:4px; font-weight:800;">탭 미스매치</div>` : ''}
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid #f1f5f9; padding-bottom:5px;">
                 <span style="font-weight:800; color:#1e3a8a;">[${idx + 1}] 수신인: ${item.name}님</span>
-                <span style="font-size:0.75rem; color:${typeColor}; font-weight:700;">${typeStr} (${textBytes} bytes)</span>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span style="font-size:0.75rem; color:${typeColor}; font-weight:700;">${typeStr} (<span id="bytes_${currentPreviewTab}_${idx}">${textBytes}</span> bytes)</span>
+                    ${actionButtons}
+                </div>
             </div>
-            <div style="padding:10px; background:${isMismatch ? '#fffcf0' : '#f8fafc'}; border-radius:6px; font-size:0.95rem; line-height:1.5; color:#334155; word-break:break-all;">
-                ${item.text.replace(/\n/g, '<br>')}
-            </div>
+            <textarea 
+                oninput="updatePreviewText('${currentPreviewTab}', ${idx}, this.value); 
+                         let b=0; for(let i=0; i<this.value.length; i++) b+=this.value.charCodeAt(i)>128?2:1; 
+                         document.getElementById('bytes_${currentPreviewTab}_${idx}').textContent=b;"
+                style="width:100%; min-height:100px; padding:10px; background:${isMismatch ? '#fffcf0' : '#f8fafc'}; border:1px solid #cbd5e1; border-radius:6px; font-size:0.95rem; line-height:1.5; color:#334155; box-sizing:border-box; resize:vertical;">${item.text}</textarea>
         </div>
     `;
     }).join('');
@@ -1511,14 +1641,16 @@ function showFullPreview() {
     document.getElementById('fullPreviewBody').innerHTML = `
         <div style="padding:10px;">
             <div style="background:#f1f5f9; border:1px solid #e2e8f0; color:#475569; padding:10px; border-radius:6px; margin-bottom:20px; font-size:0.85rem; text-align:center;">
-                <i class="material-icons" style="font-size:1rem; vertical-align:middle;">info</i> ${currentTab === 'all' ? '전체' : currentTab.toUpperCase()} 탭의 전송 대상 목록입니다. (총 ${lastGeneratedPreviews.length}건)
+                <i class="material-icons" style="font-size:1rem; vertical-align:middle;">info</i> ${currentPreviewTab === 'active' ? '전체 탭의 전송 대상 목록입니다.' : '보류된 문자 목록입니다.'} (총 ${targetList.length}건)
             </div>
             <div style="display:flex; flex-direction:column; gap:0;">
                 ${listHtml}
             </div>
         </div>
     `;
-    document.getElementById('fullPreviewModal').style.display = 'flex';
+    
+    // Apply search filter if active
+    if (window.filterPreviewList) window.filterPreviewList();
 }
 
 window.filterSmsHistory = function() {
@@ -1612,19 +1744,21 @@ window.confirmSmsSend = async function() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 date: dateStr,
-                messages: selectedTargets.map((t, idx) => {
-                    const sentText = (lastGeneratedPreviews && lastGeneratedPreviews[idx]) ? lastGeneratedPreviews[idx].text : document.getElementById('messageInput').value;
+                messages: lastGeneratedPreviews.map((item) => {
+                    const t = item._targetData || { phone: '' };
                     return {
-                        memberId: t.id,
-                        name: t.name,
+                        memberId: item.id || '',
+                        name: item.name,
                         phone: t.phone,
-                        text: sentText,
+                        text: item.text,
                         timestamp: new Date().toISOString()
                     };
                 })
             })
         });
         showModalAlert('전송 및 저장이 완료되었습니다.');
+        // After sending successfully, clear active preview array (so they don't resend)
+        lastGeneratedPreviews = [];
     } catch(e) {
         console.error(e);
         showModalAlert('전송이 완료되었습니다. (저장 실패)');
