@@ -19,6 +19,9 @@ export default function AdminAccountPage() {
                     if (data.adminAccount) {
                         setCurrentId(data.adminAccount.id || '없음');
                         setCurrentPw(data.adminAccount.pw || '');
+                    } else {
+                        setCurrentId('설정 안됨');
+                        setCurrentPw('');
                     }
                 }
             } catch (e) {
@@ -97,7 +100,7 @@ export default function AdminAccountPage() {
                         <div className="flex justify-between items-center">
                             <span className="text-sm text-slate-500">비밀번호</span>
                             <span className="text-lg font-bold text-slate-900 tracking-wider">
-                                {currentPw ? (showPw ? currentPw : '•'.repeat(currentPw.length)) : '로딩중...'}
+                                {currentId === '로딩중...' ? '로딩중...' : (currentPw ? (showPw ? currentPw : '•'.repeat(currentPw.length)) : '설정 안됨')}
                             </span>
                         </div>
                     </div>
