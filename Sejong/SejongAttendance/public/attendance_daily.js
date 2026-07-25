@@ -367,7 +367,13 @@ function renderAttendanceTbody() {
             <div class="status-btn-group">
                 <button class="status-btn ${st === 'entry' ? 'active' : ''}" data-type="entry" style="${st === 'entry' ? 'background:#3b82f6;color:white;border-color:#3b82f6;' : ''}" onclick="setStatus(${m.id}, 'entry', this)">첫출석</button>
                 <button class="status-btn ${st === 'present' ? 'active' : ''}" data-type="present" onclick="setStatus(${m.id}, 'present', this)">출석</button>
-                <button class="status-btn ${st === 'absent' ? 'active' : ''}" data-type="absent" onclick="setStatus(${m.id}, 'absent', this)">결석</button>
+                <button class="status-btn ${st === 'absent' ? 'active' : ''}" data-type="absent" 
+                        onmousedown="window.handlePressStart(${m.id}, this)"
+                        onmouseup="window.handlePressEnd()"
+                        onmouseleave="window.handlePressEnd()"
+                        ontouchstart="window.handlePressStart(${m.id}, this)"
+                        ontouchend="window.handlePressEnd()"
+                        onclick="setStatus(${m.id}, 'absent', this)">결석</button>
                 <button class="status-btn ${st === 'late' ? 'active' : ''}" data-type="late" onclick="setStatus(${m.id}, 'late', this)">지각</button>
                 <button class="status-btn ${st === 'early' ? 'active' : ''}" data-type="early" onclick="setStatus(${m.id}, 'early', this)">조퇴</button>
                 <button class="status-btn ${st === 'extension' ? 'active' : ''}" data-type="extension" onclick="setStatus(${m.id}, 'extension', this)">연장</button>
@@ -382,9 +388,67 @@ function renderAttendanceTbody() {
     });
 
     updateStats();
-}
+let pressTimer = null;
+let isLongPressFired = false;
+
+window.handlePressStart = function(memberId, btn) {
+    isLongPressFired = false;
+    pressTimer = setTimeout(() => {
+        isLongPressFired = true;
+        let currentMemo = currentMemoState[memberId] || '';
+        let memo = prompt("결석 사유를 확인/수정하세요:", currentMemo);
+        if (memo !== null) {
+            currentMemoState[memberId] = memo.trim();
+            // Re-render immediately
+            renderAttendanceTbody();
+            
+            // Auto-save silently in the background
+            const activeCourseClean = activeCourse ? activeCourse.replace(/\([^)]*\)/g, '').trim() : null;
+            let payloadStatus = 'absent';
+            if (memo.trim() !== '') {
+                payloadStatus = `absent|${memo.trim()}`;
+            }
+            
+            let logIdx = attendanceData.findIndex(a => String(a.memberId) === String(memberId) && a.date === currentDate);
+            if (logIdx >= 0) {
+                attendanceData[logIdx].status = payloadStatus;
+            } else {
+                attendanceData.push({
+                    id: Date.now() + Math.floor(Math.random() * 1000),
+                    memberId: memberId,
+                    date: currentDate,
+                    status: payloadStatus,
+                    course: activeCourseClean
+                });
+            }
+            
+            fetch('/api/sejong/attendance/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    memberId: memberId,
+                    date: currentDate,
+                    status: payloadStatus,
+                    course: activeCourseClean
+                })
+            }).catch(err => console.error(err));
+        }
+    }, 1500); // 1.5 seconds is usually better for UX than a full 3 seconds
+};
+
+window.handlePressEnd = function() {
+    if (pressTimer) {
+        clearTimeout(pressTimer);
+        pressTimer = null;
+    }
+};
 
 window.setStatus = async function (memberId, statusType, btnElement) {
+    if (isLongPressFired) {
+        isLongPressFired = false;
+        return; // Skip click event if it was a long press
+    }
+
     const tr = btnElement.closest('tr');
 
     let finalStatus = statusType;
