@@ -362,7 +362,7 @@ function renderAttendanceTbody() {
         const tdActions = document.createElement('td');
         const st = currentAttendanceState[m.id];
         const memo = currentMemoState[m.id] || '';
-        const memoHtml = (st === 'absent' && memo) ? `<span style="font-size: 0.8rem; color: #ef4444; margin-left: 8px;">📝 ${memo}</span>` : '';
+        const memoHtml = (memo) ? `<div style="font-size: 0.8rem; color: #ef4444; margin-top: 4px; padding: 2px 4px; background: #fee2e2; border-radius: 4px; cursor: pointer; line-height: 1.2; word-break: break-all;" onclick="window.openMemoEditor(${m.id})">📝 ${memo}</div>` : '';
         tdActions.innerHTML = `
             <div class="status-btn-group">
                 <button class="status-btn ${st === 'entry' ? 'active' : ''}" data-type="entry" style="${st === 'entry' ? 'background:#3b82f6;color:white;border-color:#3b82f6;' : ''}" onclick="setStatus(${m.id}, 'entry', this)">첫출석</button>
@@ -372,8 +372,9 @@ function renderAttendanceTbody() {
                 <button class="status-btn ${st === 'early' ? 'active' : ''}" data-type="early" onclick="setStatus(${m.id}, 'early', this)">조퇴</button>
                 <button class="status-btn ${st === 'extension' ? 'active' : ''}" data-type="extension" onclick="setStatus(${m.id}, 'extension', this)">연장</button>
                 <button class="status-btn ${st === 'exit' ? 'active' : ''}" data-type="exit" style="${st === 'exit' ? 'background:#6366f1;color:white;border-color:#6366f1;' : ''}" onclick="setStatus(${m.id}, 'exit', this)">종료출석</button>
-                ${memoHtml}
+                <button class="status-btn" style="flex: 0.5; background: #fdf6e3; border-color: #fde047; color: #d97706; padding-left: 2px; padding-right: 2px;" onclick="window.openMemoEditor(${m.id})">📝</button>
             </div>
+            ${memoHtml}
         `;
 
         tr.appendChild(tdStudent);
@@ -382,69 +383,53 @@ function renderAttendanceTbody() {
     });
 
     updateStats();
-let lastClickTime = 0;
-let lastClickedMemberId = null;
+window.openMemoEditor = function(memberId) {
+    let currentMemo = currentMemoState[memberId] || '';
+    let memo = prompt("학생의 특이사항/결석 사유를 확인 및 수정하세요:", currentMemo);
+    
+    if (memo !== null) {
+        currentMemoState[memberId] = memo.trim();
+        
+        let st = currentAttendanceState[memberId] || 'unchecked';
+        let payloadStatus = st;
+        
+        if (memo.trim() !== '') {
+            payloadStatus = `${st}|${memo.trim()}`;
+        }
+        
+        // Re-render immediately
+        renderAttendanceTbody();
+        
+        // Auto-save silently in the background
+        const activeCourseClean = activeCourse ? activeCourse.replace(/\([^)]*\)/g, '').trim() : null;
+        
+        let logIdx = attendanceData.findIndex(a => String(a.memberId) === String(memberId) && a.date === currentDate);
+        if (logIdx >= 0) {
+            attendanceData[logIdx].status = payloadStatus;
+        } else {
+            attendanceData.push({
+                id: Date.now() + Math.floor(Math.random() * 1000),
+                memberId: memberId,
+                date: currentDate,
+                status: payloadStatus,
+                course: activeCourseClean
+            });
+        }
+        
+        fetch('/api/sejong/attendance/save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                memberId: memberId,
+                date: currentDate,
+                status: payloadStatus,
+                course: activeCourseClean
+            })
+        }).catch(err => console.error(err));
+    }
+};
 
 window.setStatus = async function (memberId, statusType, btnElement) {
-    const now = Date.now();
-    
-    // Check for double click on absent button (within 500ms)
-    if (statusType === 'absent' && lastClickedMemberId === memberId && (now - lastClickTime) < 500) {
-        lastClickTime = 0; // reset
-        lastClickedMemberId = null;
-        
-        let currentMemo = currentMemoState[memberId] || '';
-        let memo = prompt("결석 사유를 확인/수정하세요:", currentMemo);
-        
-        if (memo !== null) {
-            currentMemoState[memberId] = memo.trim();
-            // Force status to absent
-            currentAttendanceState[memberId] = 'absent';
-            
-            // Re-render immediately
-            renderAttendanceTbody();
-            
-            // Auto-save silently in the background
-            const activeCourseClean = activeCourse ? activeCourse.replace(/\([^)]*\)/g, '').trim() : null;
-            let payloadStatus = 'absent';
-            if (memo.trim() !== '') {
-                payloadStatus = `absent|${memo.trim()}`;
-            }
-            
-            let logIdx = attendanceData.findIndex(a => String(a.memberId) === String(memberId) && a.date === currentDate);
-            if (logIdx >= 0) {
-                attendanceData[logIdx].status = payloadStatus;
-            } else {
-                attendanceData.push({
-                    id: Date.now() + Math.floor(Math.random() * 1000),
-                    memberId: memberId,
-                    date: currentDate,
-                    status: payloadStatus,
-                    course: activeCourseClean
-                });
-            }
-            
-            fetch('/api/sejong/attendance/save', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    memberId: memberId,
-                    date: currentDate,
-                    status: payloadStatus,
-                    course: activeCourseClean
-                })
-            }).catch(err => console.error(err));
-        } else {
-            // Cancelled double tap, restore absent state since first tap might have unset it
-            currentAttendanceState[memberId] = 'absent';
-            renderAttendanceTbody();
-        }
-        return;
-    }
-    
-    lastClickTime = now;
-    lastClickedMemberId = memberId;
-
     const tr = btnElement.closest('tr');
 
     let finalStatus = statusType;
