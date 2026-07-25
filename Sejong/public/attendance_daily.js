@@ -367,13 +367,7 @@ function renderAttendanceTbody() {
             <div class="status-btn-group">
                 <button class="status-btn ${st === 'entry' ? 'active' : ''}" data-type="entry" style="${st === 'entry' ? 'background:#3b82f6;color:white;border-color:#3b82f6;' : ''}" onclick="setStatus(${m.id}, 'entry', this)">첫출석</button>
                 <button class="status-btn ${st === 'present' ? 'active' : ''}" data-type="present" onclick="setStatus(${m.id}, 'present', this)">출석</button>
-                <button class="status-btn ${st === 'absent' ? 'active' : ''}" data-type="absent" 
-                        onmousedown="window.handlePressStart(${m.id}, this)"
-                        onmouseup="window.handlePressEnd()"
-                        onmouseleave="window.handlePressEnd()"
-                        ontouchstart="window.handlePressStart(${m.id}, this)"
-                        ontouchend="window.handlePressEnd()"
-                        onclick="setStatus(${m.id}, 'absent', this)">결석</button>
+                <button class="status-btn ${st === 'absent' ? 'active' : ''}" data-type="absent" onclick="setStatus(${m.id}, 'absent', this)">결석</button>
                 <button class="status-btn ${st === 'late' ? 'active' : ''}" data-type="late" onclick="setStatus(${m.id}, 'late', this)">지각</button>
                 <button class="status-btn ${st === 'early' ? 'active' : ''}" data-type="early" onclick="setStatus(${m.id}, 'early', this)">조퇴</button>
                 <button class="status-btn ${st === 'extension' ? 'active' : ''}" data-type="extension" onclick="setStatus(${m.id}, 'extension', this)">연장</button>
@@ -388,17 +382,25 @@ function renderAttendanceTbody() {
     });
 
     updateStats();
-let pressTimer = null;
-let isLongPressFired = false;
+let lastClickTime = 0;
+let lastClickedMemberId = null;
 
-window.handlePressStart = function(memberId, btn) {
-    isLongPressFired = false;
-    pressTimer = setTimeout(() => {
-        isLongPressFired = true;
+window.setStatus = async function (memberId, statusType, btnElement) {
+    const now = Date.now();
+    
+    // Check for double click on absent button (within 400ms)
+    if (statusType === 'absent' && lastClickedMemberId === memberId && (now - lastClickTime) < 400) {
+        lastClickTime = 0; // reset
+        lastClickedMemberId = null;
+        
         let currentMemo = currentMemoState[memberId] || '';
         let memo = prompt("결석 사유를 확인/수정하세요:", currentMemo);
+        
         if (memo !== null) {
             currentMemoState[memberId] = memo.trim();
+            // Force status to absent
+            currentAttendanceState[memberId] = 'absent';
+            
             // Re-render immediately
             renderAttendanceTbody();
             
@@ -432,22 +434,16 @@ window.handlePressStart = function(memberId, btn) {
                     course: activeCourseClean
                 })
             }).catch(err => console.error(err));
+        } else {
+            // Cancelled double tap, restore absent state since first tap might have unset it
+            currentAttendanceState[memberId] = 'absent';
+            renderAttendanceTbody();
         }
-    }, 1500); // 1.5 seconds is usually better for UX than a full 3 seconds
-};
-
-window.handlePressEnd = function() {
-    if (pressTimer) {
-        clearTimeout(pressTimer);
-        pressTimer = null;
+        return;
     }
-};
-
-window.setStatus = async function (memberId, statusType, btnElement) {
-    if (isLongPressFired) {
-        isLongPressFired = false;
-        return; // Skip click event if it was a long press
-    }
+    
+    lastClickTime = now;
+    lastClickedMemberId = memberId;
 
     const tr = btnElement.closest('tr');
 
