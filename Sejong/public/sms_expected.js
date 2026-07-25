@@ -158,6 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchAllData();
     renderTemplates();
     filterTemplates();
+    if(window.fetchAndRenderHistoryCalendar) window.fetchAndRenderHistoryCalendar();
 
     // Default: check payment filter to show only unpaid students on load to match the badge count
     if (pf) pf.checked = true;
@@ -648,8 +649,8 @@ function renderTargetList() {
         const isExpanded = expandedCourses.has(cName) || !!searchVal || (usePaymentFilterChecked && hasRangeDates);
         const cleanCNameHeader = cName.replace(/\(\d{1,2}:\d{2}\)/, '').trim();
         header.innerHTML = `
-            <span style="font-size:0.9rem;"><i class="material-icons" style="font-size:1rem; vertical-align:middle; margin-right:5px; color:#cbd5e1;">folder</i> ${cleanCNameHeader} <span style="font-size:0.75rem; color:#94a3b8;">(${membersInCourse.length})</span></span>
-            <i class="material-icons">${isExpanded ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}</i>
+            <span style="font-size:0.8rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1;"><i class="material-icons" style="font-size:0.9rem; vertical-align:middle; margin-right:3px; color:#cbd5e1;">folder</i> ${cleanCNameHeader} <span style="font-size:0.7rem; color:#94a3b8;">(${membersInCourse.length})</span></span>
+            <i class="material-icons" style="font-size:1.1rem; flex-shrink:0;">${isExpanded ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}</i>
         `;
 
         // Member list
@@ -669,7 +670,7 @@ function renderTargetList() {
             mDiv.dataset.course = cName;
             mDiv.dataset.day = m.specificMilestone ? m.specificMilestone.day : '';
 
-            mDiv.style.padding = '6px 10px 6px 20px'; // Smaller padding
+            mDiv.style.padding = '4px 5px 4px 15px'; // Even smaller padding
             mDiv.style.cursor = hasPhone ? 'pointer' : 'not-allowed';
             mDiv.style.display = 'flex';
             mDiv.style.alignItems = 'center'; // Center align
@@ -684,20 +685,20 @@ function renderTargetList() {
             if (isSelected) mDiv.style.color = '#3b82f6';
 
             const isInactive = m.status === 'trash' || m.status === 'delete' || m.status === 'completed';
-            const statusLabel = isInactive ? '<span style="color:#ef4444; font-size:0.7rem; margin-left:4px;">(휴원)</span>' : '';
-            const typeLabel = targetType === 'student' ? '<span style="color:#94a3b8; font-size:0.65rem; margin-right:2px;">수강생:</span>' : '<span style="color:#94a3b8; font-size:0.65rem; margin-right:2px;">학부모:</span>';
-            const dateLabel = m.specificMilestone ? `<span style="color:#3b82f6; font-size:0.7rem; margin-left:6px; font-weight:700;">${m.specificMilestone.month}/${m.specificMilestone.day}</span>` : '';
+            const statusLabel = isInactive ? '<span style="color:#ef4444; font-size:0.6rem; margin-left:2px;">(휴원)</span>' : '';
+            const typeLabel = targetType === 'student' ? '<span style="color:#94a3b8; font-size:0.6rem; margin-right:2px;">수강생:</span>' : '<span style="color:#94a3b8; font-size:0.6rem; margin-right:2px;">학부모:</span>';
+            const dateLabel = m.specificMilestone ? `<span style="color:#3b82f6; font-size:0.65rem; margin-left:4px; font-weight:700;">${m.specificMilestone.month}/${m.specificMilestone.day}</span>` : '';
 
             mDiv.innerHTML = `
                 <span style="display:flex; align-items:center; flex:1; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;">
-                    <i class="material-icons" style="font-size:0.9rem; vertical-align:middle; margin-right:6px; color:${isSelected ? '#3b82f6' : '#cbd5e1'};">
+                    <i class="material-icons" style="font-size:0.85rem; vertical-align:middle; margin-right:4px; color:${isSelected ? '#3b82f6' : '#cbd5e1'};">
                         ${isSelected ? 'check_circle' : (hasPhone ? 'radio_button_unchecked' : 'error_outline')}
                     </i>
-                    <span style="font-weight:600; font-size:0.8rem;">${m.name}</span>
+                    <span style="font-weight:600; font-size:0.75rem;">${m.name}</span>
                     ${dateLabel}
                     ${statusLabel}
                 </span>
-                <span style="font-size:0.7rem; color:${hasPhone ? '#64748b' : '#ef4444'}; white-space:nowrap; flex-shrink:0; text-align:right;">
+                <span style="font-size:0.65rem; color:${hasPhone ? '#64748b' : '#ef4444'}; white-space:nowrap; flex-shrink:0; text-align:right;">
                     ${typeLabel}${hasPhone ? phone : '번호 없음'}
                 </span>
             `;
@@ -1525,6 +1526,7 @@ window.holdMessage = function(idx) {
     if (tIdx > -1) {
         item._targetData = selectedTargets.splice(tIdx, 1)[0];
     }
+    
     const targetCountEl = document.getElementById('smsModalTargetCount');
     if (targetCountEl) targetCountEl.textContent = `총 ${selectedTargets.length}명`;
     
@@ -1571,6 +1573,7 @@ window.sendSingleHeldMessage = async function(idx) {
             })
         });
         showModalAlert(`[${item.name}] 님에게 발송 완료되었습니다.`);
+        if (window.fetchAndRenderHistoryCalendar) window.fetchAndRenderHistoryCalendar();
         heldMessages.splice(idx, 1);
         renderFullPreviewList();
     } catch(e) {
@@ -1677,7 +1680,105 @@ window.filterSmsHistory = function() {
         counter.textContent = term ? `검색 결과: ${visibleCount}건` : `총 ${items.length}건의 발송 내역이 있습니다.`;
     }
 };
+let historyCalendarDate = new Date();
+let historyDataCache = [];
 
+window.changeHistoryMonth = function(delta) {
+    historyCalendarDate.setMonth(historyCalendarDate.getMonth() + delta);
+    renderHistoryCalendar();
+};
+
+window.fetchAndRenderHistoryCalendar = async function() {
+    try {
+        const fetchUrl = `${API_BASE}/sms_history`;
+        const res = await fetch(fetchUrl);
+        if (res.ok) {
+            historyDataCache = await res.json();
+        } else {
+            historyDataCache = [];
+        }
+        renderHistoryCalendar();
+    } catch(e) {
+        console.error(e);
+    }
+};
+
+window.renderHistoryCalendar = function() {
+    const year = historyCalendarDate.getFullYear();
+    const month = historyCalendarDate.getMonth();
+    document.getElementById('historyCalendarMonthLabel').textContent = `${year}년 ${month + 1}월`;
+    
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    
+    const grid = document.getElementById('historyCalendarGrid');
+    if (!grid) return;
+    
+    // Clear days
+    while (grid.children.length > 7) {
+        grid.removeChild(grid.lastChild);
+    }
+    
+    // Process records
+    const recordsByDay = {};
+    historyDataCache.forEach(entry => {
+        recordsByDay[entry.date] = entry.messages ? entry.messages.length : 0;
+    });
+    
+    // Render blank days
+    for (let i = 0; i < firstDay; i++) {
+        const empty = document.createElement('div');
+        empty.style.padding = '5px';
+        grid.appendChild(empty);
+    }
+    
+    // KST Today
+    const now = new Date();
+    const offset = now.getTimezoneOffset() * 60000;
+    const todayKST = new Date(now.getTime() - offset);
+    const todayStr = todayKST.toISOString().split('T')[0];
+    
+    for (let d = 1; d <= daysInMonth; d++) {
+        const dateObj = new Date(year, month, d);
+        const yStr = dateObj.getFullYear();
+        const mStr = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const dStr = String(dateObj.getDate()).padStart(2, '0');
+        const ds = `${yStr}-${mStr}-${dStr}`;
+        
+        const dayCell = document.createElement('div');
+        dayCell.style.padding = '4px 0';
+        dayCell.style.border = '1px solid #f1f5f9';
+        dayCell.style.borderRadius = '4px';
+        dayCell.style.position = 'relative';
+        dayCell.style.cursor = 'pointer';
+        dayCell.style.minHeight = '45px';
+        dayCell.style.display = 'flex';
+        dayCell.style.flexDirection = 'column';
+        dayCell.style.alignItems = 'center';
+        
+        if (ds === todayStr) {
+            dayCell.style.backgroundColor = '#eff6ff';
+            dayCell.style.borderColor = '#bfdbfe';
+        }
+        
+        let color = '#475569';
+        if (dateObj.getDay() === 0) color = '#ef4444';
+        else if (dateObj.getDay() === 6) color = '#3b82f6';
+        
+        let html = `<div style="font-weight:500; color:${color}; margin-bottom:2px;">${d}</div>`;
+        
+        const count = recordsByDay[ds] || 0;
+        if (count > 0) {
+            html += `<div style="font-size:0.65rem; background:#10b981; color:white; border-radius:4px; padding:1px 4px; font-weight:bold; letter-spacing:-0.5px;">${count}건</div>`;
+        }
+        
+        dayCell.innerHTML = html;
+        dayCell.onclick = () => {
+            if(window.syncSmsDate) window.syncSmsDate(ds);
+        };
+        grid.appendChild(dayCell);
+    }
+};
 window.syncSmsDate = async function(val) {
     if (!val) return;
     try {
@@ -1801,6 +1902,7 @@ window.resendHistoryMessage = async function(idx, name, phone, memberId) {
         });
         
         showModalAlert(`[${name}] 님에게 오늘 날짜(${todayStr})로 발송이 완료되었습니다.`);
+        if (window.fetchAndRenderHistoryCalendar) window.fetchAndRenderHistoryCalendar();
         toggleHistoryEdit(idx);
     } catch (e) {
         console.error(e);
@@ -1836,12 +1938,16 @@ window.confirmSmsSend = async function() {
         showModalAlert('전송 및 저장이 완료되었습니다.');
         // After sending successfully, clear active preview array (so they don't resend)
         lastGeneratedPreviews = [];
+        if (window.fetchAndRenderHistoryCalendar) window.fetchAndRenderHistoryCalendar();
     } catch(e) {
         console.error(e);
         showModalAlert('전송이 완료되었습니다. (저장 실패)');
     }
     
     if (typeof closeSmsModal === 'function') closeSmsModal();
+    // Also hide fullPreviewModal if it's open
+    const fullPreviewModal = document.getElementById('fullPreviewModal');
+    if (fullPreviewModal) fullPreviewModal.style.display = 'none';
 }
 
 /* --- Range Selection Calendar Logic (Interactive Drag Support) --- */
