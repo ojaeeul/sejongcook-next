@@ -2239,34 +2239,43 @@ function renderRangeCalendar() {
         if (paymentNamesByDay[i] && (paymentNamesByDay[i].real.length > 0 || paymentNamesByDay[i].sim.length > 0)) {
             let totalReal = paymentNamesByDay[i].real.length;
             let totalSim = paymentNamesByDay[i].sim.length;
+            let totalCount = totalReal + totalSim;
             
-            let badges = [];
             let titleLines = [];
             
             if (totalReal > 0) {
-                // Red badge (진짜결제일)
-                badges.push(`<span style="background: #fee2e2; color: #dc2626; border: 2px solid #ef4444; border-radius: 20px; padding: 2px 6px; font-weight: 900; box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2); display: inline-block; line-height: 1; margin: 1px;">${i}</span>`);
                 titleLines.push(`[진짜] 결제 대상: ${totalReal}건`);
                 titleLines.push(paymentNamesByDay[i].real.join('\\n'));
             }
             if (totalSim > 0) {
-                // Blue badge (예정결제일)
-                badges.push(`<span style="background: #eff6ff; color: #2563eb; border: 2px solid #3b82f6; border-radius: 20px; padding: 2px 6px; font-weight: 900; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2); display: inline-block; line-height: 1; margin: 1px;">${i}</span>`);
                 if (totalReal > 0) titleLines.push('');
                 titleLines.push(`[예정] 결제 대상: ${totalSim}건`);
                 titleLines.push(paymentNamesByDay[i].sim.join('\\n'));
             }
             
-            d.innerHTML = badges.join('');
             d.title = titleLines.join('\\n');
             
-            // Adjust layout if there are multiple badges to prevent overflow
-            d.style.display = 'flex';
-            d.style.flexDirection = 'column';
-            d.style.alignItems = 'center';
-            d.style.justifyContent = 'center';
-            d.style.gap = '2px';
-            d.style.padding = '0';
+            // Appending a green badge for the count, just like flatpickr
+            const badge = document.createElement("span");
+            badge.innerHTML = totalCount;
+            badge.style.position = "absolute";
+            badge.style.bottom = "2px";
+            badge.style.right = "2px";
+            badge.style.backgroundColor = "#10b981"; // Green badge
+            badge.style.color = "white";
+            badge.style.borderRadius = "4px";
+            badge.style.padding = "1px 3px";
+            badge.style.fontSize = "9px";
+            badge.style.lineHeight = "1";
+            badge.style.minWidth = "12px";
+            badge.style.textAlign = "center";
+            badge.style.fontWeight = "bold";
+            badge.style.pointerEvents = "none";
+            badge.style.boxSizing = "border-box";
+            badge.style.whiteSpace = "nowrap";
+            
+            d.style.position = "relative";
+            d.appendChild(badge);
         }
 
         // Mouse Events for Drag
