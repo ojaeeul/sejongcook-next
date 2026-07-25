@@ -849,6 +849,7 @@ function renderStudentList() {
                     }
                 }
                 renderStudentList(); // re-render to update UI and stats
+                autoSaveSingle(m.phone, localState[m.phone]);
             };
             toggles.appendChild(btn);
         });
@@ -870,6 +871,7 @@ function renderStudentList() {
                 let st = baseCurStat || 'unchecked';
                 localState[m.phone] = memo.trim() ? `${st}|${memo.trim()}` : st;
                 renderStudentList();
+                autoSaveSingle(m.phone, localState[m.phone]);
             }
         };
         toggles.appendChild(memoBtn);
@@ -881,6 +883,30 @@ function renderStudentList() {
     });
     
     updateStats(stats);
+}
+
+// Background silent save
+async function autoSaveSingle(phone, status) {
+    const dateStr = document.getElementById('dateSelect').value.replace(/\./g, '-');
+    const cName = document.getElementById('courseSelect').value;
+    if (!dateStr || !cName) return;
+
+    try {
+        const payload = [{
+            phone: phone,
+            status: status || 'unchecked',
+            date: dateStr,
+            course: cName.replace(/\([^)]*\)/g, '').trim()
+        }];
+
+        fetch('/api/sejong/attendance/save_v2', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ attendanceList: payload })
+        }).catch(e => console.error('Auto save failed', e));
+    } catch (e) {
+        console.error(e);
+    }
 }
 
 function updateStats(stats) {
@@ -998,6 +1024,6 @@ window.addEventListener('storage', async (e) => {
 });
 
 </script>
-    <script src="sidebar_sync.js?v=20260726-15"></script>
+    <script src="sidebar_sync.js?v=20260726-16"></script>
 </body>
 </html>
