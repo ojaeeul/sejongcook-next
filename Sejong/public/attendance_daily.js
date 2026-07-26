@@ -777,7 +777,7 @@ function updateStats() {
                 if (cExtension > 0) textParts.push(`<span style="color: #0369a1;">연장 ${cExtension}</span>`);
                 
                 const span = document.createElement('span');
-                span.style.cssText = "background: white; padding: 4px 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); display: inline-flex; gap: 8px; align-items: center; cursor: pointer; transition: all 0.2s ease;";
+                span.style.cssText = "background: white; padding: 3px 6px; border: 1px solid #cbd5e1; border-radius: 5px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); display: inline-flex; gap: 4px; align-items: center; cursor: pointer; transition: all 0.2s ease;";
                 
                 if (subFilterCourse === cName) {
                     span.style.background = '#e0f2fe';
@@ -802,7 +802,7 @@ function updateStats() {
                     renderAttendanceTbody();
                     updateStats();
                 };
-                span.innerHTML = `<strong style="color: ${subFilterCourse === cName ? '#0284c7' : '#334155'};">${cName}</strong> <span style="font-size: 0.85rem;">${textParts.join(' <span style="color:#cbd5e1; margin: 0 2px;">|</span> ')}</span>`;
+                span.innerHTML = `<strong style="color: ${subFilterCourse === cName ? '#0284c7' : '#334155'}; font-size: 0.75rem;">${cName}</strong> <span style="font-size: 0.75rem;">${textParts.join(' <span style="color:#cbd5e1; margin: 0 2px;">|</span> ')}</span>`;
                 breakdownContent.appendChild(span);
             }
         }
