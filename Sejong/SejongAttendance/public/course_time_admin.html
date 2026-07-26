@@ -661,7 +661,15 @@
                             newTimetable[c] = ttData[c] || [];
                             if (!ttData[c]) changed = true;
                         });
-                        if (Object.keys(ttData).length !== settingsObj.courses.length) changed = true;
+                        if (settingsObj.inactiveCourses) {
+                            settingsObj.inactiveCourses.forEach(c => {
+                                newTimetable[c] = ttData[c] || [];
+                                if (!ttData[c]) changed = true;
+                            });
+                        }
+                        
+                        const totalCourses = settingsObj.courses.length + (settingsObj.inactiveCourses ? settingsObj.inactiveCourses.length : 0);
+                        if (Object.keys(ttData).length !== totalCourses) changed = true;
                         
                         if (changed) {
                             await fetch("/api/sejong/timetable", {
