@@ -2691,9 +2691,9 @@ function renderMembers() {
                 <col style="width: auto;">  <!-- 주소 -->
                 <col style="width: 115px;"> <!-- 연락처 본인 -->
                 <col style="width: 115px;"> <!-- 연락처 보호자 -->
-                <col style="width: 130px;"> <!-- 과정 -->
+                <col style="width: 180px;"> <!-- 과정 -->
                 <col style="width: 80px;">  <!-- 수강시작일 -->
-                <col style="width: auto;">  <!-- 비고 -->
+                <col style="width: 150px;"> <!-- 비고 -->
                 <col style="width: 75px;">  <!-- 상태 -->
             </colgroup>
             <thead>
