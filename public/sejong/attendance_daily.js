@@ -416,7 +416,7 @@ window.openMemoEditor = function(memberId) {
             });
         }
         
-        fetch('/api/sejong/attendance/save', {
+        fetch('/api/sejong/attendance', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -532,6 +532,7 @@ window.markAllPresent = function () {
     });
 
     renderAttendanceTbody(); // Re-render to show active buttons
+    saveDailyAttendance(); // Auto-save when marking all present
 };
 
 function updateStats() {
