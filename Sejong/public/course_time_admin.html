@@ -690,6 +690,7 @@
                     // Broadcast event to update other tabs immediately
                     const sejongSyncChannel = new BroadcastChannel('sejong_sync');
                     sejongSyncChannel.postMessage('SETTINGS_UPDATED');
+                    localStorage.setItem('sejong_timetable_sync', Date.now());
                 } else {
                     alert("설정 저장에 실패했습니다.");
                 }
@@ -700,6 +701,12 @@
         }
 
         document.addEventListener("DOMContentLoaded", loadSettings);
+
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'sejong_timetable_sync') {
+                loadSettings();
+            }
+        });
 
         window.toggleSidebar = function () {
             const sidebar = document.querySelector(".sidebar");
@@ -721,6 +728,6 @@
             }
         });
     </script>
-    <script src="sidebar_sync.js?v=20260727-5"></script>
+    <script src="sidebar_sync.js?v=20260727-6"></script>
 </body>
 </html>

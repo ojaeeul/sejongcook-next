@@ -387,17 +387,24 @@
             name.textContent = course;
             name.style.width = 'auto';
 
-            const delBtn = document.createElement('span');
-            delBtn.className = 'material-icons';
-            delBtn.textContent = 'remove_circle_outline';
-            delBtn.style.color = '#ef4444';
-            delBtn.style.cursor = 'pointer';
-            delBtn.style.fontSize = '1.2rem';
-            delBtn.title = '이 과정 삭제';
-            delBtn.onclick = () => deleteCourse(course);
+            const actionBtn = document.createElement('span');
+            actionBtn.className = 'material-icons';
+            if (isActive) {
+                actionBtn.textContent = 'remove_circle_outline';
+                actionBtn.style.color = '#ef4444';
+                actionBtn.title = '이 과정을 적용 안된 메뉴로 이동';
+                actionBtn.onclick = () => moveToInactive(course);
+            } else {
+                actionBtn.textContent = 'add_circle_outline';
+                actionBtn.style.color = '#10b981';
+                actionBtn.title = '이 과정을 적용된 메뉴로 이동';
+                actionBtn.onclick = () => moveToActive(course);
+            }
+            actionBtn.style.cursor = 'pointer';
+            actionBtn.style.fontSize = '1.2rem';
 
             nameWrap.appendChild(name);
-            nameWrap.appendChild(delBtn);
+            nameWrap.appendChild(actionBtn);
             row.appendChild(nameWrap);
 
             const toggles = document.createElement('div');
@@ -468,29 +475,50 @@
         activeCourses.push(name);
         input.value = '';
         renderCourseSettings();
+        saveSettings(true); // Auto-save for two-way sync
     }
 
-    function deleteCourse(course) {
-        if (confirm(`'${course}' 과정을 목록에서 삭제하시겠습니까?\n(저장하기 버튼을 눌러야 최종 반영됩니다)`)) {
-            // 현재 화면에서 선택된 요일 상태를 먼저 timetableData에 동기화
-            const rows = document.querySelectorAll('.course-row');
-            rows.forEach(row => {
-                const courseName = row.querySelector('.course-name').textContent;
-                const activeDays = [];
-                row.querySelectorAll('.day-toggle.selected').forEach(btn => {
-                    activeDays.push(parseInt(btn.dataset.day));
-                });
-                timetableData[courseName] = activeDays;
+    function moveToInactive(course) {
+        // Sync current UI state to timetableData before moving
+        const rows = document.querySelectorAll('.course-row');
+        rows.forEach(row => {
+            const courseName = row.querySelector('.course-name').textContent;
+            const activeDays = [];
+            row.querySelectorAll('.day-toggle.selected').forEach(btn => {
+                activeDays.push(parseInt(btn.dataset.day));
             });
-            
-            delete timetableData[course];
-            activeCourses = activeCourses.filter(c => c !== course);
-            inactiveCourses = inactiveCourses.filter(c => c !== course);
-            renderCourseSettings();
+            timetableData[courseName] = activeDays;
+        });
+        
+        activeCourses = activeCourses.filter(c => c !== course);
+        if (!inactiveCourses.includes(course)) {
+            inactiveCourses.push(course);
         }
+        renderCourseSettings();
+        saveSettings(true);
     }
 
-    async function saveSettings() {
+    function moveToActive(course) {
+        // Sync current UI state to timetableData before moving
+        const rows = document.querySelectorAll('.course-row');
+        rows.forEach(row => {
+            const courseName = row.querySelector('.course-name').textContent;
+            const activeDays = [];
+            row.querySelectorAll('.day-toggle.selected').forEach(btn => {
+                activeDays.push(parseInt(btn.dataset.day));
+            });
+            timetableData[courseName] = activeDays;
+        });
+        
+        inactiveCourses = inactiveCourses.filter(c => c !== course);
+        if (!activeCourses.includes(course)) {
+            activeCourses.push(course);
+        }
+        renderCourseSettings();
+        saveSettings(true);
+    }
+
+    async function saveSettings(silent = false) {
         const newTimetable = {};
         const rows = document.querySelectorAll('.course-row');
         rows.forEach(row => {
@@ -511,33 +539,28 @@
             if (res.ok) {
                 timetableData = newTimetable;
                 
-                // [Sync] Update settings.courses
+                // [Sync] Update settings.courses and settings.inactiveCourses
                 try {
                     const settingsRes = await fetch(`${SHEET_API_BASE}/settings?t=${Date.now()}`);
                     const data = await settingsRes.json();
                     let settingsObj = Array.isArray(data) && data.length > 0 ? data[0] : (data.key === "settings" ? data.value : data);
                     if (settingsObj) {
-                        const newCourses = Object.keys(newTimetable);
-                        // [Sync] Update settings courses only if there are new courses not in active or inactive
-                        let changed = false;
-                        newCourses.forEach(c => {
-                            if (!settingsObj.courses.includes(c) && !(settingsObj.inactiveCourses && settingsObj.inactiveCourses.includes(c))) {
-                                settingsObj.courses.push(c);
-                                changed = true;
-                            }
+                        settingsObj.courses = activeCourses;
+                        settingsObj.inactiveCourses = inactiveCourses;
+                        
+                        if(!settingsObj.courseFees) settingsObj.courseFees = {};
+                        activeCourses.forEach(c => {
+                            if(settingsObj.courseFees[c] === undefined) settingsObj.courseFees[c] = 200000;
+                        });
+                        inactiveCourses.forEach(c => {
+                            if(settingsObj.courseFees[c] === undefined) settingsObj.courseFees[c] = 200000;
                         });
                         
-                        if (changed) {
-                            if(!settingsObj.courseFees) settingsObj.courseFees = {};
-                            settingsObj.courses.forEach(c => {
-                                if(settingsObj.courseFees[c] === undefined) settingsObj.courseFees[c] = 200000;
-                            });
-                            await fetch(`${SHEET_API_BASE}/settings`, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify([settingsObj])
-                            });
-                        }
+                        await fetch(`${SHEET_API_BASE}/settings`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify([settingsObj])
+                        });
                     }
                 } catch(e) {
                     console.error("Sync failed", e);
@@ -545,7 +568,9 @@
 
                 // [즉각 동기화] 다른 탭에 설정 변경 알림
                 localStorage.setItem('sejong_timetable_sync', Date.now());
-                alert('설정이 성공적으로 저장되었습니다.');
+                if (!silent) {
+                    alert('설정이 성공적으로 저장되었습니다.');
+                }
                 if (typeof window.syncSidebar === 'function') {
                     window.syncSidebar();
                 }
@@ -570,6 +595,6 @@
         }
     });
 </script>
-    <script src="sidebar_sync.js?v=20260727-5"></script>
+    <script src="sidebar_sync.js?v=20260727-6"></script>
 </body>
 </html>
