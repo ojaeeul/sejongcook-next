@@ -759,6 +759,22 @@ function updateStats() {
             
             courseMembers.forEach(m => {
                 const st = currentAttendanceState[m.id];
+                if (!st || st === 'unchecked') return;
+
+                if (activeCourse === '전체출석') {
+                    const dbRecord = attendanceData.find(a => String(a.memberId) === String(m.id) && a.date === currentDate);
+                    let effectiveCourse = '';
+                    if (dbRecord && dbRecord.course) {
+                        effectiveCourse = dbRecord.course;
+                    } else if (m.course) {
+                        effectiveCourse = m.course.split(',')[0].trim();
+                    }
+                    
+                    if (effectiveCourse && !effectiveCourse.includes(cName)) {
+                        return;
+                    }
+                }
+
                 if (st === 'present') cPresent++;
                 else if (st === 'absent') cAbsent++;
                 else if (st === 'late') cLate++;
