@@ -10,6 +10,8 @@ let allMembers = [];
 let groupedCourses = {};
 let activeCourse = '';
 let currentDate = localStorage.getItem('sejong_daily_date') || new Date().toISOString().split('T')[0];
+let currentAttendanceState = {};
+let currentMemoState = {};
 
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('attendanceDate').value = currentDate;
@@ -22,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         localStorage.setItem('sejong_daily_date', currentDate);
         currentAttendanceState = {};
-    currentMemoState = {};
+        currentMemoState = {};
         fetchAttendance();
     });
 
@@ -86,7 +88,7 @@ async function fetchAttendance() {
             attendanceData = newData;
             lastAttendanceHash = newHash;
             currentAttendanceState = {};
-    currentMemoState = {}; // Clear local state so new DB records take effect
+            currentMemoState = {}; // Clear local state so new DB records take effect
             renderAttendanceTbody();
             return true;
         }
@@ -213,7 +215,7 @@ function renderCourseList() {
             if (activeCourse !== cName) {
                 activeCourse = cName;
                 currentAttendanceState = {};
-    currentMemoState = {}; // Clear state when switching tabs
+                currentMemoState = {}; // Clear state when switching tabs
                 renderCourseList(); // Re-render to update active styling
                 renderAttendanceTbody(); // Re-render table
             }
@@ -254,16 +256,11 @@ function selectCourseFromMobile(cName) {
     if (activeCourse !== cName) {
         activeCourse = cName;
         currentAttendanceState = {};
-    currentMemoState = {}; // Clear state when switching tabs
+        currentMemoState = {}; // Clear state when switching tabs
         renderCourseList(); // Re-render to update active styling
         renderAttendanceTbody(); // Re-render table
     }
 }
-
-// Temporary store for UI changes before saving
-let currentAttendanceState = {};
-    currentMemoState = {};
-let currentMemoState = {}; // { memberId: 'present'|'absent'... }
 
 function renderAttendanceTbody() {
     const tbody = document.getElementById('attendanceTbody');
@@ -383,6 +380,8 @@ function renderAttendanceTbody() {
     });
 
     updateStats();
+}
+
 window.openMemoEditor = function(memberId) {
     let currentMemo = currentMemoState[memberId] || '';
     let memo = prompt("학생의 특이사항/결석 사유를 확인 및 수정하세요:", currentMemo);
@@ -646,10 +645,7 @@ window.sendDismissalSms = function () {
 window.addEventListener('storage', async (e) => {
     if (e.key === 'sejong_attendance_sync') {
         currentAttendanceState = {};
-    currentMemoState = {};
+        currentMemoState = {};
         await fetchAttendance();
     }
 });
-
-// 백그라운드 실행 (제거됨 - setInterval에서 처리)
-
