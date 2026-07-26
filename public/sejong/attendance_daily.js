@@ -269,15 +269,12 @@ function processCourses() {
             });
         }
     });
-    // Add 전체출석 at the end, filtered by those who have attendance records today (excluding absent)
+    // Add 전체출석 at the end, filtered by those who have attendance records today
     const attendeesToday = allMembersList.filter(m => {
         return attendanceData.some(a => {
             if (String(a.memberId) !== String(m.id)) return false;
             if (a.date !== currentDate) return false;
             if (!a.status || a.status === 'unchecked') return false;
-            if (a.status === 'X' || (typeof a.status === 'string' && a.status.startsWith('X|'))) return false; // Exclude absent
-            if (a.status === '결석' || (typeof a.status === 'string' && a.status.includes('결석'))) return false;
-            if (a.status === 'absent') return false;
             return true;
         });
     });
