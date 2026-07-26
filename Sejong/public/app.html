@@ -661,6 +661,7 @@ const API_BASE = '/api/sejong';
 let allMembers = [];
 let groupedCourses = {};
 let attendanceData = [];
+let timetableData = {};
 let localState = {}; // phone -> status
 
 const today = new Date().toISOString().split('T')[0];
@@ -682,12 +683,21 @@ function goView(viewId) {
 async function initAttendanceData() {
     showLoading(true);
     try {
-        const [mRes, aRes] = await Promise.all([
+        const [mRes, aRes, tRes] = await Promise.all([
             fetch(`${API_BASE}/members?t=${Date.now()}`),
-            fetch(`${API_BASE}/attendance?date=${document.getElementById('attDate').value}&t=${Date.now()}`)
+            fetch(`${API_BASE}/attendance?date=${document.getElementById('attDate').value}&t=${Date.now()}`),
+            fetch(`${API_BASE}/timetable?t=${Date.now()}`)
         ]);
         allMembers = await mRes.json();
         attendanceData = await aRes.json();
+        
+        timetableData = {};
+        if (tRes.ok) {
+            const apiData = await tRes.json();
+            if (apiData && Object.keys(apiData).length > 0) {
+                timetableData = apiData;
+            }
+        }
         
         processCourses();
         populateCourseSelect();
@@ -804,6 +814,33 @@ function renderStudentList() {
         updateStats(stats);
         return;
     }
+    
+    // --- NEW: Check if the current date is a valid day for the active course ---
+    let isValidDayForCourse = true;
+    if (cName && cName !== '미지정') {
+        const cDateObj = new Date(document.getElementById('attDate').value);
+        const dayOfWeek = cDateObj.getDay();
+        const cleanCourseName = cName.replace(/\([^)]*\)/g, '').trim();
+        
+        if (timetableData[cleanCourseName]) {
+            isValidDayForCourse = timetableData[cleanCourseName].includes(dayOfWeek);
+        } else if (timetableData[cleanCourseName.replace(/\s/g, '')]) {
+            isValidDayForCourse = timetableData[cleanCourseName.replace(/\s/g, '')].includes(dayOfWeek);
+        }
+    }
+
+    if (!isValidDayForCourse) {
+        list.innerHTML = `<div style="text-align:center; padding:30px; color:#ef4444; font-weight:bold; background: white; border: 1px solid #fee2e2; border-radius: 8px; margin-top: 10px;">오늘은 '${cName}' 과정의 수업 요일이 아닙니다.<br><span style="font-size:0.9rem; font-weight:normal; color:#94a3b8; display:block; margin-top:8px;">(수업 요일 규칙 설정 확인)</span></div>`;
+        updateStats(stats);
+        // Hide actions if not a class day
+        const actions = document.querySelector('.att-actions');
+        if (actions) actions.style.display = 'none';
+        return;
+    } else {
+        const actions = document.querySelector('.att-actions');
+        if (actions) actions.style.display = 'flex';
+    }
+    // -------------------------------------------------------------------------
     
     const statuses = [
         { val: 'present', label: '출석' },
@@ -928,7 +965,7 @@ async function autoSaveSingle(phone, rawStatus) {
                 memberId: member.id,
                 date: date,
                 status: dbStatus,
-                course: member.course
+                course: cName.replace(/\([^)]*\)/g, '').trim()
             })
         });
         localStorage.setItem('sejong_attendance_sync', Date.now().toString());
@@ -952,6 +989,7 @@ function setAllPresent() {
         localState[m.phone] = 'present';
     });
     renderStudentList();
+    saveAttendance();
 }
 
 async function saveAttendance() {
@@ -1052,6 +1090,6 @@ window.addEventListener('storage', async (e) => {
 });
 
 </script>
-    <script src="sidebar_sync.js?v=20260726-18"></script>
+    <script src="sidebar_sync.js?v=20260726-19"></script>
 </body>
 </html>
