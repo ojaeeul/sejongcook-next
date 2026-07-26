@@ -24,6 +24,11 @@ sejongSyncChannel.onmessage = function(event) {
         } else if (typeof renderMembers === 'function') {
             renderMembers();
         }
+    } else if (event.data === 'SETTINGS_UPDATED') {
+        console.log('[Sync] Received SETTINGS_UPDATED. Reloading settings...');
+        if (typeof loadGlobalCourseTimeSettings === 'function') {
+            loadGlobalCourseTimeSettings();
+        }
     }
 };
 window.notifyMemberUpdate = function() {
@@ -86,13 +91,17 @@ async function loadGlobalCourseTimeSettings() {
         courseSet.delete('');
         timeSet.delete('');
         
-        if (courseSet.size > 0) {
-            global_course_options = Array.from(courseSet);
-        } else if (settings && settings.courses) {
+        if (settings && settings.courses && settings.courses.length > 0) {
             global_course_options = settings.courses;
+        } else if (courseSet.size > 0) {
+            global_course_options = Array.from(courseSet);
         }
         
-        global_time_options = Array.from(timeSet).sort();
+        if (settings && settings.times && settings.times.length > 0) {
+            global_time_options = settings.times;
+        } else {
+            global_time_options = Array.from(timeSet).sort();
+        }
 
         if (settings) {
             if (settings.makeupCutoffs) global_makeup_cutoffs = settings.makeupCutoffs;

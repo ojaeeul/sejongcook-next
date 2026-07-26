@@ -613,6 +613,10 @@
                     if (typeof window.syncSidebar === 'function') {
                         window.syncSidebar(settingsObj);
                     }
+                    
+                    // Broadcast event to update other tabs immediately
+                    const sejongSyncChannel = new BroadcastChannel('sejong_sync');
+                    sejongSyncChannel.postMessage('SETTINGS_UPDATED');
                 } else {
                     alert("설정 저장에 실패했습니다.");
                 }
@@ -644,6 +648,6 @@
             }
         });
     </script>
-    <script src="sidebar_sync.js?v=20260726-41"></script>
+    <script src="sidebar_sync.js?v=20260726-42"></script>
 </body>
 </html>
