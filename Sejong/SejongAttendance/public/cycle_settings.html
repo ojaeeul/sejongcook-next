@@ -24,7 +24,7 @@
         .chip-btn:hover { background: #ef4444; color: white; border-color: #ef4444; }
         .chip-btn .material-icons { font-size: 16px; font-weight: bold; }
         
-        .custom-rule-item { display: flex; justify-content: space-between; align-items: center; background: white; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .custom-rule-item { display: flex; justify-content: space-between; align-items: center; background: white; padding: 8px 12px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
         
         .tool-panel { background: #f1f5f9; border: 1px dashed #94a3b8; border-radius: 12px; padding: 20px; margin-top: 30px; }
         .tool-panel select, .tool-panel input { padding: 12px; font-size: 1rem; border: 1px solid #cbd5e1; border-radius: 8px; }
@@ -378,18 +378,18 @@
                 let escKeyword = rule.keyword.replace(/'/g, "\'");
                 customHTML += `
                     <div class="custom-rule-item">
-                        <div style="display:flex; align-items:center; gap:15px;">
-                            <div class="chip custom-chip" style="margin:0; box-shadow:none;">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <div class="chip custom-chip" style="margin:0; box-shadow:none; padding:4px 8px; font-size:0.9rem;">
                                 ${rule.keyword}
                             </div>
-                            <div style="color:#475569; font-size:1.0rem; font-weight: 500;">
-                                일반 <input type="number" value="${rule.cycle}" class="cycle-input" onchange="updateCustomCycle('${escKeyword}', this.value, 'general')" min="1" style="width: 55px; padding: 6px; text-align: center; border: 1px solid #cbd5e1; border-radius: 6px; margin: 0 4px; font-weight: bold;">회 
+                            <div style="color:#475569; font-size:0.85rem; font-weight: 500;">
+                                일반 <input type="number" value="${rule.cycle}" class="cycle-input" onchange="updateCustomCycle('${escKeyword}', this.value, 'general')" min="1" style="width: 45px; padding: 4px; text-align: center; border: 1px solid #cbd5e1; border-radius: 4px; margin: 0 2px; font-weight: bold; font-size: 0.9rem;">회 
                                 <span style="color:#cbd5e1;">|</span>
-                                학생 <input type="number" value="${rule.cycle_student !== undefined ? rule.cycle_student : rule.cycle}" class="cycle-input" onchange="updateCustomCycle('${escKeyword}', this.value, 'student')" min="1" style="width: 55px; padding: 6px; text-align: center; border: 1px solid #cbd5e1; border-radius: 6px; margin: 0 4px; font-weight: bold;">회
+                                학생 <input type="number" value="${rule.cycle_student !== undefined ? rule.cycle_student : rule.cycle}" class="cycle-input" onchange="updateCustomCycle('${escKeyword}', this.value, 'student')" min="1" style="width: 45px; padding: 4px; text-align: center; border: 1px solid #cbd5e1; border-radius: 4px; margin: 0 2px; font-weight: bold; font-size: 0.9rem;">회
                             </div>
                         </div>
-                        <button class="delete-btn" onclick="quickMove('${escKeyword}', 'auto')" title="원래 자리로 복귀" style="background:#dcfce7; color:#166534; border:1px solid #bbf7d0; padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px;">
-                            <span class="material-icons" style="font-size:18px;">add</span> 원래 그룹으로
+                        <button class="delete-btn" onclick="quickMove('${escKeyword}', 'auto')" title="원래 자리로 복귀" style="background:#dcfce7; color:#166534; border:1px solid #bbf7d0; padding: 4px 8px; border-radius: 6px; font-size: 0.85rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 3px;">
+                            <span class="material-icons" style="font-size:14px;">add</span> 복귀
                         </button>
                     </div>
                 `;
@@ -414,9 +414,9 @@
         if (window.inactiveCoursesList && window.inactiveCoursesList.length > 0) {
             window.inactiveCoursesList.forEach(c => {
                 inactiveHTML += `
-                    <div style="background: #e2e8f0; color: #64748b; padding: 10px 15px; border-radius: 8px; border: 1px solid #cbd5e1; font-weight: 500; display: flex; align-items: center; justify-content: space-between;">
+                    <div style="background: #e2e8f0; color: #64748b; padding: 6px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font-weight: 500; display: flex; align-items: center; justify-content: space-between; font-size: 0.9rem;">
                         <span>${c}</span>
-                        <span class="material-icons" style="font-size: 1.1rem; color: #94a3b8;">block</span>
+                        <span class="material-icons" style="font-size: 1rem; color: #94a3b8;">block</span>
                     </div>
                 `;
             });
