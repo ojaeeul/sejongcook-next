@@ -6,6 +6,7 @@ import { supabase } from '@/lib/sejongDataHandler';
 export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const date = searchParams.get('date');
+    const month = searchParams.get('month'); // e.g. "2026-07"
 
     let allLogs: any[] = [];
     let from = 0;
@@ -15,6 +16,8 @@ export async function GET(req: NextRequest) {
         let query = supabase.from('attendance').select('*').range(from, from + step - 1);
         if (date) {
             query = query.eq('date', date);
+        } else if (month) {
+            query = query.like('date', `${month}-%`);
         }
         
         const { data: logs, error } = await query;

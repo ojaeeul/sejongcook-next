@@ -539,6 +539,88 @@
                 font-size: 0.75rem;
                 letter-spacing: -1px;
             }
+        /* Mini Calendar Styles */
+        .mini-calendar-container {
+            border-bottom: 2px solid #e2e8f0;
+            background: white;
+            display: flex;
+            flex-direction: column;
+        }
+        .mini-calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            font-weight: 700;
+            color: #334155;
+            font-size: 1rem;
+        }
+        .mini-calendar-header i {
+            cursor: pointer;
+            color: #64748b;
+            font-size: 1.2rem;
+            padding: 4px;
+            border-radius: 4px;
+        }
+        .mini-calendar-header i:hover {
+            background: #f1f5f9;
+            color: #1e293b;
+        }
+        .mini-calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background: #e2e8f0;
+            border-top: 1px solid #e2e8f0;
+        }
+        .mini-calendar-grid > div {
+            background: white;
+            text-align: center;
+            padding: 8px 2px;
+            font-size: 0.85rem;
+            position: relative;
+        }
+        .mini-calendar-day-header {
+            font-weight: 700;
+            color: #64748b;
+            font-size: 0.8rem !important;
+            padding: 6px 0 !important;
+        }
+        .mini-calendar-date {
+            cursor: pointer;
+            min-height: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.1s;
+        }
+        .mini-calendar-date:hover {
+            background: #f8fafc;
+        }
+        .mini-calendar-date.other-month {
+            color: #cbd5e1;
+        }
+        .mini-calendar-date.active {
+            background: #3b82f6;
+            color: white;
+            font-weight: 700;
+        }
+        .mini-calendar-badge {
+            background: #10b981;
+            color: white;
+            font-size: 0.65rem;
+            font-weight: bold;
+            border-radius: 10px;
+            padding: 1px 5px;
+            margin-top: 2px;
+            line-height: 1.2;
+            min-width: 14px;
+            display: inline-block;
+        }
+        .mini-calendar-date.active .mini-calendar-badge {
+            background: white;
+            color: #10b981;
         }
     </style>
     <link rel="manifest" href="manifest.json">
@@ -743,6 +825,12 @@
                             <input type="checkbox" id="includeInactive"> 퇴원생 포함
                         </label>
                     </div>
+
+                    <!-- Mini Calendar -->
+                    <div id="miniCalendarContainer" class="mini-calendar-container">
+                        <!-- Populated by JS -->
+                    </div>
+
                     <div class="course-list-header">
                         <span>반목록</span>
                         <span id="courseCount">0개</span>
