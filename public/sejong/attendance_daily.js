@@ -399,6 +399,7 @@ function renderAttendanceTbody() {
                 if (!a.course) return true; // Global logs are always included
                 const aCourseClean = a.course.replace(/\([^)]*\)/g, '').trim();
                 const activeCourseClean = activeCourse.replace(/\([^)]*\)/g, '').trim();
+                if (activeCourseClean === '전체출석') return true;
                 const aCoursesList = aCourseClean.split(',').map(c => c.trim());
                 return aCoursesList.includes(activeCourseClean);
             });
@@ -555,6 +556,16 @@ window.setStatus = async function (memberId, statusType, btnElement) {
         if (finalStatus === 'entry') savedStatus = '[';
         if (finalStatus === 'exit') savedStatus = ']';
 
+        let actualCourseToSave = activeCourse;
+        if (activeCourse === '전체출석') {
+            const memberInfo = allMembers.find(m => String(m.id) === String(memberId));
+            if (memberInfo && memberInfo.course) {
+                actualCourseToSave = memberInfo.course.split(',')[0].trim();
+            } else {
+                actualCourseToSave = '';
+            }
+        }
+
         await fetch(getFetchUrl('attendance', true), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -562,18 +573,18 @@ window.setStatus = async function (memberId, statusType, btnElement) {
                 memberId: memberId,
                 date: currentDate,
                 status: savedStatus,
-                course: activeCourse
+                course: actualCourseToSave
             })
         });
 
         // Update local array so it survives re-renders
-        const idx = attendanceData.findIndex(a => String(a.memberId) === String(memberId) && a.date === currentDate && (a.course === activeCourse || (!a.course && !activeCourse)));
+        const idx = attendanceData.findIndex(a => String(a.memberId) === String(memberId) && a.date === currentDate && (a.course === actualCourseToSave || (!a.course && !actualCourseToSave)));
 
         if (idx > -1) {
             if (finalStatus === 'unchecked') attendanceData.splice(idx, 1);
             else attendanceData[idx].status = savedStatus;
         } else {
-            if (finalStatus !== 'unchecked') attendanceData.push({ memberId: memberId, date: currentDate, status: savedStatus, course: activeCourse });
+            if (finalStatus !== 'unchecked') attendanceData.push({ memberId: memberId, date: currentDate, status: savedStatus, course: actualCourseToSave });
         }
 
         // Notify Monthly sheet to sync automatically
