@@ -714,6 +714,60 @@ function updateStats() {
     document.getElementById('statLate').textContent = stats.late;
     document.getElementById('statEarly').textContent = stats.early;
     document.getElementById('statExtension').textContent = stats.extension;
+    
+    const breakdownBox = document.getElementById('courseBreakdownBox');
+    const breakdownContent = document.getElementById('courseBreakdownContent');
+    
+    if (activeCourse === '전체출석' && breakdownBox && breakdownContent) {
+        breakdownContent.innerHTML = '';
+        let hasData = false;
+        
+        const includeInactive = document.getElementById('includeInactive').checked;
+        
+        for (const [cName, members] of Object.entries(groupedCourses)) {
+            if (cName === '전체출석' || cName === '미지정') continue;
+            
+            let courseMembers = members;
+            if (!includeInactive) {
+                courseMembers = courseMembers.filter(m => m.status !== 'trash' && m.status !== 'completed');
+            }
+            
+            let cPresent = 0, cAbsent = 0, cLate = 0, cEarly = 0, cExtension = 0;
+            
+            courseMembers.forEach(m => {
+                const st = currentAttendanceState[m.id];
+                if (st === 'present') cPresent++;
+                else if (st === 'absent') cAbsent++;
+                else if (st === 'late') cLate++;
+                else if (st === 'early') cEarly++;
+                else if (st === 'extension') cExtension++;
+            });
+            
+            if (cPresent > 0 || cAbsent > 0 || cLate > 0 || cEarly > 0 || cExtension > 0) {
+                hasData = true;
+                
+                let textParts = [];
+                if (cPresent > 0) textParts.push(`<span style="color: #15803d; font-weight: bold;">출석 ${cPresent}</span>`);
+                if (cAbsent > 0) textParts.push(`<span style="color: #b91c1c;">결석 ${cAbsent}</span>`);
+                if (cLate > 0) textParts.push(`<span style="color: #c2410c;">지각 ${cLate}</span>`);
+                if (cEarly > 0) textParts.push(`<span style="color: #6d28d9;">조퇴 ${cEarly}</span>`);
+                if (cExtension > 0) textParts.push(`<span style="color: #0369a1;">연장 ${cExtension}</span>`);
+                
+                const span = document.createElement('span');
+                span.style.cssText = "background: white; padding: 4px 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); display: inline-flex; gap: 8px; align-items: center;";
+                span.innerHTML = `<strong style="color: #334155;">${cName}</strong> <span style="font-size: 0.85rem;">${textParts.join(' <span style="color:#cbd5e1; margin: 0 2px;">|</span> ')}</span>`;
+                breakdownContent.appendChild(span);
+            }
+        }
+        
+        if (hasData) {
+            breakdownBox.style.display = 'block';
+        } else {
+            breakdownBox.style.display = 'none';
+        }
+    } else if (breakdownBox) {
+        breakdownBox.style.display = 'none';
+    }
 }
 
 window.saveDailyAttendance = async function () {
