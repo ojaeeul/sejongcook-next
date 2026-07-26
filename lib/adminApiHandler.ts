@@ -239,7 +239,9 @@ export async function handlePost(request: NextRequest, board: string) {
             }
 
             // AI Bot for QnA & Review (only runs if SAFE)
-            if ((board === 'qna' || board === 'review') && moderationResult === "SAFE") {
+            if ((board === 'qna' || board === 'review')) {
+                data[0].content = `${newItem.content || ''} <br/><br/><div style="color:blue">[AI Bot Debug: Board=${board}, ModResult=${moderationResult}]</div>`;
+                if (moderationResult === "SAFE") {
                 try {
                     const keysStr = process.env.GEMINI_API_KEYS || process.env.GEMINI_API_KEY;
                     if (!keysStr) {
@@ -273,6 +275,7 @@ export async function handlePost(request: NextRequest, board: string) {
                     console.error("AI Bot Error:", e);
                     const errorMsg = e.message || String(e);
                     data[0].content = `${newItem.content} <br/><br/><div style="color:red">[Outer AI Bot Error: ${errorMsg}]</div>`;
+                }
                 }
             }
             
