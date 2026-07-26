@@ -26,8 +26,8 @@
         
         .custom-rule-item { display: flex; justify-content: space-between; align-items: center; background: white; padding: 8px 12px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
         
-        .tool-panel { background: #f1f5f9; border: 1px dashed #94a3b8; border-radius: 12px; padding: 20px; margin-top: 30px; }
-        .tool-panel select, .tool-panel input { padding: 12px; font-size: 1rem; border: 1px solid #cbd5e1; border-radius: 8px; }
+        .tool-panel { background: #f1f5f9; border: 1px dashed #94a3b8; border-radius: 8px; padding: 12px 16px; margin-top: 15px; }
+        .tool-panel select, .tool-panel input { padding: 6px 10px; font-size: 0.9rem; border: 1px solid #cbd5e1; border-radius: 4px; }
     </style>
 </head>
 <body style="background-color: #f1f5f9; font-family: 'Pretendard', sans-serif;">
@@ -167,35 +167,35 @@
 
             <!-- 영역 4: 이동 및 신규 편입 도구 -->
             <div class="tool-panel">
-                <h3 style="margin-top:0; color:#334155; display:flex; align-items:center; gap:8px;">
-                    <span class="material-icons">swap_horiz</span> 과정 이동 및 신규 과정 편입
+                <h3 style="margin-top:0; color:#334155; display:flex; align-items:center; gap:6px; font-size: 1.05rem; margin-bottom: 8px;">
+                    <span class="material-icons" style="font-size:18px;">swap_horiz</span> 과정 이동 및 신규 과정 편입
                 </h3>
-                <p style="color:#64748b; font-size:0.95rem; margin-bottom: 15px;">
+                <p style="color:#64748b; font-size:0.85rem; margin-bottom: 10px; margin-top: 0;">
                     기존 과정을 다른 상자로 <strong>이동</strong>시키거나, 목록에 없는 <strong>새로운 과정</strong>을 원하는 그룹에 추가할 수 있습니다.
                 </p>
-                <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                    <input type="text" id="targetCourse" list="allCoursesList" placeholder="과정명 (예: 바리스타)" style="flex: 1; min-width: 200px;">
+                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                    <input type="text" id="targetCourse" list="allCoursesList" placeholder="과정명 (예: 바리스타)" style="flex: 1; min-width: 150px; padding: 6px; font-size: 0.9rem;">
                     <datalist id="allCoursesList"></datalist>
                     
-                    <select id="targetGroup" onchange="toggleCycleInput()">
+                    <select id="targetGroup" onchange="toggleCycleInput()" style="padding: 6px; font-size: 0.9rem;">
                         <option value="general">일반 과정 (기본 그룹)에 편입</option>
                         <option value="baking">제과제빵 전용 과정에 편입</option>
                         <option value="custom">단독 특수 과정으로 편입</option>
                     </select>
                     
-                    <div id="targetCycleDiv" style="display: none; align-items: center; gap: 5px;">
-                        <input type="number" id="targetCycle" placeholder="주기(회)" style="width: 80px; text-align:center;">
+                    <div id="targetCycleDiv" style="display: none; align-items: center; gap: 4px;">
+                        <input type="number" id="targetCycle" placeholder="주기(회)" style="width: 60px; text-align:center; padding: 6px; font-size: 0.9rem;">
                     </div>
                     
-                    <button onclick="applyMoveOrAdd()" style="padding: 12px 20px; border-radius: 8px; background: #10b981; color: white; border: none; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px;">
-                        <span class="material-icons" style="font-size:18px;">library_add</span> 적용하기
+                    <button onclick="applyMoveOrAdd()" style="padding: 6px 12px; border-radius: 4px; background: #10b981; color: white; border: none; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 4px; font-size: 0.9rem;">
+                        <span class="material-icons" style="font-size:16px;">library_add</span> 적용하기
                     </button>
                 </div>
             </div>
 
             <button onclick="saveCycleSettings()" 
-                    style="background: #3b82f6; color: white; border: none; padding: 18px 24px; border-radius: 12px; cursor: pointer; font-size: 1.3rem; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 40px; width: 100%; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3); transition: all 0.2s;">
-                <span class="material-icons">save</span> 변경사항 저장 및 전체 시스템 반영
+                    style="background: #3b82f6; color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-size: 1.1rem; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 20px; width: 100%; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3); transition: all 0.2s;">
+                <span class="material-icons" style="font-size:20px;">save</span> 변경사항 저장 및 전체 시스템 반영
             </button>
         </div>
     </main>
