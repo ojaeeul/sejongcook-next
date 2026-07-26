@@ -131,19 +131,19 @@ async function fetchMonthlyAttendanceStats(dateStr) {
         
         currentMonthlyStats = {};
         
-        // Calculate distinct present members per day
-        const dailyMembers = {}; // { 'YYYY-MM-DD': Set(memberId) }
+        // Calculate total attendance records per day (including absent, late, early, etc.)
+        const dailyCount = {}; // { 'YYYY-MM-DD': count }
         
         logs.forEach(log => {
             if (!log.status || log.status === 'unchecked') return;
-            if (log.status === 'X' || log.status.startsWith('X|') || log.status.startsWith('absent')) return;
+            if (log.status === 'X' || log.status.startsWith('X|')) return;
             
-            if (!dailyMembers[log.date]) dailyMembers[log.date] = new Set();
-            dailyMembers[log.date].add(log.memberId);
+            if (!dailyCount[log.date]) dailyCount[log.date] = 0;
+            dailyCount[log.date]++;
         });
         
-        for (const [d, mSet] of Object.entries(dailyMembers)) {
-            currentMonthlyStats[d] = mSet.size;
+        for (const [d, count] of Object.entries(dailyCount)) {
+            currentMonthlyStats[d] = count;
         }
         
         lastFetchedMonth = month;
@@ -229,7 +229,7 @@ function renderMiniCalendar() {
     // Add Footer for Explicit Total
     html += `
     <div style="padding: 10px 15px; font-size: 0.85rem; color: #475569; background: #f8fafc; border-bottom: 2px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
-        <div>선택일 총 출석: <strong style="color: #10b981; font-size: 1rem;">${todayTotal}</strong>명</div>
+        <div>선택일 출결 합계: <strong style="color: #10b981; font-size: 1rem;">${todayTotal}</strong>건</div>
         <div>당월 총 누적: <strong>${monthlyTotal}</strong>건</div>
     </div>
     `;
