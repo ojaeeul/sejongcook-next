@@ -754,7 +754,16 @@ function updateStats() {
                 if (cExtension > 0) textParts.push(`<span style="color: #0369a1;">연장 ${cExtension}</span>`);
                 
                 const span = document.createElement('span');
-                span.style.cssText = "background: white; padding: 4px 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); display: inline-flex; gap: 8px; align-items: center;";
+                span.style.cssText = "background: white; padding: 4px 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); display: inline-flex; gap: 8px; align-items: center; cursor: pointer; transition: all 0.2s ease;";
+                span.onmouseover = () => { span.style.background = '#f1f5f9'; span.style.borderColor = '#94a3b8'; };
+                span.onmouseout = () => { span.style.background = 'white'; span.style.borderColor = '#cbd5e1'; };
+                span.onclick = () => {
+                    const mSelect = document.getElementById('courseSelectMobile');
+                    if(mSelect) mSelect.value = cName;
+                    if(typeof window.selectCourseFromMobile === 'function') {
+                        window.selectCourseFromMobile(cName);
+                    }
+                };
                 span.innerHTML = `<strong style="color: #334155;">${cName}</strong> <span style="font-size: 0.85rem;">${textParts.join(' <span style="color:#cbd5e1; margin: 0 2px;">|</span> ')}</span>`;
                 breakdownContent.appendChild(span);
             }
