@@ -3824,8 +3824,9 @@
                 const toggles = document.createElement('div');
                 toggles.className = 'days-toggles';
 
-                // 월(1) ~ 토(6)
-                for (let i = 1; i <= 6; i++) {
+                // 월(1) ~ 토(6), 일(0)
+                const displayOrder = [1, 2, 3, 4, 5, 6, 0];
+                for (let i of displayOrder) {
                     const btn = document.createElement('div');
                     btn.className = 'day-toggle';
                     if (timetableData[course] && timetableData[course].includes(i)) {
