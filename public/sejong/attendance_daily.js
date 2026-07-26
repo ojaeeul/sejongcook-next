@@ -26,11 +26,13 @@ document.addEventListener('DOMContentLoaded', () => {
         currentAttendanceState = {};
         currentMemoState = {};
         fetchAttendance();
+        fetchMonthlyAttendanceStats(currentDate);
     });
 
     document.getElementById('includeInactive').addEventListener('change', renderCourseList);
 
     fetchMembers();
+    fetchMonthlyAttendanceStats(currentDate);
 });
 
 let attendanceData = [];
@@ -126,6 +128,122 @@ setInterval(async () => {
 
     await fetchAttendance();
 }, 5000);
+
+let currentMonthlyStats = {}; // { 'YYYY-MM-DD': presentCount }
+let lastFetchedMonth = '';
+
+async function fetchMonthlyAttendanceStats(dateStr) {
+    const month = dateStr.substring(0, 7); // 'YYYY-MM'
+    if (lastFetchedMonth === month) return; // Already fetched
+    
+    try {
+        const res = await fetch(getFetchUrl('attendance') + `&month=${month}`);
+        if (!res.ok) return;
+        const logs = await res.json();
+        
+        currentMonthlyStats = {};
+        
+        // Calculate distinct present members per day
+        const dailyMembers = {}; // { 'YYYY-MM-DD': Set(memberId) }
+        
+        logs.forEach(log => {
+            if (!log.status || log.status === 'unchecked') return;
+            if (log.status === 'X' || log.status.startsWith('X|') || log.status.startsWith('absent')) return;
+            
+            if (!dailyMembers[log.date]) dailyMembers[log.date] = new Set();
+            dailyMembers[log.date].add(log.memberId);
+        });
+        
+        for (const [d, mSet] of Object.entries(dailyMembers)) {
+            currentMonthlyStats[d] = mSet.size;
+        }
+        
+        lastFetchedMonth = month;
+        renderMiniCalendar();
+    } catch (e) {
+        console.error('Failed to fetch monthly stats for calendar', e);
+    }
+}
+
+function renderMiniCalendar() {
+    const container = document.getElementById('miniCalendarContainer');
+    if (!container) return;
+    
+    const dObj = new Date(currentDate);
+    const year = dObj.getFullYear();
+    const monthIndex = dObj.getMonth(); // 0-11
+    
+    // First day of month
+    const firstDay = new Date(year, monthIndex, 1);
+    const startingDayOfWeek = firstDay.getDay(); // 0-6
+    
+    // Total days in month
+    const totalDays = new Date(year, monthIndex + 1, 0).getDate();
+    
+    const prevMonthDays = new Date(year, monthIndex, 0).getDate();
+    
+    let html = `
+    <div class="mini-calendar-header">
+        <i class="material-icons" onclick="changeDate(-30)">navigate_before</i>
+        <span>${monthIndex + 1}월 ${year}</span>
+        <i class="material-icons" onclick="changeDate(30)">navigate_next</i>
+    </div>
+    <div class="mini-calendar-grid">
+        <div class="mini-calendar-day-header">일</div>
+        <div class="mini-calendar-day-header">월</div>
+        <div class="mini-calendar-day-header">화</div>
+        <div class="mini-calendar-day-header">수</div>
+        <div class="mini-calendar-day-header">목</div>
+        <div class="mini-calendar-day-header">금</div>
+        <div class="mini-calendar-day-header">토</div>
+    `;
+    
+    // Previous month cells
+    for (let i = 0; i < startingDayOfWeek; i++) {
+        const dayNum = prevMonthDays - startingDayOfWeek + i + 1;
+        html += `<div class="mini-calendar-date other-month">${dayNum}</div>`;
+    }
+    
+    // Current month cells
+    for (let i = 1; i <= totalDays; i++) {
+        const cellDateStr = `${year}-${String(monthIndex + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+        const isActive = cellDateStr === currentDate;
+        const count = currentMonthlyStats[cellDateStr];
+        
+        let badgeHtml = '';
+        if (count && count > 0) {
+            badgeHtml = `<span class="mini-calendar-badge">${count}</span>`;
+        }
+        
+        html += `
+        <div class="mini-calendar-date ${isActive ? 'active' : ''}" onclick="setDate('${cellDateStr}')">
+            ${i}
+            ${badgeHtml}
+        </div>`;
+    }
+    
+    // Next month cells (fill up to 42 cells total)
+    const totalCellsRendered = startingDayOfWeek + totalDays;
+    const remainingCells = (totalCellsRendered > 35 ? 42 : 35) - totalCellsRendered;
+    for (let i = 1; i <= remainingCells; i++) {
+        html += `<div class="mini-calendar-date other-month">${i}</div>`;
+    }
+    
+    html += `</div>`;
+    container.innerHTML = html;
+}
+
+window.setDate = function(dateStr) {
+    if (currentDate === dateStr) return;
+    currentDate = dateStr;
+    document.getElementById('attendanceDate').value = currentDate;
+    localStorage.setItem('sejong_daily_date', currentDate);
+    currentAttendanceState = {};
+    currentMemoState = {};
+    fetchAttendance();
+    fetchMonthlyAttendanceStats(currentDate);
+    renderMiniCalendar(); // update active class
+};
 
 function processCourses() {
     groupedCourses = { '미지정': [] };
@@ -511,6 +629,7 @@ window.changeDate = function (offset) {
     currentAttendanceState = {};
     currentMemoState = {};
     fetchAttendance();
+    fetchMonthlyAttendanceStats(currentDate);
 };
 
 window.markAllPresent = function () {
