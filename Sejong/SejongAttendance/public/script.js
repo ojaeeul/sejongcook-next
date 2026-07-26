@@ -2693,7 +2693,7 @@ function renderMembers() {
                 <col style="width: 115px;"> <!-- 연락처 보호자 -->
                 <col style="width: 130px;"> <!-- 과정 -->
                 <col style="width: 80px;">  <!-- 수강시작일 -->
-                <col style="width: 110px;"> <!-- 비고 -->
+                <col style="width: 1px;">   <!-- 비고 -->
                 <col style="width: 75px;">  <!-- 상태 -->
             </colgroup>
             <thead>
@@ -2858,7 +2858,7 @@ function renderMembers() {
                 <td>${displayPhoneWithPrefix(member.phone_guardian)}</td>
                 <td>${displayCourse}</td>
                 <td>${member.start_date || ''}</td>
-                <td style="font-size: 0.85rem; padding: 4px;">${remarks}</td>
+                <td style="font-size: 0.85rem; padding: 4px; white-space: nowrap;">${remarks}</td>
                 <td>
                     <select class="status-select ${statusClass}" onchange="handleStatusChange(event, '${member.id}')">
                         ${optionsHtml}
