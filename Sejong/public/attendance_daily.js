@@ -218,6 +218,22 @@ function renderMiniCalendar() {
     }
     
     html += `</div>`;
+    
+    // Calculate Monthly Total
+    let monthlyTotal = 0;
+    for (const count of Object.values(currentMonthlyStats)) {
+        monthlyTotal += count;
+    }
+    const todayTotal = currentMonthlyStats[currentDate] || 0;
+    
+    // Add Footer for Explicit Total
+    html += `
+    <div style="padding: 10px 15px; font-size: 0.85rem; color: #475569; background: #f8fafc; border-bottom: 2px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+        <div>선택일 총 출석: <strong style="color: #10b981; font-size: 1rem;">${todayTotal}</strong>명</div>
+        <div>당월 총 누적: <strong>${monthlyTotal}</strong>건</div>
+    </div>
+    `;
+
     container.innerHTML = html;
 }
 
