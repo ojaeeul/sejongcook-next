@@ -264,6 +264,7 @@ export async function handlePost(request: NextRequest, board: string) {
                             .from(getSupabaseTableName(board))
                             .update({ content: newItem.content })
                             .eq('id', data[0].id);
+                        data[0].content = newItem.content;
                     } else {
                         console.log("AI Bot generated null reply.");
                     }

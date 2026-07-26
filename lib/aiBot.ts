@@ -16,14 +16,14 @@ export async function generateQnaResponse(post: any, repliesHistory: any[] = [],
         }
 
         if (!settings.enabled || !settings.systemPrompt) {
-            return null;
+            return "[AI Bot Error] Bot is disabled or systemPrompt is empty in bot_settings.json. Settings loaded: " + JSON.stringify(settings);
         }
 
         // 2. 환경 변수에서 Gemini API 키 가져오기
         const keysStr = process.env.GEMINI_API_KEYS || process.env.GEMINI_API_KEY;
         if (!keysStr) {
             console.error("GEMINI_API_KEYS not found in env");
-            return null;
+            return "[AI Bot Error] GEMINI_API_KEYS not found in Vercel environment variables. Please add it in Vercel Dashboard.";
         }
         
         // 쉼표로 분리된 키 중 무작위로 선택하여 Rate Limit 우회
@@ -32,7 +32,7 @@ export async function generateQnaResponse(post: any, repliesHistory: any[] = [],
 
         if (!apiKey) {
             console.error("No valid Gemini API key found");
-            return null;
+            return "[AI Bot Error] No valid Gemini API key found.";
         }
 
         // 3. Gemini API 호출
@@ -100,7 +100,7 @@ export async function generateQnaResponse(post: any, repliesHistory: any[] = [],
         };
         let response;
         let responseData;
-        const models = ['gemini-1.5-flash', 'gemini-2.0-flash-exp', 'gemini-1.5-flash-latest'];
+        const models = ['gemini-3.5-flash', 'gemini-flash-latest', 'gemini-3.6-flash'];
         
         for (let i = 0; i < 3; i++) {
             const currentKey = keys[Math.floor(Math.random() * keys.length)];
@@ -123,7 +123,7 @@ export async function generateQnaResponse(post: any, repliesHistory: any[] = [],
 
         if (!responseData) {
             console.error("Gemini API failed after 3 attempts.");
-            return null;
+            return "[AI Bot Error] Gemini API failed after 3 attempts.";
         }
 
         const data = responseData;
@@ -133,9 +133,9 @@ export async function generateQnaResponse(post: any, repliesHistory: any[] = [],
             return replyText;
         }
         
-        return null;
-    } catch (error) {
+        return "[AI Bot Error] No replyText generated. Data: " + JSON.stringify(data);
+    } catch (error: any) {
         console.error("generateQnaResponse error:", error);
-        return null;
+        return `[AI Bot Error] Exception: ${error.message}`;
     }
 }
