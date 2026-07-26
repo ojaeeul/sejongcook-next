@@ -117,32 +117,52 @@
                 완전히 새로운 과정을 추가하거나, 기존 과정을 원하는 그룹으로 강제 이동시키려면 화면 맨 아래의 <strong>[과정 이동 및 신규 추가]</strong> 도구를 사용하세요.
             </div>
 
-            <!-- 영역 1: 일반 과정 -->
-            <div class="setting-card">
-                <div class="title"><span class="material-icons" style="color:#10b981;">restaurant</span> 일반 과정 (기본 그룹)</div>
-                <div class="input-row" style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #e2e8f0;">
-                    <span style="font-weight: bold; color: #334155; font-size: 1.1rem;">결재 주기:</span>
-                    <input type="number" id="defaultCycle" value="9" min="1" onchange="syncGroupCycles()">
-                    <span style="color: #64748b;">회 출석 시 결재 발생</span>
-                </div>
-                <div class="chip-container" id="generalCoursesList"></div>
-            </div>
+            <!-- Flex Container for Two Columns -->
+            <div style="display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap;">
+                
+                <!-- Left Column (Active Courses) -->
+                <div style="flex: 2; min-width: 400px;">
+                    <h2 style="font-size: 1.1rem; color: #10b981; margin-bottom: 15px;">✅ 적용된 메뉴 (결재 주기 활성)</h2>
+                    
+                    <!-- 영역 1: 일반 과정 -->
+                    <div class="setting-card">
+                        <div class="title"><span class="material-icons" style="color:#10b981;">restaurant</span> 일반 과정 (기본 그룹)</div>
+                        <div class="input-row" style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #e2e8f0;">
+                            <span style="font-weight: bold; color: #334155; font-size: 1.1rem;">결재 주기:</span>
+                            <input type="number" id="defaultCycle" value="9" min="1" onchange="syncGroupCycles()">
+                            <span style="color: #64748b;">회 출석 시 결재 발생</span>
+                        </div>
+                        <div class="chip-container" id="generalCoursesList"></div>
+                    </div>
 
-            <!-- 영역 2: 제과제빵 전용 과정 -->
-            <div class="setting-card" style="background: #fffdf5; border-color: #fef08a;">
-                <div class="title"><span class="material-icons" style="color:#d97706;">bakery_dining</span> 제과제빵 전용 과정</div>
-                <div class="input-row" style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #fde047;">
-                    <span style="font-weight: bold; color: #92400e; font-size: 1.1rem;">결재 주기:</span>
-                    <input type="number" id="bakingCycle" value="17" min="1" style="border-color: #facc15; background: #fff;" onchange="syncGroupCycles()">
-                    <span style="color: #b45309;">회 출석 시 결재 발생</span>
-                </div>
-                <div class="chip-container" id="bakingCoursesList" style="background: rgba(255,255,255,0.7); border-color: #fef08a;"></div>
-            </div>
+                    <!-- 영역 2: 제과제빵 전용 과정 -->
+                    <div class="setting-card" style="background: #fffdf5; border-color: #fef08a;">
+                        <div class="title"><span class="material-icons" style="color:#d97706;">bakery_dining</span> 제과제빵 전용 과정</div>
+                        <div class="input-row" style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #fde047;">
+                            <span style="font-weight: bold; color: #92400e; font-size: 1.1rem;">결재 주기:</span>
+                            <input type="number" id="bakingCycle" value="17" min="1" style="border-color: #facc15; background: #fff;" onchange="syncGroupCycles()">
+                            <span style="color: #b45309;">회 출석 시 결재 발생</span>
+                        </div>
+                        <div class="chip-container" id="bakingCoursesList" style="background: rgba(255,255,255,0.7); border-color: #fef08a;"></div>
+                    </div>
 
-            <!-- 영역 3: 특수 과정 -->
-            <div class="setting-card" style="background: #fef8f8; border-color: #fee2e2;">
-                <div class="title"><span class="material-icons" style="color:#ef4444;">stars</span> 단독 특수 과정</div>
-                <div class="chip-container" id="customCoursesList" style="flex-direction: column; background: transparent; border: none; padding: 0; min-height: 0;"></div>
+                    <!-- 영역 3: 특수 과정 -->
+                    <div class="setting-card" style="background: #fef8f8; border-color: #fee2e2;">
+                        <div class="title"><span class="material-icons" style="color:#ef4444;">stars</span> 단독 특수 과정</div>
+                        <div class="chip-container" id="customCoursesList" style="flex-direction: column; background: transparent; border: none; padding: 0; min-height: 0;"></div>
+                    </div>
+                </div>
+
+                <!-- Right Column (Inactive Courses) -->
+                <div style="flex: 1; min-width: 300px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 12px; padding: 20px; opacity: 0.8;">
+                    <h2 style="font-size: 1.1rem; color: #64748b; margin-bottom: 15px;">❌ 적용 안된 메뉴</h2>
+                    <div style="color: #64748b; font-size: 0.9rem; margin-bottom: 15px;">
+                        결재 주기 설정에서 제외된 과정들입니다.
+                    </div>
+                    <div class="chip-container" id="inactiveCoursesListContainer" style="background: transparent; border: none; padding: 0; min-height: 50px; flex-direction: column; gap: 8px;">
+                        <!-- Inactive courses will render here -->
+                    </div>
+                </div>
             </div>
 
             <!-- 영역 4: 이동 및 신규 편입 도구 -->
@@ -207,6 +227,10 @@
                 }
                 if (target.courses && Array.isArray(target.courses)) {
                     allKnownCourses = [...target.courses];
+                }
+                window.inactiveCoursesList = [];
+                if (target.inactiveCourses && Array.isArray(target.inactiveCourses)) {
+                    window.inactiveCoursesList = [...target.inactiveCourses];
                 }
             }
             
@@ -385,6 +409,21 @@
         generalContainer.innerHTML = generalHTML;
         bakingContainer.innerHTML = bakingHTML;
         customContainer.innerHTML = customHTML;
+        
+        let inactiveHTML = '';
+        if (window.inactiveCoursesList && window.inactiveCoursesList.length > 0) {
+            window.inactiveCoursesList.forEach(c => {
+                inactiveHTML += `
+                    <div style="background: #e2e8f0; color: #64748b; padding: 10px 15px; border-radius: 8px; border: 1px solid #cbd5e1; font-weight: 500; display: flex; align-items: center; justify-content: space-between;">
+                        <span>${c}</span>
+                        <span class="material-icons" style="font-size: 1.1rem; color: #94a3b8;">block</span>
+                    </div>
+                `;
+            });
+        } else {
+            inactiveHTML = '<div style="color:#94a3b8; font-size: 0.9rem; text-align:center;">적용 안된 과정이 없습니다.</div>';
+        }
+        document.getElementById('inactiveCoursesListContainer').innerHTML = inactiveHTML;
         
         let datalistHTML = '';
         allItems.forEach(c => {
