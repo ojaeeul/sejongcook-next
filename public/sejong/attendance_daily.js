@@ -14,20 +14,8 @@ let currentAttendanceState = {};
 let currentMemoState = {};
 
 document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('attendanceDate').value = currentDate;
-    document.getElementById('attendanceDate').addEventListener('change', (e) => {
-        currentDate = e.target.value;
-        const cDateObj = new Date(currentDate);
-        if (isNaN(cDateObj.getTime())) {
-            currentDate = new Date().toISOString().split('T')[0];
-            e.target.value = currentDate;
-        }
-        localStorage.setItem('sejong_daily_date', currentDate);
-        currentAttendanceState = {};
-        currentMemoState = {};
-        fetchAttendance();
-        fetchMonthlyAttendanceStats(currentDate);
-    });
+    // Input is dynamically generated now, so we don't attach event listener here.
+    // The inline onchange="setDate(this.value)" handles it.
 
     document.getElementById('includeInactive').addEventListener('change', renderCourseList);
 
@@ -183,10 +171,10 @@ function renderMiniCalendar() {
     const prevMonthDays = new Date(year, monthIndex, 0).getDate();
     
     let html = `
-    <div class="mini-calendar-header">
-        <i class="material-icons" onclick="changeDate(-30)">navigate_before</i>
-        <span>${monthIndex + 1}월 ${year}</span>
-        <i class="material-icons" onclick="changeDate(30)">navigate_next</i>
+    <div class="mini-calendar-header date-selector" style="background: #1e3a8a; color: white; padding: 12px 15px; border-radius: 6px 6px 0 0;">
+        <i class="material-icons" onclick="changeDate(-1)" style="color: white; padding: 5px; cursor: pointer;">navigate_before</i>
+        <input type="date" id="attendanceDate" value="${currentDate}" onchange="setDate(this.value)" style="background: transparent; border: none; color: white; font-size: 1.1rem; outline: none; font-family: inherit; cursor: pointer;">
+        <i class="material-icons" onclick="changeDate(1)" style="color: white; padding: 5px; cursor: pointer;">navigate_next</i>
     </div>
     <div class="mini-calendar-grid">
         <div class="mini-calendar-day-header">일</div>
@@ -236,7 +224,10 @@ function renderMiniCalendar() {
 window.setDate = function(dateStr) {
     if (currentDate === dateStr) return;
     currentDate = dateStr;
-    document.getElementById('attendanceDate').value = currentDate;
+    const cDateObj = new Date(currentDate);
+    if (isNaN(cDateObj.getTime())) {
+        currentDate = new Date().toISOString().split('T')[0];
+    }
     localStorage.setItem('sejong_daily_date', currentDate);
     currentAttendanceState = {};
     currentMemoState = {};
