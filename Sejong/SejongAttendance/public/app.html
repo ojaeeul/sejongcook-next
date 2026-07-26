@@ -886,26 +886,46 @@ function renderStudentList() {
 }
 
 // Background silent save
-async function autoSaveSingle(phone, status) {
-    const dateStr = document.getElementById('dateSelect').value.replace(/\./g, '-');
+async function autoSaveSingle(phone, rawStatus) {
     const cName = document.getElementById('courseSelect').value;
-    if (!dateStr || !cName) return;
+    const date = document.getElementById('attDate').value;
+    if (!cName || !date || !groupedCourses[cName]) return;
+    
+    const member = groupedCourses[cName].find(m => m.phone === phone);
+    if (!member) return;
+    
+    const statusMap = {
+        'present': 'O',
+        'absent': 'X',
+        'late': 'L',
+        'early': 'E',
+        'outing': '외출',
+        'return': '복귀',
+        'extension': '연'
+    };
+    
+    let appStatus = rawStatus.split('|')[0];
+    let memo = rawStatus.split('|')[1] || '';
+    let dbStatus = statusMap[appStatus] || (appStatus === '' ? 'unchecked' : appStatus);
+    
+    if (appStatus === 'absent' && memo) {
+        dbStatus = dbStatus + '|' + memo;
+    }
 
     try {
-        const payload = [{
-            phone: phone,
-            status: status || 'unchecked',
-            date: dateStr,
-            course: cName.replace(/\([^)]*\)/g, '').trim()
-        }];
-
-        fetch('/api/sejong/attendance/save_v2', {
+        fetch(`${API_BASE}/attendance`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ attendanceList: payload })
-        }).catch(e => console.error('Auto save failed', e));
+            body: JSON.stringify({
+                memberId: member.id,
+                date: date,
+                status: dbStatus,
+                course: member.course
+            })
+        });
+        localStorage.setItem('sejong_attendance_sync', Date.now().toString());
     } catch (e) {
-        console.error(e);
+        console.error('Auto save failed', e);
     }
 }
 
