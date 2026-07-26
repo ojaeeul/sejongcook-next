@@ -254,7 +254,9 @@ window.setDate = function(dateStr) {
 
 function processCourses() {
     groupedCourses = { '미지정': [] };
+    const allMembersList = [];
     allMembers.forEach(m => {
+        allMembersList.push(m);
         if (!m.course || m.course.trim() === '') {
             groupedCourses['미지정'].push(m);
         } else {
@@ -265,14 +267,25 @@ function processCourses() {
             });
         }
     });
+    // Add 전체출석 at the end
+    groupedCourses['전체출석'] = allMembersList;
 }
 
 function renderCourseList() {
     const includeInactive = document.getElementById('includeInactive').checked;
-    const listDiv = document.getElementById('courseList');
-    listDiv.innerHTML = '';
+    const selectMobile = document.getElementById('courseSelectMobile');
+    if (!selectMobile) return;
+    
+    selectMobile.innerHTML = '';
 
     const courseNames = Object.keys(groupedCourses).sort();
+    
+    // Sort '전체출석' to the top
+    const totalIndex = courseNames.indexOf('전체출석');
+    if (totalIndex > -1) {
+        courseNames.splice(totalIndex, 1);
+        courseNames.unshift('전체출석');
+    }
 
     // Auto-select first course if none is active
     if (!activeCourse && courseNames.length > 0) {
@@ -282,108 +295,42 @@ function renderCourseList() {
     let activeCourseHasMembers = false;
     let validCourseCount = 0;
 
-    let selectMobile = document.getElementById('courseSelectMobile');
-    if (!selectMobile) {
-        // HTML이 캐시되어서 select가 없는 경우 동적 생성
-        const header = document.querySelector('.course-list-header');
-        if (header) {
-            const wrapper = document.createElement('div');
-            wrapper.style.padding = '0 15px';
-            wrapper.innerHTML = `<select id="courseSelectMobile" class="mobile-course-select" style="display: none;" onchange="selectCourseFromMobile(this.value)"></select>`;
-            header.parentNode.insertBefore(wrapper, header.nextSibling);
-            selectMobile = document.getElementById('courseSelectMobile');
-            
-            // 동적 CSS 주입
-            const style = document.createElement('style');
-            style.innerHTML = `
-                @media (max-width: 1024px) {
-                    .daily-container { flex-direction: column; height: auto; padding: 10px; }
-                    .daily-panel-left { width: 100%; margin-bottom: 10px; }
-                    .course-list { display: none !important; }
-                    .mobile-course-select { display: block !important; width: 100%; padding: 12px; font-size: 1.1rem; font-weight: bold; border: 1px solid #cbd5e1; border-radius: 8px; background-color: #f8fafc; margin: 10px 0; color: #1e3a8a; }
-                    .top-action-bar { flex-direction: column; gap: 10px; }
-                    .action-buttons { width: 100%; justify-content: center; flex-wrap: wrap; }
-                    .stats-box { flex-wrap: nowrap; gap: 2px; justify-content: space-between; padding: 10px 5px; overflow-x: auto; }
-                    .stat-item { flex: 1; text-align: center; }
-                    .stat-label { font-size: 0.7rem; margin-bottom: 2px; }
-                    .stat-value { font-size: 1.1rem; }
-                    th, td { padding: 6px 2px !important; font-size: 0.85rem; }
-                    .student-cell { min-width: auto; white-space: nowrap; font-size: 0.85rem; }
-                    .status-btn-group { gap: 1px; }
-                    .status-btn { padding: 4px 1px; font-size: 0.75rem; letter-spacing: -1px; white-space: nowrap; touch-action: manipulation; }
-                }
-            `;
-            document.head.appendChild(style);
-        }
-    }
-    if (selectMobile) selectMobile.innerHTML = '';
-
     courseNames.forEach(cName => {
         let membersInCourse = groupedCourses[cName];
         if (!includeInactive) {
             membersInCourse = membersInCourse.filter(m => m.status !== 'trash' && m.status !== 'completed');
         }
 
-        if (membersInCourse.length === 0) return;
+        if (membersInCourse.length === 0 && cName !== '전체출석') return;
         validCourseCount++;
 
         if (cName === activeCourse) activeCourseHasMembers = true;
 
-        const displayName = `${cName} (${membersInCourse.length}명)`;
+        const displayName = cName === '전체출석' ? `전체출석 (${membersInCourse.length}명)` : `${cName} (${membersInCourse.length}명)`;
 
-        const cDiv = document.createElement('div');
-        cDiv.className = `course-item ${cName === activeCourse ? 'active' : ''}`;
-        cDiv.setAttribute('data-course', cName);
-        cDiv.innerHTML = `<span>${displayName}</span><i class="material-icons" style="font-size:1rem;">chevron_right</i>`;
-
-        cDiv.onclick = () => {
-            if (activeCourse !== cName) {
-                activeCourse = cName;
-                currentAttendanceState = {};
-                currentMemoState = {}; // Clear state when switching tabs
-                renderCourseList(); // Re-render to update active styling
-                renderAttendanceTbody(); // Re-render table
-            }
-        };
-
-        listDiv.appendChild(cDiv);
-
-        if (selectMobile) {
-            const option = document.createElement('option');
-            option.value = cName;
-            option.textContent = displayName;
-            if (cName === activeCourse) option.selected = true;
-            selectMobile.appendChild(option);
-        }
+        const option = document.createElement('option');
+        option.value = cName;
+        option.textContent = displayName;
+        if (cName === activeCourse) option.selected = true;
+        selectMobile.appendChild(option);
     });
 
-    // If the active course became empty due to filtering, switch to the first available
-    if (!activeCourseHasMembers && listDiv.children.length > 0) {
-        activeCourse = listDiv.children[0].getAttribute('data-course');
-        listDiv.children[0].classList.add('active');
-        renderAttendanceTbody();
-    } else if (listDiv.children.length === 0) {
+    if (!activeCourseHasMembers && selectMobile.options.length > 0) {
+        activeCourse = selectMobile.options[0].value;
+        selectMobile.options[0].selected = true;
+    } else if (selectMobile.options.length === 0) {
         activeCourse = '';
-        renderAttendanceTbody();
-    } else {
-        renderAttendanceTbody(); // Initial render for active course
     }
     
-    // update selectMobile again just in case activeCourse changed dynamically
-    if (selectMobile && activeCourse) {
-        selectMobile.value = activeCourse;
-    }
-
-    document.getElementById('courseCount').textContent = `${validCourseCount}개`;
+    renderAttendanceTbody();
 }
 
-function selectCourseFromMobile(cName) {
-    if (activeCourse !== cName) {
-        activeCourse = cName;
+window.selectCourseFromMobile = function(val) {
+    if (activeCourse !== val) {
+        activeCourse = val;
         currentAttendanceState = {};
-        currentMemoState = {}; // Clear state when switching tabs
-        renderCourseList(); // Re-render to update active styling
-        renderAttendanceTbody(); // Re-render table
+        currentMemoState = {};
+        renderAttendanceTbody();
     }
 }
 
@@ -536,18 +483,18 @@ window.openMemoEditor = function(memberId) {
                 memberId: memberId,
                 date: currentDate,
                 status: payloadStatus,
-                course: activeCourseClean
+                course: actualCourseClean
             });
         }
         
-        fetch('/api/sejong/attendance', {
+        fetch('/api/sejong/attendance/daily', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 memberId: memberId,
                 date: currentDate,
                 status: payloadStatus,
-                course: activeCourseClean
+                course: actualCourseToSave
             })
         }).catch(err => console.error(err));
     }
@@ -725,6 +672,15 @@ window.saveDailyAttendance = async function () {
 
             savedCount += (st !== 'unchecked' ? 1 : 0);
 
+            let actualCourseToSave = activeCourse;
+            if (activeCourse === '전체출석') {
+                if (m.course) {
+                    actualCourseToSave = m.course.split(',')[0].trim();
+                } else {
+                    actualCourseToSave = '';
+                }
+            }
+
             return fetch(getFetchUrl('attendance', true), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -732,7 +688,7 @@ window.saveDailyAttendance = async function () {
                     memberId: m.id,
                     date: currentDate,
                     status: st,
-                    course: activeCourse
+                    course: actualCourseToSave
                 })
             });
         });
