@@ -9,6 +9,7 @@ const API_BASE = '/api/sejong';
 let allMembers = [];
 let groupedCourses = {};
 let activeCourse = '';
+let subFilterCourse = '';
 let currentDate = localStorage.getItem('sejong_daily_date') || new Date().toISOString().split('T')[0];
 let currentAttendanceState = {};
 let currentMemoState = {};
@@ -397,6 +398,7 @@ function renderCourseList() {
 window.selectCourseFromMobile = function(val) {
     if (activeCourse !== val) {
         activeCourse = val;
+        subFilterCourse = '';
         currentAttendanceState = {};
         currentMemoState = {};
         renderAttendanceTbody();
@@ -438,19 +440,17 @@ function renderAttendanceTbody() {
     // -------------------------------------------------------------------------
 
     const includeInactive = document.getElementById('includeInactive').checked;
-    let membersToRender = groupedCourses[activeCourse];
+    let fullMembers = groupedCourses[activeCourse];
 
     if (!includeInactive) {
-        membersToRender = membersToRender.filter(m => m.status !== 'trash' && m.status !== 'completed');
+        fullMembers = fullMembers.filter(m => m.status !== 'trash' && m.status !== 'completed');
     }
 
-    document.getElementById('totalStudentsCount').textContent = `총원 ${membersToRender.length}명`;
-
     // Sort by name
-    membersToRender.sort((a, b) => a.name.localeCompare(b.name, 'ko'));
+    fullMembers.sort((a, b) => a.name.localeCompare(b.name, 'ko'));
 
-    // Initialize from DB or preserve local changes
-    membersToRender.forEach(m => {
+    // Initialize from DB or preserve local changes for ALL members in activeCourse
+    fullMembers.forEach(m => {
         if (currentAttendanceState[m.id] === undefined) {
             const dbRecord = attendanceData.find(a => {
                 if (String(a.memberId) !== String(m.id)) return false;
@@ -484,6 +484,20 @@ function renderAttendanceTbody() {
             currentAttendanceState[m.id] = st;
         }
     });
+    let membersToRender = fullMembers;
+    if (activeCourse === '전체출석' && subFilterCourse) {
+        membersToRender = fullMembers.filter(m => {
+            const mCourse = m.course || '';
+            const mCourse2 = m.course2 || '';
+            return mCourse.includes(subFilterCourse) || mCourse2.includes(subFilterCourse);
+        });
+    }
+
+    if (activeCourse === '전체출석' && subFilterCourse) {
+        document.getElementById('totalStudentsCount').innerHTML = `<span style="color:#2563eb; font-weight:bold;">[${subFilterCourse}]</span> 총원 ${membersToRender.length}명 <span style="font-size:0.8rem; color:#64748b; margin-left:8px; cursor:pointer; text-decoration:underline;" onclick="subFilterCourse=''; renderAttendanceTbody(); updateStats();">전체보기</span>`;
+    } else {
+        document.getElementById('totalStudentsCount').textContent = `총원 ${membersToRender.length}명`;
+    }
 
     membersToRender.forEach(m => {
         const tr = document.createElement('tr');
@@ -693,13 +707,22 @@ function updateStats() {
     const stats = { present: 0, absent: 0, late: 0, early: 0, extension: 0, entry: 0, exit: 0 };
 
     if (activeCourse && groupedCourses[activeCourse]) {
-        let membersToRender = groupedCourses[activeCourse];
+        let membersToCount = groupedCourses[activeCourse];
+        
+        if (activeCourse === '전체출석' && subFilterCourse) {
+            membersToCount = groupedCourses[activeCourse].filter(m => {
+                const mCourse = m.course || '';
+                const mCourse2 = m.course2 || '';
+                return mCourse.includes(subFilterCourse) || mCourse2.includes(subFilterCourse);
+            });
+        }
+        
         const includeInactive = document.getElementById('includeInactive').checked;
         if (!includeInactive) {
-            membersToRender = membersToRender.filter(m => m.status !== 'trash' && m.status !== 'completed');
+            membersToCount = membersToCount.filter(m => m.status !== 'trash' && m.status !== 'completed');
         }
 
-        membersToRender.forEach(m => {
+        membersToCount.forEach(m => {
             const st = currentAttendanceState[m.id];
             if (st && stats[st] !== undefined) {
                 stats[st]++;
@@ -755,16 +778,31 @@ function updateStats() {
                 
                 const span = document.createElement('span');
                 span.style.cssText = "background: white; padding: 4px 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); display: inline-flex; gap: 8px; align-items: center; cursor: pointer; transition: all 0.2s ease;";
-                span.onmouseover = () => { span.style.background = '#f1f5f9'; span.style.borderColor = '#94a3b8'; };
-                span.onmouseout = () => { span.style.background = 'white'; span.style.borderColor = '#cbd5e1'; };
-                span.onclick = () => {
-                    const mSelect = document.getElementById('courseSelectMobile');
-                    if(mSelect) mSelect.value = cName;
-                    if(typeof window.selectCourseFromMobile === 'function') {
-                        window.selectCourseFromMobile(cName);
+                
+                if (subFilterCourse === cName) {
+                    span.style.background = '#e0f2fe';
+                    span.style.borderColor = '#0284c7';
+                    span.style.boxShadow = '0 0 0 2px rgba(2,132,199,0.2)';
+                }
+                
+                span.onmouseover = () => { 
+                    if (subFilterCourse !== cName) {
+                        span.style.background = '#f1f5f9'; 
+                        span.style.borderColor = '#94a3b8'; 
                     }
                 };
-                span.innerHTML = `<strong style="color: #334155;">${cName}</strong> <span style="font-size: 0.85rem;">${textParts.join(' <span style="color:#cbd5e1; margin: 0 2px;">|</span> ')}</span>`;
+                span.onmouseout = () => { 
+                    if (subFilterCourse !== cName) {
+                        span.style.background = 'white'; 
+                        span.style.borderColor = '#cbd5e1'; 
+                    }
+                };
+                span.onclick = () => {
+                    subFilterCourse = (subFilterCourse === cName) ? '' : cName;
+                    renderAttendanceTbody();
+                    updateStats();
+                };
+                span.innerHTML = `<strong style="color: ${subFilterCourse === cName ? '#0284c7' : '#334155'};">${cName}</strong> <span style="font-size: 0.85rem;">${textParts.join(' <span style="color:#cbd5e1; margin: 0 2px;">|</span> ')}</span>`;
                 breakdownContent.appendChild(span);
             }
         }
