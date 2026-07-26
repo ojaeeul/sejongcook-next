@@ -2693,7 +2693,7 @@ function renderMembers() {
                 <col style="width: 115px;"> <!-- 연락처 보호자 -->
                 <col style="width: 130px;"> <!-- 과정 -->
                 <col style="width: 80px;">  <!-- 수강시작일 -->
-                <col style="width: 1px;">   <!-- 비고 -->
+                <col style="width: 50px;">  <!-- 비고 -->
                 <col style="width: 75px;">  <!-- 상태 -->
             </colgroup>
             <thead>
