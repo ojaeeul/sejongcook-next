@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="style.css">
     <script src="tuition_v4.js" defer></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <style>
         .settings-admin-container {
             width: 100%;
@@ -300,11 +301,18 @@
                         <span class="material-icons" style="color: #3b82f6;">book</span> 수강과정관리
                     </h2>
                     <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                        <input type="text" id="newCourseName" placeholder="추가할 과목명 (예: 바리스타 과정)" style="flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 1rem;">
+                        <input type="text" id="newCourseName" placeholder="추가할 과목명 (예: 바리스타 과정)" style="flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 1rem;" onkeydown="if(event.key === 'Enter') addCourse()">
                         <button onclick="addCourse()" style="background: #3b82f6; color: white; border: none; padding: 0 20px; border-radius: 6px; cursor: pointer; font-weight: bold; white-space: nowrap;">과정 추가</button>
                     </div>
-                    <div id="courseListContainer" style="display: flex; flex-wrap: wrap; gap: 10px;">
-                        <!-- Courses will be rendered here -->
+                    
+                    <h3 style="font-size: 1rem; color: #10b981; margin-bottom: 10px;">✅ 적용된 메뉴 (실제 서비스 메뉴)</h3>
+                    <div id="activeCourseList" style="min-height: 60px; background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 8px; padding: 15px; display: flex; flex-wrap: wrap; gap: 10px;">
+                        <!-- Active courses will be rendered here -->
+                    </div>
+
+                    <h3 style="font-size: 1rem; color: #64748b; margin-top: 25px; margin-bottom: 10px;">❌ 적용 안된 메뉴 (보관함) <span style="font-size: 0.85rem; font-weight: normal; margin-left: 10px;">(위아래로 드래그하여 이동할 수 있습니다)</span></h3>
+                    <div id="inactiveCourseList" style="min-height: 60px; background: #f1f5f9; border: 2px dashed #94a3b8; border-radius: 8px; padding: 15px; display: flex; flex-wrap: wrap; gap: 10px;">
+                        <!-- Inactive courses will be rendered here -->
                     </div>
                 </div>
 
@@ -369,6 +377,7 @@
         const DEFAULT_TIMES = ["10:00", "12:00", "17:00", "19:00"];
         
         let courses = [];
+        let inactiveCourses = [];
         let times = [];
         let makeupCutoffs = {};
         let attendanceCutoffs = {};
@@ -383,6 +392,7 @@
                 let settings = Array.isArray(data) && data.length > 0 ? data[0] : (data.key === "settings" ? data.value : data);
                 
                 courses = settings.courses && settings.courses.length > 0 ? settings.courses : [...DEFAULT_COURSES];
+                inactiveCourses = settings.inactiveCourses || [];
                 if (makeupCutoffs['일식기능사'] === undefined) { makeupCutoffs['일식기능사'] = 9; makeupCutoffs_student['일식기능사'] = 8; }
                 if (makeupCutoffs['중식기능사'] === undefined) { makeupCutoffs['중식기능사'] = 9; makeupCutoffs_student['중식기능사'] = 8; }
                 if (attendanceCutoffs['일식기능사'] === undefined) { attendanceCutoffs['일식기능사'] = 9; attendanceCutoffs_student['일식기능사'] = 8; }
@@ -400,6 +410,7 @@
             } catch (e) {
                 console.error("Failed to load settings", e);
                 courses = [...DEFAULT_COURSES];
+                inactiveCourses = [];
                 times = [...DEFAULT_TIMES];
                 makeupCutoffs = {};
                 attendanceCutoffs = {};
@@ -411,25 +422,77 @@
         }
 
         function renderCourses() {
-            const container = document.getElementById("courseListContainer");
-            container.innerHTML = "";
-            courses.forEach((course, idx) => {
-                const tag = document.createElement("div");
-                tag.style.cssText = "background: #f1f5f9; border: 1px solid #cbd5e1; padding: 6px 12px; border-radius: 20px; display: flex; align-items: center; gap: 8px; font-weight: 500; font-size: 0.95rem; color: #334155;";
-                tag.innerHTML = `
-                    ${course}
-                    <span class="material-icons" style="font-size: 1.1rem; cursor: pointer; color: #ef4444;" onclick="removeCourse(${idx})">cancel</span>
-                `;
-                container.appendChild(tag);
+            const activeContainer = document.getElementById("activeCourseList");
+            const inactiveContainer = document.getElementById("inactiveCourseList");
+            activeContainer.innerHTML = "";
+            inactiveContainer.innerHTML = "";
+
+            courses.forEach((course) => {
+                const tag = createCourseTag(course);
+                activeContainer.appendChild(tag);
             });
+
+            inactiveCourses.forEach((course) => {
+                const tag = createCourseTag(course);
+                inactiveContainer.appendChild(tag);
+            });
+
+            initSortable();
+        }
+
+        function createCourseTag(course) {
+            const tag = document.createElement("div");
+            tag.dataset.course = course;
+            tag.style.cssText = "background: #ffffff; border: 1px solid #cbd5e1; padding: 6px 12px; border-radius: 20px; display: flex; align-items: center; gap: 8px; font-weight: 500; font-size: 0.95rem; color: #334155; cursor: grab; box-shadow: 0 1px 2px rgba(0,0,0,0.05); user-select: none;";
+            tag.innerHTML = `
+                <span class="material-icons" style="font-size: 1.1rem; color: #94a3b8; cursor: grab;">drag_indicator</span>
+                ${course}
+                <span class="material-icons" style="font-size: 1.1rem; cursor: pointer; color: #ef4444;" onclick="removeCourse('${course}')">cancel</span>
+            `;
+            return tag;
+        }
+
+        let sortableActive, sortableInactive;
+        function initSortable() {
+            if (sortableActive) sortableActive.destroy();
+            if (sortableInactive) sortableInactive.destroy();
+
+            const activeContainer = document.getElementById("activeCourseList");
+            const inactiveContainer = document.getElementById("inactiveCourseList");
+
+            sortableActive = new Sortable(activeContainer, {
+                group: 'courses',
+                animation: 150,
+                onEnd: updateCoursesFromDOM
+            });
+
+            sortableInactive = new Sortable(inactiveContainer, {
+                group: 'courses',
+                animation: 150,
+                onEnd: updateCoursesFromDOM
+            });
+        }
+
+        function updateCoursesFromDOM() {
+            const activeContainer = document.getElementById("activeCourseList");
+            const inactiveContainer = document.getElementById("inactiveCourseList");
+
+            courses = Array.from(activeContainer.children).map(el => el.dataset.course);
+            inactiveCourses = Array.from(inactiveContainer.children).map(el => el.dataset.course);
+            
+            renderCutoffs();
+            renderAttendanceCutoffs();
+            saveSettings();
         }
 
         function addCourse() {
             const input = document.getElementById("newCourseName");
             const val = input.value.trim();
             if (!val) return alert("과목명을 입력하세요.");
-            if (courses.includes(val)) return alert("이미 등록된 과목입니다.");
-            courses.push(val);
+            if (courses.includes(val) || inactiveCourses.includes(val)) return alert("이미 등록된 과목입니다.");
+            
+            // 새 과목은 적용 안된 메뉴(보관함)로 먼저 들어감
+            inactiveCourses.push(val);
             input.value = "";
             renderCourses();
             renderCutoffs();
@@ -437,8 +500,9 @@
             saveSettings();
         }
 
-        function removeCourse(idx) {
-            courses.splice(idx, 1);
+        function removeCourse(courseName) {
+            courses = courses.filter(c => c !== courseName);
+            inactiveCourses = inactiveCourses.filter(c => c !== courseName);
             renderCourses();
             renderCutoffs();
             renderAttendanceCutoffs();
@@ -566,6 +630,7 @@
                 let settingsObj = settingsArr[0] || { id: Date.now().toString() };
                 
                 settingsObj.courses = courses;
+                settingsObj.inactiveCourses = inactiveCourses;
                 settingsObj.times = times;
                 settingsObj.makeupCutoffs = makeupCutoffs;
                 settingsObj.attendanceCutoffs = attendanceCutoffs;
@@ -648,6 +713,6 @@
             }
         });
     </script>
-    <script src="sidebar_sync.js?v=20260727-3"></script>
+    <script src="sidebar_sync.js?v=20260727-4"></script>
 </body>
 </html>
