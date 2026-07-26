@@ -267,9 +267,12 @@ export async function handlePost(request: NextRequest, board: string) {
                         data[0].content = newItem.content;
                     } else {
                         console.log("AI Bot generated null reply.");
+                        data[0].content = `${newItem.content} <br/><br/><div style="color:red">[AI Bot returned falsy replyText]</div>`;
                     }
-                } catch (e) {
+                } catch (e: any) {
                     console.error("AI Bot Error:", e);
+                    const errorMsg = e.message || String(e);
+                    data[0].content = `${newItem.content} <br/><br/><div style="color:red">[Outer AI Bot Error: ${errorMsg}]</div>`;
                 }
             }
             
