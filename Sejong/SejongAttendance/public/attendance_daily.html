@@ -482,10 +482,19 @@
             .daily-container {
                 flex-direction: column;
                 padding: 10px;
+                overflow-y: auto;
             }
             .daily-panel-left {
                 width: 100%;
                 margin-bottom: 10px;
+                flex: none;
+            }
+            .daily-panel-main {
+                flex: none;
+            }
+            .table-container {
+                overflow: visible;
+                max-height: none;
             }
             .course-list {
                 display: none !important;
