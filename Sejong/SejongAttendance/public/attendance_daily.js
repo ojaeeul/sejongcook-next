@@ -267,8 +267,11 @@ function processCourses() {
             });
         }
     });
-    // Add 전체출석 at the end
-    groupedCourses['전체출석'] = allMembersList;
+    // Add 전체출석 at the end, filtered by those who have attendance records today
+    const attendeesToday = allMembersList.filter(m => {
+        return attendanceData.some(a => String(a.memberId) === String(m.id) && a.date === currentDate && a.status && a.status !== 'unchecked');
+    });
+    groupedCourses['전체출석'] = attendeesToday;
 }
 
 function renderCourseList() {
