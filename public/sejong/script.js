@@ -2684,7 +2684,20 @@ function renderMembers() {
         // Create Table Structure for Ledger View
         const table = document.createElement('table');
         table.className = 'ledger-table';
+        table.style.tableLayout = 'auto';
+        table.style.width = '100%';
         table.innerHTML = `
+            <colgroup>
+                <col style="width: 70px;">  <!-- 성명 -->
+                <col style="width: 120px;"> <!-- 주민등록번호 -->
+                <col style="width: 100%;">  <!-- 주소 (greedy) -->
+                <col style="width: 115px;"> <!-- 연락처 본인 -->
+                <col style="width: 115px;"> <!-- 연락처 보호자 -->
+                <col style="width: 130px;"> <!-- 과정 -->
+                <col style="width: 80px;">  <!-- 수강시작일 -->
+                <col style="width: 1%;">    <!-- 비고 (fit exactly to text) -->
+                <col style="width: 75px;">  <!-- 상태 -->
+            </colgroup>
             <thead>
                 <tr>
                     <th rowspan="2">성명</th>
@@ -2847,7 +2860,7 @@ function renderMembers() {
                 <td>${displayPhoneWithPrefix(member.phone_guardian)}</td>
                 <td>${displayCourse}</td>
                 <td>${member.start_date || ''}</td>
-                <td>${remarks}</td>
+                <td style="white-space: nowrap;">${remarks}</td>
                 <td>
                     <select class="status-select ${statusClass}" onchange="handleStatusChange(event, '${member.id}')">
                         ${optionsHtml}
