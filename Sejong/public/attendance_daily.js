@@ -311,6 +311,14 @@ window.setDate = function(dateStr) {
     fetchAttendance();
     fetchMonthlyAttendanceStats(currentDate);
     renderMiniCalendar(); // update active class
+    
+    // Auto-scroll to table on mobile
+    if (window.innerWidth <= 768) {
+        const mainPanel = document.querySelector('.daily-panel-main');
+        if (mainPanel) {
+            mainPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
 };
 
 function processCourses() {
@@ -680,6 +688,14 @@ window.changeDate = function (offset) {
     lastAttendanceHash = ''; // Force re-render of courses and table
     fetchAttendance();
     fetchMonthlyAttendanceStats(currentDate);
+
+    // Auto-scroll to table on mobile
+    if (window.innerWidth <= 768) {
+        const mainPanel = document.querySelector('.daily-panel-main');
+        if (mainPanel) {
+            mainPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
 };
 
 window.markAllPresent = function () {
