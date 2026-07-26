@@ -79,7 +79,8 @@ async function fetchAttendance() {
             lastAttendanceHash = newHash;
             currentAttendanceState = {};
             currentMemoState = {}; // Clear local state so new DB records take effect
-            renderAttendanceTbody();
+            processCourses();
+            renderCourseList(); // This also calls renderAttendanceTbody()
             return true;
         }
         return false;
@@ -247,6 +248,7 @@ window.setDate = function(dateStr) {
     localStorage.setItem('sejong_daily_date', currentDate);
     currentAttendanceState = {};
     currentMemoState = {};
+    lastAttendanceHash = ''; // Force re-render of courses and table
     fetchAttendance();
     fetchMonthlyAttendanceStats(currentDate);
     renderMiniCalendar(); // update active class
@@ -604,6 +606,7 @@ window.changeDate = function (offset) {
     // Clear temporary state on date change and fetch DB
     currentAttendanceState = {};
     currentMemoState = {};
+    lastAttendanceHash = ''; // Force re-render of courses and table
     fetchAttendance();
     fetchMonthlyAttendanceStats(currentDate);
 };
