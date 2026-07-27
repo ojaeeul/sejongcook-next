@@ -7,28 +7,6 @@ import VisitorTracker from "@/components/VisitorTracker";
 
 
 
-import { Gugi, Jua, Nanum_Pen_Script } from 'next/font/google';
-
-const gugi = Gugi({
-  weight: '400',
-  subsets: ['latin'],
-  variable: '--font-gugi',
-  display: 'swap',
-});
-
-const jua = Jua({
-  weight: '400',
-  subsets: ['latin'],
-  variable: '--font-jua',
-  display: 'swap',
-});
-
-const nanumPen = Nanum_Pen_Script({
-  weight: '400',
-  subsets: ['latin'],
-  variable: '--font-nanum-pen',
-  display: 'swap',
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.sejongcook.co.kr'),
@@ -112,7 +90,7 @@ export default async function RootLayout({
   const settings = await getSettings();
 
   return (
-    <html lang="ko" className={`${gugi.variable} ${jua.variable} ${nanumPen.variable}`} suppressHydrationWarning>
+    <html lang="ko" suppressHydrationWarning>
       <head>
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#ffffff" />
