@@ -64,21 +64,23 @@ async function fetchMembers() {
 }
 
 function populateCourseFilter() {
-    const courseSet = new Set();
+    const courseCounts = {};
     adminMembers.forEach(m => {
         if(m.course) {
-            const cList = m.course.split(',').map(c => c.trim().replace(/\([^)]*\)/g, '').trim()).filter(c=>c);
-            cList.forEach(c => courseSet.add(c));
+            const cList = Array.from(new Set(m.course.split(',').map(c => c.trim().replace(/\([^)]*\)/g, '').trim()).filter(c=>c)));
+            cList.forEach(c => {
+                courseCounts[c] = (courseCounts[c] || 0) + 1;
+            });
         }
     });
     const select = document.getElementById('courseFilter');
     if(!select) return;
     const currentVal = select.value;
-    select.innerHTML = '<option value="ALL">전체보기 (과정 선택)</option>';
-    Array.from(courseSet).sort().forEach(c => {
+    select.innerHTML = `<option value="ALL">전체보기 (과정 선택) (${adminMembers.length}명)</option>`;
+    Object.keys(courseCounts).sort().forEach(c => {
         const opt = document.createElement('option');
         opt.value = c;
-        opt.textContent = c;
+        opt.textContent = `${c} (${courseCounts[c]}명)`;
         select.appendChild(opt);
     });
     select.value = currentVal || 'ALL';
