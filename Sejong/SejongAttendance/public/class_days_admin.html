@@ -309,6 +309,27 @@
             <!-- Inactive courses will go here -->
         </div>
         
+        <hr style="margin: 40px 0; border: none; border-bottom: 2px dashed #e2e8f0;">
+
+        <!-- 임시휴일 설정 추가 -->
+        <h1 style="border: none; padding-bottom: 0; margin-bottom: 20px;"><span class="material-icons" style="color: #ef4444; font-size: 32px;">event_busy</span> 임시휴일 설정</h1>
+        <div class="settings-notice" style="background: #fef2f2; border-color: #fecaca; color: #b91c1c;">
+            <span class="material-icons" style="vertical-align: middle; margin-right: 5px;">info</span>
+            <strong>안내:</strong> 지정된 날짜는 모든 반의 출석부에서 휴일로 처리됩니다. (예: 공휴일 외의 학원 자체 방학 등)
+        </div>
+
+        <div style="margin-bottom: 25px; padding: 15px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <input type="date" id="newHolidayDate" style="padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 1.05rem;">
+            <input type="text" id="newHolidayName" placeholder="휴일명 (예: 여름방학)" style="flex: 1; min-width: 150px; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 1.05rem;">
+            <button onclick="addHoliday()" style="padding: 12px 20px; border-radius: 8px; background: #ef4444; color: white; border: none; font-weight: bold; font-size: 1.05rem; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.2s;">
+                <span class="material-icons" style="font-size: 1.2rem;">add_circle</span> 휴일 등록
+            </button>
+        </div>
+
+        <h3 style="font-size: 1rem; color: #ef4444; margin-bottom: 10px;">✅ 등록된 임시휴일</h3>
+        <div id="holidayList" style="margin-bottom: 30px;">
+            <div style="text-align:center; padding:40px; color:#94a3b8;">데이터를 불러오는 중입니다...</div>
+        </div>
         
         <button class="btn-save" onclick="saveSettings()">
             <span class="material-icons">save</span> 설정 저장하기
@@ -325,16 +346,19 @@
     let timetableData = {};
     let activeCourses = [];
     let inactiveCourses = [];
+    let holidaysData = [];
 
     async function fetchTimetable() {
         try {
-            const [ttRes, setRes] = await Promise.all([
+            const [ttRes, setRes, holidayRes] = await Promise.all([
                 fetch(SHEET_API_BASE + '/timetable'),
-                fetch(SHEET_API_BASE + '/settings?t=' + Date.now())
+                fetch(SHEET_API_BASE + '/settings?t=' + Date.now()),
+                fetch(SHEET_API_BASE + '/holidays?t=' + Date.now())
             ]);
             
-            if (ttRes.ok && setRes.ok) {
+            if (ttRes.ok && setRes.ok && holidayRes.ok) {
                 timetableData = await ttRes.json();
+                holidaysData = await holidayRes.json();
                 const setData = await setRes.json();
                 let settingsObj = Array.isArray(setData) && setData.length > 0 ? setData[0] : (setData.key === "settings" ? setData.value : setData);
                 
@@ -349,6 +373,7 @@
                 });
 
                 renderCourseSettings();
+                renderHolidays();
             }
         } catch (e) {
             console.error('Failed to fetch:', e);
@@ -446,6 +471,119 @@
         inactiveCourses.forEach(course => {
             inactiveContainer.appendChild(createRow(course, false));
         });
+    }
+
+    function renderHolidays() {
+        const container = document.getElementById('holidayList');
+        if (!container) return;
+        
+        container.innerHTML = '';
+        if (holidaysData.length === 0) {
+            container.innerHTML = '<div style="text-align:center; padding:40px; color:#94a3b8;">등록된 임시휴일이 없습니다.</div>';
+            return;
+        }
+
+        // 날짜순 정렬
+        holidaysData.sort((a, b) => a.date.localeCompare(b.date));
+
+        holidaysData.forEach(h => {
+            const row = document.createElement('div');
+            row.className = 'course-row';
+            
+            const info = document.createElement('div');
+            info.style.display = 'flex';
+            info.style.gap = '20px';
+            info.style.alignItems = 'center';
+
+            const dateSpan = document.createElement('span');
+            dateSpan.style.fontWeight = 'bold';
+            dateSpan.style.color = '#ef4444';
+            dateSpan.textContent = h.date;
+
+            const nameSpan = document.createElement('span');
+            nameSpan.style.color = '#334155';
+            nameSpan.textContent = h.name || '임시휴일';
+
+            info.appendChild(dateSpan);
+            info.appendChild(nameSpan);
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.innerHTML = '<span class="material-icons" style="font-size: 1.2rem;">delete</span> 삭제';
+            deleteBtn.style.padding = '8px 12px';
+            deleteBtn.style.background = 'white';
+            deleteBtn.style.color = '#ef4444';
+            deleteBtn.style.border = '1px solid #fca5a5';
+            deleteBtn.style.borderRadius = '6px';
+            deleteBtn.style.cursor = 'pointer';
+            deleteBtn.style.display = 'flex';
+            deleteBtn.style.alignItems = 'center';
+            deleteBtn.style.gap = '4px';
+            
+            deleteBtn.onclick = () => removeHoliday(h.date);
+
+            row.appendChild(info);
+            row.appendChild(deleteBtn);
+            container.appendChild(row);
+        });
+    }
+
+    async function addHoliday() {
+        const dateInput = document.getElementById('newHolidayDate').value;
+        const nameInput = document.getElementById('newHolidayName').value.trim();
+
+        if (!dateInput) {
+            alert('날짜를 선택해주세요.');
+            return;
+        }
+
+        if (holidaysData.some(h => h.date === dateInput)) {
+            alert('이미 등록된 날짜입니다.');
+            return;
+        }
+
+        const payload = { date: dateInput, isHoliday: true, name: nameInput };
+        
+        try {
+            const res = await fetch(`${SHEET_API_BASE}/holidays`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (res.ok) {
+                holidaysData.push(payload);
+                renderHolidays();
+                document.getElementById('newHolidayDate').value = '';
+                document.getElementById('newHolidayName').value = '';
+                
+                // localStorage.setItem('sejong_timetable_sync', Date.now()); // 필요시 다른 탭 연동 
+            } else {
+                alert('휴일 등록에 실패했습니다.');
+            }
+        } catch(e) {
+            alert('오류가 발생했습니다.');
+        }
+    }
+
+    async function removeHoliday(dateStr) {
+        if (!confirm(`${dateStr} 휴일을 삭제하시겠습니까?`)) return;
+
+        const payload = { date: dateStr, isHoliday: false };
+        
+        try {
+            const res = await fetch(`${SHEET_API_BASE}/holidays`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (res.ok) {
+                holidaysData = holidaysData.filter(h => h.date !== dateStr);
+                renderHolidays();
+            } else {
+                alert('휴일 삭제에 실패했습니다.');
+            }
+        } catch(e) {
+            alert('오류가 발생했습니다.');
+        }
     }
 
     function addNewCourse() {
