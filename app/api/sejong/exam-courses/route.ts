@@ -23,13 +23,25 @@ function getFilePath(baseDir: string) {
     return path.join(process.cwd(), baseDir, 'exam_courses.json');
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
     try {
         const filePath = getFilePath('Sejong/SejongAttendance/public');
-        if (!fs.existsSync(filePath)) {
-            return NextResponse.json(defaultCourses);
+        let data: any;
+
+        if (fs.existsSync(filePath)) {
+            data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+        } else {
+            // Vercel fallback: fetch from public CDN
+            const host = req.headers.get('host') || req.nextUrl.host;
+            const protocol = host?.includes('localhost') ? 'http' : 'https';
+            const url = `${protocol}://${host}/sejong/exam_courses.json`;
+            const res = await fetch(url, { cache: 'no-store' });
+            if (res.ok) {
+                data = await res.json();
+            } else {
+                return NextResponse.json(defaultCourses);
+            }
         }
-        let data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
         
         // Migrate old flat array format to new nested format on the fly
         if (Array.isArray(data) && data.length > 0 && typeof data[0] === 'string') {
