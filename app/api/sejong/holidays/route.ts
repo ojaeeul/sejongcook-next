@@ -26,6 +26,13 @@ export async function POST(req: NextRequest) {
 
         if (payload.isHoliday) {
             holidays.push(payload);
+            
+            // 임시휴일 지정 시, 해당 일자의 모든 출석 기록을 삭제
+            const { error: delError } = await supabase
+                .from('attendance')
+                .delete()
+                .eq('date', payload.date);
+            if (delError) console.error("Error deleting attendance for holiday:", delError);
         }
 
         // Upsert back
