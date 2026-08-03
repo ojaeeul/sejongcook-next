@@ -488,7 +488,7 @@
 
         holidaysData.forEach(h => {
             const row = document.createElement('div');
-            row.className = 'course-row';
+            row.className = 'course-row holiday-row'; // 구분용 클래스 추가
             
             const info = document.createElement('div');
             info.style.display = 'flex';
@@ -527,17 +527,17 @@
         });
     }
 
-    async function addHoliday() {
+    async function addHoliday(silent = false) {
         const dateInput = document.getElementById('newHolidayDate').value;
         const nameInput = document.getElementById('newHolidayName').value.trim();
 
         if (!dateInput) {
-            alert('날짜를 선택해주세요.');
+            if (!silent) alert('날짜를 선택해주세요.');
             return;
         }
 
         if (holidaysData.some(h => h.date === dateInput)) {
-            alert('이미 등록된 날짜입니다.');
+            if (!silent) alert('이미 등록된 날짜입니다.');
             return;
         }
 
@@ -557,10 +557,10 @@
                 
                 // localStorage.setItem('sejong_timetable_sync', Date.now()); // 필요시 다른 탭 연동 
             } else {
-                alert('휴일 등록에 실패했습니다.');
+                if (!silent) alert('휴일 등록에 실패했습니다.');
             }
         } catch(e) {
-            alert('오류가 발생했습니다.');
+            if (!silent) alert('오류가 발생했습니다.');
         }
     }
 
@@ -657,8 +657,14 @@
     }
 
     async function saveSettings(silent = false) {
+        // [UX 개선] 입력 필드에 날짜가 있는데 휴일 등록을 안 누르고 저장하기를 누른 경우 자동 등록
+        const pendingDate = document.getElementById('newHolidayDate').value;
+        if (pendingDate) {
+            await addHoliday(true);
+        }
+
         const newTimetable = {};
-        const rows = document.querySelectorAll('.course-row');
+        const rows = document.querySelectorAll('.course-row:not(.holiday-row)');
         rows.forEach(row => {
             const course = row.querySelector('.course-name').textContent;
             const activeDays = [];
