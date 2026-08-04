@@ -26,7 +26,7 @@ function getFilePath(baseDir: string) {
 export async function GET(req: NextRequest) {
     try {
         const filePath = getFilePath('Sejong/SejongAttendance/public');
-        let data: any;
+        let data: unknown;
 
         if (fs.existsSync(filePath)) {
             data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
@@ -55,13 +55,13 @@ export async function GET(req: NextRequest) {
         
         // Ensure all courses are objects: { name: string, exams: [{name, key}] }
         if (Array.isArray(data)) {
-            data.forEach((cat: any) => {
-                if (cat.courses && Array.isArray(cat.courses)) {
-                    cat.courses = cat.courses.map((c: any) => {
+            data.forEach((cat: unknown) => {
+                if (typeof cat === 'object' && cat !== null && 'courses' in cat && Array.isArray((cat as any).courses)) {
+                    (cat as any).courses = (cat as any).courses.map((c: unknown) => {
                         if (typeof c === 'string') {
                             let prefix = c.replace("기능사", "");
                             if (c === "제과제빵기능사") prefix = "제과제빵";
-                            let exams: any[] = [];
+                            let exams: unknown[] = [];
                             if (!["산업기사", "가정요리", "브런치", "쿠킹클래스", "베이킹 원데이", "취미요리"].includes(c)) {
                                 for (let y = 2021; y <= 2026; y++) {
                                     exams.push({ name: `${y}년 ${prefix}`, key: `${prefix}_${y}` });
@@ -76,9 +76,9 @@ export async function GET(req: NextRequest) {
         }
         
         return NextResponse.json(data);
-    } catch (e: any) {
-        console.error("GET Exam Courses Error:", e);
-        return NextResponse.json({ error: e.message }, { status: 500 });
+    } catch (e: unknown) {
+        console.error('Error fetching exam courses:', e);
+        return NextResponse.json({ error: 'Failed to parse exam_courses.json', details: e instanceof Error ? e.message : String(e) }, { status: 500 });
     }
 }
 
@@ -103,8 +103,8 @@ export async function POST(req: NextRequest) {
         }
 
         return NextResponse.json({ success: true });
-    } catch (e: any) {
+    } catch (e: unknown) {
         console.error("POST Exam Courses Error:", e);
-        return NextResponse.json({ error: e.message }, { status: 500 });
+        return NextResponse.json({ error: e instanceof Error ? e.message : String(e) }, { status: 500 });
     }
 }
