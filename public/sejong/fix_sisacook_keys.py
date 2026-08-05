@@ -20,9 +20,9 @@ def fix_keys():
             mapped_suffix = suffix_map.get(round_str, round_str)
             
             if "제과" in old_key:
-                new_key = f"제과기능사_사사쿡 제과기능사 {mapped_suffix}"
+                new_key = f"제과기능사_제과기능사 {mapped_suffix}"
             else:
-                new_key = f"제빵기능사_사사쿡 제빵기능사 {mapped_suffix}"
+                new_key = f"제빵기능사_제빵기능사 {mapped_suffix}"
                 
             new_data[new_key] = value
             keys_to_delete.append(old_key)
@@ -58,8 +58,8 @@ def fix_keys():
                         round_str = exam["key"].split(" ")[-1]
                         suffix_map = {"1회": "가형", "2회": "나형", "3회": "다형", "4회": "라형", "5회": "마형"}
                         mapped_suffix = suffix_map.get(round_str, round_str)
-                        exam["key"] = f"제과기능사_사사쿡 제과기능사 {mapped_suffix}"
-                        exam["name"] = f"사사쿡 제과기능사 {mapped_suffix}"
+                        exam["key"] = f"제과기능사_제과기능사 {mapped_suffix}"
+                        exam["name"] = f"제과기능사 {mapped_suffix}"
                         
             if bread_course:
                 for exam in bread_course.get("exams", []):
@@ -67,8 +67,8 @@ def fix_keys():
                         round_str = exam["key"].split(" ")[-1]
                         suffix_map = {"1회": "가형", "2회": "나형", "3회": "다형", "4회": "라형", "5회": "마형"}
                         mapped_suffix = suffix_map.get(round_str, round_str)
-                        exam["key"] = f"제빵기능사_사사쿡 제빵기능사 {mapped_suffix}"
-                        exam["name"] = f"사사쿡 제빵기능사 {mapped_suffix}"
+                        exam["key"] = f"제빵기능사_제빵기능사 {mapped_suffix}"
+                        exam["name"] = f"제빵기능사 {mapped_suffix}"
                         
     with open(COURSES_JSON, "w", encoding="utf-8") as f:
         json.dump(courses_data, f, ensure_ascii=False, indent=4)

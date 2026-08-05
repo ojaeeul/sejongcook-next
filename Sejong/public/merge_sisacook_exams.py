@@ -21,7 +21,16 @@ def merge_questions():
         
     # Merge
     for key, value in sisa_data.items():
-        questions_data[key] = value
+        round_str = key.split(" ")[-1] if " " in key else key.split("_")[-1]
+        suffix_map = {"1회": "가형", "2회": "나형", "3회": "다형", "4회": "라형", "5회": "마형"}
+        mapped_suffix = suffix_map.get(round_str, round_str)
+        
+        if "제과" in key:
+            new_key = f"제과기능사_사사쿡 제과기능사 {mapped_suffix}"
+        else:
+            new_key = f"제빵기능사_사사쿡 제빵기능사 {mapped_suffix}"
+            
+        questions_data[new_key] = value
         
     # Write back
     with open(QUESTIONS_JSON, "w", encoding="utf-8") as f:
@@ -67,9 +76,11 @@ def update_courses(keys):
         mapped_suffix = suffix_map.get(round_str, round_str)
         
         if "제과" in key:
-            bakery_course["exams"].append({"name": f"사사쿡 제과기능사 {mapped_suffix}", "key": key})
+            new_key = f"제과기능사_사사쿡 제과기능사 {mapped_suffix}"
+            bakery_course["exams"].append({"name": f"사사쿡 제과기능사 {mapped_suffix}", "key": new_key})
         elif "제빵" in key:
-            bread_course["exams"].append({"name": f"사사쿡 제빵기능사 {mapped_suffix}", "key": key})
+            new_key = f"제빵기능사_사사쿡 제빵기능사 {mapped_suffix}"
+            bread_course["exams"].append({"name": f"사사쿡 제빵기능사 {mapped_suffix}", "key": new_key})
             
     # Remove old '사사쿡 제과', '사사쿡 제빵' courses if they exist
     category_target["courses"] = [c for c in category_target["courses"] if type(c) != dict or c.get("name") not in ["사사쿡 제과", "사사쿡 제빵"]]
