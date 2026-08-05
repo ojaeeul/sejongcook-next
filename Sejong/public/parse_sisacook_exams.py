@@ -108,9 +108,10 @@ def process_all_exams():
             if "제과기능사" in item_nfc or "제빵기능사" in item_nfc:
                 exam_name = item_nfc.strip()
                 images = []
-                for f in sorted(os.listdir(item_path)):
-                    if f.lower().endswith(('.png', '.jpg', '.jpeg')):
-                        images.append(os.path.join(item_path, f))
+                for root_dir, dirs, files in os.walk(item_path):
+                    for f in sorted(files):
+                        if f.lower().endswith(('.png', '.jpg', '.jpeg', '.webp')):
+                            images.append(os.path.join(root_dir, f))
                 
                 tasks.append((exam_name, images))
                 
