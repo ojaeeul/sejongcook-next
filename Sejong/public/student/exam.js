@@ -469,6 +469,19 @@ function renderQuestion() {
              
              ansContainer.appendChild(label);
              ansContainer.appendChild(ansBox);
+
+             if (qInfo.e) {
+                 const explBox = document.createElement('div');
+                 explBox.className = 'explanation-box';
+                 explBox.style.marginTop = '20px';
+                 explBox.style.padding = '15px';
+                 explBox.style.background = 'rgba(59, 130, 246, 0.1)';
+                 explBox.style.borderLeft = '4px solid #3b82f6';
+                 explBox.style.borderRadius = '0 8px 8px 0';
+                 explBox.style.textAlign = 'left';
+                 explBox.innerHTML = `<div style="font-weight: bold; color: #3b82f6; margin-bottom: 5px; display: flex; align-items: center; gap: 5px;"><span class="material-icons" style="font-size: 1.1rem;">lightbulb</span>정답 해설</div><div style="color: #f8fafc; font-size: 0.95rem; line-height: 1.5; white-space: pre-wrap;">${qInfo.e}</div>`;
+                 ansContainer.appendChild(explBox);
+             }
         } else {
             const btn = document.createElement('button');
             btn.className = 'btn-primary';
@@ -554,6 +567,19 @@ function renderQuestion() {
             }
             optsEl.appendChild(btn);
         });
+
+        // Show Explanation (해설) if in review mode and exists
+        if (isReviewMode && qInfo.e) {
+            const explBox = document.createElement('div');
+            explBox.className = 'explanation-box';
+            explBox.style.marginTop = '20px';
+            explBox.style.padding = '15px';
+            explBox.style.background = 'rgba(59, 130, 246, 0.1)';
+            explBox.style.borderLeft = '4px solid #3b82f6';
+            explBox.style.borderRadius = '0 8px 8px 0';
+            explBox.innerHTML = `<div style="font-weight: bold; color: #3b82f6; margin-bottom: 5px; display: flex; align-items: center; gap: 5px;"><span class="material-icons" style="font-size: 1.1rem;">lightbulb</span>정답 해설</div><div style="color: #f8fafc; font-size: 0.95rem; line-height: 1.5; white-space: pre-wrap;">${qInfo.e}</div>`;
+            optsEl.appendChild(explBox);
+        }
     }
 
     // Update bottom nav buttons
