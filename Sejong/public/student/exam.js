@@ -494,7 +494,7 @@ function renderQuestion() {
     } else {
         qInfo.o.forEach((optText, index) => {
             const optNum = index + 1;
-            const optLabel = ['가', '나', '다', '라'][index];
+            const optLabel = ['가', '나', '다', '라', '마'][index] || optNum.toString();
             const btn = document.createElement('div');
             btn.className = 'option-btn';
             
@@ -631,8 +631,9 @@ function renderOMR() {
             }
             bubbles.appendChild(bubble);
         } else {
-            for (let opt = 1; opt <= 4; opt++) {
-                const optLabel = ['가', '나', '다', '라'][opt - 1];
+            const maxOpts = (qInfo.o && qInfo.o.length > 0) ? qInfo.o.length : 4;
+            for (let opt = 1; opt <= maxOpts; opt++) {
+                const optLabel = ['가', '나', '다', '라', '마'][opt - 1] || opt.toString();
                 const bubble = document.createElement('div');
                 bubble.className = 'omr-bubble';
                 bubble.textContent = optLabel;
@@ -891,8 +892,8 @@ function renderAnalysisTable() {
             correctAnsStr = '주관식';
         } else {
             isCorrect = (myAns === q.a);
-            myAnsStr = myAns ? ['가', '나', '다', '라'][myAns - 1] : '-';
-            correctAnsStr = q.a ? ['가', '나', '다', '라'][q.a - 1] : '-';
+            myAnsStr = myAns ? (['가', '나', '다', '라', '마'][myAns - 1] || myAns.toString()) : '-';
+            correctAnsStr = q.a ? (['가', '나', '다', '라', '마'][q.a - 1] || q.a.toString()) : '-';
         }
 
         const tr = document.createElement('tr');
