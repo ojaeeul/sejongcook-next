@@ -792,6 +792,12 @@ function calculateResult() {
             // Remove previous record for same student & examKey (overwrite on retake)
             examsArray = examsArray.filter(e => !(e.phone === resultData.phone && e.examKey === resultData.examKey));
             examsArray.push(resultData);
+            
+            // Update local cache for immediate reflection without reload
+            if (!window.allExams) window.allExams = [];
+            window.allExams = window.allExams.filter(e => !(e.phone === resultData.phone && e.examKey === resultData.examKey));
+            window.allExams.push(resultData);
+            
             return fetch('/api/sejong/exams', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

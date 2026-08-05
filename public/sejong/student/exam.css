@@ -235,14 +235,16 @@ body {
 }
 
 .exam-item.completed {
-    background: #f1f5f9;
-    opacity: 0.8;
+    background: #ffffff;
+    opacity: 1;
+    border: 2px solid #cbd5e1;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 .exam-item.completed:hover {
-    background: linear-gradient(135deg, #e2e8f0, #cbd5e1, #e2e8f0);
-    background-size: 200% 200%;
+    background: #f8fafc;
     border-color: #94a3b8;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
 /* Question Screen */

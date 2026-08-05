@@ -465,7 +465,10 @@ function downloadImage() {
     });
 }
 
+let currentOpenRecordIndex = null;
+
 function openAnalysis(index) {
+    currentOpenRecordIndex = index;
     document.querySelector('.container').style.display = 'none';
     document.getElementById('reportContainer').style.display = 'flex';
     document.getElementById('reportArea').style.display = 'flex';
@@ -617,4 +620,48 @@ function drawCharts(exam, examQuestions) {
             }
         }
     });
+}
+
+async function deleteExamRecord() {
+    if (currentOpenRecordIndex === null) return;
+    const exam = examsData[currentOpenRecordIndex];
+    if (!confirm(`${getStudentName(exam.phone)} 학생의 [${exam.examKey}] 응시 내역을 초기화 하시겠습니까?\n초기화 하면 학생이 다시 시험을 풀 수 있게 됩니다.`)) {
+        return;
+    }
+    
+    try {
+        // Fetch latest to avoid overwriting other new exams
+        const res = await fetch('/api/sejong/exams');
+        let latestExams = await res.json();
+        
+        if (!Array.isArray(latestExams)) latestExams = [];
+        
+        // Filter out this exact record
+        const updatedExams = latestExams.filter(e => !(e.phone === exam.phone && e.examKey === exam.examKey && e.startTime === exam.startTime));
+        
+        // Save back
+        const postRes = await fetch('/api/sejong/exams', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updatedExams)
+        });
+        
+        if (postRes.ok) {
+            alert('초기화 되었습니다. 학생이 다시 응시할 수 있습니다.');
+            // Reload all data
+            await loadExamAdminData();
+            const dateStr = document.getElementById('examDateSelect').value;
+            if (dateStr) {
+                // re-initialize recordsByDay and UI
+                initCalendar(); 
+                filterExamsByDate(dateStr);
+            }
+            backToList();
+        } else {
+            alert('초기화 실패: 서버 응답 오류');
+        }
+    } catch (e) {
+        console.error(e);
+        alert('초기화 중 오류가 발생했습니다.');
+    }
 }

@@ -7,9 +7,9 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=20260805-7">
-    <link rel="stylesheet" href="exam_admin.css?v=20260805-7">
-    <script src="script.js?v=20260805-7" defer></script>
+    <link rel="stylesheet" href="style.css?v=20260806-0">
+    <link rel="stylesheet" href="exam_admin.css?v=20260806-0">
+    <script src="script.js?v=20260806-0" defer></script>
 
     <!-- Chart.js, html2canvas & Kakao SDK -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -266,7 +266,10 @@
         </div>
 
         <div id="reportContainer" style="display: none; width: 100%; display: flex; flex-direction: column; align-items: center;">
-            <button onclick="backToList()" class="print-send-btn" style="margin-bottom: 20px; background: #64748b; color: white; width: auto; padding: 10px 30px; border: none;"><span class="material-icons" style="vertical-align: middle; margin-right: 5px;">list</span>명단으로 돌아가기</button>
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <button onclick="backToList()" class="print-send-btn" style="background: #64748b; color: white; width: auto; padding: 10px 30px; border: none; border-radius: 8px;"><span class="material-icons" style="vertical-align: middle; margin-right: 5px;">list</span>명단으로 돌아가기</button>
+                <button onclick="deleteExamRecord()" class="print-send-btn" style="background: #ef4444; color: white; width: auto; padding: 10px 30px; border: none; border-radius: 8px;"><span class="material-icons" style="vertical-align: middle; margin-right: 5px;">delete</span>응시 내역 초기화</button>
+            </div>
             
             <div class="report-a4" id="reportArea">
             
@@ -387,7 +390,7 @@
         </div> <!-- End of reportContainer -->
     </div>
 
-    <script src="exam_admin.js?v=20260805-7"></script>
+    <script src="exam_admin.js?v=20260806-0"></script>
 
         </main>
     </div>
