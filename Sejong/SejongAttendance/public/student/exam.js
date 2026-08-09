@@ -525,14 +525,14 @@ function renderQuestion() {
                 let numStyle = '';
                 let checkMark = '';
 
-                // If this is the correct answer: BLUE
+                // If this is the correct answer: GREEN
                 if (isCorrectAnswer) {
-                    boxStyle = 'background: rgba(59, 130, 246, 0.1); border-color: #3b82f6 !important;';
-                    numStyle = 'background: #3b82f6 !important; color: white;';
+                    boxStyle = 'background: rgba(5, 150, 105, 0.1); border-color: #059669 !important;';
+                    numStyle = 'background: #059669 !important; color: white;';
                     if (isMyAnswer) {
-                        checkMark = ' <span class="material-icons" style="color: #3b82f6; font-size: 1.1rem; vertical-align: middle; margin-left: 5px;">check_circle</span>';
+                        checkMark = ' <span class="material-icons" style="color: #059669; font-size: 1.1rem; vertical-align: middle; margin-left: 5px;">check_circle</span>';
                     } else {
-                        checkMark = ' <span class="material-icons" style="color: #3b82f6; font-size: 1.1rem; vertical-align: middle; margin-left: 5px;">check</span>';
+                        checkMark = ' <span class="material-icons" style="color: #059669; font-size: 1.1rem; vertical-align: middle; margin-left: 5px;">check</span>';
                     }
                 } 
                 // If this is the wrong answer the user picked: RED
@@ -1151,7 +1151,7 @@ window.initPaperPreviewSwiper = function() {
             
             let highlightStyle = '';
             if (isReviewMode) {
-                if (isCorrect) highlightStyle = 'color: #3b82f6; font-weight: bold;';
+                if (isCorrect) highlightStyle = 'color: #059669; font-weight: bold;';
                 else if (isWrong) highlightStyle = 'color: #ef4444; font-weight: bold;';
             } else if (ans !== null && ans !== undefined) {
                 highlightStyle = 'color: #059669; font-weight: bold;'; // User marked an answer
@@ -1167,7 +1167,7 @@ window.initPaperPreviewSwiper = function() {
                 q.o.forEach((opt, idx) => {
                     let optStyle = '';
                     if (isReviewMode) {
-                        if (idx + 1 === parseInt(q.a)) optStyle = 'color: #3b82f6; font-weight: bold;';
+                        if (idx + 1 === parseInt(q.a)) optStyle = 'color: #059669; font-weight: bold;';
                         else if (idx + 1 === ans) optStyle = 'color: #ef4444; text-decoration: line-through;';
                     } else if (ans === idx + 1) {
                         optStyle = 'color: #059669; font-weight: bold;';
