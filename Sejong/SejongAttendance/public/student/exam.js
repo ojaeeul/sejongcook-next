@@ -525,14 +525,14 @@ function renderQuestion() {
                 let numStyle = '';
                 let checkMark = '';
 
-                // If this is the correct answer: GREEN
+                // If this is the correct answer: BLUE
                 if (isCorrectAnswer) {
-                    boxStyle = 'background: rgba(5, 150, 105, 0.1); border-color: #059669 !important;';
-                    numStyle = 'background: #059669 !important; color: white;';
+                    boxStyle = 'background: rgba(59, 130, 246, 0.1); border-color: #3b82f6 !important;';
+                    numStyle = 'background: #3b82f6 !important; color: white;';
                     if (isMyAnswer) {
-                        checkMark = ' <span class="material-icons" style="color: #059669; font-size: 1.1rem; vertical-align: middle; margin-left: 5px;">check_circle</span>';
+                        checkMark = ' <span class="material-icons" style="color: #3b82f6; font-size: 1.1rem; vertical-align: middle; margin-left: 5px;">check_circle</span>';
                     } else {
-                        checkMark = ' <span class="material-icons" style="color: #059669; font-size: 1.1rem; vertical-align: middle; margin-left: 5px;">check</span>';
+                        checkMark = ' <span class="material-icons" style="color: #3b82f6; font-size: 1.1rem; vertical-align: middle; margin-left: 5px;">check</span>';
                     }
                 } 
                 // If this is the wrong answer the user picked: RED

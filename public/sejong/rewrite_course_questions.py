@@ -74,12 +74,12 @@ def get_rewritten_question(course, q_text, options, correct_idx, api_key):
                 return parsed, True
             else:
                 return None, False
-        elif res.status_code == 429:
+        elif res.status_code == 429 or res.status_code == 503:
             return "RATE_LIMIT", False
         else:
-            return None, False
+            return "RATE_LIMIT", False # Treat other errors as rate limit to retry
     except Exception as e:
-        return None, False
+        return "RATE_LIMIT", False
 
 def run_rewriter():
     if not API_KEYS:
