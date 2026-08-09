@@ -519,14 +519,31 @@ function renderQuestion() {
             if (isReviewMode) {
                 const isCorrectAnswer = (optNum === qInfo.a);
                 const isMyAnswer = (optNum === userAnswers[currentQuestionIndex]);
+                const isWrongPick = (isMyAnswer && !isCorrectAnswer);
                 
-                let correctStyle = isCorrectAnswer ? 'background: rgba(239, 68, 68, 0.1); border-color: #ef4444;' : '';
-                let numStyle = isCorrectAnswer ? 'background: #ef4444 !important; color: white;' : '';
-                
-                let checkMark = isMyAnswer ? ' <span class="material-icons" style="color: #059669; font-size: 1.1rem; vertical-align: middle; margin-left: 5px;">check_circle</span>' : '';
+                let boxStyle = '';
+                let numStyle = '';
+                let checkMark = '';
 
+                // If this is the correct answer: BLUE
                 if (isCorrectAnswer) {
-                    btn.setAttribute('style', correctStyle);
+                    boxStyle = 'background: rgba(59, 130, 246, 0.1); border-color: #3b82f6 !important;';
+                    numStyle = 'background: #3b82f6 !important; color: white;';
+                    if (isMyAnswer) {
+                        checkMark = ' <span class="material-icons" style="color: #3b82f6; font-size: 1.1rem; vertical-align: middle; margin-left: 5px;">check_circle</span>';
+                    } else {
+                        checkMark = ' <span class="material-icons" style="color: #3b82f6; font-size: 1.1rem; vertical-align: middle; margin-left: 5px;">check</span>';
+                    }
+                } 
+                // If this is the wrong answer the user picked: RED
+                else if (isWrongPick) {
+                    boxStyle = 'background: rgba(239, 68, 68, 0.1); border-color: #ef4444 !important;';
+                    numStyle = 'background: #ef4444 !important; color: white;';
+                    checkMark = ' <span class="material-icons" style="color: #ef4444; font-size: 1.1rem; vertical-align: middle; margin-left: 5px;">close</span>';
+                }
+
+                if (boxStyle) {
+                    btn.setAttribute('style', boxStyle);
                 }
 
                 btn.innerHTML = `
@@ -1134,10 +1151,10 @@ window.initPaperPreviewSwiper = function() {
             
             let highlightStyle = '';
             if (isReviewMode) {
-                if (isCorrect) highlightStyle = 'color: #16a34a; font-weight: bold;';
-                else if (isWrong) highlightStyle = 'color: #dc2626; font-weight: bold;';
+                if (isCorrect) highlightStyle = 'color: #3b82f6; font-weight: bold;';
+                else if (isWrong) highlightStyle = 'color: #ef4444; font-weight: bold;';
             } else if (ans !== null && ans !== undefined) {
-                highlightStyle = 'color: #2563eb; font-weight: bold;'; // User marked an answer
+                highlightStyle = 'color: #059669; font-weight: bold;'; // User marked an answer
             }
 
             html += `<div class="card-q-item" id="card-q-${j}" style="margin-bottom: 10px; cursor: pointer;" onclick="currentQuestionIndex = ${j}; renderQuestion();">
@@ -1150,10 +1167,10 @@ window.initPaperPreviewSwiper = function() {
                 q.o.forEach((opt, idx) => {
                     let optStyle = '';
                     if (isReviewMode) {
-                        if (idx + 1 === parseInt(q.a)) optStyle = 'color: #16a34a; font-weight: bold;';
-                        else if (idx + 1 === ans) optStyle = 'color: #dc2626; text-decoration: line-through;';
+                        if (idx + 1 === parseInt(q.a)) optStyle = 'color: #3b82f6; font-weight: bold;';
+                        else if (idx + 1 === ans) optStyle = 'color: #ef4444; text-decoration: line-through;';
                     } else if (ans === idx + 1) {
-                        optStyle = 'color: #2563eb; font-weight: bold;';
+                        optStyle = 'color: #059669; font-weight: bold;';
                     }
                     const numStr = circleNums[idx] || (idx + 1 + ')');
                     html += `<div style="${optStyle}">${numStr} ${opt}</div>`;
