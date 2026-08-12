@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
 
         // Fetch current
         const { data } = await supabase.from('settings').select('value').eq('key', 'holidays').maybeSingle();
-        let holidays: any[] = data?.value || [];
+        let holidays: { date: string; isHoliday: boolean }[] = data?.value || [];
 
         // Remove existing for date
         holidays = holidays.filter((h) => h.date !== payload.date);
@@ -40,8 +40,8 @@ export async function POST(req: NextRequest) {
         if (error) throw error;
 
         return NextResponse.json({ success: true });
-    } catch (e: any) {
+    } catch (e: unknown) {
         console.error("POST Holidays Error:", e);
-        return NextResponse.json({ error: e.message }, { status: 500 });
+        return NextResponse.json({ error: e instanceof Error ? e.message : String(e) }, { status: 500 });
     }
 }

@@ -2,7 +2,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import fallbackBotSettings from '@/public/data/bot_settings.json';
 
-export async function generateQnaResponse(post: any, repliesHistory: any[] = [], board: string = 'qna') {
+export async function generateQnaResponse(post: { title?: string; content?: string; author?: string }, repliesHistory: { author?: string; content?: string }[] = [], board: string = 'qna') {
     try {
         // 1. 설정 파일 읽기
         let settings = { enabled: false, systemPrompt: '' };
@@ -10,7 +10,7 @@ export async function generateQnaResponse(post: any, repliesHistory: any[] = [],
             const filePath = path.join(process.cwd(), 'public', 'data', 'bot_settings.json');
             const fileContent = await fs.readFile(filePath, 'utf8');
             settings = JSON.parse(fileContent);
-        } catch (e) {
+        } catch {
             console.log("Bot settings fs.readFile failed. Using fallback import.");
             settings = fallbackBotSettings;
         }
@@ -56,8 +56,8 @@ export async function generateQnaResponse(post: any, repliesHistory: any[] = [],
         const now = new Date(today.getTime() + (today.getTimezoneOffset() * 60000) + kstOffset);
         
         const thursdays = [];
-        let daysUntilThursday = (4 - now.getDay() + 7) % 7;
-        let current = new Date(now);
+        const daysUntilThursday = (4 - now.getDay() + 7) % 7;
+        const current = new Date(now);
         current.setDate(now.getDate() + daysUntilThursday);
         
         for (let i = 0; i < 8; i++) {
@@ -134,8 +134,8 @@ export async function generateQnaResponse(post: any, repliesHistory: any[] = [],
         }
         
         return "[AI Bot Error] No replyText generated. Data: " + JSON.stringify(data);
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("generateQnaResponse error:", error);
-        return `[AI Bot Error] Exception: ${error.message}`;
+        return `[AI Bot Error] Exception: ${error instanceof Error ? error.message : String(error)}`;
     }
 }

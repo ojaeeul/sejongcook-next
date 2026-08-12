@@ -27,9 +27,9 @@ export async function GET(req: NextRequest) {
                 return NextResponse.json([]);
             }
         }
-    } catch (e: any) {
+    } catch (e: unknown) {
         console.error("GET Questions Error:", e);
-        return NextResponse.json({ error: e.message }, { status: 500 });
+        return NextResponse.json({ error: e instanceof Error ? e.message : String(e) }, { status: 500 });
     }
 }
 
@@ -54,8 +54,8 @@ export async function POST(req: NextRequest) {
         }
 
         return NextResponse.json({ success: true });
-    } catch (e: any) {
+    } catch (e: unknown) {
         console.error("POST Questions Error:", e);
-        return NextResponse.json({ error: e.message }, { status: 500 });
+        return NextResponse.json({ error: e instanceof Error ? e.message : String(e) }, { status: 500 });
     }
 }
