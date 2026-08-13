@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Editor from "./Editor";
 import { useAuth } from "@/context/AuthContext";
 import ShinyLaurelBanner from "./ShinyLaurelBanner";
@@ -60,6 +60,8 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
     });
 
     const [isAuthor, setIsAuthor] = useState(false);
+    const [dynamicHit, setDynamicHit] = useState(0);
+    const hasPosted = useRef(false);
 
     useEffect(() => {
         if (typeof window !== 'undefined' && initialPost?.id) {
@@ -67,8 +69,22 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
             if (myPosts.includes(String(initialPost.id))) {
                 setIsAuthor(true);
             }
+            
+            if (!hasPosted.current) {
+                hasPosted.current = true;
+                fetch('/api/sejong/board-hits', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ boardCode, idx: initialPost.id })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.hit) setDynamicHit(data.hit);
+                })
+                .catch(e => console.error(e));
+            }
         }
-    }, [initialPost?.id]);
+    }, [initialPost?.id, boardCode]);
 
     const handleEditToggle = () => {
         if (isEdit) {
@@ -364,7 +380,7 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
                                 <span className="w-[1px] h-3 bg-gray-300"></span>
                                 <span className="font-sans">{post.date}</span>
                                 <span className="w-[1px] h-3 bg-gray-300"></span>
-                                <span className="font-sans">조회 {post.hit}</span>
+                                <span className="font-sans">조회 {Number(post.hit) + dynamicHit}</span>
                             </div>
                         </div>
                     )}
@@ -383,7 +399,7 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
                 </div>
                 <div className="flex gap-2">
                     <span className="font-bold text-gray-700">조회수</span>
-                    <span className="font-sans">{post.hit}</span>
+                    <span className="font-sans">{Number(post.hit) + dynamicHit}</span>
                 </div>
             </div>
 

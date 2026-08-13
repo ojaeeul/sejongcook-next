@@ -25,12 +25,17 @@ export default function BoardList({ boardCode, boardName, posts, basePath = '/co
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
     const [myPosts, setMyPosts] = useState<string[]>([]);
+    const [dynamicHits, setDynamicHits] = useState<Record<string, number>>({});
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
             setMyPosts(JSON.parse(localStorage.getItem('my_posts') || '[]').map(String));
         }
-    }, []);
+        fetch(`/api/sejong/board-hits?boardCode=${boardCode}`)
+            .then(res => res.json())
+            .then(data => setDynamicHits(data))
+            .catch(e => console.error(e));
+    }, [boardCode]);
 
     // Calculate pagination logic
     const totalPages = Math.ceil(posts.length / itemsPerPage);
@@ -218,14 +223,14 @@ export default function BoardList({ boardCode, boardName, posts, basePath = '/co
                                                     <span>|</span>
                                                     <span>{post.date}</span>
                                                     <span>|</span>
-                                                    <span>조회 {post.hit}</span>
+                                                    <span>조회 {Number(post.hit) + (dynamicHits[post.id] || 0)}</span>
                                                 </div>
                                             </div>
                                         </div>
                                     </td>
                                     <td className="py-4 text-gray-500 hidden md:table-cell">{isAdmin ? post.author : (post.author && post.author.length > 1 ? post.author[0] + '**' : post.author)}</td>
                                     <td className="py-4 text-gray-500 font-sans hidden md:table-cell">{post.date}</td>
-                                    <td className="py-4 text-gray-500 font-sans hidden md:table-cell">{post.hit}</td>
+                                    <td className="py-4 text-gray-500 font-sans hidden md:table-cell">{Number(post.hit) + (dynamicHits[post.id] || 0)}</td>
                                     {isAdmin && (
                                         <td className="py-4 text-gray-500">
                                             <div className="flex justify-center gap-2">

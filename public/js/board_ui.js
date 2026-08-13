@@ -45,7 +45,20 @@ var BoardUI = {
         // Assuming BoardManager.getPosts returns a promise based on previous file analysis
         BoardManager.getPosts(this.boardCode).then(function (fetchedPosts) {
             posts = fetchedPosts || [];
-            self._drawList(posts);
+            
+            fetch('/api/sejong/board-hits?boardCode=' + self.boardCode)
+                .then(function(res) { return res.json(); })
+                .then(function(hits) {
+                    posts.forEach(function(p) {
+                        var extraHit = hits[p.idx] || 0;
+                        p.hit = parseInt(p.hit || 0) + extraHit;
+                    });
+                    self._drawList(posts);
+                })
+                .catch(function(err) {
+                    console.error("Hit fetch error", err);
+                    self._drawList(posts);
+                });
         });
     },
 
@@ -294,6 +307,13 @@ var BoardUI = {
 
     goView: function (idx) {
         this.changeUrl('view', idx);
+        
+        fetch('/api/sejong/board-hits', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ boardCode: this.boardCode, idx: idx })
+        }).catch(function(e) { console.error(e); });
+        
         this.renderView(idx);
     },
 
