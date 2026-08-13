@@ -16,7 +16,8 @@ for exam_key, questions in data.items():
         options = q['o']
         
         found_num = None
-        match = re.search(r'(정답은|정답:|답은)\s*(\d)', expl)
+        # 1. Matches like "정답은 1번", "정답: 1", "정답이 1번인", "답은 1", "1번이 정답"
+        match = re.search(r'(정답은|정답:|답은|정답이)\s*(\d)', expl)
         if match:
             found_num = int(match.group(2))
         else:
@@ -34,12 +35,14 @@ for exam_key, questions in data.items():
                 fixed_count += 1
             continue
             
+        # 2. Check if an exact option text is the very first thing in the explanation
         best_match_idx = -1
         expl_prefix = expl[:30] 
         
         for idx, opt in enumerate(options):
             if not opt: continue
             opt_str = str(opt).strip()
+            # If the option string contains a number, be careful
             if opt_str in expl_prefix and len(opt_str) > 2:
                 best_match_idx = idx + 1
                 break
@@ -48,7 +51,7 @@ for exam_key, questions in data.items():
             q['a'] = best_match_idx
             fixed_count += 1
 
-print(f"Total fixes applied: {fixed_count}")
+print(f"Total additional fixes applied: {fixed_count}")
 
 with open('Sejong/SejongAttendance/public/questions_data.json', 'w', encoding='utf-8') as f:
     json.dump(data, f, ensure_ascii=False, indent=2)
