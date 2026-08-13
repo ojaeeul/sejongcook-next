@@ -110,6 +110,19 @@ async function loadData() {
             window.allExams = [];
         }
 
+        // Fetch Explanation Settings
+        try {
+            const explRes = await fetch('/api/sejong/explanation-settings?t=' + Date.now());
+            if (explRes.ok) {
+                window.explSettings = await explRes.json();
+            } else {
+                window.explSettings = { global_enabled: false, allowed_students: [] };
+            }
+        } catch (e) {
+            console.error('Failed to load explanation settings', e);
+            window.explSettings = { global_enabled: false, allowed_students: [] };
+        }
+
         checkAutoLogin();
     } catch (e) {
         console.error('Failed to load data', e);
@@ -175,6 +188,7 @@ function authenticateUser(pin) {
 
     const member = members.find(m => m.phone && m.phone.endsWith(pin));
     if (member) {
+        window.loggedInMember = member; // Store for explanation permissions
         loggedInStudentCourse = member.course || '';
         renderCourses();
         showScreen('course');
@@ -585,8 +599,23 @@ function renderQuestion() {
             optsEl.appendChild(btn);
         });
 
-        // Add View Explanation button in Solving Mode if explanation exists
-        if (!isReviewMode && qInfo.e) {
+        // Check explanation permissions
+        let canViewExpl = false;
+        if (window.explSettings) {
+            if (window.explSettings.global_enabled) {
+                canViewExpl = true;
+            } else if (window.loggedInMember) {
+                const id = window.loggedInMember.id;
+                const phone = window.loggedInMember.phone;
+                const allowed = window.explSettings.allowed_students || [];
+                if ((id && allowed.includes(id)) || (phone && allowed.includes(phone))) {
+                    canViewExpl = true;
+                }
+            }
+        }
+
+        // Add View Explanation button in Solving Mode if explanation exists and permitted
+        if (!isReviewMode && qInfo.e && canViewExpl) {
             const btnContainer = document.createElement('div');
             btnContainer.style.textAlign = 'right';
             btnContainer.style.marginTop = '15px';

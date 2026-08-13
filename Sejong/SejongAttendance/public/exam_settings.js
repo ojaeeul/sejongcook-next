@@ -380,3 +380,105 @@ window.uploadExamFile = async function(event, catIndex, courseIndex) {
         event.target.value = ''; // Reset file input
     }
 };
+
+// --- Explanation Settings Logic ---
+window.explSettings = { global_enabled: false, allowed_students: [] };
+window.allMembersList = [];
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadExplanationSettings();
+    loadExplStudents();
+});
+
+async function loadExplanationSettings() {
+    try {
+        const res = await fetch('/api/sejong/explanation-settings');
+        if (res.ok) {
+            window.explSettings = await res.json();
+            document.getElementById('globalExplToggle').checked = window.explSettings.global_enabled;
+            toggleExplList();
+        }
+    } catch (e) {
+        console.error("Failed to load explanation settings:", e);
+    }
+}
+
+async function loadExplStudents() {
+    try {
+        const res = await fetch('/api/sejong/members?t=' + Date.now());
+        if (res.ok) {
+            window.allMembersList = await res.json();
+            renderExplStudents();
+        }
+    } catch (e) {
+        console.error("Failed to load students:", e);
+    }
+}
+
+window.toggleExplList = function() {
+    const isGlobal = document.getElementById('globalExplToggle').checked;
+    const container = document.getElementById('explStudentListContainer');
+    if (isGlobal) {
+        container.style.display = 'none';
+    } else {
+        container.style.display = 'block';
+    }
+};
+
+window.renderExplStudents = function() {
+    const container = document.getElementById('explStudentsList');
+    if (!container) return;
+    
+    // Sort students by name
+    const sorted = [...window.allMembersList].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    
+    let html = '';
+    sorted.forEach(m => {
+        const identifier = m.phone || m.id; // use phone if available, fallback to id
+        const isChecked = window.explSettings.allowed_students.includes(identifier);
+        
+        html += `
+            <label style="display:flex; align-items:center; gap:8px; padding:8px; background:white; border:1px solid #cbd5e1; border-radius:6px; cursor:pointer;">
+                <input type="checkbox" class="expl-student-checkbox" value="${identifier}" ${isChecked ? 'checked' : ''}>
+                <span style="font-size:0.9rem; color:#334155;"><b>${m.name}</b> <span style="color:#94a3b8; font-size:0.8rem;">(${m.phone ? m.phone.slice(-4) : '번호없음'})</span></span>
+            </label>
+        `;
+    });
+    container.innerHTML = html;
+};
+
+window.checkAllExplStudents = function(checked) {
+    const checkboxes = document.querySelectorAll('.expl-student-checkbox');
+    checkboxes.forEach(cb => cb.checked = checked);
+};
+
+window.saveExplanationSettings = async function() {
+    try {
+        const global_enabled = document.getElementById('globalExplToggle').checked;
+        const allowed_students = [];
+        
+        document.querySelectorAll('.expl-student-checkbox').forEach(cb => {
+            if (cb.checked) {
+                allowed_students.push(cb.value);
+            }
+        });
+        
+        const payload = { global_enabled, allowed_students };
+        
+        const res = await fetch('/api/sejong/explanation-settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        
+        if (res.ok) {
+            alert('권한 설정이 저장되었습니다.');
+            window.explSettings = payload;
+        } else {
+            throw new Error('Save failed');
+        }
+    } catch (e) {
+        console.error(e);
+        alert('저장에 실패했습니다.');
+    }
+};
