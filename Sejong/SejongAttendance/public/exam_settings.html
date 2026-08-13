@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title>AI 스마트 원서 분석 - 세종요리제과학원</title>
-    <link rel="stylesheet" href="style.css?v=20260814-4">
+    <link rel="stylesheet" href="style.css?v=20260814-5">
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Icons -->
@@ -634,7 +634,13 @@
                     
                     <div id="explStudentListContainer" style="display:none;">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
-                            <h3 style="margin:0; font-size:1.1rem; color:#475569;">개별 수강생 권한 부여</h3>
+                            <div style="display:flex; align-items:center; gap: 15px;">
+                                <h3 style="margin:0; font-size:1.1rem; color:#475569;">개별 수강생 권한 부여</h3>
+                                <select id="explCourseFilter" onchange="renderExplStudents()" style="padding:4px 8px; border:1px solid #cbd5e1; border-radius:4px; font-size:0.9rem; color:#334155;">
+                                    <option value="ALL">모든 과정</option>
+                                    <!-- Course options will be dynamically added here -->
+                                </select>
+                            </div>
                             <div>
                                 <button onclick="checkAllExplStudents(true)" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:0.85rem; margin-right:5px;">전체 선택</button>
                                 <button onclick="checkAllExplStudents(false)" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:0.85rem;">전체 해제</button>
@@ -650,8 +656,8 @@
     </div>
 
     <!-- Scripts -->
-    <script src="sidebar_sync.js?v=20260814-4"></script>
-    <script src="exam_settings.js?v=20260814-4"></script>
+    <script src="sidebar_sync.js?v=20260814-5"></script>
+    <script src="exam_settings.js?v=20260814-5"></script>
     <script>
         function toggleSidebar() {
             document.querySelector('.sidebar').classList.toggle('active');

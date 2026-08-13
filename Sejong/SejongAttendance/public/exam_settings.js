@@ -408,11 +408,28 @@ async function loadExplStudents() {
         const res = await fetch('/api/sejong/members?t=' + Date.now());
         if (res.ok) {
             window.allMembersList = await res.json();
+            populateCourseFilter();
             renderExplStudents();
         }
     } catch (e) {
         console.error("Failed to load students:", e);
     }
+}
+
+function populateCourseFilter() {
+    const filter = document.getElementById('explCourseFilter');
+    if (!filter) return;
+    
+    const courses = new Set();
+    window.allMembersList.forEach(m => {
+        if (m.course) courses.add(m.course);
+    });
+    
+    let html = '<option value="ALL">모든 과정</option>';
+    Array.from(courses).sort().forEach(c => {
+        html += `<option value="${c}">${c}</option>`;
+    });
+    filter.innerHTML = html;
 }
 
 window.toggleExplList = function() {
@@ -429,8 +446,15 @@ window.renderExplStudents = function() {
     const container = document.getElementById('explStudentsList');
     if (!container) return;
     
+    const selectedCourse = document.getElementById('explCourseFilter').value;
+    
+    let filtered = window.allMembersList;
+    if (selectedCourse !== 'ALL') {
+        filtered = filtered.filter(m => m.course === selectedCourse);
+    }
+    
     // Sort students by name
-    const sorted = [...window.allMembersList].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    const sorted = [...filtered].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
     
     let html = '';
     sorted.forEach(m => {
@@ -439,31 +463,37 @@ window.renderExplStudents = function() {
         
         html += `
             <label style="display:flex; align-items:center; gap:8px; padding:8px; background:white; border:1px solid #cbd5e1; border-radius:6px; cursor:pointer;">
-                <input type="checkbox" class="expl-student-checkbox" value="${identifier}" ${isChecked ? 'checked' : ''}>
-                <span style="font-size:0.9rem; color:#334155;"><b>${m.name}</b> <span style="color:#94a3b8; font-size:0.8rem;">(${m.phone ? m.phone.slice(-4) : '번호없음'})</span></span>
+                <input type="checkbox" class="expl-student-checkbox" value="${identifier}" ${isChecked ? 'checked' : ''} onchange="updateExplStudent(this)">
+                <span style="font-size:0.9rem; color:#334155;"><b>${m.name}</b> <span style="color:#94a3b8; font-size:0.8rem;">(${m.course || '미분류'})</span></span>
             </label>
         `;
     });
     container.innerHTML = html;
 };
 
+window.updateExplStudent = function(checkbox) {
+    const id = checkbox.value;
+    if (checkbox.checked) {
+        if (!window.explSettings.allowed_students.includes(id)) {
+            window.explSettings.allowed_students.push(id);
+        }
+    } else {
+        window.explSettings.allowed_students = window.explSettings.allowed_students.filter(x => x !== id);
+    }
+};
+
 window.checkAllExplStudents = function(checked) {
     const checkboxes = document.querySelectorAll('.expl-student-checkbox');
-    checkboxes.forEach(cb => cb.checked = checked);
+    checkboxes.forEach(cb => {
+        cb.checked = checked;
+        window.updateExplStudent(cb);
+    });
 };
 
 window.saveExplanationSettings = async function() {
     try {
         const global_enabled = document.getElementById('globalExplToggle').checked;
-        const allowed_students = [];
-        
-        document.querySelectorAll('.expl-student-checkbox').forEach(cb => {
-            if (cb.checked) {
-                allowed_students.push(cb.value);
-            }
-        });
-        
-        const payload = { global_enabled, allowed_students };
+        const payload = { global_enabled, allowed_students: window.explSettings.allowed_students };
         
         const res = await fetch('/api/sejong/explanation-settings', {
             method: 'POST',
