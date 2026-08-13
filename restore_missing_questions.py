@@ -94,7 +94,7 @@ def ask_gemini(text, current_questions_json, expected_missing_count):
     key = get_next_key()
     if not key: return []
         
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key={key}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={key}"
     headers = {'Content-Type': 'application/json'}
     data = {
         "contents": [{"parts": [{"text": prompt + "\n\n[원본 텍스트 시작]\n" + text[:80000]}]}],
@@ -134,28 +134,16 @@ def main():
             
             matched_file = find_matching_file(key, hwp_files)
             extracted_questions = []
-            
             if matched_file:
                 print(f"  -> Found matched file: {os.path.basename(matched_file)}")
-                text = extract_text_hwp(matched_file)
-                if text and len(text.strip()) > 100:
-                    print("  -> Querying AI to find missing questions...")
-                    q_json_str = json.dumps(qlist, ensure_ascii=False)
-                    extracted_questions = ask_gemini(text, q_json_str, missing_count)
-                    if extracted_questions:
-                        print(f"  -> Successfully extracted {len(extracted_questions)} missing questions via AI!")
-                    else:
-                        print("  -> AI failed to extract missing questions.")
-                else:
-                    print("  -> Extracted text is empty or too short.")
-            else:
-                print("  -> No matching HWP file found.")
+                print(f"  -> Bypassing AI due to API limit.")
+            extracted_questions = []
             
-            # Use placeholders if extraction failed or didn't get exactly the missing amount
-            if not extracted_questions or len(extracted_questions) != missing_count:
-                print(f"  -> Using placeholders to pad {missing_count} questions.")
-                extracted_questions = []
-                for i in range(missing_count):
+            # Pad with placeholders if AI failed or returned less
+            if len(extracted_questions) < missing_count:
+                pad_count = missing_count - len(extracted_questions)
+                print(f"  -> Using placeholders to pad {pad_count} questions.")
+                for i in range(pad_count):
                     extracted_questions.append({
                         "q": f"원본 파일 오류로 누락된 문항입니다. ({len(qlist) + i + 1}번)",
                         "o": ["누락", "누락", "누락", "누락"],
@@ -163,10 +151,11 @@ def main():
                         "e": "데이터베이스 파싱 중 누락된 문항입니다. 추후 복원 예정입니다."
                     })
             
-            # Append questions
-            db[key].extend(extracted_questions)
-            updated += 1
-            print(f"  -> Updated {key} to {len(db[key])} questions.\n")
+            if extracted_questions:
+                # Append questions
+                db[key].extend(extracted_questions)
+                updated += 1
+                print(f"  -> Updated {key} to {len(db[key])} questions.\n")
             
     if updated > 0:
         with open(QUESTIONS_FILE, 'w', encoding='utf-8') as f:
