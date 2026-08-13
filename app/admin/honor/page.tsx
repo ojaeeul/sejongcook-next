@@ -83,6 +83,7 @@ export default function HonorList() {
                 </Link>
             )
         },
+        { key: 'name', label: '수상자 (별 이름)', render: (val: string, item: HonorPost) => item.name || item.author || '-' },
         { key: 'author', label: '작성자' },
         { key: 'date', label: '작성일', format: (val: string) => val ? val : '-' },
         { key: 'hit', label: '조회수' },
