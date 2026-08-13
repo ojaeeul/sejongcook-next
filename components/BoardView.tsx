@@ -408,8 +408,8 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
                 {boardCode === 'honor' && !isEdit && (
                     <div className="mb-8">
                         <ShinyLaurelBanner
-                            stars={post.stars}
-                            name={post.name}
+                            stars={post.stars || 5}
+                            name={isAdmin ? (post.name || post.author) : maskName(post.name || post.author || '')}
                         />
                     </div>
                 )}

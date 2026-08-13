@@ -145,7 +145,7 @@ export default function HonorPage() {
                                     <div className="w-full h-full flex items-center justify-center bg-black">
                                         <ShinyLaurelBanner
                                             stars={post.stars}
-                                            name={post.name}
+                                            name={isAdmin ? (post.name || post.author) : maskName(post.name || post.author || '')}
                                         />
                                     </div>
                                     {post.category && (
