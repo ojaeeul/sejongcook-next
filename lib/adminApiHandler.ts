@@ -32,7 +32,8 @@ async function sendEmailNotification(board: string, item: any) {
         'qna': '질문답변(QnA)',
         'review': '수강후기',
         'job-openings': '구인(학원/기업)',
-        'job-seekers': '구직(강사/지원자)'
+        'job-seekers': '구직(강사/지원자)',
+        'inquiries': '상담/수강신청'
     };
     const boardName = boardNames[board] || board;
     
@@ -42,13 +43,30 @@ async function sendEmailNotification(board: string, item: any) {
         return html.replace(/<[^>]*>?/gm, ' ').replace(/\s\s+/g, ' ').trim();
     };
 
-    const subject = `[세종요리제과기술학원] 새로운 ${boardName} 게시글/댓글 - ${item.author || item.name || '작성자 미상'}`;
-    const htmlBody = `
-        <div style="padding: 20px; border: 1px solid #ddd; max-width: 600px;">
-            <h2 style="color: #d97706;">세종요리제과기술학원 - ${boardName}</h2>
+    const subject = board === 'inquiries' 
+        ? `[세종요리제과기술학원] 새로운 상담/수강신청 - ${item.name || '작성자 미상'}님`
+        : `[세종요리제과기술학원] 새로운 ${boardName} 게시글/댓글 - ${item.author || item.name || '작성자 미상'}`;
+
+    let detailsHtml = '';
+    if (board === 'inquiries') {
+        detailsHtml = `
+            <p><strong>신청자:</strong> ${item.name || '미입력'}</p>
+            <p><strong>연락처:</strong> ${item.phone || '미입력'}</p>
+            <p><strong>관심과정:</strong> ${item.courses ? (Array.isArray(item.courses) ? item.courses.join(', ') : item.courses) : '미입력'}</p>
+            <p><strong>방문예약:</strong> ${item.visitDate ? `${item.visitDate} ${item.visitTime || ''}` : '미지정'}</p>
+        `;
+    } else {
+        detailsHtml = `
             <p><strong>제목:</strong> ${item.title || '제목 없음'}</p>
             <p><strong>작성자:</strong> ${item.author || item.name || '작성자 미상'}</p>
             <p><strong>등록일:</strong> ${item.date || new Date().toISOString().split('T')[0]}</p>
+        `;
+    }
+
+    const htmlBody = `
+        <div style="padding: 20px; border: 1px solid #ddd; max-width: 600px;">
+            <h2 style="color: #d97706;">세종요리제과기술학원 - ${boardName}</h2>
+            ${detailsHtml}
             <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
             <p><strong>내용:</strong></p>
             <div style="background: #f9f9f9; padding: 15px; border-radius: 5px;">
@@ -331,6 +349,11 @@ export async function handlePost(request: NextRequest, board: string) {
 
         data.unshift(newItem);
         await writeData(board, data);
+
+        if (board === 'inquiries') {
+            await sendEmailNotification(board, newItem);
+        }
+
         return NextResponse.json({ success: true, item: newItem });
     } catch (error: any) {
         return NextResponse.json({ error: 'Failed to save data', details: error.message }, { status: 500 });

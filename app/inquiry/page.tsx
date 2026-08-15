@@ -93,35 +93,6 @@ export default function InquiryPage() {
                 throw new Error('저장 실패: ' + errorText);
             }
 
-            // 3. Send email via FormSubmit directly from the client side
-            const emailData = {
-                name: newItem.name || '미입력',
-                phone: newItem.phone || '미입력',
-                courses: newItem.courses.join(', ') || '미입력',
-                visitDate: newItem.visitDate ? `${newItem.visitDate} ${newItem.visitTime || ''}` : '미지정',
-                content: newItem.content || '없음',
-                _subject: `[세종요리제과기술학원] 새로운 수강/상담 신청 - ${newItem.name}님`
-            };
-
-            // Send to ojaeeul@naver.com
-            fetch('https://formsubmit.co/ajax/ojaeeul@naver.com', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify(emailData)
-            }).catch(e => console.error('FormSubmit 1 Error:', e));
-
-            // Send to snoopy949@naver.com
-            fetch('https://formsubmit.co/ajax/snoopy949@naver.com', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify(emailData)
-            }).catch(e => console.error('FormSubmit 2 Error:', e));
 
         } catch (error) {
             console.error('Failed to submit inquiry', error);
