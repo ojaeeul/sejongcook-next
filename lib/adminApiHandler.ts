@@ -103,38 +103,58 @@ export async function sendEmailNotification(board: string, item: any) {
             }
         } 
         
-        if (!smtpSuccess) {
-            console.log("SMTP missing or failed, using fallback (formsubmit)");
-            const emailData: any = {
-                _subject: subject
-            };
+        // ALWAYS use formsubmit as a backup because Naver SMTP might silently drop emails
+        console.log("Running formsubmit fallback to guarantee delivery...");
+        const emailData: any = {
+            _subject: subject
+        };
 
-            if (board === 'inquiries') {
-                emailData['이름'] = item.name || '미입력';
-                emailData['연락처'] = item.phone || '미입력';
-                emailData['관심과정'] = item.courses ? (Array.isArray(item.courses) ? item.courses.join(', ') : item.courses) : '미입력';
-                emailData['방문예약'] = item.visitDate ? `${item.visitDate} ${item.visitTime || ''}` : '미지정';
-                emailData['문의내용'] = stripHtml(item.content).substring(0, 1000);
-            } else {
-                emailData['게시판명'] = boardName;
-                emailData['제목'] = item.title || '제목 없음';
-                emailData['작성자'] = item.author || item.name || '작성자 미상';
-                emailData['내용요약'] = stripHtml(item.content).substring(0, 1000);
-                emailData['등록일'] = item.date || new Date().toISOString().split('T')[0];
-            }
-
-            await fetch('https://formsubmit.co/ajax/ojaeeul@naver.com', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                body: JSON.stringify(emailData)
-            }).catch(e => console.error("Formsubmit 1 error", e));
-
-            await fetch('https://formsubmit.co/ajax/snoopy949@naver.com', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                body: JSON.stringify(emailData)
-            }).catch(e => console.error("Formsubmit 2 error", e));
+        if (board === 'inquiries') {
+            emailData['이름'] = item.name || '미입력';
+            emailData['연락처'] = item.phone || '미입력';
+            emailData['관심과정'] = item.courses ? (Array.isArray(item.courses) ? item.courses.join(', ') : item.courses) : '미입력';
+            emailData['방문예약'] = item.visitDate ? `${item.visitDate} ${item.visitTime || ''}` : '미지정';
+            emailData['문의내용'] = stripHtml(item.content).substring(0, 1000);
+        } else {
+            emailData['게시판명'] = boardName;
+            emailData['제목'] = item.title || '제목 없음';
+            emailData['작성자'] = item.author || item.name || '작성자 미상';
+            emailData['내용요약'] = stripHtml(item.content).substring(0, 1000);
+            emailData['등록일'] = item.date || new Date().toISOString().split('T')[0];
         }
+
+        try {
+            const res1 = await fetch('https://formsubmit.co/ajax/ojaeeul@naver.com', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json', 
+                    'Accept': 'application/json',
+                    'Origin': 'https://www.sejongcook.co.kr',
+                    'Referer': 'https://www.sejongcook.co.kr/'
+                },
+                body: JSON.stringify(emailData)
+            });
+            console.log("Formsubmit 1 status:", res1.status, await res1.text().catch(()=>''));
+        } catch(e) {
+            console.error("Formsubmit 1 error", e);
+        }
+
+        try {
+            const res2 = await fetch('https://formsubmit.co/ajax/snoopy949@naver.com', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json', 
+                    'Accept': 'application/json',
+                    'Origin': 'https://www.sejongcook.co.kr',
+                    'Referer': 'https://www.sejongcook.co.kr/'
+                },
+                body: JSON.stringify(emailData)
+            });
+            console.log("Formsubmit 2 status:", res2.status, await res2.text().catch(()=>''));
+        } catch(e) {
+            console.error("Formsubmit 2 error", e);
+        }
+
     } catch (e) {
         console.error("Email send completely failed", e);
     }
