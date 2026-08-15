@@ -63,16 +63,20 @@ export async function sendEmailNotification(board: string, item: any) {
         `;
     }
 
+    const safeContent = stripHtml(item.content || '').substring(0, 1500);
     const htmlBody = `
-        <div style="padding: 20px; border: 1px solid #ddd; max-width: 600px;">
-            <h2 style="color: #d97706;">세종요리제과기술학원 - ${boardName}</h2>
-            ${detailsHtml}
-            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
+        <div style="padding: 20px; font-family: sans-serif;">
+            <h2 style="color: #d97706;">[세종요리제과기술학원] 알림</h2>
+            <p>새로운 내용이 등록되었습니다.</p>
+            <hr />
+            <p><strong>게시판:</strong> ${boardName}</p>
+            <p><strong>작성자:</strong> ${item.author || item.name || '알 수 없음'}</p>
+            <p><strong>제목:</strong> ${item.title || '제목 없음'}</p>
+            <br />
             <p><strong>내용:</strong></p>
-            <div style="background: #f9f9f9; padding: 15px; border-radius: 5px;">
-                ${stripHtml(item.content)}
-            </div>
-            <p style="margin-top: 20px; font-size: 12px; color: #888;">본 메일은 시스템에 의해 자동발송되었습니다.</p>
+            <p style="white-space: pre-wrap;">${safeContent}</p>
+            <hr />
+            <p style="margin-top: 30px; font-size: 12px; color: #888;">본 메일은 세종요리제과기술학원 자동 알림 시스템에서 발송되었습니다.</p>
         </div>
     `;
 
@@ -92,7 +96,13 @@ export async function sendEmailNotification(board: string, item: any) {
 
                 await transporter.sendMail({
                     from: `"세종요리제과기술학원" <${process.env.SMTP_USER}>`,
-                    to: ['ojaeeul@naver.com', 'snoopy949@naver.com'],
+                    to: 'ojaeeul@naver.com',
+                    subject: subject,
+                    html: htmlBody,
+                });
+                await transporter.sendMail({
+                    from: `"세종요리제과기술학원" <${process.env.SMTP_USER}>`,
+                    to: 'snoopy949@naver.com',
                     subject: subject,
                     html: htmlBody,
                 });
