@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/sejongDataHandler';
+import { sendEmailNotification } from '@/lib/adminApiHandler';
 
 export const GET = async (req: NextRequest) => {
     try {
@@ -27,11 +28,17 @@ export const POST = async (req: NextRequest) => {
         if (error) throw error;
         
         // Return success, but still allow FormSubmit emails to process on frontend
+        try {
+            await sendEmailNotification('inquiries', body);
+        } catch(emailErr) {
+            console.error('Inquiry email send error:', emailErr);
+        }
+        
         return NextResponse.json({ success: true, data });
     } catch (e: any) {
         console.error('Inquiry Save Error:', e);
         // We still return success: true so the frontend email logic continues
-        return NextResponse.json({ success: true, warning: 'Saved only via email', error: e.message });
+        return NextResponse.json({ success: true, warning: 'Saved only', error: e.message });
     }
 };
 

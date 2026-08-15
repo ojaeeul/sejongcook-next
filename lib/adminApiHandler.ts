@@ -27,7 +27,7 @@ function getSupabaseTableName(board: string) {
     return board.replace(/-/g, '_');
 }
 
-async function sendEmailNotification(board: string, item: any) {
+export async function sendEmailNotification(board: string, item: any) {
     const boardNames: Record<string, string> = {
         'qna': '질문답변(QnA)',
         'review': '수강후기',
