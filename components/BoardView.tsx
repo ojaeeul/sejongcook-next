@@ -243,7 +243,7 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
             const res = await fetch(`/api/admin/data/${apiBoardName}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ...post, content: cleanContent })
+                body: JSON.stringify({ ...post, content: cleanContent, isNewReply: true, replyContent: replyContent, replyAuthor: newReply.author })
             });
 
             if (!res.ok) throw new Error('Failed to save');

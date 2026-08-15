@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { supabase } from '@/lib/sejongDataHandler';
+import nodemailer from 'nodemailer';
 
 const boardToFileMap: Record<string, string> = {
     'baking': 'baking_posts.json',
@@ -41,37 +42,57 @@ async function sendEmailNotification(board: string, item: any) {
         return html.replace(/<[^>]*>?/gm, ' ').replace(/\s\s+/g, ' ').trim();
     };
 
-    const emailData = {
-        _subject: `[세종요리제과기술학원] 새로운 ${boardName} 게시글 - ${item.author || item.name || '작성자 미상'}`,
-        '게시판명': boardName,
-        '제목': item.title || '제목 없음',
-        '작성자': item.author || item.name || '작성자 미상',
-        '내용요약': stripHtml(item.content).substring(0, 500),
-        '등록일': item.date || new Date().toISOString().split('T')[0]
-    };
+    const subject = `[세종요리제과기술학원] 새로운 ${boardName} 게시글/댓글 - ${item.author || item.name || '작성자 미상'}`;
+    const htmlBody = `
+        <div style="padding: 20px; border: 1px solid #ddd; max-width: 600px;">
+            <h2 style="color: #d97706;">세종요리제과기술학원 - ${boardName}</h2>
+            <p><strong>제목:</strong> ${item.title || '제목 없음'}</p>
+            <p><strong>작성자:</strong> ${item.author || item.name || '작성자 미상'}</p>
+            <p><strong>등록일:</strong> ${item.date || new Date().toISOString().split('T')[0]}</p>
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
+            <p><strong>내용:</strong></p>
+            <div style="background: #f9f9f9; padding: 15px; border-radius: 5px;">
+                ${stripHtml(item.content)}
+            </div>
+            <p style="margin-top: 20px; font-size: 12px; color: #888;">본 메일은 시스템에 의해 자동발송되었습니다.</p>
+        </div>
+    `;
 
     try {
-        await fetch('https://formsubmit.co/ajax/ojaeeul@naver.com', {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json', 
-                'Accept': 'application/json',
-                'Referer': 'https://www.sejongcook.co.kr',
-                'Origin': 'https://www.sejongcook.co.kr'
-            },
-            body: JSON.stringify(emailData)
-        }).catch(e => console.error("Formsubmit 1 error", e));
-        
-        await fetch('https://formsubmit.co/ajax/snoopy949@naver.com', {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json', 
-                'Accept': 'application/json',
-                'Referer': 'https://www.sejongcook.co.kr',
-                'Origin': 'https://www.sejongcook.co.kr'
-            },
-            body: JSON.stringify(emailData)
-        }).catch(e => console.error("Formsubmit 2 error", e));
+        if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+            const transporter = nodemailer.createTransport({
+                host: process.env.SMTP_HOST || 'smtp.naver.com',
+                port: Number(process.env.SMTP_PORT) || 465,
+                secure: true,
+                auth: {
+                    user: process.env.SMTP_USER,
+                    pass: process.env.SMTP_PASS,
+                },
+            });
+
+            await transporter.sendMail({
+                from: `"세종요리제과기술학원" <${process.env.SMTP_USER}>`,
+                to: 'ojaeeul@naver.com, snoopy949@naver.com',
+                subject: subject,
+                html: htmlBody,
+            });
+            console.log("Email notification sent via nodemailer");
+        } else {
+            console.log("SMTP credentials missing, using fallback (formsubmit)");
+            const emailData = {
+                _subject: subject,
+                '게시판명': boardName,
+                '제목': item.title || '제목 없음',
+                '작성자': item.author || item.name || '작성자 미상',
+                '내용요약': stripHtml(item.content).substring(0, 500),
+                '등록일': item.date || new Date().toISOString().split('T')[0]
+            };
+            await fetch('https://formsubmit.co/ajax/ojaeeul@naver.com', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                body: JSON.stringify(emailData)
+            }).catch(e => console.error("Formsubmit error", e));
+        }
     } catch (e) {
         console.error("Email send failed", e);
     }
@@ -322,7 +343,7 @@ export async function handlePut(request: NextRequest, board: string) {
         if (!body.id) return NextResponse.json({ error: 'Missing item ID' }, { status: 400 });
 
         if (SUPABASE_BOARDS.includes(board)) {
-            const { id, title, author, date, hit, hits, content } = body;
+            const { id, title, author, date, hit, hits, content, isNewReply, replyContent, replyAuthor } = body;
             const updateData: any = { title, author, date, content };
             
             if (board === 'job-openings' || board === 'job-seekers') {
@@ -343,6 +364,16 @@ export async function handlePut(request: NextRequest, board: string) {
             }
 
             const updatedItem = data[0];
+
+            if (isNewReply) {
+                // SEND EMAIL NOTIFICATION FOR NEW REPLY
+                await sendEmailNotification(board, {
+                    title: `[댓글 알림] ${updatedItem.title}`,
+                    author: replyAuthor || '작성자',
+                    content: replyContent || '',
+                    date: new Date().toISOString().split('T')[0]
+                });
+            }
 
             // --- AI Bot for QnA & Review Comments ---
             if ((board === 'qna' || board === 'review') && updatedItem && updatedItem.content) {
