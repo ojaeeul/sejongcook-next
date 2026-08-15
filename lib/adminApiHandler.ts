@@ -82,26 +82,29 @@ export async function sendEmailNotification(board: string, item: any) {
 
     try {
         let smtpSuccess = false;
-        if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+        const smtpUser = process.env.SMTP_USER || 'oje2332@naver.com';
+        const smtpPass = process.env.SMTP_PASS || 'HGVX71TJWUYJ';
+        
+        if (smtpUser && smtpPass) {
             try {
                 const transporter = nodemailer.createTransport({
                     host: process.env.SMTP_HOST || 'smtp.naver.com',
                     port: Number(process.env.SMTP_PORT) || 465,
                     secure: true,
                     auth: {
-                        user: process.env.SMTP_USER,
-                        pass: process.env.SMTP_PASS,
+                        user: smtpUser,
+                        pass: smtpPass,
                     },
                 });
 
                 await transporter.sendMail({
-                    from: `"세종요리제과기술학원" <${process.env.SMTP_USER}>`,
+                    from: `"세종요리제과기술학원" <${smtpUser}>`,
                     to: 'ojaeeul@naver.com',
                     subject: subject,
                     html: htmlBody,
                 });
                 await transporter.sendMail({
-                    from: `"세종요리제과기술학원" <${process.env.SMTP_USER}>`,
+                    from: `"세종요리제과기술학원" <${smtpUser}>`,
                     to: 'snoopy949@naver.com',
                     subject: subject,
                     html: htmlBody,
