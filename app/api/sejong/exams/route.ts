@@ -100,7 +100,7 @@ export async function POST(req: NextRequest) {
             if (fs.existsSync(path.dirname(pyPublicPath))) {
                 fs.writeFileSync(pyPublicPath, JSON.stringify(newExamsArray, null, 4), 'utf-8');
             }
-        } catch (_fsErr) {
+        } catch {
             // Read-only filesystem on Vercel lambda - ignore
         }
 
