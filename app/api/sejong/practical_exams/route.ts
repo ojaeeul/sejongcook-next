@@ -38,9 +38,10 @@ export async function GET() {
         }
 
         return NextResponse.json(data);
-    } catch (e: any) {
-        console.error("GET Exams Error:", e);
-        return NextResponse.json({ error: e.message }, { status: 500 });
+    } catch (e: unknown) {
+        const err = e as Error;
+        console.error("GET Practical Exams Error:", err);
+        return NextResponse.json({ error: err.message }, { status: 500 });
     }
 }
 
@@ -48,7 +49,7 @@ export async function POST(req: NextRequest) {
     try {
         const payload = await req.json();
 
-        let newExamsArray = [];
+        let newExamsArray: unknown[] = [];
         
         if (Array.isArray(payload)) {
             // Legacy client support
@@ -62,9 +63,9 @@ export async function POST(req: NextRequest) {
                 .eq('key', 'practical_exam_data')
                 .maybeSingle();
                 
-            let existingExams: any[] = [];
+            let existingExams: Record<string, unknown>[] = [];
             if (cloudData && Array.isArray(cloudData.value)) {
-                existingExams = cloudData.value;
+                existingExams = cloudData.value as Record<string, unknown>[];
             }
             
             // Remove previous attempt for same user & exam, and append new
@@ -99,13 +100,14 @@ export async function POST(req: NextRequest) {
             if (fs.existsSync(path.dirname(pyPublicPath))) {
                 fs.writeFileSync(pyPublicPath, JSON.stringify(newExamsArray, null, 4), 'utf-8');
             }
-        } catch (fsErr) {
+        } catch (_fsErr) {
             // Read-only filesystem on Vercel lambda - ignore
         }
 
         return NextResponse.json({ success: true });
-    } catch (e: any) {
-        console.error("POST Exams Error:", e);
-        return NextResponse.json({ error: e.message }, { status: 500 });
+    } catch (e: unknown) {
+        const err = e as Error;
+        console.error("POST Practical Exams Error:", err);
+        return NextResponse.json({ error: err.message }, { status: 500 });
     }
 }
