@@ -46,12 +46,37 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
     try {
-        const data = await req.json();
+        const payload = await req.json();
+
+        let newExamsArray = [];
+        
+        if (Array.isArray(payload)) {
+            // Legacy client support
+            newExamsArray = payload;
+        } else {
+            // Single exam submission
+            // Fetch current data from Supabase
+            const { data: cloudData } = await supabase
+                .from('settings')
+                .select('value')
+                .eq('key', 'practical_exam_data')
+                .maybeSingle();
+                
+            let existingExams: any[] = [];
+            if (cloudData && Array.isArray(cloudData.value)) {
+                existingExams = cloudData.value;
+            }
+            
+            // Remove previous attempt for same user & exam, and append new
+            existingExams = existingExams.filter(e => !(e.phone === payload.phone && e.examKey === payload.examKey));
+            existingExams.push(payload);
+            newExamsArray = existingExams;
+        }
 
         // 1. Save to Supabase cloud storage (permanent storage for Vercel / Web)
         try {
             await supabase.from('settings').upsert(
-                { key: 'practical_exam_data', value: data },
+                { key: 'practical_exam_data', value: newExamsArray },
                 { onConflict: 'key' }
             );
         } catch (dbErr) {
@@ -62,17 +87,17 @@ export async function POST(req: NextRequest) {
         try {
             const masterPath = path.join(process.cwd(), 'Sejong', 'SejongAttendance', 'public', 'practical_exam_data.json');
             if (fs.existsSync(path.dirname(masterPath))) {
-                fs.writeFileSync(masterPath, JSON.stringify(data, null, 4), 'utf-8');
+                fs.writeFileSync(masterPath, JSON.stringify(newExamsArray, null, 4), 'utf-8');
             }
 
             const publicPath = path.join(process.cwd(), 'public', 'sejong', 'practical_exam_data.json');
             if (fs.existsSync(path.dirname(publicPath))) {
-                fs.writeFileSync(publicPath, JSON.stringify(data, null, 4), 'utf-8');
+                fs.writeFileSync(publicPath, JSON.stringify(newExamsArray, null, 4), 'utf-8');
             }
             
             const pyPublicPath = path.join(process.cwd(), 'Sejong', 'public', 'practical_exam_data.json');
             if (fs.existsSync(path.dirname(pyPublicPath))) {
-                fs.writeFileSync(pyPublicPath, JSON.stringify(data, null, 4), 'utf-8');
+                fs.writeFileSync(pyPublicPath, JSON.stringify(newExamsArray, null, 4), 'utf-8');
             }
         } catch (fsErr) {
             // Read-only filesystem on Vercel lambda - ignore

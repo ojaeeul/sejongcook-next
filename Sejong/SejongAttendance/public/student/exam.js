@@ -822,6 +822,8 @@ function renderOMR() {
 }
 
 function submitExam(isForced = false) {
+    if (window.isSubmitting) return; // Prevent double submission
+    
     if (!isForced) {
         const unAnsweredIndices = [];
         userAnswers.forEach((a, idx) => {
