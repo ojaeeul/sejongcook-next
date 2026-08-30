@@ -1,7 +1,7 @@
 {
   "name": "세종요리제과학원",
   "short_name": "세종요리",
-  "description": "세종요리제과기술학원 - 국비지원, 자격증, 취업 전문",
+  "description": "세종요리제과기술학원 - 자격증, 취업 전문",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

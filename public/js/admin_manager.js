@@ -770,7 +770,7 @@ function downloadSingleAgreement(idx) {
                     <h3>2. 개인정보 수집 및 이용 동의 (Agreement)</h3>
                     <div class="terms-box">
                         <strong>1. 개인정보의 수집 및 이용 목적</strong><br>
-                        - 수강료 조회 및 교육과정 상담, 국비지원 자격 확인 및 안내, 상담 문의 답변<br><br>
+                        - 수강료 조회 및 교육과정 상담, 상담 문의 답변<br><br>
 
                         <strong>3. 개인정보의 보유 및 이용 기간</strong><br>
                         - 상담 완료 후 1년간 보관하며, 이후 지체 없이 파기합니다.<br><br>
