@@ -75,7 +75,7 @@ export default function BoardView({ boardCode, boardName, initialPost, basePath 
                 fetch('/api/sejong/board-hits', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ boardCode, idx: initialPost.id })
+                    body: JSON.stringify({ boardCode: apiBoardName, idx: initialPost.id })
                 })
                 .then(res => res.json())
                 .then(data => {

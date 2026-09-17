@@ -247,12 +247,12 @@ export async function handleGet(request: NextRequest, board: string) {
                     supabase.from(getSupabaseTableName(board)).delete().in('id', needToDelete).then();
                 }
                 return NextResponse.json(filteredData, {
-                    headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=30' }
+                    headers: { 'Cache-Control': 'no-store' }
                 });
             }
 
             return NextResponse.json(data, {
-                headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=30' }
+                headers: { 'Cache-Control': 'no-store' }
             });
         } catch (error: any) {
             return NextResponse.json({ error: 'Failed to read from Supabase', details: error.message }, { status: 500 });
@@ -262,7 +262,7 @@ export async function handleGet(request: NextRequest, board: string) {
     try {
         const data = await readData(board);
         return NextResponse.json(data, {
-            headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=30' }
+            headers: { 'Cache-Control': 'no-store' }
         });
     } catch (error: any) {
         return NextResponse.json({ error: 'Failed to read data', details: error.message }, { status: 500 });
