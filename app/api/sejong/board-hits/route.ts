@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
@@ -85,7 +86,7 @@ export async function POST(request: Request) {
         hits[boardCode][idx] = (hits[boardCode][idx] || 0) + 1;
         writeHits(hits);
         
-        return NextResponse.json({ success: true, hit: hits[boardCode][idx] });
+        return NextResponse.json({ success: true, hit: 1 });
     } catch (error) {
         console.error("POST board-hits error:", error);
         return NextResponse.json({ error: 'Server error' }, { status: 500 });
