@@ -818,7 +818,11 @@ function renderStudentList() {
     // --- NEW: Check if the current date is a valid day for the active course ---
     let isValidDayForCourse = true;
     if (cName && cName !== '미지정') {
-        const cDateObj = new Date(document.getElementById('attDate').value);
+        const dateVal = document.getElementById('attDate').value;
+        let cDateObj = new Date(dateVal);
+        if (isNaN(cDateObj.getTime()) && dateVal.includes('-')) {
+            cDateObj = new Date(dateVal.replace(/-/g, '/'));
+        }
         const dayOfWeek = cDateObj.getDay();
         const cleanCourseName = cName.replace(/\([^)]*\)/g, '').trim();
         
@@ -1090,6 +1094,6 @@ window.addEventListener('storage', async (e) => {
 });
 
 </script>
-    <script src="sidebar_sync.js?v=20260921-1"></script>
+    <script src="sidebar_sync.js?v=20260921-2"></script>
 </body>
 </html>
