@@ -442,7 +442,7 @@ window.toggleSidebar = function () {
 };
 
 // Global search term
-window.memberSearchTerm = '';
+window.memberSearchTerm = window.memberSearchTerm || '';
 
 // New Function: handleModalRegister
 async function handleModalRegister(e) {
