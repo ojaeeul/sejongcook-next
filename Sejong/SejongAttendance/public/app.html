@@ -726,8 +726,21 @@ function processCourses() {
         if (!m.course || m.course.trim() === '') return;
         m.course.split(',').forEach(c => {
             const cName = c.trim();
-            if (!groupedCourses[cName]) groupedCourses[cName] = [];
-            groupedCourses[cName].push(m);
+            if (cName.startsWith('제과제빵기능사')) {
+                const timeSuffix = cName.replace('제과제빵기능사', '');
+                
+                const name1 = '제과기능사' + timeSuffix;
+                const name2 = '제빵기능사' + timeSuffix;
+                
+                if (!groupedCourses[name1]) groupedCourses[name1] = [];
+                groupedCourses[name1].push(m);
+                
+                if (!groupedCourses[name2]) groupedCourses[name2] = [];
+                groupedCourses[name2].push(m);
+            } else {
+                if (!groupedCourses[cName]) groupedCourses[cName] = [];
+                groupedCourses[cName].push(m);
+            }
         });
     });
 }
@@ -1094,6 +1107,6 @@ window.addEventListener('storage', async (e) => {
 });
 
 </script>
-    <script src="sidebar_sync.js?v=20260921-4"></script>
+    <script src="sidebar_sync.js?v=20260921-5"></script>
 </body>
 </html>
