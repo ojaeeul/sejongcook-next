@@ -664,7 +664,7 @@ let attendanceData = [];
 let timetableData = {};
 let localState = {}; // phone -> status
 
-const today = new Date().toISOString().split('T')[0];
+const today = new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
 document.getElementById('attDate').value = today;
 
 document.getElementById('attDate').addEventListener('change', () => {
@@ -1090,6 +1090,6 @@ window.addEventListener('storage', async (e) => {
 });
 
 </script>
-    <script src="sidebar_sync.js?v=20260921-0"></script>
+    <script src="sidebar_sync.js?v=20260921-1"></script>
 </body>
 </html>

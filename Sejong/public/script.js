@@ -210,7 +210,7 @@ window.execDaumPostcode = function (targetId, detailId) {
 }
 
 // State
-let currentDate = new Date().toISOString().split('T')[0];
+let currentDate = new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
 let members = [];
 let attendanceLogs = [];
 let currentFilter = new URLSearchParams(window.location.search).get('filter') || 'all';

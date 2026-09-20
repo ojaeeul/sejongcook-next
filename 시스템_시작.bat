@@ -39,8 +39,12 @@ git push
 echo     ✅ Git 백업 완료
 
 echo.
-echo [5/5] Vercel 실서버 자동 업로드(배포) 진행 중...
+echo [5/6] Vercel 실서버 자동 업로드(배포) 진행 중...
 start "VERCEL DEPLOY" cmd /c "npx vercel --prod --yes"
+
+echo.
+echo [6/6] 과거 배포 기록을 자동으로 정리하여 Vercel 용량을 확보합니다...
+start "VERCEL CLEANUP" cmd /c "npx vercel rm sejongcook-next-uoxe --safe --yes"
 
 echo ------------------------------------------------------
 echo 모든 필수 서버 및 배포 명령이 실행되었습니다.

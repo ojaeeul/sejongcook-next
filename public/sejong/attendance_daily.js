@@ -10,7 +10,7 @@ let allMembers = [];
 let groupedCourses = {};
 let activeCourse = '';
 let subFilterCourse = '';
-let currentDate = localStorage.getItem('sejong_daily_date') || new Date().toISOString().split('T')[0];
+let currentDate = localStorage.getItem('sejong_daily_date') || new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
 let currentAttendanceState = {};
 let currentMemoState = {};
 
@@ -302,7 +302,7 @@ window.setDate = function(dateStr) {
     currentDate = dateStr;
     const cDateObj = new Date(currentDate);
     if (isNaN(cDateObj.getTime())) {
-        currentDate = new Date().toISOString().split('T')[0];
+        currentDate = new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
     }
     localStorage.setItem('sejong_daily_date', currentDate);
     currentAttendanceState = {};
