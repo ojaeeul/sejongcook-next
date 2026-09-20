@@ -869,7 +869,7 @@ function renderStudentList() {
         // Name Column
         const nameCol = document.createElement('div');
         nameCol.className = 'student-name';
-        nameCol.innerHTML = `<span>${m.name}</span> <i class="material-icons">edit</i>`;
+        nameCol.innerHTML = `<a href="index.html?search=${encodeURIComponent(m.name)}" style="text-decoration:none; color:inherit;"><span>${m.name}</span></a> <i class="material-icons">edit</i>`;
         
         // Status Toggles
         const toggles = document.createElement('div');
@@ -1094,6 +1094,6 @@ window.addEventListener('storage', async (e) => {
 });
 
 </script>
-    <script src="sidebar_sync.js?v=20260921-2"></script>
+    <script src="sidebar_sync.js?v=20260921-3"></script>
 </body>
 </html>
