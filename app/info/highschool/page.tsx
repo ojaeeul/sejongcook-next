@@ -123,6 +123,17 @@ const INITIAL_CONTENT = `
                                 </thead>
                                 <tbody class="divide-y divide-gray-100">
                                     <tr>
+                                        <td class="p-2 font-bold">서울백영고<br><span class="text-xs font-normal text-gray-500">(강서구)</span></td>
+                                        <td class="p-2">국제조리과<br>디저트제과제빵과</td>
+                                        <td class="p-2">
+                                            <div class="text-gray-800">실무 중심 특성화 교육</div>
+                                            <div class="text-xs text-gray-600 mt-1">
+                                                * (구)서울항공비즈니스고<br>
+                                                * 다양한 조리 및 제과제빵 실습 과정 운영
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
                                         <td class="p-2 font-bold">서울관광고<br><span class="text-xs font-normal text-gray-500">(관악구)</span></td>
                                         <td class="p-2">관광조리코디과<br>제과제빵과</td>
                                         <td class="p-2">
